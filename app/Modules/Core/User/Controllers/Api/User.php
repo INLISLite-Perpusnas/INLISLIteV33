@@ -1,0 +1,485 @@
+<?php
+
+namespace User\Controllers\Api;
+
+use CodeIgniter\API\ResponseTrait;
+use CodeIgniter\Files\File;
+use App\Libraries\DataTable;
+use PhpParser\Node\Stmt\TryCatch;
+
+//use Hermawan\DataTables\DataTable;
+
+class User extends \Base\Controllers\BaseResourceController
+{
+	use ResponseTrait;
+	public $auth;
+	public $authorize;
+	public $userModel;
+	public $groupModel;
+	public $validation;
+	public $session;
+	public $config;
+	public $uploadPath;
+	public $modulePath;
+	public $password;
+	public $request;
+
+	function __construct()
+	{
+		$this->session = session();
+		$this->request = \Config\Services::request();
+		$this->validation = service('validation');
+		$this->config = config('Auth');
+		$this->auth = \Myth\Auth\Config\Services::authentication();
+		$this->authorize = \Myth\Auth\Config\Services::authorization();
+		$this->password = new \Myth\Auth\Password();
+
+		$this->userModel = new \User\Models\UserModel();
+		$this->groupModel = new \Group\Models\GroupModel();
+
+		$this->modulePath = ROOTPATH . 'public/uploads/user/';
+		$this->uploadPath = WRITEPATH . 'uploads/';
+
+		if (!file_exists($this->modulePath)) {
+			mkdir($this->modulePath);
+		}
+
+		helper('adminigniter');
+		helper('region');
+		helper('eksemplar');
+	}
+
+	public function datatable()
+	{
+		$slug = $this->request->getGet('slug') ?? '';
+		$npp_provinsi_id = $this->request->getGet('npp_provinsi_id') ?? '';
+		$npp_kabkota_id = $this->request->getGet('npp_kabkota_id') ?? '';
+		$npp_kecamatan_id = $this->request->getGet('npp_kecamatan_id') ?? '';
+
+		$db = db_connect('default');
+		$builder = $db->table('users as a')
+			->select('a.id, a.id as action, a.username,a.email, concat(a.first_name, " ", a.last_name) as full_name, a.first_name, a.last_name, a.active, a.updated_at, a.id as group_id')
+			->select('a.branch_id, a.address, a.npp_provinsi_id, a.npp_kabkota_id, a.npp_kecamatan_id, a.NPP_Kelurahan_id')
+			->like('a.category', $slug);
+
+		if (empty($slug)) {
+			$builder->where('id <', 0);
+		}
+
+		if (is_member('sa_prov')) {
+			$npp_provinsi_id = user()->npp_provinsi_id ?? $npp_provinsi_id;
+			if (!empty($npp_provinsi_id)) {
+				$builder->where('a.npp_provinsi_id', $npp_provinsi_id);
+			} else {
+				$builder->where('a.ID', 0);
+			}
+		}
+
+		$dataTable = DataTable::of($builder)
+			->addNumbering('no')
+			->edit('first_name', function ($row) {
+				$html = '<div class="widget-content p-0">
+								<div class="widget-content-wrapper">
+									<div class="widget-content-left mr-3">
+										<i class="far fa-user-alt fa-2x text-secondary"></i>
+									</div>
+									<div class="widget-content-left">
+										<div class="widget-heading">' . $row->full_name . '</div>
+										<div class="widget-subheading">
+											<b>' . $row->username . '</b><br>
+											<i class="fa fa-envelope opacity-4"></i> ' . $row->email . '
+										</div>
+									</div>
+								</div>
+							</div>';
+
+				return $html;
+			})
+			->edit('address', function ($row) {
+				$html = '';
+				if (!empty(npp_region($row->npp_provinsi_id, 1))) {
+					$html .=  'Prov: <b>' . npp_region($row->npp_provinsi_id, 1)->name . '</b><br>';
+				}
+				if (!empty(npp_region($row->npp_kabkota_id, 2))) {
+					$html .=  'Kota/Kab: <b>' . npp_region($row->npp_kabkota_id, 2)->name . '</b><br>';
+				}
+				if (!empty(npp_region($row->npp_kecamatan_id, 2))) {
+					$html .=  'Kec: <b>' . npp_region($row->npp_kecamatan_id, 3)->name . '</b><br>';
+				}
+				return $html;
+			})
+			->edit('group_id', function ($row) {
+				$groups = $this->userModel->getGroups($row->id);
+				$html = '';
+				foreach ($groups as $group) {
+					$html .= '<span class="badge badge-pill badge-secondary">' . $group . '</span> ';
+				}
+				return $html;
+			})
+			->edit('branch_id', function ($row) {
+				$branch = get_branch($row->branch_id);
+				$html = '<dl>';
+				if (!empty($branch->NPP_id)) {
+					$html .= '<dt>NPP</dt>';
+					$html .= '<dd>' . ($branch->Code ?? '') . '</dd>';
+				}
+
+				if (!empty($branch->Name)) {
+					$html .= '<dt>Nama</dt>';
+					$html .= '<dd>' . strtoupper($branch->Name ?? '-') . '</dd>';
+				}
+
+				if (!empty($branch->NPP_Jenis)) {
+					$html .= '<dt>Jenis</dt>';
+					$html .= '<dd>' . strtoupper($branch->NPP_Jenis ?? '-') . '</dd>';
+				}
+
+				if (!empty($branch->Address)) {
+					$html .= '<dt>Alamat</dt>';
+					$html .= '<dd>' . strtoupper($branch->Address ?? '-') . '</dd>';
+				}
+				$html .= '</dl>';
+
+				return $html;
+			})
+			->edit('active', function ($row) {
+				$status = $row->active == 1 ? 'Aktif' : 'Non Aktif';
+				$class = $row->active == 1 ? 'success' : 'danger';
+				$html = '<span class="badge badge-' . $class . '  badge-pill">' . $status . '</span>';
+				// $active	= '<a href="' . base_url('user/apply_status/' . $row->id . '?field=active&value=1') . '"  data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Aktifkan" class="btn btn-success publish-data"><i class="pe-7s-check font-weight-bold"> </i> </a>';
+				// $inactive = '<a href="' . base_url('user/apply_status/' . $row->id . '?field=active&value=0') . '" data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Nonaktifkan" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"> </i> </a>';
+
+				// $html .=  $active . ' ' . $inactive;
+				return $html;
+			})
+			->edit('updated_at', function ($row) {
+				$html = '';
+				$html .= '<span class="badge badge-pill badge-info">' . $row->updated_at . '</span>';
+				return $html;
+			})
+			->edit('action', function ($row) {
+				$permission = '<a href="' . base_url('user/permissions/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Permission" class="btn btn-primary show-data"><i class="fa fa-cogs"> </i></a>';
+				$detail = '<a href="' . base_url('user/detail/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Profil User" class="btn btn-warning show-data"><i class="pe-7s-user font-weight-bold"> </i></a>';
+				$delete = '<a href="javascript:void(0);" data-href="' . base_url('user/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus User" class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+				$html 	= $permission . ' ' . $detail . ' ' . $delete;
+				return $html;
+			})
+			->toJson();
+
+		return $dataTable;
+	}
+
+	public function view($id = null)
+	{
+		$data = $this->userModel->find($id);
+		if ($data) {
+			return $this->respond($data);
+		} else {
+			return $this->failNotFound('No Data Found with id ' . $id);
+		}
+	}
+
+	function _alpha_dash_space($str_in = '')
+	{
+		if (!preg_match("/^([-a-z0-9_ ])+$/i", $str_in)) {
+			$this->form_validation->set_message('_alpha_dash_space', 'The %s field may only contain alpha-numeric characters, spaces, underscores, and dashes.');
+			return FALSE;
+		} else {
+			return TRUE;
+		}
+	}
+
+	public function create()
+	{
+		// Validate here first, since some things,
+		// like the password, can only be validated properly here.
+		$rules = [
+			'username'  	=> [
+				'label' => 'Username',
+				'rules' => 'required|alpha_dash|min_length[3]|is_unique[users.username]',
+			],
+			'first_name'	 	=> [
+				'label' => 'Nama Depan',
+				'rules' => 'required',
+			],
+			'email'			=> [
+				'label' => 'Email',
+				'rules' => 'required|valid_email|is_unique[users.email]',
+			],
+			'password'	 	=> [
+				'label' => 'Password',
+				'rules' => 'required',
+			],
+			'pass_confirm' 	=> [
+				'label' => 'Konfirmasi Password',
+				'rules' => 'required|matches[password]',
+			]
+		];
+
+		if (!$this->validate($rules)) {
+			$message = $this->validation->listErrors();
+			return $this->fail($message, 400);
+		}
+
+		// Save the user
+		$users = model(\Myth\Auth\Models\UserModel::class);
+		$group = $this->request->getPost('group') ?? $this->config->defaultUserGroup;
+		$username = $this->request->getPost('username');
+		$allowedPostFields = array_merge(['password'], $this->config->validFields, $this->config->personalFields);
+		$save_data = $this->request->getPost($allowedPostFields);
+		$user = new \Myth\Auth\Entities\User($save_data);
+		$user->activate();
+		$users = $users->withGroup($group);
+
+		if (!$users->save($user)) {
+			set_message('message', $this->session->getFlashdata('message'));
+			return $this->fail('<div class="alert alert-danger fade show" role="alert">Tambah User gagal disimpan</div>', 400);
+		} else {
+			$update_data = $this->request->getPost($this->config->validFields);
+			$first_name = $this->request->getPost('first_name');
+			$last_name = $this->request->getPost('last_name');
+			$is_branch = $this->request->getPost('is_branch') ?? 1;
+			$provinsi_id = $this->request->getPost('provinsi_id') ?? user()->npp_provinsi_id;
+			$branch_id = $this->request->getPost('branch_id') ?? "";
+
+			try {
+				$kabkota_id = (null !== $this->request->getPost('kabkota_id')) ? $this->request->getPost('kabkota_id') : user()->kabkota_id;
+				if (!empty($kabkota_id)) {
+					$update_data['npp_kabkota_id'] = $kabkota_id;
+				}
+			} catch (\Throwable $th) {
+			}
+
+			if (!empty($provinsi_id)) {
+				$update_data['npp_provinsi_id'] = $provinsi_id;
+			}
+
+			if (!empty($branch_id)) {
+				$update_data['branch_id'] = $branch_id;
+			}
+
+			$update_data['first_name'] = $first_name;
+			$update_data['last_name'] = $last_name;
+			$update_data['category'] = $group;
+			$update_data['is_branch'] = $is_branch;
+
+
+
+			$db = db_connect('default');
+			$builder = $db->table('users')->where('username', $username);
+			$builder->update($update_data);
+
+			$response = [
+				'status'   => 201,
+				'error'    => null,
+				'messages' => [
+					'success' => 'Tambah User berhasil disimpan'
+				]
+			];
+			return $this->respond($response);
+		}
+	}
+
+	public function edit($id = null)
+	{
+		$this->validation->setRule('username', 'Username', 'required');
+		$this->validation->setRule('email', 'Email', 'required');
+		if ($this->request->getPost('password')) {
+			$this->validation->setRule('password', 'Password', 'required|min_length[' . $this->config->minimumPasswordLength . ']');
+			$this->validation->setRule('pass_confirm', 'Konfirmasi Password', 'required|matches[password]');
+		}
+
+		if (is_member('admin')) {
+			$this->validation->setRule('groups', 'Group', 'required');
+		}
+
+		if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
+			$update_data = array(
+				'first_name' => $this->request->getPost('first_name'),
+				'last_name' => $this->request->getPost('last_name'),
+				'phone' => $this->request->getPost('phone'),
+				'unit' => $this->request->getPost('unit'),
+				'company' => $this->request->getPost('company'),
+				'address' => $this->request->getPost('address'),
+				'coordinate' => $this->request->getPost('coordinate'),
+			);
+
+			if (!empty($this->request->getPost('branch_id'))) {
+				$branch_id = $this->request->getPost('branch_id');
+				$update_data['branch_id'] = $branch_id;
+			}
+
+			if ($this->request->getPost('password')) {
+				$update_data['password_hash'] = $this->password->hash($this->request->getPost('password'));
+				$update_data['reset_hash'] = null;
+				$update_data['reset_at'] = null;
+				$update_data['reset_expires'] = null;
+			}
+
+			$userUpdate = $this->userModel->update($id, $update_data);
+			if ($userUpdate) {
+				if (is_member('admin') || is_member('sa_pus')) {
+					$groups = $this->authorize->groups();
+					foreach ($groups as $group) {
+						$this->authorize->removeUserFromGroup($id, $group->id);
+					}
+
+					$group_ids = $this->request->getPost('groups');
+					foreach ($group_ids as $group_id) {
+						$this->authorize->addUserToGroup($id, $group_id);
+					}
+				}
+
+				$this->session->setFlashdata('toastr_msg', 'Profil User berhasil disimpan');
+				$this->session->setFlashdata('toastr_type', 'success');
+				$response = [
+					'status'   => 201,
+					'error'    => null,
+					'messages' => [
+						'success' => 'Profil User berhasil disimpan'
+					]
+				];
+				return $this->respond($response);
+			} else {
+				return $this->fail('<div class="alert alert-danger fade show" role="alert">Profil User gagal disimpan</div>', 400);
+			}
+		} else {
+			$message = $this->validation->listErrors();
+			return $this->fail($message, 400);
+		}
+	}
+
+	public function upload_file()
+	{
+		$upload_id = $this->request->getPost('upload_id');
+		$upload_field = $this->request->getPost('upload_field');
+		$upload_title = $this->request->getPost('upload_title');
+
+		$update_data = [];
+
+		$files = (array) $this->request->getPost('file_pendukung');
+		if (count($files)) {
+			$listed_file = array();
+			foreach ($files as $uuid => $name) {
+				if (file_exists($this->uploadPath . $name)) {
+					$file = new File($this->uploadPath . $name);
+					$newFileName = $file->getRandomName();
+					$file->move($this->modulePath, $newFileName);
+					$listed_file[] = $newFileName;
+				}
+			}
+			$update_data[$upload_field] = implode(',', $listed_file);
+		}
+
+		// print_r($update_data);
+		// dd('');
+
+		$userModel = new \user\Models\userModel();
+		$updateuser = $userModel->update($upload_id, $update_data);
+		if ($updateuser) {
+			$this->session->setFlashdata('toastr_msg', 'Upload file berhasil');
+			$this->session->setFlashdata('toastr_type', 'success');
+			$response = [
+				'status'   => 201,
+				'error'    => null,
+				'messages' => [
+					'success' => 'Upload file berhasil'
+				]
+			];
+			return $this->respondCreated($response);
+		} else {
+			$response = [
+				'status'   => 400,
+				'error'    => null,
+				'messages' => [
+					'error' => 'Upload file gagal'
+				]
+			];
+			return $this->fail($response);
+		}
+	}
+
+	public function delete($id = null)
+	{
+		try {
+			$data = $this->userModel->find($id);
+			if ($data) {
+				$delete = $this->userModel->delete($id);
+				$response = array(
+					'error'    => false,
+					'message' => 'Data deleted successfully'
+				);
+			} else {
+				$response = array(
+					'error'    => true,
+					'message' => 'Could not find data for specified ID' . $id,
+				);
+			}
+		} catch (Exception $e) {
+			$response = array(
+				'error'    => true,
+				'message' => $e->getMessage()
+			);
+		}
+		return $this->simpleResponse($response);
+	}
+
+	public function select2_branch($slug = '')
+	{
+		$search = $this->request->getGet('search') ?? '';
+		$page = $this->request->getGet('page') ?? '1';
+
+		$db = db_connect('data');
+		$builder_count = $db->table('branchs as a')
+			->select('count(*) as total')
+			->like('a.Code', $search);
+
+		if ($slug == 'sa_prov') {
+			$include = ['PROVINSI'];
+			$builder_count->whereIn('a.NPP_SubJenis', $include);
+		} elseif ($slug == 'sa_kabkot') {
+			$include = ['KABUPATEN/KOTA'];
+			$builder_count->whereIn('a.NPP_SubJenis', $include);
+		} elseif ($slug == 'sa_pkpt') {
+			$include = ['SEKOLAH TINGGI', 'UNIVERSITAS', 'POLITEKNIK', 'AKADEMI', 'INSTITUT', 'KHUSUS LAINNYA', 'INSTANSI SWASTA', 'KEMENTERIAN/LEMBAGA', 'INSTANSI DAERAH', 'LAPAS', 'RUMAH SAKIT'];
+			$builder_count->whereIn('a.NPP_SubJenis', $include);
+		} elseif ($slug == 'sa_psm') {
+			$include = ['PAUD', 'TK', 'SD', 'MI', 'SDLB', 'SMP', 'MTS', 'SMA', 'SMALB', 'MA'];
+			$builder_count->whereIn('a.NPP_SubJenis', $include);
+		}
+
+		$total = $builder_count->get()->getRow()->total ?? 0;
+
+		$per_page = 10;
+		$offset = $page * $per_page;
+		$limit = $offset - $per_page;
+
+		$db = db_connect('data');
+		$builder = $db->table('branchs as a')
+			->select('a.ID as id, concat(a.Code," ","(",a.Name,")") as text')
+			->like('a.Code', $search)
+			->limit($per_page, $limit);
+
+		if ($slug == 'sa_prov') {
+			$include = ['PROVINSI'];
+			$builder->whereIn('a.NPP_SubJenis', $include);
+		} elseif ($slug == 'sa_kabkot') {
+			$include = ['KABUPATEN/KOTA'];
+			$builder->whereIn('a.NPP_SubJenis', $include);
+		} elseif ($slug == 'sa_pkpt') {
+			$include = ['SEKOLAH TINGGI', 'UNIVERSITAS', 'POLITEKNIK', 'AKADEMI', 'INSTITUT', 'KHUSUS LAINNYA', 'INSTANSI SWASTA', 'KEMENTERIAN/LEMBAGA', 'INSTANSI DAERAH', 'LAPAS', 'RUMAH SAKIT', 'RUMAH IBADAH'];
+			$builder->whereIn('a.NPP_SubJenis', $include);
+		} elseif ($slug == 'sa_psm') {
+			$include = ['PAUD', 'TK', 'SD', 'MI', 'SDLB', 'SMP', 'MTS', 'SMA', 'SMALB', 'MA'];
+			$builder->whereIn('a.NPP_SubJenis', $include);
+		}
+
+		$items = $builder->get()->getResult();
+		$response = array(
+			'items' => $items,
+			'total' => $total,
+		);
+
+		return $this->simpleResponse($response);
+	}
+}
