@@ -213,10 +213,20 @@ $catalog = get_catalog($catalog_id);
                             </div>
                             <div class="col-lg-4 col-md-6">
                                 <label for="groups">Nama Sumber</label>
-                                <div class="select-wrapper">
+                                <div class="select-wrapper input-group">
                                     <select class="form-control selectx" name="Partner_id" id="Partner_id" tabindex="-1"
-                                        aria-hidden="true" style="width:100%">
+                                        aria-hidden="true" style="width:80%">
                                     </select>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-primary" data-toggle="modal"
+                                            data-target="#modalAddPartner">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                        <button type="button" id="btnEditPartner" class="btn btn-warning"
+                                            data-toggle="modal" data-target="#modalEditPartner" disabled>
+                                            <i class="fa fa-edit"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-lg-4 col-md-6">
@@ -336,11 +346,89 @@ $catalog = get_catalog($catalog_id);
         Daftar Eksemplar</a>
     <?php endif; ?>
 </div>
+<!-- modal -->
+ 
 
 
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
+<!-- Modal Add Partner -->
+<div class="modal fade" id="modalAddPartner" tabindex="-1" role="dialog" aria-labelledby="modalAddPartnerLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalAddPartnerLabel">Tambah Nama Sumber</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="formAddPartner">
+                    <div class="form-group">
+                        <label for="partnerName">Nama</label>
+                        <input type="text" class="form-control" id="partnerName" name="Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="partnerAddress">Alamat</label>
+                        <textarea class="form-control" id="partnerAddress" name="Address" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="partnerPhone">Telepon</label>
+                        <input type="text" class="form-control" id="partnerPhone" name="Phone">
+                    </div>
+                    <div class="form-group">
+                        <label for="partnerFax">Fax</label>
+                        <input type="text" class="form-control" id="partnerFax" name="Fax">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="btnSavePartner">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit Partner -->
+<div class="modal fade" id="modalEditPartner" tabindex="-1" role="dialog" aria-labelledby="modalEditPartnerLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEditPartnerLabel">Edit Nama Sumber</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="formEditPartner">
+                    <input type="hidden" id="editPartnerId" name="ID">
+                    <div class="form-group">
+                        <label for="editPartnerName">Nama</label>
+                        <input type="text" class="form-control" id="editPartnerName" name="Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editPartnerAddress">Alamat</label>
+                        <textarea class="form-control" id="editPartnerAddress" name="Address" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editPartnerPhone">Telepon</label>
+                        <input type="text" class="form-control" id="editPartnerPhone" name="Phone">
+                    </div>
+                    <div class="form-group">
+                        <label for="editPartnerFax">Fax</label>
+                        <input type="text" class="form-control" id="editPartnerFax" name="Fax">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="btnUpdatePartner">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
 getData(`<?= base_url('api/eksemplar/collectionsources') ?>`, `#Source_id`, false, `-Pilih-`);
 getData(`<?= base_url('api/eksemplar/collectionpartners') ?>`, `#Partner_id`, false, `-Pilih-`);
@@ -393,6 +481,121 @@ $('#generate-eksemplar-number').click(function() {
     });
 });
 </script>
+<script>
+    // Handle Partner functionality
+$(document).ready(function() {
+    // Enable edit button when a partner is selected
+    $('#Partner_id').on('change', function() {
+        var selectedValue = $(this).val();
+        if (selectedValue && selectedValue !== '') {
+            $('#btnEditPartner').prop('disabled', false);
+        } else {
+            $('#btnEditPartner').prop('disabled', true);
+        }
+    });
+
+    // Add new partner
+    $('#btnSavePartner').on('click', function() {
+        var formData = $('#formAddPartner').serialize();
+        
+        $.ajax({
+            url: '<?= base_url('api/eksemplar/add_partner') ?>',
+            type: 'POST',
+            data: formData,
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    // Show success message
+                    toastr.success('Data berhasil disimpan');
+                    
+                    // Close the modal
+                    $('#modalAddPartner').modal('hide');
+                    
+                    // Reset form
+                    $('#formAddPartner')[0].reset();
+                    
+                    // Refresh partners dropdown
+                    getData(`<?= base_url('api/eksemplar/collectionpartners') ?>`, `#Partner_id`, false, `-Pilih-`);
+                    
+                    // Select the newly added partner
+                    setTimeout(function() {
+                        $('#Partner_id').val(response.data.ID).trigger('change');
+                    }, 500);
+                } else {
+                    toastr.error(response.message || 'Terjadi kesalahan saat menyimpan data');
+                }
+            },
+            error: function(xhr, status, error) {
+                toastr.error('Terjadi kesalahan: ' + error);
+            }
+        });
+    });
+
+    // Load partner data for editing
+    $('#btnEditPartner').on('click', function() {
+        var partnerId = $('#Partner_id').val();
+        if (!partnerId) return;
+
+        $.ajax({
+            url: '<?= base_url('api/eksemplar/get_partner') ?>/' + partnerId,
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    var partner = response.data;
+                    $('#editPartnerId').val(partner.ID);
+                    $('#editPartnerName').val(partner.Name);
+                    $('#editPartnerAddress').val(partner.Address);
+                    $('#editPartnerPhone').val(partner.Phone);
+                    $('#editPartnerFax').val(partner.Fax);
+                } else {
+                    toastr.error('Gagal mengambil data partner');
+                    $('#modalEditPartner').modal('hide');
+                }
+            },
+            error: function(xhr, status, error) {
+                toastr.error('Terjadi kesalahan: ' + error);
+                $('#modalEditPartner').modal('hide');
+            }
+        });
+    });
+
+    // Update partner data
+    $('#btnUpdatePartner').on('click', function() {
+        var formData = $('#formEditPartner').serialize();
+        var partnerId = $('#editPartnerId').val();
+        
+        $.ajax({
+            url: '<?= base_url('api/eksemplar/update_partner') ?>/' + partnerId,
+            type: 'POST',
+            data: formData,
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    // Show success message
+                    toastr.success('Data berhasil diperbarui');
+                    
+                    // Close the modal
+                    $('#modalEditPartner').modal('hide');
+                    
+                    // Refresh partners dropdown
+                    getData(`<?= base_url('api/eksemplar/collectionpartners') ?>`, `#Partner_id`, false, `-Pilih-`);
+                    
+                    // Keep the updated partner selected
+                    setTimeout(function() {
+                        $('#Partner_id').val(partnerId).trigger('change');
+                    }, 500);
+                } else {
+                    toastr.error(response.message || 'Terjadi kesalahan saat memperbarui data');
+                }
+            },
+            error: function(xhr, status, error) {
+                toastr.error('Terjadi kesalahan: ' + error);
+            }
+        });
+    });
+});
+    </script>
 <?= $this->include('Eksemplar\Views\add_script'); ?>
 <?= $this->include('Eksemplar\Views\modal_katalog'); ?>
 <script>

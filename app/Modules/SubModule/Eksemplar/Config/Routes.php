@@ -31,6 +31,9 @@ $routes->group('api/eksemplar', ['namespace' => 'Eksemplar\Controllers\Api'], fu
 	$subroutes->add('index/(:any)', 'Eksemplar::index/$1');
 	$subroutes->add('detail/(:any)', 'Eksemplar::detail/$1');
 	$subroutes->add('create', 'Eksemplar::create');
+	$subroutes->add('add_partner', 'Eksemplar::add_partner');
+	$subroutes->add('get_partner/(:any)', 'Eksemplar::get_partner/$1');
+	$subroutes->add('edit_partner/(:any)', 'Eksemplar::edit_partner/$1');
 	$subroutes->add('edit/(:any)', 'Eksemplar::edit/$1');
 	$subroutes->add('delete/(:any)', 'Eksemplar::delete/$1');
 

@@ -403,23 +403,24 @@ class Anggota extends \Base\Controllers\BaseResourceController
 	}
 
 	public function switch($id = null)
-	{
-		$field = $this->request->getGet('field');
-		$value = $this->request->getGet('value');
+{
+    // Change from getGet to getPost to match how the data is sent in ajax_post function
+    $field = $this->request->getPost('field');
+    $value = $this->request->getPost('value');
 
-		$update_data_id = $this->anggotaModel->update($id, array($field => $value));
+    $update_data_id = $this->anggotaModel->update($id, array($field => $value));
 
-		if ($update_data_id) {
-			$response = [
-				'error' => false,
-				'message' => 'Field ' . $field . ' berhasil disimpan',
-			];
-		} else {
-			$response = [
-				'error' => true,
-				'message' => 'Field ' . $field . ' gagal disimpan. Silakan coba lagi',
-			];
-		}
-		return $this->simpleResponse($response);
-	}
+    if ($update_data_id) {
+        $response = [
+            'error' => false,
+            'message' => 'Field ' . $field . ' berhasil disimpan',
+        ];
+    } else {
+        $response = [
+            'error' => true,
+            'message' => 'Field ' . $field . ' gagal disimpan. Silakan coba lagi',
+        ];
+    }
+    return $this->simpleResponse($response);
+}
 }

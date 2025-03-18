@@ -38,22 +38,36 @@ class PerpanjanganAnggota extends \Base\Controllers\BaseController
     public function index()
     {
         $query = $this->perpanjanganModel
-            ->select('member_perpanjangan.*')
-            // ->select('created.username as created_name')
-            // ->select('updated.username as updated_name')
-            ->select('Member_id.Fullname as nama')
-            ->select('Member_id.MemberNo as MembersNo')
-            // ->join('users created','created.id = t_perpanjangan.created_by','left')
-            // ->join('users updated','updated.id = t_perpanjangan.updated_by','left')
-            ->join('members Member_id', 'member_id.ID = member_perpanjangan.Member_id', 'left');
-
+            ->select('member_perpanjangan.*, members.Fullname as nama, members.MemberNo as MembersNo')
+            ->select('b.ID as Branch_id, b.Name as Perpustakaan, b.Name, b.Code, b.NPP_Provinsi_id, b.NPP_KabKota_id, b.NPP_Kecamatan_id, b.NPP_Kelurahan_id, b.NPP_id')
+            ->join('members', 'members.ID = member_perpanjangan.Member_id', 'left')
+            ->join('branchs b', 'b.ID = member_perpanjangan.Branch_id', 'inner'); // INNER JOIN ke branchs
+    
+        // Filter berdasarkan kategori user
+        if (user()->category == 'admin') {
+            // Tidak ada filter tambahan
+        } elseif (user()->category == 'sa_prov' && user()->branch_id === null) {
+            $npp_provinsi_id = preg_replace('/\./', '', user()->npp_provinsi_id);
+            $query->where('b.NPP_Provinsi_id', $npp_provinsi_id);
+        } elseif (user()->category == 'sa_kabkot' && user()->branch_id === null) {
+            $npp_kabkota_id = preg_replace('/\./', '', user()->npp_kabkota_id);
+            $query->where('b.NPP_KabKota_id', $npp_kabkota_id);
+        } elseif (user()->category == 'sa_umum') {
+            $query->where('member_perpanjangan.Branch_id', branch_id());
+        } else {
+            $query->where('member_perpanjangan.Branch_id', branch_id());
+        }
+    
+        // Eksekusi query
         $perpanjangans = $query->findAll();
-        // $Nomember=$this->anggotaModel->MemberNo();
-        $this->data['title'] = 'Daftar perpanjangananggota';
+    
+        // Data untuk view
+        $this->data['title'] = 'Daftar Perpanjangan Anggota';
         $this->data['perpanjangans'] = $perpanjangans;
-        echo view('PerpanjanganAnggota\Views\list', $this->data);
+    
+        return view('PerpanjanganAnggota\Views\list', $this->data);
     }
-
+    
     public function create()
     {
         $this->data['title'] = 'Tambah PerpanjanganAnggota';
@@ -66,6 +80,7 @@ class PerpanjanganAnggota extends \Base\Controllers\BaseController
                 'Member_id' =>  $id_anggota,
                 'biaya' => $this->request->getPost('biaya'),
                 'Keterangan' => $this->request->getPost('Keterangan'),
+                'Branch_id'=> branch_id(),
                 'UpdateBy' => user_id(),
             ];
             //  dd($save_data);
@@ -76,7 +91,7 @@ class PerpanjanganAnggota extends \Base\Controllers\BaseController
                     'EndDate' => $this->request->getPost('EndDate'),
                     'Jenisanggota_id' => $this->request->getPost('Jenisanggota_id')
                 ];
-                // $builder = $this->anggotaModel->where('id', $id);
+                // $query = $this->anggotaModel->where('id', $id);
                 $this->anggotaModel->update($id_anggota, $data);
             }
 

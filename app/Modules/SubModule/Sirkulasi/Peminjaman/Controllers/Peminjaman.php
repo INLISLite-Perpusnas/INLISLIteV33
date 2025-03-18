@@ -64,6 +64,7 @@ class Peminjaman extends \Base\Controllers\BaseController
 	{
 		$member_no = $this->request->getGet('member_no') ?? '';
 		$carts = get_cart_loan($member_no);
+	
 		$loan_cart = count($carts);
 
 		$this->data['member_no'] = $member_no;
@@ -72,7 +73,9 @@ class Peminjaman extends \Base\Controllers\BaseController
 
 		if (!empty($member_no)) {
 			$member = get_ref_single('members', 'MemberNo="' . $member_no . '"', 'data');
+		
 			$jenis_anggota = get_ref_single('jenis_anggota', 'id="' . $member->JenisAnggota_id . '"', 'data');
+		
 			$max_loan_days = $jenis_anggota->MaxLoanDays ?? 3;
 			$loan_count = get_loan_count($member->ID);
 			$loan_limit = $jenis_anggota->MaxPinjamKoleksi;
@@ -209,6 +212,7 @@ class Peminjaman extends \Base\Controllers\BaseController
 
 	public function cart_insert($member_no)
 	{
+		
 		$member = get_ref_single('members', 'MemberNo="' . $member_no . '"', 'data');
 		$IDs = $this->request->getvar('ID');
 		foreach ($IDs as $ID) {

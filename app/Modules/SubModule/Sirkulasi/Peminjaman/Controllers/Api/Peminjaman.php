@@ -282,7 +282,7 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('action', function ($row) {
-				$edit = '<a href="javascript:void(0);" data-href="' . base_url('sirkulasi/pengembalian/do_return/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Kembalikan" class="btn btn-primary return-data"><i class="pe-7s-refresh font-weight-bold"> </i></a>';
+				$edit = '<a href="javascript:void(0);" data-href="' . base_url('sirkulasi-pengembalian/do_return/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Kembalikan" class="btn btn-primary return-data"><i class="pe-7s-refresh font-weight-bold"> </i></a>';
 				$delete = '<a href="javascript:void(0);" data-href="' . base_url('sirkulasi-peminjaman/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
 				return $edit . ' ' . $delete;
 			})
@@ -379,10 +379,14 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 	{
 		$db = db_connect('data');
 		$builder = $db->table('collections col')
-			->select('col.ID, col.ID as action')
+			->select('col.ID,col.Branch_id, col.ID as action')
 			->select('col.NomorBarcode, col.UpdateDate')
 			->select('cat.Title, cat.PublishLocation, cat.Publisher, cat.PublishYear')
 			->join('catalogs cat', 'cat.ID = col.Catalog_id');
+			if(!empty(branch_id())){
+				$builder->where('col.Branch_id', branch_id());
+				
+			}
 
 		if (!empty($member_no)) {
 			$cli = get_ref_table('collectionloanitems', 'Collection_id', 'LoanStatus="Loan"', 'data');

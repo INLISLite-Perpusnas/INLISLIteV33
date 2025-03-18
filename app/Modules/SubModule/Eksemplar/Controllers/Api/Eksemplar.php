@@ -406,7 +406,8 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 	public function get_collectionpartners()
 	{
 		$db = db_connect('data');
-		$query = $db->table('partners')->select('ID as code, Name as name')->get();
+		$query = $db->table('partners')->select('ID as code, Name as name')
+		->where('Branch_id', branch_id())->get();
 		return $this->simpleResponse($query->getResult());
 	}
 
@@ -518,4 +519,155 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 
 		return $this->simpleResponse($response);
 	}
+
+	public function add_partner()
+    {
+        // Set validation rules
+        $this->validation->setRules([
+            'Name' => 'required|min_length[2]',
+        ]);
+
+        // Run validation
+        if (!$this->validation->withRequest($this->request)->run()) {
+            return $this->respond([
+                'success' => false,
+                'message' => $this->validation->getErrors()
+            ], 400);
+        }
+
+        // Prepare data
+        $data = [
+            'Name' => $this->request->getPost('Name'),
+            'Address' => $this->request->getPost('Address'),
+            'Phone' => $this->request->getPost('Phone'),
+            'Fax' => $this->request->getPost('Fax'),
+            'Branch_id' => branch_id()
+        ];
+
+        // Insert to database
+        $db = db_connect('data');
+        $builder = $db->table('partners');
+        $inserted = $builder->insert($data);
+        
+        if ($inserted) {
+            // Get ID of inserted row
+            $insertID = $db->insertID();
+            
+            // Get complete data
+            $result = $db->table('partners')
+                ->where('ID', $insertID)
+                ->get()
+                ->getRow();
+                
+            return $this->respond([
+                'success' => true,
+                'message' => 'Partner berhasil ditambahkan',
+                'data' => $result
+            ]);
+        } else {
+            return $this->respond([
+                'success' => false,
+                'message' => 'Gagal menambahkan partner'
+            ], 500);
+        }
+    }
+
+    public function get_partner($id = null)
+    {
+        if (!$id) {
+            return $this->respond([
+                'success' => false,
+                'message' => 'ID partner tidak ditemukan'
+            ], 400);
+        }
+
+        $db = db_connect('data');
+        $partner = $db->table('partners')
+            ->where('ID', $id)
+            ->get()
+            ->getRow();
+
+        if (!$partner) {
+            return $this->respond([
+                'success' => false,
+                'message' => 'Partner tidak ditemukan'
+            ], 404);
+        }
+
+        return $this->respond([
+            'success' => true,
+            'data' => $partner
+        ]);
+    }
+
+    public function update_partner($id = null)
+    {
+        if (!$id) {
+            return $this->respond([
+                'success' => false,
+                'message' => 'ID partner tidak ditemukan'
+            ], 400);
+        }
+
+        // Set validation rules
+        $this->validation->setRules([
+            'Name' => 'required|min_length[2]',
+        ]);
+
+        // Run validation
+        if (!$this->validation->withRequest($this->request)->run()) {
+            return $this->respond([
+                'success' => false,
+                'message' => $this->validation->getErrors()
+            ], 400);
+        }
+
+        // Check if record exists
+        $db = db_connect('data');
+        $partner = $db->table('partners')
+            ->where('ID', $id)
+            ->get()
+            ->getRow();
+
+        if (!$partner) {
+            return $this->respond([
+                'success' => false,
+                'message' => 'Partner tidak ditemukan'
+            ], 404);
+        }
+
+        // Only admin or users from the same branch can edit
+        if (user()->category != 'admin' && $partner->Branch_id != branch_id()) {
+            return $this->respond([
+                'success' => false,
+                'message' => 'Anda tidak memiliki akses untuk mengubah data ini'
+            ], 403);
+        }
+
+        // Prepare data
+        $data = [
+            'Name' => $this->request->getPost('Name'),
+            'Address' => $this->request->getPost('Address'),
+            'Phone' => $this->request->getPost('Phone'),
+            'Fax' => $this->request->getPost('Fax'),
+            'UpdateBy' => user()->id,
+            'UpdateDate' => date('Y-m-d H:i:s')
+        ];
+
+        // Update record
+        $builder = $db->table('partners');
+        $updated = $builder->where('ID', $id)->update($data);
+
+        if ($updated) {
+            return $this->respond([
+                'success' => true,
+                'message' => 'Partner berhasil diperbarui'
+            ]);
+        } else {
+            return $this->respond([
+                'success' => false,
+                'message' => 'Gagal memperbarui partner'
+            ], 500);
+        }
+    }
 }

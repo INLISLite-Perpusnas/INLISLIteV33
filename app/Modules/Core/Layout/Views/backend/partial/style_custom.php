@@ -111,4 +111,50 @@ div.dataTables_wrapper div.dataTables_paginate {
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
     }
+
+    /* Target the specific sidebar menu elements with higher specificity */
+.app-sidebar .scrollbar-sidebar .vertical-nav-menu > li > a {
+    font-size: 14px !important;
+    padding: 12px 15px !important;
+    height: auto !important;
+    min-height: 45px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Target submenu items */
+.app-sidebar .scrollbar-sidebar .vertical-nav-menu ul > li > a {
+    font-size: 13px !important;
+    padding: 10px 15px 10px 40px !important;
+}
+
+/* Make icons larger */
+.app-sidebar .scrollbar-sidebar .vertical-nav-menu li a i,
+.app-sidebar .scrollbar-sidebar .vertical-nav-menu li a .metismenu-icon,
+.app-sidebar .scrollbar-sidebar .vertical-nav-menu li a .metismenu-state-icon {
+    font-size: 18px !important;
+    width: 28px !important;
+    height: 28px !important;
+    line-height: 28px !important;
+    margin-right: 10px !important;
+}
+
+/* Increase the overall sidebar width */
+.app-sidebar {
+    width: 320px !important;
+}
+
+.app-sidebar.sidebar-shadow {
+    width: 320px !important;
+}
+
+/* Adjust the main content area when sidebar is open */
+.app-main .app-main__outer {
+    margin-left: 320px !important;
+}
+
+/* Adjustments for closed sidebar state */
+.closed-sidebar .app-main__outer {
+    margin-left: 80px !important;
+}
 </style>

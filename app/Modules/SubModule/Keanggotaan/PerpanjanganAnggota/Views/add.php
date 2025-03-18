@@ -4,7 +4,7 @@ $request = service('request');
 
 $db = db_connect($DBGroup = 'data');
 $builder = $db->table('members')->select('ID,Fullname,MemberNo,NoHp,Email,JenisAnggota_id,EndDate,Address');
-$anggotas = $builder->get()->getResult();
+$anggotas = $builder->where('Branch_id',branch_id())->get()->getResult();
 
 ?>
 
