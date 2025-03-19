@@ -1,0 +1,150 @@
+/* Container for BookShelf /*/
+
+#bookshelf {
+	margin-top:50px;
+}
+
+.bs-container {	
+  max-width: 850px;
+  margin: 0 auto;
+  background:#FFFFFF;	
+  overflow:hidden;
+  margin-bottom:0px;
+  text-align:center;  
+}
+
+/* Description for BookShelf /*/
+
+.bs-description{
+   font-family:Tahoma, Helvetica, sans-serif;
+   margin-bottom:18px;
+   margin-top:0px;
+   color:#333333;	
+}
+
+.bs-description h3{
+   font-size:30px;
+   margin-bottom:20px;
+   margin-top:0px;
+   font-family: 'GothamRounded-Medium';
+   font-weight:200;
+   color:#1c1c1c;   	
+}
+
+.bs-description p{
+   font-size:12px;
+   margin-bottom:6px;
+   margin-top:0px; 	
+}
+
+
+/* Shelf /*/
+
+.bs-container .bs-shelf{	
+	position:relative;
+	height:150px;
+	margin-bottom:10%;	
+}
+
+/* Shelf - image /*/
+
+.bs-container .bs-shelf-image {
+  width: 140px;
+  height: 100%;		
+  display: inline-block;  
+  vertical-align:bottom;  
+  position:relative;  
+  margin-top:0px;
+  margin-bottom:0px;
+  margin-left:0px;
+  margin-right:15px;
+  max-width: 100%;
+}
+
+.bs-container .bs-shelf-image:hover {
+	cursor:pointer;
+   
+}
+
+.bs-container .bs-shelf-image:last-child {
+  margin-right:0px; 
+}
+
+.bs-container .bs-shelf-image:nth-child(2) {
+  margin-left:0px; 
+}
+
+.bs-container .bs-shelf-image img {
+  max-width:100%;
+  max-height:100%;
+  box-shadow: 0px 0px 3px #666666;  
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%); 
+}
+
+
+/* Image - textbox /*/
+
+.bs-container .bs-shelf-image .bs-mask {	
+	width:100%;
+	height:100%;	
+	pointer-events: none;
+	overflow:hidden;
+	position:relative;
+}
+
+.bs-container .bs-shelf-image .bs-textbox {
+   position:absolute; 	
+   background:#FFFFFF;
+   width:100%;
+   bottom:-100px;
+   left:50%;  
+    -webkit-transform: translateX(-50%);
+   transform: translateX(-50%); 
+   opacity:1; 
+   padding:5px 0;
+   pointer-events: none;     
+}
+
+.bs-container .bs-shelf-image .bs-textbox p {
+  color:#000000;
+  font-family:Arial, Helvetica, sans-serif;
+  font-size:11px;
+  font-weight:700; 
+  margin:0;
+  line-height:1.5;    
+}
+
+
+
+/* Shelf - background /*/
+
+.bs-container .bs-shelf-background{
+	position:absolute;
+	border:0px solid #FF0000;
+	left:0;
+	bottom:-15px;
+	width:100%;
+	height:35px;
+}
+
+.bs-container .bs-shelf-background .bs-rectangle {
+	    width:100%;
+		height:100%;		
+		border:0px solid #FFF000;
+		position:absolute;
+		top:0;
+		left:0;		
+		-webkit-transform: perspective(100px) rotateX(15deg);
+        -webkit-transform-origin: 50% 100% 0;
+		-ms-transform: perspective(100px) rotateX(15deg);
+        -ms-transform-origin: 50% 100% 0;		
+	     box-shadow: 0px 7px 1px #CCCCCC;			
+		background: -moz-linear-gradient(top,  rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.06) 100%); 
+		background: -webkit-linear-gradient(top,  rgba(0,0,0,0.25) 0%,rgba(0,0,0,0.06) 100%); 
+		background: linear-gradient(to bottom,  rgba(0,0,0,0.25) 0%,rgba(0,0,0,0.06) 100%); 
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#40000000', endColorstr='#0f000000',GradientType=0 );
+}
