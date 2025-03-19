@@ -418,102 +418,102 @@ class Katalog extends \Base\Controllers\BaseResourceController
 		}
 	}
 	public function upload_file()
-	{
-		helper('auth');
-		try {
-			$upload_id = $this->request->getPost('upload_id');
-			$upload_ref_id = $this->request->getPost('upload_ref_id');
-			$upload_field = $this->request->getPost('upload_field');
+{
+    helper('auth');
+    try {
+        $upload_id = $this->request->getPost('upload_id');
+        $upload_ref_id = $this->request->getPost('upload_ref_id');
+        $upload_field = $this->request->getPost('upload_field');
 
-			$files = (array) $this->request->getPost('upload_file');
-			if (count($files)) {
-				$insertData = [];
-				$updateData = [];
-				foreach ($files as $uuid => $name) {
-					if (file_exists($this->uploadPath . $name)) {
-						$file = new File($this->uploadPath . $name);
-						$newFileName = $file->getRandomName();
+        $files = (array) $this->request->getPost('upload_file');
+        if (count($files)) {
+            $insertData = [];
+            $updateData = [];
+            foreach ($files as $uuid => $name) {
+                if (file_exists($this->uploadPath . $name)) {
+                    $file = new File($this->uploadPath . $name);
+                    $newFileName = $file->getRandomName();
 
-						// Move the file to the module path
-						$file->move($this->modulePath, $newFileName);
+                    // Move the file to the module path
+                    $file->move($this->modulePath, $newFileName);
 
-						// Check if the file is a PDF
-						if (strtolower($file->getExtension()) === 'pdf') {
-							// Create an instance of the Encryption class
-							$encryption = new \App\Libraries\Encryption();
+                    // Check if the file is a PDF
+                    if (strtolower($file->getExtension()) === 'pdf') {
+                        // Create an instance of the Encryption class
+                        $encryption = new \App\Libraries\Encryption();
 
-							// Path to the moved file
-							$filePath = $this->modulePath . $newFileName;
+                        // Path to the moved file
+                        $filePath = $this->modulePath . $newFileName;
 
-							// Path for the encrypted file
-							$encryptedFilePath = $this->modulePath . 'encrypted_' . $newFileName;
+                        // Path for the encrypted file
+                        $encryptedFilePath = $this->modulePath . 'encrypted_' . $newFileName;
 
-							// Encrypt the file
-							$encryption->encryptFile($filePath, $encryptedFilePath);
+                        // Encrypt the file
+                        $encryption->encryptFile($filePath, $encryptedFilePath);
 
-							// Delete the original unencrypted file
-							unlink($filePath);
+                        // Delete the original unencrypted file
+                        unlink($filePath);
 
-							// Update the filename to the encrypted version
-							$newFileName = 'encrypted_' . $newFileName;
-						}
+                        // Update the filename to the encrypted version
+                        $newFileName = 'encrypted_' . $newFileName;
+                    }
 
-						if (!empty($upload_id)) {
-							$updateData = [
-								$upload_field => $newFileName,
-								'Catalog_id' => $upload_ref_id,
-								'UpdateDate' => date('Y-m-d H:i:s'),
-							];
-						} else {
-							$data = [
-								$upload_field => $newFileName,
-								'Catalog_id' => $upload_ref_id,
-								'UpdateDate' => date('Y-m-d H:i:s'),
-							];
-							$insertData[] = $data;
-						}
-					}
-				}
+                    if (!empty($upload_id)) {
+                        $updateData = [
+                            $upload_field => $newFileName,
+                            'Catalog_id' => $upload_ref_id,
+                            'UpdateDate' => date('Y-m-d H:i:s'),
+                        ];
+                    } else {
+                        $data = [
+                            $upload_field => $newFileName,
+                            'Catalog_id' => $upload_ref_id,
+                            'UpdateDate' => date('Y-m-d H:i:s'),
+                        ];
+                        $insertData[] = $data;
+                    }
+                }
+            }
 
-				if (!empty($updateData)) {
-					$upsertData = $this->fileModel->update($upload_id, $updateData);
-				}
+            if (!empty($updateData)) {
+                $upsertData = $this->fileModel->update($upload_id, $updateData);
+            }
 
-				if (!empty($insertData)) {
-					$upsertData = $this->fileModel->insertBatch($insertData);
-				}
+            if (!empty($insertData)) {
+                $upsertData = $this->fileModel->insertBatch($insertData);
+            }
 
-				if ($upsertData) {
-					set_message('toastr_msg', 'File Konten Digital berhasil diupload');
-					set_message('toastr_type', 'success');
+            if ($upsertData) {
+                set_message('toastr_msg', 'File Konten Digital berhasil diupload');
+                set_message('toastr_type', 'success');
 
-					return $this->respondCreated([
-						'status'   => 201,
-						'error'    => false,
-						'messages' => ['success' => 'File Konten Digital berhasil diupload']
-					]);
-				} else {
-					set_message('toastr_msg', 'File Konten Digital gagal diupload');
-					set_message('toastr_type', 'warning');
+                return $this->respondCreated([
+                    'status'   => 201,
+                    'error'    => false,
+                    'messages' => ['success' => 'File Konten Digital berhasil diupload']
+                ]);
+            } else {
+                set_message('toastr_msg', 'File Konten Digital gagal diupload');
+                set_message('toastr_type', 'warning');
 
-					return $this->respond([
-						'status'   => 400,
-						'error'    => true,
-						'messages' => ['error' => 'File Konten Digital gagal diupload']
-					]);
-				}
-			}
-		} catch (\Exception $e) {
-			set_message('toastr_msg', 'Terjadi kesalahan: ' . $e->getMessage());
-			set_message('toastr_type', 'error');
+                return $this->respond([
+                    'status'   => 400,
+                    'error'    => true,
+                    'messages' => ['error' => 'File Konten Digital gagal diupload']
+                ]);
+            }
+        }
+    } catch (\Exception $e) {
+        set_message('toastr_msg', 'Terjadi kesalahan: ' . $e->getMessage());
+        set_message('toastr_type', 'error');
 
-			return $this->respond([
-				'status'   => 500,
-				'error'    => true,
-				'messages' => ['error' => 'Terjadi kesalahan: ' . $e->getMessage()]
-			]);
-		}
-	}
+        return $this->respond([
+            'status'   => 500,
+            'error'    => true,
+            'messages' => ['error' => 'Terjadi kesalahan: ' . $e->getMessage()]
+        ]);
+    }
+}
 
 	public function upload_fileold()
 	{
@@ -589,7 +589,6 @@ class Katalog extends \Base\Controllers\BaseResourceController
 			]);
 		}
 	}
-
 
 	public function view_decrypted($ID)
     {

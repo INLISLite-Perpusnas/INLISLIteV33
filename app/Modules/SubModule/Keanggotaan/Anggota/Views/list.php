@@ -290,19 +290,7 @@ if (is_member('sa_kabkot')) {
 				});
 			},
 			"initComplete": function(settings, json) {
-				// var $searchInput = $('div.dataTables_filter input');
-				// $searchInput.unbind();
-				// $searchInput.bind('keyup', function(e) {
-				// 	if(e.keyCode == 13){
-				// 		if(this.value.length == 0){
-				// 			t.search('').draw();
-				// 		}
-
-				// 		if(this.value.length >= 3){
-				// 			t.search( this.value ).draw();
-				// 		}
-				// 	} 
-				// });
+				
 			}
 		});
 	});

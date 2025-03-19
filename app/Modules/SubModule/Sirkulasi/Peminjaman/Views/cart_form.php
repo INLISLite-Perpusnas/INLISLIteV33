@@ -1,5 +1,5 @@
 <?php
-$collection_loan = get_ref_single('collectionloans', 'ID IS NOT NULL', 'data');
+$collection_loan = get_ref_single('collectionloans', 'ID IS NOT NULL','data');
 $increment = ((int) substr($collection_loan->ID, -5)) + 1;
 $collection_loan_id = get_pad_number($increment, date('ymd'), 5);
 ?>

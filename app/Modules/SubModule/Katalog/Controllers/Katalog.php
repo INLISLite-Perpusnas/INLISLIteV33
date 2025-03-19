@@ -986,6 +986,4 @@ class Katalog extends \Base\Controllers\BaseController
 
         return $this->response->setBody($content);
     }
-
-	
 }

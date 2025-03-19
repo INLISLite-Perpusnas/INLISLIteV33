@@ -241,6 +241,9 @@ class Pengembalian extends \Base\Controllers\BaseResourceController
 			->join('collectionloanitems cli', 'cli.Collection_id = col.ID')
 			->join('members m', 'm.ID = cli.member_id')
 			->where('cli.LoanStatus', 'Loan');
+			if(!empty(branch_id())) {
+				$builder->where('col.Branch_id', branch_id());
+			}
 
 		$cart_cli_arr = array();
 		$carts = get_cart_return();

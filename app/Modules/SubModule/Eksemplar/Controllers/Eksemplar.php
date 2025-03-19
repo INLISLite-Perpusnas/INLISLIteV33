@@ -480,6 +480,7 @@ class Eksemplar extends \Base\Controllers\BaseController
 		}
 	}
 
+	
 	public function print_label()
 	{
 		helper('thumbnail');
@@ -493,6 +494,7 @@ class Eksemplar extends \Base\Controllers\BaseController
 			$template = $post['eksemplar_tpl'];
 			$eksemplar_ids = $post['eksemplar_ids'];
 			$eksemplar_ids_arr = explode(',', $eksemplar_ids);
+		
 
 			$db = db_connect('data');
 			$builder = $db->table('collections as a')
@@ -678,7 +680,7 @@ class Eksemplar extends \Base\Controllers\BaseController
 			
 			set_message('toastr_msg', 'Eksemplar berhasil dipulihkan');
 			set_message('toastr_type', 'success');
-			return redirect()->to(base_url('eksemplar/karantina'));
+			return redirect()->to(base_url('eksemplar'));
 			
 		} catch (\Exception $e) {
 			set_message('toastr_msg', 'plih item terlebih dahulu');

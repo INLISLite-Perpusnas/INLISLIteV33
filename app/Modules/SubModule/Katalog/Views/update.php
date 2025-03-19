@@ -1,6 +1,16 @@
 <?php
 $request = service('request');
 $slug = $request->getGet('slug') ?? 'katalog_edit';
+$actions = array(
+	'cetak-label-a4-1' => 'Cetak Label A4-1 (Barcode + No. Panggil)',
+	'cetak-label-a4-2' => 'Cetak Label A4-2 (Barcode + No. Panggil)',
+	'cetak-label-a4-3' => 'Cetak Label A4-3 (Barcode + No. Panggil + 1 Warna)',
+	'cetak-label-a4-4' => 'Cetak Label A4-4 (Barcode + No. Panggil + 1 Warna)',
+	// 'cetak-label-a4-5' => 'Cetak Label A4-4 (Barcode + No. Panggil + 1 Warna)',
+	// 'cetak-label-a4-5' => 'Cetak Label A4-4 (Barcode + No. Panggil + 1 Warna)',
+	'tampil-opac' => 'Tampilkan di Opac',
+	'karantina-eksemplar' => 'Karantina Eksemplar',
+);
 ?>
 
 <?= $this->extend('App\Views\layout\main'); ?>
@@ -58,45 +68,7 @@ $slug = $request->getGet('slug') ?? 'katalog_edit';
 
 <?= $this->section('script'); ?>
 <?= $this->include('Katalog\Views\add_script'); ?>
-<script>
-	$(document).ready(function() {
-		bsCustomFileInput.init();
 
-		//Submit pendaftaran tahap tiga
-		$('#formUploadBerkas').on('submit', function(e) {
-			e.preventDefault();
-
-			$.ajax({
-				url: "<?php echo base_url('datapendaftaran/saveTransfer') ?>",
-				method: "POST",
-				data: new FormData(this),
-				contentType: false,
-				cache: false,
-				processData: false,
-				dataType: "JSON",
-				success: function(res) {
-					//Data error 
-
-					//Pendaftaran tahap tiga sukses
-					if (res.success) {
-						Swal.fire({
-							position: 'top-end',
-							icon: 'success',
-							title: 'Upload Transfer berhasil!',
-							showConfirmButton: false,
-							timer: 1500
-						});
-						window.location.replace(res.link);
-					}
-
-				}
-
-			});
-
-		});
-	});
-	//-------------------------------------------------------------------
-</script>
 <script>
 	//Preview pas photo yang di upload peserta
 	function previewFile(input) {
@@ -112,93 +84,5 @@ $slug = $request->getGet('slug') ?? 'katalog_edit';
 	//-------------------------------------------------------------------
 </script>
 
-<script>
-var t;
-$(document).ready(function() {
-    t = $('#tbl_data').DataTable({
-        "processing": true,
-        "serverSide": true,
-        "ajax": {
-            "url": '<?php echo site_url('api/eksemplar/datatable/0/' . $catalog->ID) ?>',
-        },
-        "dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
-            "<'row'<'col-md-12'tr>>" +
-            "<'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12 text-right'i>>",
-        "pagingType": "full_numbers",
-        "oLanguage": {
-            "sSearch": "<i class='fa fa-search'></i> _INPUT_",
-            "sLengthMenu": "_MENU_",
-            "oPaginate": {
-                "sNext": "<i class='fa fa-chevron-right'></i>",
-                "sPrevious": "<i class='fa fa-chevron-left'></i>",
-                "sLast": "<i class='fa fa-chevron-double-right'></i>",
-                "sFirst": "<i class='fa fa-chevron-double-left'></i>",
-            }
-        },
-        "columns": [{
-                data: 'NomorBarcode',
-                className: 'text-left'
-            },
-            {
-                data: 'TanggalPengadaan'
-            },
-            {
-                data: 'NoInduk'
-            },
-            {
-                data: 'Catalog_id'
-            },
-            {
-                data: 'IsOPAC',
-                className: 'text-center',
-                orderable: false
-            },
-            {
-                data: 'ISDRM',
-                className: 'text-center',
-                orderable: false,
-                render: function(data, type, row) {
-                    if (type === 'display') {
-                        if (data == 1) {
-                            return '<span class="badge" style="background-color: #28a745; color: white;">Ya</span>';
-                        } else {
-                            return '<span class="badge" style="background-color: #ffc107; color: black;">Tidak</span>';
-                        }
-                    }
-                    return data;
-                }
-            },
-            {
-                data: 'action',
-                className: 'text-center',
-                orderable: false
-            },
-        ],
-        "order": [
-            [0, "desc"]
-        ],
-        "drawCallback": function(data, type, full, meta) {
-            var api = this.api();
-            var data = api.rows().data();
-            $('[data-toggle="tooltip"]').tooltip();
-        },
-        "initComplete": function(settings, json) {
-            // var $searchInput = $('div.dataTables_filter input');
-            // $searchInput.unbind();
-            // $searchInput.bind('keyup', function(e) {
-            //     if(e.keyCode == 13){
-            //         if(this.value.length == 0){
-            //             t.search('').draw();
-            //         }
-
-            //         if(this.value.length >= 3){
-            //             t.search( this.value ).draw();
-            //         }
-            //     } 
-            // });
-        }
-    });
-});
-</script>
 
 <?= $this->endSection('script'); ?>

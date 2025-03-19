@@ -12,6 +12,8 @@ class Pengembalian extends \Base\Controllers\BaseController
 	public $collectionModel;
 	public $uploadPath;
 	public $modulePath;
+	public $collectionLoanModel;
+	public $collectionLoanItemModel;
 
 	function __construct()
 	{

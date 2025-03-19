@@ -72,6 +72,7 @@ class Perpanjangan extends \Base\Controllers\BaseController
 				'Member_id' => $member->ID,
 				'DateExtend' => date_format($extend_date, "Y/m/d H:i:s"),
 				'DueDateExtend' => date_format($due_date, "Y/m/d H:i:s"),
+				'Branch_id' => branch_id(),
 				'CreateBy' => user_id(),
 				'CreateTerminal' => $this->request->getIPAddress(),
 			);
@@ -93,6 +94,7 @@ class Perpanjangan extends \Base\Controllers\BaseController
 						'Member_id' => $row->options->member->ID,
 						'DateExtend' => date_format($extend_date, "Y/m/d H:i:s"),
 						'DueDateExtend' => date_format($due_date, "Y/m/d H:i:s"),
+						'Branch_id' => branch_id(),
 						'CreateBy' => user_id(),
 						'CreateTerminal' => $this->request->getIPAddress(),
 					);
