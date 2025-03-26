@@ -1,6 +1,6 @@
 <style>
 html {
-	font-size: 90% !important;
+	font-size: 100% !important;
 }
 
 .toggle-group label.toggle-off{

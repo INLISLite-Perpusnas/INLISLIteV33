@@ -1,6 +1,7 @@
 <?php
 $request = service('request');
 helper('menu');
+
 ?>
 <div class="app-sidebar <?= get_parameter('sidebar-cs-class'); ?>">
 	<div class="app-header__logo <?= get_parameter('sidebar-cs-class'); ?>">

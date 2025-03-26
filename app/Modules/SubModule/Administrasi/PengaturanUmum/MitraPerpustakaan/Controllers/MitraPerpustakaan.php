@@ -30,6 +30,15 @@ class MitraPerpustakaan extends \Base\Controllers\BaseController
     }
     public function index()
     {
+        $db=db_connect();
+        $permisson=$db->table('auth_groups_permissions')->where('permission_id', 600)->where('group_id', session()->get('group_id'))->get()->getRow();
+       
+        if (!$permisson) {
+			set_message('toastr_msg', lang('App.permission.not.have'));
+			set_message('toastr_type', 'error');
+			return redirect()->to('/dashboard');
+		}
+
         $this->data['title'] = 'Mitra Perpustakaan';
         echo view('MitraPerpustakaan\Views\list', $this->data);
     }
