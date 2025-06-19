@@ -30,6 +30,7 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 
 	public function index()
 	{
+	
 		if (branch_id() == 0) {
 			set_message('toastr_msg', 'Informasi Branch ID belum ada');
 			set_message('toastr_type', 'info');
@@ -37,6 +38,7 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 		}
 
 		$branch = $this->branchModel->find(branch_id());
+	
 		$this->data['branch'] = $branch;
 		$this->data['title'] = 'Nama Perpustakaan';
 

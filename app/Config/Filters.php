@@ -42,11 +42,12 @@ class Filters extends BaseConfig
             // 'honeypot',
             // 'csrf',
             // 'invalidchars',
-            'session' => ['except' => ['logout*', 'login*', 'home*', 'auth/a/*', 'api/katalog/*', 'api/eksemplar/*','api/sirkulasi-peminjaman/*','api/sirkulasi-pengembalian/*']],
+            'session' => ['except' => ['logout*', 'login*', 'home*', 'auth/a/*', 'api/katalog/*', 'api/eksemplar/*','api/sirkulasi-peminjaman/*','api/sirkulasi-pengembalian/*','opac*']],
             'cors',
             'permissions' => ['except' => [
                 'logout*',
                 'login*',
+                'opac*',
                 'home*',
                 'apply_status*',
                 'dashboard*',

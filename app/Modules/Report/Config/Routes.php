@@ -1,7 +1,7 @@
 <?php if (!isset($routes)) {
 	$routes = \Config\Services::routes(true);
 }
-$routes->group('report', ['namespace' => 'Report\Controllers'], function ($subroutes) {
+$routes->group('home', ['namespace' => 'Report\Controllers'], function ($subroutes) {
 	$subroutes->add('', 'Report::index');
 	$subroutes->add('index', 'Report::index');
 	$subroutes->add('visitor', 'Report::visitor');

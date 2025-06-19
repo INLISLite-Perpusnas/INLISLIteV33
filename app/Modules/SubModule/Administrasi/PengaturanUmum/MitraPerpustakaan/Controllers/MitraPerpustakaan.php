@@ -3,6 +3,7 @@
 namespace MitraPerpustakaan\Controllers;
 
 use \CodeIgniter\Files\File;
+use CodeIgniter\HTTP\RequestInterface;
 
 class MitraPerpustakaan extends \Base\Controllers\BaseController
 {
@@ -11,9 +12,15 @@ class MitraPerpustakaan extends \Base\Controllers\BaseController
     public $mitraperpustakaanModel;
     public $uploadPath;
     public $modulePath;
+    public $authPermissions;
 
     function __construct()
     {
+          // Get the permissions from session
+          $this->authPermissions = session()->get('auth_permissions');
+        
+          // Check if the current method is allowed to be accessed
+          $this->checkMethodAccess();
         $this->mitraperpustakaanModel = new \MitraPerpustakaan\Models\MitraPerpustakaanModel();
         $this->uploadPath = ROOTPATH . 'public/uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/master-mitra-perpustakaan/';
@@ -28,17 +35,24 @@ class MitraPerpustakaan extends \Base\Controllers\BaseController
 
         helper('reference');
     }
+    protected function checkMethodAccess()
+    {
+        // Get the current URI path
+        $currentPath = uri_string();
+     
+        
+        // Check if this path exists in auth_permissions
+        if (!isset($this->authPermissions[$currentPath])) {
+            // Method not allowed - redirect to dashboard
+            return redirect()->to('/dashboard')->with('error', 'You do not have permission to access that page.');
+        }
+    }
     public function index()
     {
-        $db=db_connect();
-        $permisson=$db->table('auth_groups_permissions')->where('permission_id', 600)->where('group_id', session()->get('group_id'))->get()->getRow();
        
-        if (!$permisson) {
-			set_message('toastr_msg', lang('App.permission.not.have'));
-			set_message('toastr_type', 'error');
-			return redirect()->to('/dashboard');
-		}
-
+     
+      
+       
         $this->data['title'] = 'Mitra Perpustakaan';
         echo view('MitraPerpustakaan\Views\list', $this->data);
     }
@@ -52,6 +66,7 @@ class MitraPerpustakaan extends \Base\Controllers\BaseController
         $this->validation->setRule('url', 'URL', 'required');
         if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
             $url = $this->request->getPost('url');
+          
             // Initialize cURL session
             $ch = curl_init($url);
 
@@ -74,6 +89,7 @@ class MitraPerpustakaan extends \Base\Controllers\BaseController
 
             $json = json_decode($json_str, false);
             $rows = $json->data;
+           
 
             $save_data = array();
             $update_data = array();

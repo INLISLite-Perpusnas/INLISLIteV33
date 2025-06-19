@@ -459,7 +459,7 @@ function get_object_array($objects, $field)
 function get_setting_parameter($paramName, $branch = false)
 {
 	$response = '';
-	$tableName = $branch ? 'settingparameters_branchs' : 'settingparameters';
+	$tableName = $branch ? 'settingparameters' : 'settingparameters';
 	$builder = new DataModel($tableName);
 	$query = $builder->where('Name', $paramName);
 

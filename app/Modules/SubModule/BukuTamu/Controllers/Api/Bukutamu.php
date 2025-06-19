@@ -7,6 +7,7 @@ use App\Libraries\DataTable;
 //use Hermawan\DataTables\DataTable;
 
 class BukuTamu extends \Base\Controllers\BaseResourceController
+
 {
 	use ResponseTrait;
 	protected $memberguestModel;
@@ -34,6 +35,7 @@ class BukuTamu extends \Base\Controllers\BaseResourceController
 
 	public function datatable()
 	{
+	
 		$db = db_connect('data');
 		$branch_id = branch_id();
 		$builder = $db->table('memberguesses as a')
