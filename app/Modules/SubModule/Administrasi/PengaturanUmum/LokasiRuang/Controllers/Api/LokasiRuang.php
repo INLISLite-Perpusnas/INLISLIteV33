@@ -23,55 +23,49 @@ class LokasiRuang extends \Base\Controllers\BaseResourceController
 		$this->modulePath = ROOTPATH . 'public/uploads/lokasiruang/';
 		$this->uploadPath = WRITEPATH . 'uploads/';
 
-		if (!file_exists($this->modulePath)) {
-			mkdir($this->modulePath);
-		}
+		
 
 		helper('reference');
 	}
 
 	public function datatable($slug = null)
-	{
-		$db = db_connect('data');
-		$branch_id = user()->branch_id ?? $this->request->getGet('branch_id');
-		$builder = $db->table('locations as a')
-			->select('a.ID, a.ID as action, a.Code, a.Name')
-			->select('a.Description, a.sort, a.active')
-			->select('a.LocationLibrary_id, 0 as exemplar')
-			->select('b.Name as location_library_name, b.Code as location_library_code')
-			->join('location_library as b', 'b.ID = a.LocationLibrary_id')
-			->select('branchs.ID as Branch_id, branchs.Name as Perpustakaan, branchs.Name, branchs.Code, branchs.NPP_Provinsi_id, branchs.NPP_KabKota_id, branchs.NPP_Kecamatan_id, branchs.NPP_Kelurahan_id, branchs.NPP_id')
-			->join('branchs', 'branchs.ID = a.Branch_id', 'left');
-		if (branch_id() > 0) {
-			$builder->where('a.Branch_id', branch_id());
-		}
-		$dataTable = DataTable::of($builder)
-			->addNumbering('no')
-			->edit('Code', function ($row) {
-				$html  = '<b>' . $row->Code . '</b>';
-				return $html;
-			})
-			->edit('location_library_name', function ($row) {
-				$html  =  '<b>' . $row->location_library_code . '</b> ';
-				$html .=  $row->location_library_name;
-				return $html;
-			})
-			->edit('active', function ($row) {
-				$status = $row->active == 1 ? 'Aktif' : 'Non Aktif';
-				$class = $row->active == 1 ? 'success' : 'danger';
-				$html = '<span class="badge badge-' . $class . '  badge-pill">' . $status . '</span>';
-				return $html;
-			})
-			->edit('action', function ($row) {
-				$edit = '<a href="javascript:void(0);" data-href="' . base_url('api-lokasi-ruang/detail/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-				$active = '<a href="' . base_url('lokasi-ruang/apply_status/' . $row->ID . '?field=active&value=1') . '"  data-id="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Active" class="btn btn-success active-data"><i class="pe-7s-check font-weight-bold"> </i> </a>';
-				$inactive = '<a href="' . base_url('lokasi-ruang/apply_status/' . $row->ID . '?field=active&value=0') . '" data-id="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Inactive" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"> </i> </a>';
-				$delete = '<a href="javascript:void(0);" data-href="' . base_url('lokasi-ruang/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
-				return $edit . ' ' . $active . ' ' . $inactive . ' ' . $delete;
-			})
-			->toJson();
-		return $dataTable;
-	}
+{
+    $db = db_connect('data');
+    $branch_id = user()->branch_id ?? $this->request->getGet('branch_id');
+    $builder = $db->table('locations as a')
+        ->select('a.ID, a.ID as action, a.Code, a.Name');
+
+    $builder->select('b.Name as location_library_name, b.Code as location_library_code')
+        ->join('location_library as b', 'b.ID = a.LocationLibrary_id', 'left');
+
+    $builder->select('(SELECT COUNT(*) FROM collections WHERE Location_id = a.ID) as exemplar');
+
+    if ($branch_id) {
+        $builder->where('a.Branch_id', $branch_id);
+    }
+
+    $dataTable = DataTable::of($builder)
+        ->addNumbering('no') // This adds the numbering column
+        ->edit('Code', function ($row) {
+            return '<b>' . $row->Code . '</b>';
+        })
+        ->edit('location_library_name', function ($row) {
+            return $row->location_library_name ?? '';
+        })
+        ->edit('exemplar', function ($row) {
+            return $row->exemplar ?? 0;
+        })
+        ->edit('action', function ($row) {
+            $edit = '<a href="javascript:void(0);" data-href="' . base_url('api-lokasi-ruang/detail/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
+            $active = '<a href="' . base_url('lokasi-ruang/apply_status/' . $row->ID . '?field=active&value=1') . '"  data-id="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Active" class="btn btn-success active-data"><i class="pe-7s-check font-weight-bold"> </i> </a>';
+            $inactive = '<a href="' . base_url('lokasi-ruang/apply_status/' . $row->ID . '?field=active&value=0') . '" data-id="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Inactive" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"> </i> </a>';
+            $delete = '<a href="javascript:void(0);" data-href="' . base_url('lokasi-ruang/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+            return $edit . ' ' . $active . ' ' . $inactive . ' ' . $delete;
+        })
+        ->toJson();
+    
+    return $dataTable;
+}
 
 	public function index()
 	{
@@ -108,6 +102,7 @@ class LokasiRuang extends \Base\Controllers\BaseResourceController
 			'LocationLibrary_id' => $this->request->getPost('LocationLibrary_id'),
 			'Branch_id' => branch_id(),
 		);
+		// dd($save_data);
 
 		$save_data_id = $this->lokasiruangModel->insert($save_data);
 		if ($save_data_id) {
@@ -172,18 +167,28 @@ class LokasiRuang extends \Base\Controllers\BaseResourceController
 	}
 
 	public function check($code = null)
-	{
-		$db = db_connect('data');
-		$builder = $db->table('locations as a')
-			->select('a.ID, a.Code, a.Name')
-			->select('b.Name as LocationLibrary_name, b.Code as LocationLibrary_code')
-			->select('a.Branch_id, c.Name as Branch_name')
-			->join('location_library as b', 'b.ID = a.LocationLibrary_id')
-			->join('branchs as c', 'c.ID = a.Branch_id')
-			->where('a.Code', $code);
+{
+    if (!$code) {
+        return $this->failValidationError('Kode tidak boleh kosong');
+    }
 
-		$data = $builder->get()->getRow();
+    $db = db_connect('data');
 
-		return $this->simpleResponse($data);
-	}
+    $builder = $db->table('locations as a')
+        ->select('a.ID, a.Code, a.Name')
+        ->select('b.Name as LocationLibrary_name, b.Code as LocationLibrary_code')
+        ->select('a.Branch_id, c.Name as Branch_name')
+        ->join('location_library as b', 'b.ID = a.LocationLibrary_id', 'left')
+        ->join('branchs as c', 'c.ID = a.Branch_id', 'left')
+        ->where('a.Code', $code);
+
+    $data = $builder->get()->getRow();
+
+    if (!$data) {
+        return $this->failNotFound('Data tidak ditemukan untuk kode: ' . $code);
+    }
+
+    return $this->respond($data);
+}
+
 }

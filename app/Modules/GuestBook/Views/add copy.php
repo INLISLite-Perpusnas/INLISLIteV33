@@ -352,8 +352,7 @@
 					<span>/</span>
 					<span class="active">Anggota</span>
 				</nav>
-			</div><br>
-			<h2 style="background-color: #28a745; color: #fff; padding: 10px; border-radius: 5px;">Total Kunjungan Hari ini <?=$totalKunjungan ?? '0'?></h2>
+			</div>
 		</div>
 
 		<!-- Navigation Tabs -->
@@ -362,7 +361,7 @@
 				<i class="fas fa-user"></i>
 				<span>Anggota</span>
 			</a>
-			<a href="<?= base_url('buku-tamu/non_anggota') ?>" class="nav-tab">
+			<a href="<?= base_url('non_anggota') ?>" class="nav-tab">
 				<i class="fas fa-user-plus"></i>
 				<span>Bukan Anggota</span>
 			</a>
@@ -370,10 +369,8 @@
 				<i class="fas fa-users"></i>
 				<span>Rombongan</span>
 			</a>
-			
-
 		</div>
-		
+
 		<?php if (empty($member)) : ?>
 			<!-- Search Section -->
 			<div class="search-section">
@@ -485,19 +482,5 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 </script>
-<?php if (session()->getFlashdata('success')) : ?>
-<script>
-	document.addEventListener('DOMContentLoaded', function () {
-		Swal.fire({
-			icon: 'success',
-			title: 'Berhasil!',
-			text: '<?= session()->getFlashdata('success') ?>',
-			showConfirmButton: false,
-			timer: 2000
-		});
-	});
-</script>
-<?php endif; ?>
-
 
 <?= $this->endsection() ?>

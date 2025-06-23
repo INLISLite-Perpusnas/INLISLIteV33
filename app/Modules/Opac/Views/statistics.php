@@ -1,4 +1,4 @@
-<?= $this->extend('Opac\Views\layout') ?>
+<?= $this->extend('App\Views\layout\opac\layout'); ?>
 
 <?= $this->section('content') ?>
 
@@ -88,18 +88,18 @@
                                     <?php 
                                     $maxCount = max(array_column($by_year, 'total'));
                                     foreach (array_slice($by_year, 0, 15) as $year): 
-                                        $percentage = ($year['total'] / $total_catalogs) * 100;
-                                        $barWidth = ($year['total'] / $maxCount) * 100;
+                                        $percentage = ($year->total / $total_catalogs) * 100;
+                                        $barWidth = ($year->total / $maxCount) * 100;
                                     ?>
                                         <tr>
-                                            <td><strong><?= esc($year['PublishYear']) ?></strong></td>
-                                            <td><?= number_format($year['total']) ?></td>
+                                            <td><strong><?= esc($year->PublishYear) ?></strong></td>
+                                            <td><?= number_format($year->total) ?></td>
                                             <td><?= number_format($percentage, 1) ?>%</td>
                                             <td>
                                                 <div class="progress" style="height: 20px;">
                                                     <div class="progress-bar bg-primary" 
                                                          style="width: <?= $barWidth ?>%"
-                                                         title="<?= $year['total'] ?> katalog">
+                                                         title="<?= $year->total ?> katalog">
                                                     </div>
                                                 </div>
                                             </td>
@@ -142,13 +142,13 @@
                             <?php 
                             $colors = ['primary', 'success', 'info', 'warning', 'danger', 'secondary'];
                             foreach ($by_language as $index => $language): 
-                                $percentage = ($language['total'] / $total_catalogs) * 100;
+                                $percentage = ($language->total / $total_catalogs) * 100;
                                 $color = $colors[$index % count($colors)];
                             ?>
                                 <div class="col-12 mb-3">
                                     <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <span class="fw-bold"><?= esc($language['Languages']) ?></span>
-                                        <span class="badge bg-<?= $color ?>"><?= number_format($language['total']) ?></span>
+                                        <span class="fw-bold"><?= esc($language->Languages) ?></span>
+                                        <span class="badge bg-<?= $color ?>"><?= number_format($language->total) ?></span>
                                     </div>
                                     <div class="progress" style="height: 25px;">
                                         <div class="progress-bar bg-<?= $color ?>" 
@@ -183,20 +183,20 @@
                     <?php if (!empty($by_publisher)): ?>
                         <div class="row">
                             <?php 
-                            $maxPublisherCount = $by_publisher[0]['total'] ?? 1;
+                            $maxPublisherCount = $by_publisher->total ?? 1;
                             foreach ($by_publisher as $index => $publisher): 
-                                $percentage = ($publisher['total'] / $maxPublisherCount) * 100;
+                                $percentage = ($publisher->total / $maxPublisherCount) * 100;
                             ?>
                                 <div class="col-md-6 mb-3">
                                     <div class="card border-0 bg-light">
                                         <div class="card-body py-2">
                                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <h6 class="mb-0 text-truncate" title="<?= esc($publisher['Publisher']) ?>">
+                                                <h6 class="mb-0 text-truncate" title="<?= esc($publisher->Publisher) ?>">
                                                     <span class="badge bg-info me-2">#<?= $index + 1 ?></span>
-                                                    <?= esc(substr($publisher['Publisher'], 0, 30)) ?>
-                                                    <?= strlen($publisher['Publisher']) > 30 ? '...' : '' ?>
+                                                    <?= esc(substr($publisher->Publisher, 0, 30)) ?>
+                                                    <?= strlen($publisher->Publisher) > 30 ? '...' : '' ?>
                                                 </h6>
-                                                <span class="badge bg-primary"><?= number_format($publisher['total']) ?></span>
+                                                <span class="badge bg-primary"><?= number_format($publisher->total) ?></span>
                                             </div>
                                             <div class="progress" style="height: 8px;">
                                                 <div class="progress-bar bg-info" 
@@ -239,7 +239,7 @@
                             </div>
                         </div>
                         <div class="col-6 mb-3">
-                            <h4 class="text-success"><?= !empty($by_year) ? $by_year[0]['PublishYear'] : 'N/A' ?></h4>
+                            <h4 class="text-success"><?= !empty($by_year) ? $by_year[0]->PublishYear : 'N/A' ?></h4>
                             <small class="text-muted">Tahun Terbanyak</small>
                         </div>
                     </div>
@@ -248,11 +248,14 @@
                     
                     <div class="row text-center">
                         <div class="col-6">
-                            <h4 class="text-info"><?= !empty($by_language) ? $by_language[0]['Languages'] : 'N/A' ?></h4>
+                            <h4 class="text-info"><?= !empty($by_language) ? $by_language[0]->Languages : 'N/A' ?></h4>
                             <small class="text-muted">Bahasa Utama</small>
                         </div>
                         <div class="col-6">
-                            <h4 class="text-warning"><?= date('Y') - (!empty($by_year) ? min(array_column($by_year, 'PublishYear')) : date('Y')) ?></h4>
+                           <h4 class="text-warning">
+                            <?= (int)date('Y') - (!empty($by_year) ? (int)min(array_map(fn($item) => $item->PublishYear, $by_year)) : (int)date('Y')) ?>
+                            </h4>
+
                             <small class="text-muted">Rentang Tahun</small>
                         </div>
                     </div>
@@ -305,8 +308,8 @@
                     <?php if (!empty($by_year) && count($by_year) >= 2): ?>
                         <?php 
                         $recentYears = array_slice($by_year, 0, 5);
-                        $oldestCount = end($recentYears)['total'];
-                        $newestCount = $recentYears[0]['total'];
+                        $oldestCount = end($recentYears)->total;
+                        $newestCount = $recentYears[0]->total;
                         $growthRate = (($newestCount - $oldestCount) / max(1, $oldestCount)) * 100;
                         ?>
                         
@@ -320,8 +323,8 @@
                         <div class="mini-chart">
                             <?php foreach (array_reverse($recentYears) as $year): ?>
                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <small><?= $year['PublishYear'] ?></small>
-                                    <small><?= $year['total'] ?></small>
+                                    <small><?= $year->PublishYear ?></small>
+                                    <small><?= $year->total ?></small>
                                 </div>
                             <?php endforeach; ?>
                         </div>
@@ -354,21 +357,21 @@
                                 <?php if (!empty($by_year)): ?>
                                     <li class="mb-2">
                                         <i class="fas fa-check text-success me-2"></i>
-                                        Tahun <?= $by_year[0]['PublishYear'] ?> memiliki koleksi terbanyak (<?= number_format($by_year[0]['total']) ?> item)
+                                        Tahun <?= $by_year[0]->PublishYear ?> memiliki koleksi terbanyak (<?= number_format($by_year[0]->total) ?> item)
                                     </li>
                                 <?php endif; ?>
                                 
                                 <?php if (!empty($by_language)): ?>
                                     <li class="mb-2">
                                         <i class="fas fa-check text-success me-2"></i>
-                                        Bahasa <?= $by_language[0]['Languages'] ?> mendominasi koleksi (<?= number_format(($by_language[0]['total'] / $total_catalogs) * 100, 1) ?>%)
+                                        Bahasa <?= $by_language[0]->Languages ?> mendominasi koleksi (<?= number_format(($by_language[0]->total / $total_catalogs) * 100, 1) ?>%)
                                     </li>
                                 <?php endif; ?>
                                 
                                 <?php if (!empty($by_publisher)): ?>
                                     <li class="mb-2">
                                         <i class="fas fa-check text-success me-2"></i>
-                                        <?= $by_publisher[0]['Publisher'] ?> adalah penerbit terbesar (<?= $by_publisher[0]['total'] ?> buku)
+                                        <?= $by_publisher[0]->Publisher ?> adalah penerbit terbesar (<?= $by_publisher[0]->total ?> buku)
                                     </li>
                                 <?php endif; ?>
                             </ul>

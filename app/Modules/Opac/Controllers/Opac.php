@@ -15,11 +15,14 @@ class Opac extends \Base\Controllers\BaseController
     public $visitorModel;
     public $katalogModel;
     public $fileModel;
+    public $data = [];
+    public $db;
 
     function __construct()
     {
         $this->visitorModel = new \Opac\Models\VisitorModel();
         $this->katalogModel = new \Katalog\Models\KatalogModel();
+        $this->db=\Config\Database::connect('data');
         $this->fileModel = new \Katalog\Models\FileModel();
     }
 
@@ -74,8 +77,13 @@ class Opac extends \Base\Controllers\BaseController
 
     public function detail($id)
     {
-        $file = $this->fileModel->where('Catalog_id', $id)->first();    
-        $ID=$file->ID;
+        $file = $this->fileModel->where('Catalog_id', $id)->first();  
+        if($file!==null){
+             $ID=$file->ID;
+             $this->data['ID'] = $ID;
+             
+        }  
+      
       
         
         $catalog = $this->katalogModel->asArray()->find($id);
@@ -111,7 +119,6 @@ class Opac extends \Base\Controllers\BaseController
        
         $this->data['title'] = 'Detail Katalog - ' . $catalog['Title'];
         $this->data['catalog'] = $catalog;
-        $this->data['ID'] = $ID;
         $this->data['roweksemplar'] = $roweksemplar;
         $this->data['roweksemplar_drm'] = $roweksemplar_drm;
         
@@ -355,14 +362,17 @@ class Opac extends \Base\Controllers\BaseController
             ->findAll();
         
         // Katalog per penerbit (top 10)
-        $this->data['by_publisher'] = $this->katalogModel
-            ->select('Publisher, COUNT(*) as total')
-            ->where('Publisher IS NOT NULL')
-            ->where('Publisher !=', '')
-            ->groupBy('Publisher')
-            ->orderBy('total', 'DESC')
-            ->limit(10)
-            ->findAll();
+        $builder = $this->db->table('catalogs');
+$this->data['by_publisher'] = $builder
+    ->select('Publisher, COUNT(*) as total')
+    ->where('Publisher IS NOT NULL')
+    ->where('Publisher !=', '')
+    ->groupBy('Publisher')
+    ->orderBy('total', 'DESC')
+    ->limit(10)
+    ->get()
+    ->getResult(); // atau getResultArray();
+
         
         return view('Opac\Views\statistics', $this->data);
     }

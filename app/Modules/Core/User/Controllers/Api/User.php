@@ -40,9 +40,9 @@ class User extends \Base\Controllers\BaseResourceController
 		$this->modulePath = ROOTPATH . 'public/uploads/user/';
 		$this->uploadPath = WRITEPATH . 'uploads/';
 
-		if (!file_exists($this->modulePath)) {
-			mkdir($this->modulePath);
-		}
+		// if (!file_exists($this->modulePath)) {
+		// 	mkdir($this->modulePath);
+		// }
 
 		helper('adminigniter');
 		helper('region');

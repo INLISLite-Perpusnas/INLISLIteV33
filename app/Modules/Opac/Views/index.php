@@ -171,7 +171,7 @@
                                 <div class="book-cover-container position-relative">
                                     <?php 
                                     $coverPath = base_url('uploads/katalog/' . ($catalog->CoverURL ?? 'default-cover.jpg'));
-                                    $defaultCover = base_url('uploads/katalog/1726759290_e8330f6fbe57a88d3108.png');
+                                    $defaultCover = base_url('uploads/katalog/default.png');
                                     ?>
                                     <img src="<?= $coverPath ?>" 
                                          style="max-width: 100px; max-height: 150px; width: 100%; object-fit: cover;"
