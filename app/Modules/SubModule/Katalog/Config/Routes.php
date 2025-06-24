@@ -21,6 +21,8 @@ $routes->group('katalog', ['namespace' => 'Katalog\Controllers'], function ($sub
 	$subroutes->add('do_upload', 'Katalog::do_upload');
 	$subroutes->add('do_delete', 'Katalog::do_delete');
 	$subroutes->add('flip', 'Katalog::flip');
+	$subroutes->add('importviews', 'Katalog::importviews');
+
 	$subroutes->add('view_decrypted/(:any)', 'Katalog::view_decrypted/$1');
 	$subroutes->add('get_decrypted_content/(:any)', 'Katalog::get_decrypted_content/$1');
 

@@ -41,6 +41,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 			->select('b.ID as Branch_id, b.Name as Perpustakaan, b.Name, b.Code, b.NPP_Provinsi_id, b.NPP_KabKota_id, b.NPP_Kecamatan_id, b.NPP_Kelurahan_id, b.NPP_id')
 			->join('branchs b', 'b.ID = a.Branch_id', 'inner')
 			->where('a.IsQUARANTINE', $IsQUARANTINE);
+		
 
 		if (user()->category == 'admin') {
 		} elseif (user()->category == 'sa_prov' && user()->branch_id === null) {
@@ -100,15 +101,9 @@ class Katalog extends \Base\Controllers\BaseResourceController
 			})
 			->edit('action', function ($row) {
 				$eksemplar = count_all('collections', 'Catalog_id = ' . $row->ID, 'data');
-				$edit = '<a href="' . base_url('katalog/edit/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Detail" class="btn btn-primary show-data"><i class="pe-7s-look font-weight-bold"> </i></a>';
-				$delete = "";
-				$is_allowed = !is_member('admin') && !is_member('sa_prov') && !is_member('sa_kabkota');
-				if ($is_allowed) {
-					$edit = '<a href="' . base_url('katalog/edit/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-					if (branch_id() > 0 && $eksemplar <= 0) {
-						$delete .= '<a href="javascript:void(0);" data-href="' . base_url('katalog/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
-					}
-				}
+			    $edit = '<a href="' . base_url('katalog/edit/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
+				$delete = '<a href="javascript:void(0);" data-href="' . base_url('katalog/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+				
 
 				return $edit . ' ' . $delete;
 			})

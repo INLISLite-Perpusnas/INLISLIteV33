@@ -11,6 +11,10 @@ class Peminjaman extends \Base\Controllers\BaseController
 	public $peminjamanModel;
 	public $uploadPath;
 	public $modulePath;
+	public $collectionModel;
+	public $collectionLoanModel;
+	public $collectionLoanItemModel;
+	public $cart;
 
 	function __construct()
 	{

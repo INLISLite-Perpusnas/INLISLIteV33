@@ -20,6 +20,10 @@ $routes->group('eksemplar', ['namespace' => 'Eksemplar\Controllers'], function (
 	$subroutes->add('proses_karantina', 'Eksemplar::proses_karantina');
 	$subroutes->add('pulihkan_eksemplar', 'Eksemplar::pulihkan_eksemplar');
 	$subroutes->add('flip', 'Eksemplar::flip');
+	$subroutes->add('importviews', 'Eksemplar::importviews');
+	$subroutes->add('uploadexcel', 'Eksemplar::uploadexcel');
+	$subroutes->add('download-template', 'Eksemplar::downloadTemplate');
+	$subroutes->add('process', 'Eksemplar::processImport');
 
 	//custom
 	$subroutes->add('print_label', 'Eksemplar::print_label');

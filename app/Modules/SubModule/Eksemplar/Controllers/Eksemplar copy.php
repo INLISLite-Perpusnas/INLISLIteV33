@@ -784,7 +784,6 @@ class Eksemplar extends \Base\Controllers\BaseController
             $spreadsheet = $reader->load($filePath);
             $worksheet = $spreadsheet->getActiveSheet();
             $rows = $worksheet->toArray();
-         
             
             // Remove header row
             $header = array_shift($rows);
@@ -831,13 +830,12 @@ class Eksemplar extends \Base\Controllers\BaseController
 				
                     // Parse row data
                     $catalogData = $this->parseCatalogData($row, $header);
-                 
 				
                     $collectionsData = $this->parseCollectionsData($row, $header);
-                  
-                 
-                     $marcFields = $this->generateBasicMarcFields($catalogData); // Generate basic MARC fields
-                
+					dd($collectionsData);
+                    $marcFields = $this->parseMarcFields($row, $header);
+					dd($marcFields);
+                    
                     // Insert catalog
                     $catalogId = $this->insertCatalog($catalogData);
                     
@@ -848,7 +846,7 @@ class Eksemplar extends \Base\Controllers\BaseController
                     
                     // Insert collections
                     if (!empty($collectionsData)) {
-                       $this->insertCollections($catalogId, [$collectionsData]);
+                        $this->insertCollections($catalogId, $collectionsData);
                     }
                     
                     $successCount++;
@@ -877,242 +875,23 @@ class Eksemplar extends \Base\Controllers\BaseController
             throw $e;
         }
     }
-
-	 private function generateBasicMarcFields($catalogData)
-    {
-        $marcFields = [];
-        $sequence = 1;
+	private function getValue($row, $headerMap, $columnName, $default = '')
+{
+    // Cek apakah column name ada di header mapping
+    if (isset($headerMap[$columnName])) {
+        // Ambil index column dari header mapping
+        $columnIndex = $headerMap[$columnName];
         
-        // 001 - Control Number
-        if (!empty($catalogData['ControlNumber'])) {
-            $marcFields[] = [
-                'Tag' => '001',
-                'Indicator1' => '#',
-                'Indicator2' => '#',
-                'Value' => $catalogData['ControlNumber'],
-                'Sequence' => $sequence++,
-                'CreateBy' => user()->id ?? 1,
-                'CreateDate' => date('Y-m-d H:i:s'),
-                'CreateTerminal' => $this->request->getIPAddress(),
-                'Branch_id' => user()->branch_id ?? 1,
-                'active' => 1
-            ];
-        }
+        // Ambil value dari row berdasarkan index
+        $value = $row[$columnIndex] ?? $default;
         
-        // 005 - Date and Time of Latest Transaction
-        $marcFields[] = [
-            'Tag' => '005',
-            'Indicator1' => '#',
-            'Indicator2' => '#',
-            'Value' => date('YmdHis'),
-            'Sequence' => $sequence++,
-            'CreateBy' => user()->id ?? 1,
-            'CreateDate' => date('Y-m-d H:i:s'),
-            'CreateTerminal' => $this->request->getIPAddress(),
-            'Branch_id' => user()->branch_id ?? 1,
-            'active' => 1
-        ];
-        
-        // 020 - ISBN
-        if (!empty($catalogData['ISBN'])) {
-            $marcFields[] = [
-                'Tag' => '020',
-                'Indicator1' => '#',
-                'Indicator2' => '#',
-                'Value' => '$a ' . $catalogData['ISBN'],
-                'Sequence' => $sequence++,
-                'CreateBy' => user()->id ?? 1,
-                'CreateDate' => date('Y-m-d H:i:s'),
-                'CreateTerminal' => $this->request->getIPAddress(),
-                'Branch_id' => user()->branch_id ?? 1,
-                'active' => 1
-            ];
-        }
-        
-        // 082 - Dewey Decimal Classification
-        if (!empty($catalogData['DeweyNo'])) {
-            $marcFields[] = [
-                'Tag' => '082',
-                'Indicator1' => '#',
-                'Indicator2' => '#',
-                'Value' => '$a ' . $catalogData['DeweyNo'],
-                'Sequence' => $sequence++,
-                'CreateBy' => user()->id ?? 1,
-                'CreateDate' => date('Y-m-d H:i:s'),
-                'CreateTerminal' => $this->request->getIPAddress(),
-                'Branch_id' => user()->branch_id ?? 1,
-                'active' => 1
-            ];
-        }
-        
-        // 100 - Main Entry Personal Name
-        if (!empty($catalogData['Author'])) {
-            $marcFields[] = [
-                'Tag' => '100',
-                'Indicator1' => '1',
-                'Indicator2' => '#',
-                'Value' => '$a ' . $catalogData['Author'],
-                'Sequence' => $sequence++,
-                'CreateBy' => user()->id ?? 1,
-                'CreateDate' => date('Y-m-d H:i:s'),
-                'CreateTerminal' => $this->request->getIPAddress(),
-                'Branch_id' => user()->branch_id ?? 1,
-                'active' => 1
-            ];
-        }
-        
-        // 245 - Title Statement
-        if (!empty($catalogData['Title'])) {
-            $titleValue = '$a ' . $catalogData['Title'];
-            if (!empty($catalogData['Author'])) {
-                $titleValue .= ' /$c ' . $catalogData['Author'];
-            }
-            
-            $marcFields[] = [
-                'Tag' => '245',
-                'Indicator1' => '1',
-                'Indicator2' => '0',
-                'Value' => $titleValue,
-                'Sequence' => $sequence++,
-                'CreateBy' => user()->id ?? 1,
-                'CreateDate' => date('Y-m-d H:i:s'),
-                'CreateTerminal' => $this->request->getIPAddress(),
-                'Branch_id' => user()->branch_id ?? 1,
-                'active' => 1
-            ];
-        }
-        
-        // 250 - Edition Statement
-        if (!empty($catalogData['Edition'])) {
-            $marcFields[] = [
-                'Tag' => '250',
-                'Indicator1' => '#',
-                'Indicator2' => '#',
-                'Value' => '$a ' . $catalogData['Edition'],
-                'Sequence' => $sequence++,
-                'CreateBy' => user()->id ?? 1,
-                'CreateDate' => date('Y-m-d H:i:s'),
-                'CreateTerminal' => $this->request->getIPAddress(),
-                'Branch_id' => user()->branch_id ?? 1,
-                'active' => 1
-            ];
-        }
-        
-        // 260 - Publication, Distribution, etc.
-        if (!empty($catalogData['PublishLocation']) || !empty($catalogData['Publisher']) || !empty($catalogData['PublishYear'])) {
-            $pubValue = '';
-            if (!empty($catalogData['PublishLocation'])) {
-                $pubValue .= '$a ' . $catalogData['PublishLocation'] . ' :';
-            }
-            if (!empty($catalogData['Publisher'])) {
-                $pubValue .= '$b ' . $catalogData['Publisher'] . ',';
-            }
-            if (!empty($catalogData['PublishYear'])) {
-                $pubValue .= '$c ' . $catalogData['PublishYear'];
-            }
-            
-            if (!empty($pubValue)) {
-                $marcFields[] = [
-                    'Tag' => '260',
-                    'Indicator1' => '#',
-                    'Indicator2' => '#',
-                    'Value' => $pubValue,
-                    'Sequence' => $sequence++,
-                    'CreateBy' => user()->id ?? 1,
-                    'CreateDate' => date('Y-m-d H:i:s'),
-                    'CreateTerminal' => $this->request->getIPAddress(),
-                    'Branch_id' => user()->branch_id ?? 1,
-                    'active' => 1
-                ];
-            }
-        }
-        
-        // 300 - Physical Description
-        if (!empty($catalogData['PhysicalDescription'])) {
-            $marcFields[] = [
-                'Tag' => '300',
-                'Indicator1' => '#',
-                'Indicator2' => '#',
-                'Value' => '$a ' . $catalogData['PhysicalDescription'],
-                'Sequence' => $sequence++,
-                'CreateBy' => user()->id ?? 1,
-                'CreateDate' => date('Y-m-d H:i:s'),
-                'CreateTerminal' => $this->request->getIPAddress(),
-                'Branch_id' => user()->branch_id ?? 1,
-                'active' => 1
-            ];
-        }
-        
-        // 650 - Subject Added Entry
-        if (!empty($catalogData['Subject'])) {
-            $subjects = explode(';', $catalogData['Subject']);
-            foreach ($subjects as $subject) {
-                $subject = trim($subject);
-                if (!empty($subject)) {
-                    $marcFields[] = [
-                        'Tag' => '650',
-                        'Indicator1' => '#',
-                        'Indicator2' => '#',
-                        'Value' => '$a ' . $subject,
-                        'Sequence' => $sequence++,
-                        'CreateBy' => user()->id ?? 1,
-                        'CreateDate' => date('Y-m-d H:i:s'),
-                        'CreateTerminal' => $this->request->getIPAddress(),
-                        'Branch_id' => user()->branch_id ?? 1,
-                        'active' => 1
-                    ];
-                }
-            }
-        }
-        
-        return $marcFields;
+        // Trim whitespace jika value adalah string
+        return is_string($value) ? trim($value) : $value;
     }
-    private function getValue($row, $headerMap, $columnName, $default = '')
-    {
-        try {
-            // Pastikan $headerMap adalah array
-            if (!is_array($headerMap)) {
-                log_message('error', 'headerMap is not an array: ' . gettype($headerMap));
-                return $default;
-            }
-            
-            // Pastikan $row adalah array
-            if (!is_array($row)) {
-                log_message('error', 'row is not an array: ' . gettype($row));
-                return $default;
-            }
-            
-            // Cek apakah column name ada di header mapping
-            if (isset($headerMap[$columnName])) {
-                $columnIndex = $headerMap[$columnName];
-                
-                // Pastikan index adalah integer
-                if (!is_numeric($columnIndex)) {
-                    log_message('error', "Column index is not numeric for {$columnName}: " . gettype($columnIndex));
-                    return $default;
-                }
-                
-                $columnIndex = (int)$columnIndex;
-                
-                // Pastikan index ada di row
-                if (!isset($row[$columnIndex])) {
-                    log_message('debug', "Column index {$columnIndex} not found in row for {$columnName}");
-                    return $default;
-                }
-                
-                $value = $row[$columnIndex];
-                
-                // Trim whitespace jika value adalah string
-                return is_string($value) ? trim($value) : $value;
-            }
-            
-            return $default;
-            
-        } catch (\Exception $e) {
-            log_message('error', "Error in getValue for {$columnName}: " . $e->getMessage());
-            return $default;
-        }
-    }
+    
+    // Return default jika column tidak ditemukan
+    return $default;
+}
     
     private function parseCatalogData($row, $header)
     {
@@ -1227,160 +1006,50 @@ class Eksemplar extends \Base\Controllers\BaseController
             throw new \Exception('Failed to generate ControlNumber: ' . $e->getMessage());
         }
 	}
-	private function parsePartnerId($namaSumber)
+    private function parseCollectionsData($row, $header)
     {
-        // Default partner atau buat logic untuk mapping nama sumber ke partner_id
-        return 1;
-    }
-    
-    private function parseLocationId($kodeLokasi)
-    {
-        // Mapping kode lokasi ruang ke location_id
-        $mapping = [
-            '0101' => 466,
-            '0102' => 467,
-            '0103' => 468,
-            '0104' => 469
-        ];
+        $collections = [];
+        $headerMap = array_flip($header);
         
-        return $mapping[$kodeLokasi] ?? 466;
-    }
-    
-    private function parseRuleId($akses)
-    {
-        // Mapping akses ke rule_id
-        $mapping = [
-            'Dapat dipinjam' => 1,
-            'Tidak dapat dipinjam' => 2,
-            'Referensi' => 3
-        ];
-        
-        return $mapping[$akses] ?? 1;
-    }
-    
-    private function parseCategoryId($kategori)
-    {
-        // Mapping kategori ke category_id
-        $mapping = [
-            'Koleksi Umum' => 7,
-            'Koleksi Referensi' => 8,
-            'Koleksi Langka' => 9
-        ];
-        
-        return $mapping[$kategori] ?? 7;
-    }
-    
-    private function parseMediaId($media)
-    {
-        // Mapping media ke media_id
-        $mapping = [
-            'Buku' => 2,
-            'CD/DVD' => 3,
-            'Majalah' => 4,
-            'Jurnal' => 5,
-            'E-Book' => 6
-        ];
-        
-        return $mapping[$media] ?? 2;
-    }
-    
-    private function parseSourceId($jenisSumber)
-    {
-        // Mapping jenis sumber ke source_id
-        $mapping = [
-            'Pembelian' => 1,
-            'Hadiah/Hibah' => 2,
-            'Tukar Menukar' => 3,
-            'Deposit' => 4
-        ];
-        
-        return $mapping[$jenisSumber] ?? 1;
-    }
-    
-    private function parseStatusId($ketersediaan)
-    {
-        // Mapping ketersediaan ke status_id
-        $mapping = [
-            'Tersedia' => 1,
-            'Dipinjam' => 2,
-            'Hilang' => 3,
-            'Rusak' => 4,
-            'Dalam Perbaikan' => 5
-        ];
-        
-        return $mapping[$ketersediaan] ?? 1;
-    }
-    
-    private function parseLocationLibraryId($kodeLokasiPerpustakaan)
-    {
-        // Mapping kode lokasi perpustakaan ke location_library_id
-        $mapping = [
-            'Pusat' => 1,
-            'Cabang1' => 2,
-            'Cabang2' => 3
-        ];
-        
-        return $mapping[$kodeLokasiPerpustakaan] ?? 1;
-    }
-	    private function parseDate($dateString)
-    {
-        if (empty($dateString)) {
-            return date('Y-m-d H:i:s');
-        }
-        
-        // Try various date formats
-        $formats = ['d-m-Y', 'Y-m-d', 'd/m/Y', 'Y/m/d'];
-        
-        foreach ($formats as $format) {
-            $date = \DateTime::createFromFormat($format, $dateString);
-            if ($date !== false) {
-                return $date->format('Y-m-d H:i:s');
+        if (isset($headerMap['Collections'])) {
+            $collectionsText = $row[$headerMap['Collections']] ?? '';
+            
+            if (!empty($collectionsText)) {
+                // Parse collections data (format: barcode1|noinduk1|price1;barcode2|noinduk2|price2)
+                $collectionLines = explode(';', $collectionsText);
+                
+                foreach ($collectionLines as $line) {
+                    if (empty(trim($line))) continue;
+                    
+                    $parts = explode('|', $line);
+                    if (count($parts) >= 2) {
+                        $collections[] = [
+                            'NomorBarcode' => trim($parts[0]),
+                            'NoInduk' => trim($parts[1]),
+                            'Price' => isset($parts[2]) ? (int)$parts[2] : 0,
+                            'Currency' => 'IDR',
+                            'RFID' => trim($parts[0]), // Same as barcode
+                            'PriceType' => 'Per eksemplar',
+                            'TanggalPengadaan' => date('Y-m-d H:i:s'),
+                            'Branch_id' => user()->branch_id ?? 1,
+                            'Partner_id' => 1,
+                            'Location_id' => 466,
+                            'Rule_id' => 1,
+                            'Category_id' => 7,
+                            'Media_id' => 2,
+                            'Source_id' => 1,
+                            'Status_id' => 1,
+                            'Location_Library_id' => 1,
+                            'CreateBy' => user()->id ?? 1,
+                            'CreateDate' => date('Y-m-d H:i:s'),
+                            'CreateTerminal' => $this->request->getIPAddress()
+                        ];
+                    }
+                }
             }
         }
         
-        return date('Y-m-d H:i:s');
-    }
-    private function parseCollectionsData($row, $header)
-    {
-         $headerMap = array_flip($header);
-        
-        // Parse tanggal pengadaan
-        $tglPengadaan = $this->getValue($row, $headerMap, 'TGL_PENGADAAN');
-        $tanggalPengadaan = $this->parseDate($tglPengadaan);
-        
-        $data = [
-            'NomorBarcode' => $this->getValue($row, $headerMap, 'NO_BARCODE'),
-            'NoInduk' => $this->getValue($row, $headerMap, 'NO_INDUK'),
-            'RFID' => $this->getValue($row, $headerMap, 'NO_RFID'),
-            'Currency' => $this->getValue($row, $headerMap, 'MATA_UANG', 'IDR'),
-            'Price' => (int)$this->getValue($row, $headerMap, 'HARGA', 0),
-            'PriceType' => 'Per eksemplar',
-            'TanggalPengadaan' => $tanggalPengadaan,
-            'CallNumber' => $this->getValue($row, $headerMap, 'NOMOR_PANGGIL_EKSEMPLAR'),
-            'Branch_id' => user()->branch_id ?? 1,
-            'Partner_id' => $this->parsePartnerId($this->getValue($row, $headerMap, 'NAMA_SUMBER')),
-            'Location_id' => $this->parseLocationId($this->getValue($row, $headerMap, 'KODE_LOKASI_RUANG')),
-            'Rule_id' => $this->parseRuleId($this->getValue($row, $headerMap, 'AKSES')),
-            'Category_id' => $this->parseCategoryId($this->getValue($row, $headerMap, 'KATEGORI')),
-            'Media_id' => $this->parseMediaId($this->getValue($row, $headerMap, 'MEDIA')),
-            'Source_id' => $this->parseSourceId($this->getValue($row, $headerMap, 'JENIS_SUMBER')),
-            'Status_id' => $this->parseStatusId($this->getValue($row, $headerMap, 'KETERSEDIAAN')),
-            'Location_Library_id' => $this->parseLocationLibraryId($this->getValue($row, $headerMap, 'KODE_LOKASI_PERPUSTAKAAN')),
-            'CreateBy' => user()->id ?? 1,
-            'CreateDate' => date('Y-m-d H:i:s'),
-            'CreateTerminal' => $this->request->getIPAddress()
-        ];
-        
-        // Validasi required fields
-        if (empty($data['NomorBarcode'])) {
-            throw new \Exception('Nomor Barcode tidak boleh kosong');
-        }
-        
-        if (empty($data['NoInduk'])) {
-            throw new \Exception('No Induk tidak boleh kosong');
-        }
-        
-        return $data;
+        return $collections;
     }
     
     private function parseMarcFields($row, $header)
@@ -1453,7 +1122,6 @@ class Eksemplar extends \Base\Controllers\BaseController
     {
         foreach ($collections as $collection) {
             $collection['Catalog_id'] = $catalogId;
-            
             
             // Check if barcode already exists
             $existing = $this->eksemplarModel->where('NomorBarcode', $collection['NomorBarcode'])->first();

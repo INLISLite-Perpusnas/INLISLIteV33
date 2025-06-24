@@ -280,7 +280,7 @@
                     <nav class="main-nav justify-content-end">
                         <ul class="nav-links">
                             <li><a href="<?= base_url('opac') ?>"><i class="fas fa-home me-2"></i>Beranda</a></li>
-                            <li><a href="<?= base_url('opac/search') ?>"><i class="fas fa-search me-2"></i>Pencarian Lanjutan</a></li>
+                            <li><a href="<?= base_url('buku-tamu') ?>"><i class="fas fa-address-book"></i>Buku Tamu</a></li>
                             <li><a href="<?= base_url('opac/browse') ?>"><i class="fas fa-list me-2"></i>Browse</a></li>
                             <li><a href="<?= base_url('opac/statistics') ?>"><i class="fas fa-chart-bar me-2"></i>Statistik</a></li>
                         </ul>

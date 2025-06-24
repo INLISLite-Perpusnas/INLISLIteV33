@@ -6,6 +6,8 @@ use Base\Models\BaseModel;
 use Base\Models\DataModel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use CodeIgniter\API\ResponseTrait;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class Katalog extends \Base\Controllers\BaseController
 {
@@ -18,6 +20,8 @@ class Katalog extends \Base\Controllers\BaseController
 	public $uploadPath;
 	public $modulePath;
 	public $validation;
+	Public $db;
+	public $eksemplarModel;
 
 	function __construct()
 	{
@@ -25,9 +29,11 @@ class Katalog extends \Base\Controllers\BaseController
 		$this->katalogModel = new \Katalog\Models\KatalogModel();
 		$this->katalogRuasModel = new \Katalog\Models\KatalogRuasModel();
 		$this->worksheetModel = new \Katalog\Models\WorksheetModel();
+		$this->eksemplarModel = new \Eksemplar\Models\EksemplarModel();
 		$this->uploadPath = ROOTPATH . 'public/uploads/';
 		$this->modulePath = ROOTPATH . 'public/uploads/katalog/';
 		$this->validation = \Config\Services::validation();
+		  $this->db = \Config\Database::connect();
 
 		if (!file_exists($this->uploadPath)) {
 			mkdir($this->uploadPath);
@@ -172,7 +178,7 @@ class Katalog extends \Base\Controllers\BaseController
 			$Indicator2s = $this->request->getPost('Indicator2');
 			$Values = $this->request->getPost('Value');
 
-			$catalogRuasModel = new DataModel('catalog_ruas', null, 'ID');
+			$katalogRuasModel = new DataModel('catalog_ruas', null, 'ID');
 			$catalogRuasData = [];
 			foreach ($Values as $key => $value) {
 				$items = [];
@@ -205,7 +211,7 @@ class Katalog extends \Base\Controllers\BaseController
 						array_push($catalog_ruas_data, $item);
 					}
 				}
-				$catalogRuasModel->insertBatch($catalog_ruas_data);
+				$katalogRuasModel->insertBatch($catalog_ruas_data);
 
 				$update_data = convert_catalog_ruas($CatalogId);
 				$catalogsModel->update($CatalogId, $update_data);
@@ -986,4 +992,6 @@ class Katalog extends \Base\Controllers\BaseController
 
         return $this->response->setBody($content);
     }
+
+	
 }
