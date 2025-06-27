@@ -65,4 +65,52 @@ class EksemplarModel extends \Base\Models\DataModel
 
         return $db->where($this->table, $id)->delete();
     }
+
+
+     public function getByBarcode($barcode)
+    {
+        return $this->select('
+            collections.*,
+            catalogs.Title,
+            catalogs.Author,
+            catalogs.Publisher,
+            catalogs.ControlNumber
+        ')
+        ->join('catalogs', 'catalogs.ID = collections.Catalog_id', 'left')
+        ->where('collections.NomorBarcode', $barcode)
+        ->first();
+    }
+
+    /**
+     * Get collection with catalog details
+     */
+    public function getWithCatalog($collectionId)
+    {
+        return $this->select('
+            collections.*,
+            catalogs.Title,
+            catalogs.Author,
+            catalogs.Publisher,
+            catalogs.ControlNumber
+        ')
+        ->join('catalogs', 'catalogs.ID = collections.Catalog_id', 'left')
+        ->where('collections.ID', $collectionId)
+        ->first();
+    }
+
+    /**
+     * Check if barcode exists
+     */
+    public function barcodeExists($barcode)
+    {
+        return $this->where('NomorBarcode', $barcode)->countAllResults() > 0;
+    }
+
+    /**
+     * Get all collections for a catalog
+     */
+    public function getByCatalogId($catalogId)
+    {
+        return $this->where('Catalog_id', $catalogId)->findAll();
+    }
 }

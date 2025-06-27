@@ -86,19 +86,15 @@ class JenisAnggota extends \Base\Controllers\BaseController
 
         // Perform the join query
         $query = $db->table('location_library_default')
-            // ->join('location_library', 'location_library.ID = location_library_default.Location_Library_id')
-            // ->where('location_library_default.JenisAnggota_id', $id)
-            // ->select('location_library_default.*, location_library.Name')
+            ->join('location_library', 'location_library.ID = location_library_default.Location_Library_id')
+            ->where('location_library_default.JenisAnggota_id', $id)
+            ->select('location_library_default.*, location_library.Name')
             ->get();
 
         // Fetch the joined data
         $joinedData = $query->getResult();
+       
 
-
-
-
-
-        // $locations=$this->lokasi->findAll();
         $db = db_connect('data');
         $builder = $db->table('collectioncategorysdefault');
         $builder->select('CollectionCategory_id,JenisAnggota_id');
@@ -108,15 +104,13 @@ class JenisAnggota extends \Base\Controllers\BaseController
         $query = $builder->get();
 
         $jenisbahans = $query->getResult();
+       
         $jenisbahanIds = [];
         foreach ($jenisbahans as $jenisbahan) {
-            $jenisbahanIds[] = $jenisbahan->CollectingCategory_id;
+            $jenisbahanIds[] = $jenisbahan->CollectionCategory_id;
         }
 
-        // Dump and die the $locationLibraryIds array
-        // $jenisbahans = $this->lokasi
-        //     ->whereNotIn('ID', $locationLibraryIds)
-        //     ->findAll();
+      
         $JenisAnggota_id = $id;
         $this->data['joinedData'] = $joinedData;
         $this->data['locations'] = $locations;
@@ -158,35 +152,15 @@ class JenisAnggota extends \Base\Controllers\BaseController
 
         // Fetch the joined data
         $joinedData = $query->getResult();
-        // dd($joinedData);
-        $db = db_connect('data');
-        $builder = $db->table('collectioncategorysdefault');
-        $builder->select('CollectionCategory_id,JenisAnggota_id');
-        $builder->where('JenisAnggota_id', $id);
 
+       $CollectionCategorys = $db->table('collectioncategorys')->get()->getResult();
 
-        $query = $builder->get();
-
-        $jenisbahans = $query->getResult();
-        if ($jenisbahans == NULL) {
-            $jenisbahans = $this->jenisbahan->findAll();
-        } else {
-            $jenisbahanIds = [];
-            foreach ($jenisbahans as $jenisbahan) {
-                $jenisbahanIds[] = $jenisbahan->CollectionCategory_id;
-            }
-
-            // Dump and die the $locationLibraryIds array
-            $jenisbahans = $this->jenisbahan
-                ->whereNotIn('ID', $jenisbahanIds)
-                ->findAll();
-        }
         $JenisAnggota_id = $id;
 
         $this->data['joinedData'] = $joinedData;
-        $this->data['jenisbahans'] = $jenisbahans;
+        $this->data['CollectionCategorys'] = $CollectionCategorys;
         $this->data['JenisAnggota_id'] = $JenisAnggota_id;
-
+ 
 
 
         return view('JenisAnggota\Views\defaultbahan', $this->data);

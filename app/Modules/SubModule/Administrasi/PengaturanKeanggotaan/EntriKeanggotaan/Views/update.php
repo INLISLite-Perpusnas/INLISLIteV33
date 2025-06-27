@@ -46,13 +46,13 @@ $slug = $request->getGet('slug');
 				</div>
 				<div class="card-body">
 					<div id="infoMessage"><?= $message ?? '' ?></div> <?= get_message('message') ?>
-					<form id="frm_create" method="post" action="<?= base_url('master-entri-keanggotaan') ?>" onsubmit="return validateForm()">
+					<form id="frm_create" method="post" action="<?= base_url('master-entri-keanggotaan/update_data') ?>" onsubmit="return validateForm()">
 						<div class="form-row">
 							<div class="col-md-12">
 								<div class="position-relative form-group">
 									<label for="alias">Penentuan Nomor Anggota</label>
 									<div>
-										<?php $parameter = get_setting_parameter('TipeNomorAnggota', is_profiling()); ?>
+										<?php $parameter = $TipeNomorAnggota; ?>
 										<div class="form-check">
 											<input class="form-check-input" type="radio" name="TipeNomorAnggota" id="Otomatis" value="Otomatis" <?= ($parameter == "Otomatis") ? 'checked' : '' ?>>
 											<label class="form-check-label" for="simple">
@@ -72,12 +72,13 @@ $slug = $request->getGet('slug');
 
 						<div class="form-row">
 							<label>Tipe Penomoran Anggota</label>
+							<?php $parameter = $TipePenomoranAnggota; ?>
 							<select class="form-control" name="TipePenomoranAnggota" id="TipePenomoranAnggota">
 								<option value="">-- Pilih Tipe Penomoran Anggota --</option>
-								<option value="1">1 (YYMMDD99999)</option>
-								<option value="2">2(YYYYMM99)</option>
-								<option value="3">3(99999L2015)</option>
-								<option value="4">4(NIK)</option>
+								<option value="1" <?= ($parameter == "1") ? 'selected' : '' ?>>1 (YYMMDD99999)</option>
+								<option value="2" <?= ($parameter == "2") ? 'selected' : '' ?>>2(YYYYMM99)</option>
+								<option value="3"	<?= ($parameter == "3") ? 'selected' : '' ?>>3(99999L2015)</option>
+								<option value="4"<?= ($parameter == "4") ? 'selected' : '' ?>>4(NIK)</option>
 							</select>
 						</div>
 
@@ -86,15 +87,15 @@ $slug = $request->getGet('slug');
 								<div class="position-relative form-group">
 									<label for="alias">Cetak Slip Perpanjangan</label>
 									<div>
-										<?php $parameter = get_setting_parameter('IsCetakSlipPeminjaman', is_profiling()); ?>
+										<?php $parameter = $IsCetakSlipPerpanjangan; ?>
 										<div class="form-check">
-											<input class="form-check-input" type="radio" name="IsCetakSlipPeminjaman" id="Otomatis" value="Ya" <?= ($parameter == "Ya") ? 'checked' : '' ?>>
+											<input class="form-check-input" type="radio" name="IsCetakSlipPerpanjangan" id="Otomatis" value="Ya" <?= ($parameter == "Ya") ? 'checked' : '' ?>>
 											<label class="form-check-label" for="simple">
 												Ya
 											</label>
 										</div>
 										<div class="form-check">
-											<input class="form-check-input" type="radio" name="IsCetakSlipPeminjaman" id="Manual" value="Tidak" <?= ($parameter == "Tidak") ? 'checked' : '' ?>>
+											<input class="form-check-input" type="radio" name="IsCetakSlipPerpanjangan" id="Manual" value="Tidak" <?= ($parameter == "Tidak") ? 'checked' : '' ?>>
 											<label class="form-check-label" for="advance">
 												Tidak
 											</label>
@@ -109,7 +110,7 @@ $slug = $request->getGet('slug');
 								<div class="position-relative form-group">
 									<label for="alias">Cetak Slip Pelanggaran</label>
 									<div>
-										<?php $parameter = get_setting_parameter('IsCetakSlipPelanggaran', is_profiling()); ?>
+										<?php $parameter = $IsCetakSlipPelanggaran; ?>
 										<div class="form-check">
 											<input class="form-check-input" type="radio" name="IsCetakSlipPelanggaran" id="Ya" value="Ya" <?= ($parameter == "Ya") ? 'checked' : '' ?>>
 											<label class="form-check-label" for="simple">
@@ -132,7 +133,7 @@ $slug = $request->getGet('slug');
 								<div class="position-relative form-group">
 									<label for="alias">Cetak Slip Pendaftaran</label>
 									<div>
-										<?php $parameter = get_setting_parameter('IsCetakSlipPendaftaran', is_profiling()); ?>
+										<?php $parameter = $IsCetakSlipPendaftaran; ?>
 										<div class="form-check">
 											<input class="form-check-input" type="radio" name="IsCetakSlipPendaftaran" id="Ya" value="Ya" <?= ($parameter == "Ya") ? 'checked' : '' ?>>
 											<label class="form-check-label" for="simple">

@@ -109,19 +109,14 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->section('script'); ?>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- Include SweetAlert2 CSS -->
-
-
-<!-- Include SweetAlert2 JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.1/dist/sweetalert2.min.js"></script>
 
 <script>
-    $(document).ready(function() {
-        $('.dropdown-item').click(function() {
+    $(document).ready(function () {
+        $('.dropdown-item').click(function (e) {
+            e.preventDefault(); // Mencegah reload default <a href="#">
+
             var locationID = $(this).data('location-id');
-            // alert(locationID);
-            var isChecked = $(this).prop('checked');
-            var action = 'save'
             var jenisAnggota = $('#jenis-anggota').val();
 
             $.ajax({
@@ -131,43 +126,39 @@ $slug = $request->getGet('slug') ?? '';
                     Location_Library_id: locationID,
                     JenisAnggota_id: jenisAnggota
                 },
-                success: function(response) {
-                    // Handle the response with SweetAlert2
+                success: function (response) {
                     Swal.fire({
                         icon: 'success',
                         title: 'Success',
-                        text: "berhasil disimpan",
-                        onClose: function() {
-                            // Redirect to the desired URL after the SweetAlert is closed
-                            window.location.href = 'http://localhost:8080/index.php/master-jenis-anggota';
-                        }
-
+                        text: "Berhasil disimpan"
+                    }).then(() => {
+                        location.reload();
                     });
                 },
-                error: function(xhr, textStatus, errorThrown) {
-                    // Handle errors with SweetAlert2
+                error: function (xhr, textStatus, errorThrown) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: 'An error occurred while processing your request.',
+                        text: 'Terjadi kesalahan saat menyimpan data.',
                     });
                 }
             });
         });
     });
 </script>
+
 <script>
     function deleteRecord(button) {
         const id = button.getAttribute('data-record-id');
 
         Swal.fire({
-            title: 'Are you sure?',
-            text: 'You won\'t be able to revert this!',
+            title: 'Apakah Anda yakin?',
+            text: 'Data yang dihapus tidak bisa dikembalikan!',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!'
+            confirmButtonText: 'Ya, hapus!'
         }).then((result) => {
             if (result.isConfirmed) {
                 fetch(`<?= base_url('master-jenis-anggota/deletedefaultlokasi') ?>/${id}`, {
@@ -178,33 +169,31 @@ $slug = $request->getGet('slug') ?? '';
                     })
                     .then((response) => {
                         if (response.ok) {
-                            // Show a success SweetAlert
                             Swal.fire(
-                                'Deleted!',
-                                'Your record has been deleted.',
+                                'Terhapus!',
+                                'Data berhasil dihapus.',
                                 'success'
                             ).then(() => {
-                                // Reload the page or update the UI as needed
-                                location.reload(); // Reload the page to reflect changes
+                                location.reload();
                             });
                         } else {
-                            // Show an error SweetAlert
                             Swal.fire(
-                                'Error!',
-                                'Failed to delete the record.',
+                                'Gagal!',
+                                'Gagal menghapus data.',
                                 'error'
                             );
                         }
                     })
                     .catch((error) => {
                         console.error('Error:', error);
+                        Swal.fire(
+                            'Gagal!',
+                            'Terjadi kesalahan jaringan.',
+                            'error'
+                        );
                     });
             }
         });
     }
 </script>
-
-
-
-
 <?= $this->endSection('script'); ?>

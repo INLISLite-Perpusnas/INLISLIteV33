@@ -42,8 +42,8 @@ class RedaksiKeanggotaan extends \Base\Controllers\BaseResourceController
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
 			->edit('action', function ($row) {
-				$edit = '<a href="' . base_url('redaksikeangotaan/edit/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-warning"><i class="pe-7s-note font-weight-bold"> </i></a>';
-				$delete = '<a href="javascript:void(0);" data-href="' . base_url('redaksikeangotaan/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+				$edit = '<a href="' . base_url('master-redaksi-keanggotaan/edit/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-warning"><i class="pe-7s-note font-weight-bold"> </i></a>';
+				$delete = '<a href="javascript:void(0);" data-href="' . base_url('master-redaksi-keanggotaan/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
 				return $edit . ' ' . $delete;
 			})
 			->toJson();

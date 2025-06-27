@@ -481,7 +481,29 @@ function get_setting_parameter($paramName, $branch = false)
 	}
 	return $response;
 }
-function set_setting_parameter($paramName, $paramValue, $branch = false)
+function set_setting_parameter($paramName, $paramValue)
+{
+	$tableName = 'settingparameters';
+	$builder = new DataModel($tableName);
+	$query = $builder->where('Name', $paramName);
+
+	
+	$param = $query->get()->getRow();
+
+	if (empty($param)) {
+		$save_data = array('Name' => $paramName, 'Value' => $paramValue);
+		
+		$builder->insert($save_data);
+
+		return true;
+	} else {
+		$update_data = array('Name' => $paramName, 'Value' => $paramValue);
+	
+		$builder->update($param->ID, $update_data);
+		return true;
+	}
+}
+function set_setting_parameterwithbranch($paramName, $paramValue, $branch = false)
 {
 	$tableName = $branch ? 'settingparameters_branchs' : 'settingparameters';
 	$builder = new DataModel($tableName);

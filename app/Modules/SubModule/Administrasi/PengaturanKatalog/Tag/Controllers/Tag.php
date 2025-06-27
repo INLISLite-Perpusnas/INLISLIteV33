@@ -287,7 +287,7 @@ class Tag extends \Base\Controllers\BaseController
 			$indicator1s = get_table('fieldindicator1s', 'ID, Field_id, Code, Name', 'Field_id=' . $tag->ID, 'data');
 			$indicator2s = get_table('fieldindicator2s', 'ID, Field_id, Code, Name', 'Field_id=' . $tag->ID, 'data');
 			$fielddatas = get_table('fielddatas', 'ID, Field_id, Code, Name, Delimiter, SortNo, IsShow, Repeatable', 'Field_id=' . $tag->ID, 'data');
-			$this->data['master-tag'] = $tag;
+			$this->data['tag'] = $tag;
 			$this->data['indicator1s'] = $indicator1s;
 			$this->data['indicator2s'] = $indicator2s;
 			$this->data['fielddatas'] = $fielddatas;
