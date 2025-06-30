@@ -12,6 +12,7 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 	public $authorize;
 	public $branchModel;
 	public $modulePath;
+	public $settingModel;
 
 
 	function __construct()
@@ -19,6 +20,7 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 		$this->auth = \Myth\Auth\Config\Services::authentication();
 		$this->authorize = \Myth\Auth\Config\Services::authorization();
 		$this->branchModel = new \NamaPerpustakaan\Models\BranchModel();
+		$this->settingModel = new \PenomoranKoleksi\Models\PenomoranKoleksiModel();
 
 		$this->modulePath = ROOTPATH . 'public/uploads/branch/';
 		$this->uploadPath = WRITEPATH . 'uploads/';
@@ -46,51 +48,72 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 	}
 
 	public function update()
-	{
-		$this->validation->setRule('Name', 'Nama Perpustakaan', 'required');
-		$this->validation->setRule('Url', 'URL Perpustakaan', 'required');
-		if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
-			$Url = $this->request->getPost('Url') ?? '';
-			$branch = $this->branchModel->where('slug', $Url)->first();
-			// if ($branch) {
-			// 	set_message('toastr_msg', 'URL Perpustakaan sudah digunakan');
-			// 	set_message('toastr_type', 'error');
-			// 	return redirect()->back();
-			// }
+{
+	$this->validation->setRule('Name', 'Nama Perpustakaan', 'required');
 
-			// Escape the HTML content to prevent XSS attacks
-			$LayananOperasionl = $this->request->getPost('LayananOperasionl') ?? '';
-			$LayananOperasionl_Str = htmlspecialchars($LayananOperasionl, ENT_QUOTES, 'UTF-8');
+	if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
+		$Url = $this->request->getPost('Url') ?? '';
+		$branch = $this->branchModel->where('slug', $Url)->first();
 
-			$update_data = array(
-				'Name' => $this->request->getPost('Name'),
-				'Email' => $this->request->getPost('Email'),
-				'Phone' => $this->request->getPost('Phone'),
-				'Address' => $this->request->getPost('Address'),
-				'IG' => $this->request->getPost('IG'),
-				'FB' => $this->request->getPost('FB'),
-				'YT' => $this->request->getPost('YT'),
-				'TW' => $this->request->getPost('TW'),
-				'slug' => $this->request->getPost('Url'),
-				'LayananOperasionl' => $LayananOperasionl_Str,
-			);
-
-			$updateBranch = $this->branchModel->update(branch_id(), $update_data);
-
-			if ($updateBranch) {
-				set_message('toastr_msg', 'Nama Perpustakaan berhasil disimpan');
-				set_message('toastr_type', 'success');
-			} else {
-				set_message('toastr_msg', 'Nama Perpustakaan gagal disimpan');
-				set_message('toastr_type', 'error');
-			}
-			return redirect()->back();
-		} else {
-			set_message('toastr_msg', $this->validation->getErrors());
+		if ($branch && $branch->ID != branch_id()) {
+			set_message('toastr_msg', 'URL Perpustakaan sudah digunakan');
 			set_message('toastr_type', 'error');
 			return redirect()->back();
 		}
+
+		$LayananOperasionl_Str = htmlspecialchars($this->request->getPost('LayananOperasionl') ?? '', ENT_QUOTES, 'UTF-8');
+
+		$update_data = [
+			'Name' => trim($this->request->getPost('Name')),
+			'Email' => trim($this->request->getPost('Email')),
+			'Phone' => trim($this->request->getPost('Phone')),
+			'Address' => trim($this->request->getPost('Address')),
+			'IG' => trim($this->request->getPost('IG')),
+			'FB' => trim($this->request->getPost('FB')),
+			'YT' => trim($this->request->getPost('YT')),
+			'TW' => trim($this->request->getPost('TW')),
+			'slug' => $Url,
+			'LayananOperasionl' => $LayananOperasionl_Str,
+		];
+
+		$updateBranch = $this->branchModel->update(branch_id(), $update_data);
+
+		// Update settings
+		$dataToUpdate = [
+			'NamaPerpustakaan' => trim($this->request->getPost('Name')),
+			'NamaLokasiPerpustakaan' => trim($this->request->getPost('Address')),
+		];
+
+		$success = true;
+		foreach ($dataToUpdate as $name => $value) {
+			$row = $this->settingModel->where('Name', $name)->first();
+			if ($row) {
+				if (!$this->settingModel->update($row->ID, ['Value' => $value])) {
+					$success = false;
+				}
+			} else {
+				if (!$this->settingModel->insert(['Name' => $name, 'Value' => $value])) {
+					$success = false;
+				}
+			}
+		}
+
+		if ($updateBranch && $success) {
+			set_message('toastr_msg', 'Perubahan berhasil disimpan');
+			set_message('toastr_type', 'success');
+		} else {
+			set_message('toastr_msg', 'Gagal menyimpan perubahan');
+			set_message('toastr_type', 'error');
+		}
+		return redirect()->back();
+	} else {
+		$errors = implode(', ', $this->validation->getErrors());
+		set_message('toastr_msg', $errors);
+		set_message('toastr_type', 'error');
+		return redirect()->back();
 	}
+}
+
 
 	public function upload_file()
 	{

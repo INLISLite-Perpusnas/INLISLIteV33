@@ -17,16 +17,30 @@ class EntriKeanggotaan extends \Base\Controllers\BaseController
 
 	}
 
-	public function index()
-	{
-		$this->data['title'] = 'Form Entri';
-		$this->data += $this->settingModel
-			->select('Name, Value')
-			->where(['Name' => ['TipeNomorAnggota', 'TipePenomoranAnggota', 'IsCetakSlipPerpanjangan', 'IsCetakSlipPelanggaran', 'IsCetakSlipPendaftaran']])
-			->findArray();
+public function index()
+{
+    $this->data['title'] = 'Form Entri';
 
-		echo view('EntriKeanggotaan\Views\update', $this->data);
-	}
+    $settings = $this->settingModel
+        ->select('Name, Value')
+        ->whereIn('Name', [
+            'TipeNomorAnggota',
+            'TipePenomoranAnggota',
+            'IsCetakSlipPerpanjangan',
+            'IsCetakSlipPelanggaran',
+            'IsCetakSlipPendaftaran'
+        ])
+        ->asArray()
+        ->findAll();
+
+    // Ubah ke key-value
+    foreach ($settings as $setting) {
+        $this->data[$setting['Name']] = $setting['Value'];
+    }
+
+    echo view('EntriKeanggotaan\Views\update', $this->data);
+}
+
 
 	public function update_data()
 {

@@ -1007,6 +1007,7 @@ class Anggota extends \Base\Controllers\BaseController
 	{
 		$templateModel = new BaseModel('t_template');
 		$template = $templateModel->where('active', 1)->first();
+	
 
 		if (empty($template)) {
 			echo "Tidak ada template untuk di cetak";

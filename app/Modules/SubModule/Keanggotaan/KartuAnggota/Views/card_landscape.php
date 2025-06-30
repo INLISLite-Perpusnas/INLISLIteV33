@@ -9,7 +9,7 @@
 
 	<style>
 		@page {
-			size: 1004px 618px;
+			size: 1004px 593px;
 		}
 
 		body {

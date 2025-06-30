@@ -53,9 +53,7 @@ class JenisBahan extends \Base\Controllers\BaseResourceController
 				$inactive = '<a href="' . base_url('master-jenis-bahan/apply_status/' . $row->ID . '?field=active&value=0') . '" data-id="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Inactive" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"> </i> </a>';
 				$delete = '<a href="javascript:void(0);" data-href="' . base_url('master-jenis-bahan/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
 				$html = '';
-				if ($row->Branch_id == branch_id()) {
-					$html .= $edit . ' ' . $active . ' ' . $inactive . ' ' . $delete;
-				}
+				$html .= $edit . ' ' . $active . ' ' . $inactive . ' ' . $delete;
 				return $html;
 			})
 			->toJson();

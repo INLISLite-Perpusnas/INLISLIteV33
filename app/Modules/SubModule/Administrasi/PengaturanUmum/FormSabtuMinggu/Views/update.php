@@ -45,13 +45,13 @@ $slug = $request->getGet('slug') ?? '';
 				</div>
 				<div class="card-body">
 					<div id="infoMessage"><?= $message ?? '' ?></div> <?= get_message('message') ?>
-					<form id="frm_create" method="post" action="<?= base_url('master-form-sabtuminggu/index') ?>" onsubmit="return validateForm()">
+					<form id="frm_create" method="post" action="<?= base_url('master-form-sabtuminggu/update_data') ?>" onsubmit="return validateForm()">
 						<div class="form-row">
 							<div class="col-md-12">
 								<div class="position-relative form-group">
 									<label for="alias">Libur Hari Sabtu</label>
 									<div>
-										<?php $parameter = get_setting_parameter('IsSaturdayHoliday', is_profiling()); ?>
+										<?php $parameter = $IsSaturdayHoliday; ?>
 										<div class="form-check">
 											<input class="form-check-input" type="radio" name="IsSaturdayHoliday" id="True" value="True" <?= ($parameter == "True") ? 'checked' : '' ?>>
 											<label class="form-check-label" for="simple">
@@ -75,7 +75,7 @@ $slug = $request->getGet('slug') ?? '';
 								<div class="position-relative form-group">
 									<label for="alias">Libur Hari Minggu</label>
 									<div>
-										<?php $parameter = get_setting_parameter('IsSundayHoliday', is_profiling()); ?>
+										<?php $parameter = $IsSundayHoliday; ?>
 										<div class="form-check">
 											<input class="form-check-input" type="radio" name="IsSundayHoliday" id="True" value="True" <?= ($parameter == "True") ? 'checked' : '' ?>>
 											<label class="form-check-label" for="simple">
@@ -92,11 +92,12 @@ $slug = $request->getGet('slug') ?? '';
 								</div>
 							</div>
 						</div>
-				</div>
-
-				<div class="form-group">
+						<div class="form-group">
 					<button type="submit" class="btn btn-primary" name="submit">Simpan</button>
 				</div>
+				</div>
+
+				
 				</form>
 			</div>
 		</div>

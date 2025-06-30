@@ -1,6 +1,17 @@
+
+<?php
+$db=db_connect('data');
+$nama_perpustakaan=$db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value;
+$alamat=$db->table('settingparameters')->where('Name', 'NamaLokasiPerpustakaan')->get()->getRow()->Value;
+$logo=$db->table('branchs')->where('Name', $nama_perpustakaan)->get()->getRow()->Logo;
+
+
+
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OPAC - Online Public Access Catalog</title>
@@ -27,31 +38,27 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        .logo-section {
+   .logo-section {
             display: flex;
             align-items: center;
+            gap: 20px; /* Menambahkan jarak antara logo dan teks */
         }
 
-        .logo-icon {
-            width: 50px;
-            height: 50px;
-            background-color: var(--text-white);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
+        .logo-section img {
+            height: 100px;
+            width: 100px;
+            border-radius: 8px; /* Opsional: memberikan sudut melengkung pada logo */
+            object-fit: cover; /* Memastikan proporsi logo tetap baik */
         }
 
-        .logo-icon i {
-            color: var(--primary-green);
-            font-size: 24px;
+        .logo-text {
+            flex: 1; /* Membuat teks mengisi ruang yang tersisa */
         }
 
         .logo-text h1 {
             font-size: 20px;
             font-weight: 700;
-            margin: 0;
+            margin: 0 0 5px 0; /* Memberikan sedikit jarak antara nama dan alamat */
             line-height: 1.2;
         }
 
@@ -60,6 +67,7 @@
             margin: 0;
             opacity: 0.9;
             font-weight: 400;
+            line-height: 1.3;
         }
 
         .main-nav {
@@ -267,12 +275,11 @@
             <div class="row align-items-center">
                 <div class="col-md-4">
                     <div class="logo-section">
-                        <div class="logo-icon">
-                            <i class="fas fa-check"></i>
-                        </div>
+                           <img style="height: 100px;width: 100px" src="<?= base_url('uploads/branch/' . $logo) ?>" alt="Logo">
+                     
                         <div class="logo-text">
-                            <h1>PERPUSTAKAAN NASIONAL</h1>
-                            <p>REPUBLIK INDONESIA</p>
+                            <h1><?=$nama_perpustakaan?></h1>
+                            <p><?=$alamat?></p>
                         </div>
                     </div>
                 </div>

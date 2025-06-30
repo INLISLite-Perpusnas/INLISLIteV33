@@ -64,7 +64,7 @@ $slug = $request->getGet('slug') ?? '';
 								</div>
 							</div>
 						</div>
-						<div class="form-row">
+						<!-- <div class="form-row">
 							<div class="col-md-12">
 								<div class="position-relative form-group">
 									<label for="slug">URL Perpustakaan (<?= env('app.libURL') ?>/{<b>url-perpustakaan</b>})</label>
@@ -73,7 +73,7 @@ $slug = $request->getGet('slug') ?? '';
 									</div>
 								</div>
 							</div>
-						</div>
+						</div> -->
 
 						<div class="form-row">
 							<div class="col-md-12">
