@@ -14,6 +14,12 @@ class Auth extends MythAuthController
 		if (logged_in()) {
 			return redirect()->to('/dashboard');
 		}
+        $db=db_connect('data');
+
+        $nama_perpustakaan=$db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value?:"Perpustakaan Mitra";
+        $branch = $db->table('branchs')->where('Name', $nama_perpustakaan)->get()->getRow();
+        $logo = $branch ? $branch->Logo : "";
+        $data['logo']=$logo;
 
 		$data['title'] = 'Login Form | Profiling';
 		echo view('Auth\Views\authlogin', $data);

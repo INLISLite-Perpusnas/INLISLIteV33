@@ -17,6 +17,14 @@ $routes->group('opac', ['namespace' => 'Opac\Controllers'], function ($subroutes
 	$subroutes->add('recommendations/(:any)', 'Opac::recommendations/$1');
 	$subroutes->add('getRecommendations', 'Opac::getRecommendations');
 	$subroutes->add('getRecommendations/(:any)', 'Opac::getRecommendations/$1');
+	
+	// MARC Download Routes - Method terpisah untuk setiap format
+	$subroutes->add('downloadMarcUtf8/(:num)', 'Opac::downloadMarcUtf8/$1');
+	$subroutes->add('downloadMarcXml/(:num)', 'Opac::downloadMarcXml/$1');
+	$subroutes->add('downloadMarcMods/(:num)', 'Opac::downloadMarcMods/$1');
+	$subroutes->add('downloadMarcRdf/(:num)', 'Opac::downloadMarcRdf/$1');
+	$subroutes->add('downloadMarcOai/(:num)', 'Opac::downloadMarcOai/$1');
+	$subroutes->add('downloadMarcSrw/(:num)', 'Opac::downloadMarcSrw/$1');
 });
 
 $routes->group('api/Opac', ['namespace' => 'Opac\Controllers\Api'], function ($subroutes) {//crud

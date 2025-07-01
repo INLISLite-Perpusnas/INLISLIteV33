@@ -20,6 +20,7 @@ class Opac extends \Base\Controllers\BaseController
     public $memberModel;
     public $collectionLoanModel;
     public $eksemplarModel;
+    public $katalogRuasModel;
     
 
     function __construct()
@@ -31,6 +32,7 @@ class Opac extends \Base\Controllers\BaseController
           $this->memberModel = new \Anggota\Models\AnggotaModel();
         $this->collectionLoanModel =new \Peminjaman\Models\CollectionLoanModel();
         $this->eksemplarModel = new \Eksemplar\Models\EksemplarModel();
+        $this->katalogRuasModel = new \Katalog\Models\KatalogRuasModel();
     }
 
  public function index()
@@ -173,6 +175,15 @@ private function loadRegularCatalogs()
             ->where('collections.ISDRM', 1)
        
             ->findAll();
+
+            $marc = $this->katalogRuasModel
+            ->select('*')
+            ->where('CatalogId', $id)
+            ->findAll();
+        
+        $this->data['marc'] = $marc;
+        
+  
        
         $this->data['title'] = 'Detail Katalog - ' . $catalog['Title'];
         $this->data['catalog'] = $catalog;
@@ -896,6 +907,471 @@ $this->data['by_publisher'] = $builder
         }
         
         return view('Opac\Views\recommendations', $this->data);
+    }
+
+    public function downloadMarcUtf8($id)
+    {
+        $catalog = $this->katalogModel->asArray()->find($id);
+        
+        if (!$catalog) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Katalog tidak ditemukan');
+        }
+        
+        $marc = $this->katalogRuasModel
+            ->select('*')
+            ->where('CatalogId', $id)
+            ->orderBy('Sequence', 'ASC')
+            ->findAll();
+        
+        if (empty($marc)) {
+            return redirect()->back()->with('error', 'Data MARC tidak tersedia');
+        }
+        
+        $content = "=LDR  00000nam  2200000   4500\n";
+        
+        foreach ($marc as $field) {
+            $tag = str_pad($field->Tag, 3, '0', STR_PAD_LEFT);
+            $ind1 = $field->Indicator1 ?: ' ';
+            $ind2 = $field->Indicator2 ?: ' ';
+            $value = $field->Value;
+            
+            if (intval($tag) < 10) {
+                // Control fields
+                $content .= "={$tag}  {$value}\n";
+            } else {
+                // Data fields
+                $content .= "={$tag}  {$ind1}{$ind2}\${$value}\n";
+            }
+        }
+        
+        $filename = 'MARC_' . $catalog['ID'] . '_UTF8.txt';
+        
+        return $this->response
+            ->setContentType('text/plain; charset=utf-8')
+            ->setHeader('Content-Disposition', "attachment; filename=\"{$filename}\"")
+            ->setBody($content);
+    }
+    
+    /**
+     * Download MARC in XML format
+     */
+    public function downloadMarcXml($id)
+    {
+        $catalog = $this->katalogModel->asArray()->find($id);
+        
+        if (!$catalog) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Katalog tidak ditemukan');
+        }
+        
+        $marc = $this->katalogRuasModel
+            ->select('*')
+            ->where('CatalogId', $id)
+            ->orderBy('Sequence', 'ASC')
+            ->findAll();
+        
+        if (empty($marc)) {
+            return redirect()->back()->with('error', 'Data MARC tidak tersedia');
+        }
+        
+        $xml = new \DOMDocument('1.0', 'UTF-8');
+        $xml->formatOutput = true;
+        
+        // Root element
+        $collection = $xml->createElement('collection');
+        $collection->setAttribute('xmlns', 'http://www.loc.gov/MARC21/slim');
+        $xml->appendChild($collection);
+        
+        // Record element
+        $record = $xml->createElement('record');
+        $collection->appendChild($record);
+        
+        // Leader
+        $leader = $xml->createElement('leader', '00000nam  2200000   4500');
+        $record->appendChild($leader);
+        
+        foreach ($marc as $field) {
+            $tag = str_pad($field->Tag, 3, '0', STR_PAD_LEFT);
+            
+            if (intval($tag) < 10) {
+                // Control field
+                $controlfield = $xml->createElement('controlfield', htmlspecialchars($field->Value));
+                $controlfield->setAttribute('tag', $tag);
+                $record->appendChild($controlfield);
+            } else {
+                // Data field
+                $datafield = $xml->createElement('datafield');
+                $datafield->setAttribute('tag', $tag);
+                $datafield->setAttribute('ind1', $field->Indicator1 ?: ' ');
+                $datafield->setAttribute('ind2', $field->Indicator2 ?: ' ');
+                
+                // Parse subfields
+                $subfields = $this->parseSubfields($field->Value);
+                foreach ($subfields as $code => $value) {
+                    $subfield = $xml->createElement('subfield', htmlspecialchars($value));
+                    $subfield->setAttribute('code', $code);
+                    $datafield->appendChild($subfield);
+                }
+                
+                $record->appendChild($datafield);
+            }
+        }
+        
+        $filename = 'MARC_' . $catalog['ID'] . '_XML.xml';
+        
+        return $this->response
+            ->setContentType('application/xml; charset=utf-8')
+            ->setHeader('Content-Disposition', "attachment; filename=\"{$filename}\"")
+            ->setBody($xml->saveXML());
+    }
+    
+    /**
+     * Download in MODS format
+     */
+    public function downloadMarcMods($id)
+    {
+        $catalog = $this->katalogModel->asArray()->find($id);
+        
+        if (!$catalog) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Katalog tidak ditemukan');
+        }
+        
+        $marc = $this->katalogRuasModel
+            ->select('*')
+            ->where('CatalogId', $id)
+            ->orderBy('Sequence', 'ASC')
+            ->findAll();
+        
+        if (empty($marc)) {
+            return redirect()->back()->with('error', 'Data MARC tidak tersedia');
+        }
+        
+        $xml = new \DOMDocument('1.0', 'UTF-8');
+        $xml->formatOutput = true;
+        
+        $mods = $xml->createElement('mods');
+        $mods->setAttribute('xmlns', 'http://www.loc.gov/mods/v3');
+        $mods->setAttribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance');
+        $mods->setAttribute('xsi:schemaLocation', 'http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-7.xsd');
+        $xml->appendChild($mods);
+        
+        foreach ($marc as $field) {
+            $tag = $field->Tag;
+            $value = $field->Value;
+            
+            switch ($tag) {
+                case '245': // Title
+                    $titleInfo = $xml->createElement('titleInfo');
+                    $title = $xml->createElement('title', htmlspecialchars($this->extractSubfield($value, 'a')));
+                    $titleInfo->appendChild($title);
+                    $subtitle = $this->extractSubfield($value, 'b');
+                    if ($subtitle) {
+                        $subTitle = $xml->createElement('subTitle', htmlspecialchars($subtitle));
+                        $titleInfo->appendChild($subTitle);
+                    }
+                    $mods->appendChild($titleInfo);
+                    break;
+                    
+                case '100': // Author
+                    $name = $xml->createElement('name');
+                    $name->setAttribute('type', 'personal');
+                    $namePart = $xml->createElement('namePart', htmlspecialchars($this->extractSubfield($value, 'a')));
+                    $name->appendChild($namePart);
+                    $role = $xml->createElement('role');
+                    $roleTerm = $xml->createElement('roleTerm', 'author');
+                    $roleTerm->setAttribute('type', 'text');
+                    $role->appendChild($roleTerm);
+                    $name->appendChild($role);
+                    $mods->appendChild($name);
+                    break;
+                    
+                case '260': // Publication info
+                    $originInfo = $xml->createElement('originInfo');
+                    $publisher = $this->extractSubfield($value, 'b');
+                    if ($publisher) {
+                        $pub = $xml->createElement('publisher', htmlspecialchars($publisher));
+                        $originInfo->appendChild($pub);
+                    }
+                    $dateIssued = $this->extractSubfield($value, 'c');
+                    if ($dateIssued) {
+                        $date = $xml->createElement('dateIssued', htmlspecialchars($dateIssued));
+                        $originInfo->appendChild($date);
+                    }
+                    $place = $this->extractSubfield($value, 'a');
+                    if ($place) {
+                        $placeTerm = $xml->createElement('placeTerm', htmlspecialchars($place));
+                        $placeTerm->setAttribute('type', 'text');
+                        $placeElement = $xml->createElement('place');
+                        $placeElement->appendChild($placeTerm);
+                        $originInfo->appendChild($placeElement);
+                    }
+                    $mods->appendChild($originInfo);
+                    break;
+                    
+                case '650': // Subject
+                    $subject = $xml->createElement('subject');
+                    $topic = $xml->createElement('topic', htmlspecialchars($this->extractSubfield($value, 'a')));
+                    $subject->appendChild($topic);
+                    $mods->appendChild($subject);
+                    break;
+            }
+        }
+        
+        $filename = 'MARC_' . $catalog['ID'] . '_MODS.xml';
+        
+        return $this->response
+            ->setContentType('application/xml; charset=utf-8')
+            ->setHeader('Content-Disposition', "attachment; filename=\"{$filename}\"")
+            ->setBody($xml->saveXML());
+    }
+    
+    /**
+     * Download Dublin Core RDF format
+     */
+    public function downloadMarcRdf($id)
+    {
+        $catalog = $this->katalogModel->asArray()->find($id);
+        
+        if (!$catalog) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Katalog tidak ditemukan');
+        }
+        
+        $marc = $this->katalogRuasModel
+            ->select('*')
+            ->where('CatalogId', $id)
+            ->orderBy('Sequence', 'ASC')
+            ->findAll();
+        
+        if (empty($marc)) {
+            return redirect()->back()->with('error', 'Data MARC tidak tersedia');
+        }
+        
+        $xml = new \DOMDocument('1.0', 'UTF-8');
+        $xml->formatOutput = true;
+        
+        $rdf = $xml->createElement('rdf:RDF');
+        $rdf->setAttribute('xmlns:rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
+        $rdf->setAttribute('xmlns:dc', 'http://purl.org/dc/elements/1.1/');
+        $xml->appendChild($rdf);
+        
+        $description = $xml->createElement('rdf:Description');
+        $description->setAttribute('rdf:about', 'http://example.com/catalog/' . $catalog['ID']);
+        $rdf->appendChild($description);
+        
+        foreach ($marc as $field) {
+            $tag = $field->Tag;
+            $value = $field->Value;
+            
+            switch ($tag) {
+                case '245': // Title
+                    $title = $xml->createElement('dc:title', htmlspecialchars($this->extractSubfield($value, 'a')));
+                    $description->appendChild($title);
+                    break;
+                    
+                case '100': // Creator
+                    $creator = $xml->createElement('dc:creator', htmlspecialchars($this->extractSubfield($value, 'a')));
+                    $description->appendChild($creator);
+                    break;
+                    
+                case '260': // Publisher
+                    $publisher = $this->extractSubfield($value, 'b');
+                    if ($publisher) {
+                        $pub = $xml->createElement('dc:publisher', htmlspecialchars($publisher));
+                        $description->appendChild($pub);
+                    }
+                    $date = $this->extractSubfield($value, 'c');
+                    if ($date) {
+                        $dateEl = $xml->createElement('dc:date', htmlspecialchars($date));
+                        $description->appendChild($dateEl);
+                    }
+                    break;
+                    
+                case '650': // Subject
+                    $subject = $xml->createElement('dc:subject', htmlspecialchars($this->extractSubfield($value, 'a')));
+                    $description->appendChild($subject);
+                    break;
+            }
+        }
+        
+        $filename = 'MARC_' . $catalog['ID'] . '_DC_RDF.xml';
+        
+        return $this->response
+            ->setContentType('application/rdf+xml; charset=utf-8')
+            ->setHeader('Content-Disposition', "attachment; filename=\"{$filename}\"")
+            ->setBody($xml->saveXML());
+    }
+    
+    /**
+     * Download Dublin Core OAI format
+     */
+    public function downloadMarcOai($id)
+    {
+        $catalog = $this->katalogModel->asArray()->find($id);
+        
+        if (!$catalog) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Katalog tidak ditemukan');
+        }
+        
+        $marc = $this->katalogRuasModel
+            ->select('*')
+            ->where('CatalogId', $id)
+            ->orderBy('Sequence', 'ASC')
+            ->findAll();
+        
+        if (empty($marc)) {
+            return redirect()->back()->with('error', 'Data MARC tidak tersedia');
+        }
+        
+        $xml = new \DOMDocument('1.0', 'UTF-8');
+        $xml->formatOutput = true;
+        
+        $oai_dc = $xml->createElement('oai_dc:dc');
+        $oai_dc->setAttribute('xmlns:oai_dc', 'http://www.openarchives.org/OAI/2.0/oai_dc/');
+        $oai_dc->setAttribute('xmlns:dc', 'http://purl.org/dc/elements/1.1/');
+        $oai_dc->setAttribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance');
+        $oai_dc->setAttribute('xsi:schemaLocation', 'http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd');
+        $xml->appendChild($oai_dc);
+        
+        foreach ($marc as $field) {
+            $tag = $field->Tag;
+            $value = $field->Value;
+            
+            switch ($tag) {
+                case '245': // Title
+                    $title = $xml->createElement('dc:title', htmlspecialchars($this->extractSubfield($value, 'a')));
+                    $oai_dc->appendChild($title);
+                    break;
+                    
+                case '100': // Creator
+                    $creator = $xml->createElement('dc:creator', htmlspecialchars($this->extractSubfield($value, 'a')));
+                    $oai_dc->appendChild($creator);
+                    break;
+                    
+                case '260': // Publisher and Date
+                    $publisher = $this->extractSubfield($value, 'b');
+                    if ($publisher) {
+                        $pub = $xml->createElement('dc:publisher', htmlspecialchars($publisher));
+                        $oai_dc->appendChild($pub);
+                    }
+                    $date = $this->extractSubfield($value, 'c');
+                    if ($date) {
+                        $dateEl = $xml->createElement('dc:date', htmlspecialchars($date));
+                        $oai_dc->appendChild($dateEl);
+                    }
+                    break;
+                    
+                case '650': // Subject
+                    $subject = $xml->createElement('dc:subject', htmlspecialchars($this->extractSubfield($value, 'a')));
+                    $oai_dc->appendChild($subject);
+                    break;
+            }
+        }
+        
+        $filename = 'MARC_' . $catalog['ID'] . '_DC_OAI.xml';
+        
+        return $this->response
+            ->setContentType('application/xml; charset=utf-8')
+            ->setHeader('Content-Disposition', "attachment; filename=\"{$filename}\"")
+            ->setBody($xml->saveXML());
+    }
+    
+    /**
+     * Download Dublin Core SRW format
+     */
+    public function downloadMarcSrw($id)
+    {
+        $catalog = $this->katalogModel->asArray()->find($id);
+        
+        if (!$catalog) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Katalog tidak ditemukan');
+        }
+        
+        $marc = $this->katalogRuasModel
+            ->select('*')
+            ->where('CatalogId', $id)
+            ->orderBy('Sequence', 'ASC')
+            ->findAll();
+        
+        if (empty($marc)) {
+            return redirect()->back()->with('error', 'Data MARC tidak tersedia');
+        }
+        
+        $xml = new \DOMDocument('1.0', 'UTF-8');
+        $xml->formatOutput = true;
+        
+        $srw_dc = $xml->createElement('srw_dc:dc');
+        $srw_dc->setAttribute('xmlns:srw_dc', 'info:srw/schema/1/dc-schema');
+        $srw_dc->setAttribute('xmlns:dc', 'http://purl.org/dc/elements/1.1/');
+        $xml->appendChild($srw_dc);
+        
+        foreach ($marc as $field) {
+            $tag = $field->Tag;
+            $value = $field->Value;
+            
+            switch ($tag) {
+                case '245': // Title
+                    $title = $xml->createElement('dc:title', htmlspecialchars($this->extractSubfield($value, 'a')));
+                    $srw_dc->appendChild($title);
+                    break;
+                    
+                case '100': // Creator
+                    $creator = $xml->createElement('dc:creator', htmlspecialchars($this->extractSubfield($value, 'a')));
+                    $srw_dc->appendChild($creator);
+                    break;
+                    
+                case '260': // Publisher and Date
+                    $publisher = $this->extractSubfield($value, 'b');
+                    if ($publisher) {
+                        $pub = $xml->createElement('dc:publisher', htmlspecialchars($publisher));
+                        $srw_dc->appendChild($pub);
+                    }
+                    $date = $this->extractSubfield($value, 'c');
+                    if ($date) {
+                        $dateEl = $xml->createElement('dc:date', htmlspecialchars($date));
+                        $srw_dc->appendChild($dateEl);
+                    }
+                    break;
+                    
+                case '650': // Subject
+                    $subject = $xml->createElement('dc:subject', htmlspecialchars($this->extractSubfield($value, 'a')));
+                    $srw_dc->appendChild($subject);
+                    break;
+            }
+        }
+        
+        $filename = 'MARC_' . $catalog['ID'] . '_DC_SRW.xml';
+        
+        return $this->response
+            ->setContentType('application/xml; charset=utf-8')
+            ->setHeader('Content-Disposition', "attachment; filename=\"{$filename}\"")
+            ->setBody($xml->saveXML());
+    }
+    
+    /**
+     * Helper method to parse subfields
+     */
+    private function parseSubfields($value)
+    {
+        $subfields = [];
+        $parts = explode('$', $value);
+        
+        foreach ($parts as $part) {
+            if (strlen($part) >= 2) {
+                $code = substr($part, 0, 1);
+                $text = substr($part, 1);
+                $subfields[$code] = trim($text);
+            }
+        }
+        
+        return $subfields;
+    }
+    
+    /**
+     * Helper method to extract specific subfield
+     */
+    private function extractSubfield($value, $subfieldCode)
+    {
+        $subfields = $this->parseSubfields($value);
+        return isset($subfields[$subfieldCode]) ? $subfields[$subfieldCode] : '';
     }
 
 }

@@ -590,3 +590,4 @@ function downloadRawData(type) {
 }
 </style>
 <?= $this->endSection() ?>
+<img style="width: 80px; height: 80px; object-fit: contain; border-radius: 16px; margin-bottom: 20px;" src="<?= !empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png') ?>" alt="Logo">

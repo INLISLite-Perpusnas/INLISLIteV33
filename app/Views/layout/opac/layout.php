@@ -1,11 +1,11 @@
-
 <?php
 $db=db_connect('data');
-$nama_perpustakaan=$db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value;
-$alamat=$db->table('settingparameters')->where('Name', 'NamaLokasiPerpustakaan')->get()->getRow()->Value;
-$logo=$db->table('branchs')->where('Name', $nama_perpustakaan)->get()->getRow()->Logo;
+$nama_perpustakaan=$db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value?:"Perpustakaan Mitra";
+$alamat=$db->table('settingparameters')->where('Name', 'NamaLokasiPerpustakaan')->get()->getRow()->Value?:"Jl.Perpustakaan Mitra";
 
-
+// Corrected line 6
+$branch = $db->table('branchs')->where('Name', $nama_perpustakaan)->get()->getRow();
+$logo = $branch ? $branch->Logo : "";
 
 ?>
 <!DOCTYPE html>
@@ -275,7 +275,7 @@ $logo=$db->table('branchs')->where('Name', $nama_perpustakaan)->get()->getRow()-
             <div class="row align-items-center">
                 <div class="col-md-4">
                     <div class="logo-section">
-                           <img style="height: 100px;width: 100px" src="<?= base_url('uploads/branch/' . $logo) ?>" alt="Logo">
+                    <img style="height: 100px;width: 100px" src="<?= !empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png') ?>" alt="Logo">
                      
                         <div class="logo-text">
                             <h1><?=$nama_perpustakaan?></h1>

@@ -353,15 +353,11 @@
                 
                 <!-- Logo and Title -->
                 <div class="logo-container">
-                    <?php if (get_parameter('show-logo-login') == 1 && get_parameter('logo')) : ?>
-                        <img src="<?= base_url(get_parameter('logo')) ?>" 
-                             alt="Logo" 
-                             style="width: 80px; height: 80px; object-fit: contain; border-radius: 16px; margin-bottom: 20px;">
-                    <?php else: ?>
-                        <div class="logo-icon">
-                            <i class="fas fa-book-open"></i>
-                        </div>
-                    <?php endif; ?>
+                
+                        <img style="width: 80px; height: 80px; object-fit: contain; border-radius: 16px; margin-bottom: 20px;" src="<?= !empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png') ?>" alt="Logo">
+                
+                       
+                
                     
                     <h1 class="app-title">Login INLISLite</h1>
                     <p class="app-subtitle">

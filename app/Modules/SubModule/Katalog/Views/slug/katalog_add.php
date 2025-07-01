@@ -344,7 +344,7 @@ $rda = $request->getGet('rda') ?? 1;
 				<label for="CallNumber">No. Panggil</label>
 				<div id="CallNumber">
 					<div class="form input-group mb-2" title="">
-						<input type="text" class="form-control" name="CallNumber[]" placeholder="" value="" />
+						<input type="text" class="form-control" id="nomorInput" name="CallNumber[]" placeholder="" value="" />
 						<div class="input-group-append">
 							<span data-id="0" class="add-CallNumber btn btn-outline-secondary"><i class="fa fa-plus"></i></span>
 						</div>

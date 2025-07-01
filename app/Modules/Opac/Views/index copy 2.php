@@ -2,325 +2,347 @@
 
 <?= $this->section('content') ?>
 
-<!-- Hero Section -->
-<section class="hero-section">
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="py-3">
     <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="text-center mb-5">
-                    <h1 class="display-4 fw-bold mb-3" style="color: #028548;">
-                        <i class="fas fa-book-reader me-3"></i>
-                        Selamat Datang di OPAC
-                    </h1>
-                    <p class="lead" style="color: #028548;">Online Public Access Catalog - Temukan koleksi perpustakaan
-                        dengan mudah</p>
-                </div>
-
-                <!-- Search Box -->
-                <div class="search-box">
-                    <form method="GET" action="<?= base_url('opac') ?>">
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <select class="form-select" name="search_by">
-                                    <option value="">Semua Field</option>
-                                    <option value="Title" <?= ($search_by ?? '') == 'Title' ? 'selected' : '' ?>>Judul
-                                    </option>
-                                    <option value="Author" <?= ($search_by ?? '') == 'Author' ? 'selected' : '' ?>>
-                                        Pengarang</option>
-                                    <option value="Subject" <?= ($search_by ?? '') == 'Subject' ? 'selected' : '' ?>>
-                                        Subjek</option>
-                                    <option value="Publisher"
-                                        <?= ($search_by ?? '') == 'Publisher' ? 'selected' : '' ?>>Penerbit</option>
-                                    <option value="ISBN" <?= ($search_by ?? '') == 'ISBN' ? 'selected' : '' ?>>ISBN
-                                    </option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <input type="text" class="form-control form-control-lg" name="search"
-                                    placeholder="Masukkan kata kunci pencarian..." value="<?= $search ?? '' ?>">
-                            </div>
-                            <div class="col-md-2">
-                                <button type="submit" class="btn btn-primary btn-lg w-100">
-                                    <i class="fas fa-search me-2"></i>Cari
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="<?= base_url('opac') ?>" style="color: #028548;">Beranda</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Detail Katalog</li>
+        </ol>
     </div>
-</section>
+</nav>
 
-<!-- Statistics -->
-<section class="py-5">
+<!-- Main Content -->
+<section class="py-4">
     <div class="container">
-        <div class="row text-center">
-            <div class="col-md-3 mb-4">
-                <div class="stats-card">
-                    <i class="fas fa-books fa-3x mb-3"></i>
-                    <h3><?= number_format($total_records ?? 0) ?></h3>
-                    <p class="mb-0">Total Koleksi</p>
-                </div>
-            </div>
-            <div class="col-md-3 mb-4">
-                <div class="stats-card">
-                    <i class="fas fa-search fa-3x mb-3"></i>
-                    <h3><?= isset($search) && $search ? count($catalogs ?? []) : 0 ?></h3>
-                    <p class="mb-0">Hasil Pencarian</p>
-                </div>
-            </div>
-            <div class="col-md-3 mb-4">
-                <div class="stats-card">
-                    <i class="fas fa-eye fa-3x mb-3"></i>
-                    <h3><?= number_format(rand(1000, 9999)) ?></h3>
-                    <p class="mb-0">Pengunjung Hari Ini</p>
-                </div>
-            </div>
-            <div class="col-md-3 mb-4">
-                <div class="stats-card">
-                    <i class="fas fa-download fa-3x mb-3"></i>
-                    <h3><?= number_format(rand(100, 999)) ?></h3>
-                    <p class="mb-0">Download Bulan Ini</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Catalog Results -->
-<section class="py-5 bg-light">
-    <div class="container">
-        <?php if (isset($search) && $search): ?>
         <div class="row">
-            <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3>
-                        <i class="fas fa-search me-2"></i>
-                        Hasil Pencarian: "<?= esc($search) ?>"
-                        <span class="badge" style="background-color: #028548;"><?= count($catalogs ?? []) ?> dari <?= $total_records ?></span>
-                    </h3>
-                    <div class="btn-group">
-                        <a href="<?= base_url('opac/export?search=' . urlencode($search)) ?>"
-                            class="btn btn-outline-success btn-sm">
-                            <i class="fas fa-file-excel me-1"></i>Export Excel
-                        </a>
-                        <a href="<?= base_url('opac/search') ?>" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-search-plus me-1"></i>Pencarian Lanjutan
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <?php else: ?>
-        <div class="text-center mb-5">
-            <h3><i class="fas fa-star me-2" style="color: #028548;"></i>Koleksi Terbaru</h3>
-            <p class="text-muted">Temukan buku-buku terbaru dalam koleksi kami</p>
-        </div>
-        <?php endif; ?>
-
-        <!-- Enhanced Catalog Cards -->
-        <div class="row">
-            <?php if (!empty($catalogs)): ?>
-            <?php foreach ($catalogs as $catalog): ?>
-            <div class="col-lg-4 col-md-6 mb-4">
-                <div class="card catalog-card-enhanced h-100 shadow-sm border-0">
-                    <!-- Card Header with Green Theme -->
-                    <div class="card-header-enhanced">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-book text-white me-2"></i>
-                            <h6 class="card-title mb-0 text-white fw-bold">
-                                <!-- <?= esc($catalog->ControlNumber ?? 'N/A') ?> -->
-                               
-                            </h6>
-                        </div>
-                    </div>
-                    
-                    <div class="card-body p-0">
-                        <!-- Book Cover and Info Section -->
-                        <div class="row g-0">
-                            <!-- Book Cover Column -->
-                            <div class="col-4">
-                                <div class="book-cover-container">
-                                    <?php 
-                                    $coverPath = base_url('uploads/katalog/' . ($catalog->CoverURL ?? 'default-cover.jpg'));
-                                    $defaultCover = base_url('uploads/katalog/1726759290_e8330f6fbe57a88d3108.png');
-                                    ?>
-                                    <img src="<?= $coverPath ?>" 
-                                      style="max-width: 100px; max-height: 150px;"
-                                         alt="Cover <?= esc($catalog->Title ?? 'Book') ?>" 
-                                         class="book-cover"
-                                         onerror="this.src='<?= $defaultCover ?>'">
-                                    <div class="book-overlay">
-                                        <i class="fas fa-eye text-white"></i>
-                                    </div>
-                                </div>
-                            </div>
+            <!-- Book Cover & Quick Info -->
+            <div class="col-lg-4 mb-4">
+                <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
+                    <div class="card-body text-center">
+                        <?php 
+                        $coverPath = base_url('uploads/katalog/' . ($catalog['CoverURL'] ?? 'default-cover.jpg'));
+                        $defaultCover = base_url('uploads/katalog/1726759290_e8330f6fbe57a88d3108.png');
+                        ?>
+                        <img src="<?= $coverPath ?>" 
+                             alt="Cover <?= esc($catalog['Title']) ?>" 
+                             class="img-fluid mb-3 book-cover-detail"
+                             style="max-height: 300px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);"
+                             onerror="this.src='<?= $defaultCover ?>'">
+                        
+                        <h4 class="mb-3" style="color: #028548;"><?= esc($catalog['Title']) ?></h4>
+                        
+                        <!-- Quick Actions -->
+                        <div class="d-grid gap-2">
+                            <?php if (isset($ID)): ?>
+                            <a href="<?= base_url('opac/read/' . $ID) ?>" class="btn btn-success btn-lg">
+                                <i class="fas fa-book-open me-2"></i>Baca Online
+                            </a>
+                            <?php endif; ?>
                             
-                            <!-- Book Info Column -->
-                            <div class="col-8">
-                                <div class="book-info p-3">
-                                    <h5 class="book-title mb-2">
-                                        <?= esc(substr($catalog->Title ?? 'Tanpa Judul', 0, 50)) ?>
-                                        <?= strlen($catalog->Title ?? '') > 50 ? '...' : '' ?>
-                                    </h5>
-
-                                    <div class="book-details mb-3">
-                                        <div class="detail-item">
-                                            <i class="fas fa-user detail-icon"></i>
-                                            <span class="detail-text"><?= esc(substr($catalog->Author ?? 'N/A', 0, 25)) ?><?= strlen($catalog->Author ?? '') > 25 ? '...' : '' ?></span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <i class="fas fa-building detail-icon"></i>
-                                            <span class="detail-text"><?= esc(substr($catalog->Publisher ?? 'N/A', 0, 20)) ?><?= strlen($catalog->Publisher ?? '') > 20 ? '...' : '' ?></span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <i class="fas fa-calendar detail-icon"></i>
-                                            <span class="detail-text"><?= esc($catalog->PublishYear ?? 'N/A') ?></span>
-                                        </div>
-                                    </div>
-
-                                    <?php if (!empty($catalog->Subject)): ?>
-                                    <div class="mb-2">
-                                        <span class="subject-badge">
-                                            <i class="fas fa-tag me-1"></i>
-                                            <?= esc(substr($catalog->Subject, 0, 25)) ?>
-                                            <?= strlen($catalog->Subject) > 25 ? '...' : '' ?>
-                                        </span>
-                                    </div>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
+                            <button class="btn btn-outline-primary" onclick="printCatalog()">
+                                <i class="fas fa-print me-2"></i>Cetak Detail
+                            </button>
+                            
+                            <button class="btn btn-outline-info" onclick="shareCatalog()">
+                                <i class="fas fa-share-alt me-2"></i>Bagikan
+                            </button>
                         </div>
                         
-                        <!-- ISBN Section -->
-                        <?php if (!empty($catalog->ISBN)): ?>
-                        <div class="isbn-section px-3 py-2">
-                            <small class="isbn-text">
-                                <i class="fas fa-barcode me-1"></i>
-                                ISBN: <?= esc($catalog->ISBN) ?>
-                            </small>
+                        <!-- Availability Status -->
+                        <div class="mt-3">
+                            <?php if (!empty($roweksemplar) || !empty($roweksemplar_drm)): ?>
+                            <span class="badge bg-success fs-6">
+                                <i class="fas fa-check-circle me-1"></i>Tersedia
+                            </span>
+                            <?php else: ?>
+                            <span class="badge bg-secondary fs-6">
+                                <i class="fas fa-times-circle me-1"></i>Tidak Tersedia
+                            </span>
+                            <?php endif; ?>
                         </div>
-                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Book Details -->
+            <div class="col-lg-8">
+                <!-- Navigation Tabs -->
+                <ul class="nav nav-tabs mb-4" id="detailTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
+                            <i class="fas fa-info-circle me-1"></i>Ringkasan
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="marc-tab" data-bs-toggle="tab" data-bs-target="#marc" type="button" role="tab">
+                            <i class="fas fa-database me-1"></i>Data MARC
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="copies-tab" data-bs-toggle="tab" data-bs-target="#copies" type="button" role="tab">
+                            <i class="fas fa-books me-1"></i>Eksemplar
+                        </button>
+                    </li>
+                </ul>
+                
+                <!-- Tab Content -->
+                <div class="tab-content" id="detailTabsContent">
+                    <!-- Overview Tab -->
+                    <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header" style="background: linear-gradient(135deg, #028548 0%, #20c997 100%); color: white;">
+                                <h5 class="mb-0"><i class="fas fa-book me-2"></i>Informasi Katalog</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <table class="table table-borderless">
+                                            <tr>
+                                                <td width="30%" class="fw-bold text-muted">Judul:</td>
+                                                <td><?= esc($catalog['Title'] ?? 'N/A') ?></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold text-muted">Pengarang:</td>
+                                                <td><?= esc($catalog['Author'] ?? 'N/A') ?></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold text-muted">Penerbit:</td>
+                                                <td><?= esc($catalog['Publisher'] ?? 'N/A') ?></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold text-muted">Tahun Terbit:</td>
+                                                <td><?= esc($catalog['PublishYear'] ?? 'N/A') ?></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold text-muted">Tempat Terbit:</td>
+                                                <td><?= esc($catalog['PublishLocation'] ?? 'N/A') ?></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <table class="table table-borderless">
+                                            <tr>
+                                                <td width="30%" class="fw-bold text-muted">ISBN:</td>
+                                                <td><?= esc($catalog['ISBN'] ?? 'N/A') ?></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold text-muted">Subjek:</td>
+                                                <td><?= esc($catalog['Subject'] ?? 'N/A') ?></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold text-muted">Bahasa:</td>
+                                                <td><?= esc($catalog['Language'] ?? 'N/A') ?></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold text-muted">Klasifikasi:</td>
+                                                <td><?= esc($catalog['Classification'] ?? 'N/A') ?></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold text-muted">Halaman:</td>
+                                                <td><?= esc($catalog['PhysicalDescription'] ?? 'N/A') ?></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                                
+                                <?php if (!empty($catalog['Notes'])): ?>
+                                <div class="mt-3">
+                                    <h6 class="fw-bold text-muted">Catatan:</h6>
+                                    <p class="text-muted"><?= esc($catalog['Notes']) ?></p>
+                                </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
                     </div>
                     
-                    <!-- Card Footer -->
-                    <div class="card-footer-enhanced">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <a href="<?= base_url('opac/detail/' . $catalog->ID) ?>" class="btn btn-detail">
-                                <i class="fas fa-eye me-1"></i>Detail
-                            </a>
-                            <div class="availability-status">
-                                <?php if ($catalog->IsOPAC ?? false): ?>
-                                <span class="badge-available">
-                                    <i class="fas fa-check-circle me-1"></i>Online
-                                </span>
+                    <!-- MARC Tab -->
+                    <div class="tab-pane fade" id="marc" role="tabpanel">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header" style="background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%); color: white;">
+                                <h5 class="mb-0"><i class="fas fa-database me-2"></i>Data MARC21</h5>
+                            </div>
+                            <div class="card-body">
+                                <?php if (!empty($marc)): ?>
+                                <div class="marc-container">
+                                    <div class="mb-3">
+                                        <small class="text-muted">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Format MARC21 (Machine-Readable Cataloging) - Total <?= count($marc) ?> field
+                                        </small>
+                                    </div>
+                                    
+                                    <!-- Search MARC -->
+                                    <div class="mb-3">
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                            <input type="text" class="form-control" id="marcSearch" placeholder="Cari tag atau nilai MARC...">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- MARC Table -->
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover" id="marcTable">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th width="10%">Tag</th>
+                                                    <th width="8%">Ind1</th>
+                                                    <th width="8%">Ind2</th>
+                                                    <th width="64%">Nilai</th>
+                                                    <th width="10%" class="text-center">Urutan</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach ($marc as $field): ?>
+                                                <tr class="marc-row">
+                                                    <td>
+                                                        <span class="badge bg-primary marc-tag"><?= esc($field->Tag) ?></span>
+                                                    </td>
+                                                    <td>
+                                                        <code class="marc-indicator"><?= esc($field->Indicator1 ?: '_') ?></code>
+                                                    </td>
+                                                    <td>
+                                                        <code class="marc-indicator"><?= esc($field->Indicator2 ?: '_') ?></code>
+                                                    </td>
+                                                    <td>
+                                                        <span class="marc-value"><?= esc($field->Value) ?></span>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <span class="badge bg-secondary"><?= esc($field->Sequence) ?></span>
+                                                    </td>
+                                                </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <!-- MARC Info -->
+                                    <div class="mt-3 p-3 bg-light rounded">
+                                        <h6 class="fw-bold text-primary mb-2">
+                                            <i class="fas fa-lightbulb me-1"></i>Penjelasan Field MARC21:
+                                        </h6>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <ul class="list-unstyled small">
+                                                    <li><strong>001:</strong> Control Number</li>
+                                                    <li><strong>005:</strong> Date and Time of Latest Transaction</li>
+                                                    <li><strong>020:</strong> ISBN</li>
+                                                    <li><strong>100:</strong> Main Entry - Personal Name</li>
+                                                    <li><strong>245:</strong> Title Statement</li>
+                                                </ul>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <ul class="list-unstyled small">
+                                                    <li><strong>250:</strong> Edition Statement</li>
+                                                    <li><strong>260:</strong> Publication Information</li>
+                                                    <li><strong>300:</strong> Physical Description</li>
+                                                    <li><strong>650:</strong> Subject</li>
+                                                    <li><strong>700:</strong> Added Entry - Personal Name</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <?php else: ?>
-                                <span class="badge-offline">
-                                    <i class="fas fa-building me-1"></i>Perpustakaan
-                                </span>
+                                <div class="text-center py-4">
+                                    <i class="fas fa-database fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Data MARC Tidak Tersedia</h5>
+                                    <p class="text-muted mb-0">Belum ada data MARC21 untuk katalog ini</p>
+                                </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Copies Tab -->
+                    <div class="tab-pane fade" id="copies" role="tabpanel">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header" style="background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%); color: white;">
+                                <h5 class="mb-0"><i class="fas fa-books me-2"></i>Daftar Eksemplar</h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Physical Copies -->
+                                <?php if (!empty($roweksemplar)): ?>
+                                <h6 class="mb-3"><i class="fas fa-book me-2 text-primary"></i>Koleksi Fisik</h6>
+                                <div class="table-responsive mb-4">
+                                    <table class="table table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Barcode</th>
+                                                <th>Call Number</th>
+                                                <th>Lokasi</th>
+                                                <th>Status</th>
+                                                <th>Jenis</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($roweksemplar as $eksemplar): ?>
+                                            <tr>
+                                                <td><code><?= esc($eksemplar['NomorBarcode']) ?></code></td>
+                                                <td><?= esc($eksemplar['CallNumber']) ?></td>
+                                                <td><?= esc($eksemplar['LocationName']) ?></td>
+                                                <td>
+                                                    <span class="badge bg-success"><?= esc($eksemplar['StatusName']) ?></span>
+                                                </td>
+                                                <td><?= esc($eksemplar['RuleName']) ?></td>
+                                            </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <?php endif; ?>
+                                
+                                <!-- Digital Copies -->
+                                <?php if (!empty($roweksemplar_drm)): ?>
+                                <h6 class="mb-3"><i class="fas fa-tablet-alt me-2 text-success"></i>Koleksi Digital (DRM)</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Barcode</th>
+                                                <th>Call Number</th>
+                                                <th>Lokasi</th>
+                                                <th>Status</th>
+                                                <th>Jenis</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($roweksemplar_drm as $eksemplar): ?>
+                                            <tr>
+                                                <td><code><?= esc($eksemplar['NomorBarcode']) ?></code></td>
+                                                <td><?= esc($eksemplar['CallNumber']) ?></td>
+                                                <td><?= esc($eksemplar['LocationName']) ?></td>
+                                                <td>
+                                                    <span class="badge bg-info"><?= esc($eksemplar['StatusName']) ?></span>
+                                                </td>
+                                                <td><?= esc($eksemplar['RuleName']) ?></td>
+                                            </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <?php endif; ?>
+                                
+                                <?php if (empty($roweksemplar) && empty($roweksemplar_drm)): ?>
+                                <div class="text-center py-4">
+                                    <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Tidak Ada Eksemplar</h5>
+                                    <p class="text-muted mb-0">Belum ada eksemplar yang tersedia untuk katalog ini</p>
+                                </div>
                                 <?php endif; ?>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <?php endforeach; ?>
-            <?php else: ?>
+        </div>
+        
+        <!-- Back Button -->
+        <div class="row mt-4">
             <div class="col-12">
-                <div class="text-center py-5">
-                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                    <h4 class="text-muted">
-                        <?= isset($search) && $search ? 'Tidak ada hasil yang ditemukan' : 'Gunakan form pencarian untuk menemukan koleksi' ?>
-                    </h4>
-                    <?php if (isset($search) && $search): ?>
-                    <p class="text-muted mb-3">
-                        Coba gunakan kata kunci yang berbeda atau
-                        <a href="<?= base_url('opac/search') ?>" style="color: #028548;">pencarian lanjutan</a>
-                    </p>
-                    <a href="<?= base_url('opac') ?>" class="btn btn-primary">
-                        <i class="fas fa-home me-2"></i>Kembali ke Beranda
-                    </a>
-                    <?php endif; ?>
-                </div>
-            </div>
-            <?php endif; ?>
-        </div>
-
-        <!-- Pagination -->
-        <?php if (isset($pager) && $pager->getPageCount() > 1): ?>
-        <div class="row">
-            <div class="col-12">
-                <nav aria-label="Pagination">
-                    <?= $pager->links() ?>
-                </nav>
-            </div>
-        </div>
-        <?php endif; ?>
-    </div>
-</section>
-
-<!-- Quick Links -->
-<section class="py-5">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h3><i class="fas fa-rocket me-2" style="color: #028548;"></i>Akses Cepat</h3>
-            <p class="text-muted">Jelajahi koleksi dengan cara yang berbeda</p>
-        </div>
-
-        <div class="row">
-            <div class="col-md-3 mb-4">
-                <div class="card text-center h-100 border-0 shadow-sm quick-link-card">
-                    <div class="card-body">
-                        <i class="fas fa-search-plus fa-3x mb-3" style="color: #028548;"></i>
-                        <h5>Pencarian Lanjutan</h5>
-                        <p class="text-muted">Cari dengan filter yang lebih detail</p>
-                        <a href="<?= base_url('opac/search') ?>" class="btn btn-outline-primary">
-                            Mulai Pencarian
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-3 mb-4">
-                <div class="card text-center h-100 border-0 shadow-sm quick-link-card">
-                    <div class="card-body">
-                        <i class="fas fa-list fa-3x mb-3" style="color: #20c997;"></i>
-                        <h5>Browse Katalog</h5>
-                        <p class="text-muted">Jelajahi berdasarkan huruf awal</p>
-                        <a href="<?= base_url('opac/browse') ?>" class="btn btn-outline-success">
-                            Mulai Browse
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-3 mb-4">
-                <div class="card text-center h-100 border-0 shadow-sm quick-link-card">
-                    <div class="card-body">
-                        <i class="fas fa-chart-bar fa-3x mb-3" style="color: #17a2b8;"></i>
-                        <h5>Statistik</h5>
-                        <p class="text-muted">Lihat statistik koleksi perpustakaan</p>
-                        <a href="<?= base_url('opac/statistics') ?>" class="btn btn-outline-info">
-                            Lihat Statistik
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-3 mb-4">
-                <div class="card text-center h-100 border-0 shadow-sm quick-link-card">
-                    <div class="card-body">
-                        <i class="fas fa-download fa-3x mb-3" style="color: #ffc107;"></i>
-                        <h5>Export Data</h5>
-                        <p class="text-muted">Download data dalam format Excel/CSV</p>
-                        <div class="btn-group">
-                            <a href="<?= base_url('opac/export?format=excel') ?>"
-                                class="btn btn-outline-warning btn-sm">Excel</a>
-                            <a href="<?= base_url('opac/export?format=csv') ?>" class="btn btn-outline-warning btn-sm">CSV</a>
-                        </div>
-                    </div>
-                </div>
+                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Kembali
+                </a>
             </div>
         </div>
     </div>
@@ -330,215 +352,97 @@
 
 <?= $this->section('styles') ?>
 <style>
-/* Enhanced Catalog Card Styles */
-.catalog-card-enhanced {
-    border-radius: 15px;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    background: #fff;
-}
-
-.catalog-card-enhanced:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(2, 133, 72, 0.15) !important;
-}
-
-.card-header-enhanced {
-    background: linear-gradient(135deg, #028548 0%, #20c997 100%);
-    padding: 12px 15px;
-    border: none;
-}
-
-.book-cover-container {
-    position: relative;
-    height: 180px;
-    background: #f8f9fa;
-    overflow: hidden;
-}
-
-.book-cover {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+/* Detail Page Styles */
+.book-cover-detail {
     transition: transform 0.3s ease;
 }
 
-.book-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(2, 133, 72, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.book-cover-container:hover .book-overlay {
-    opacity: 1;
-}
-
-.book-cover-container:hover .book-cover {
+.book-cover-detail:hover {
     transform: scale(1.05);
 }
 
-.book-info {
-    height: 180px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+/* MARC Styles */
+.marc-container {
+    max-height: 600px;
+    overflow-y: auto;
 }
 
-.book-title {
-    color: #2c3e50;
-    font-size: 1rem;
+.marc-tag {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+}
+
+.marc-indicator {
+    background-color: #f8f9fa;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 0.85em;
+    color: #6c757d;
+}
+
+.marc-value {
+    word-break: break-word;
+    line-height: 1.4;
+}
+
+.marc-row:hover {
+    background-color: #f8f9fa;
+}
+
+/* Tab Styles */
+.nav-tabs .nav-link {
+    color: #6c757d;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link.active {
+    color: #028548;
+    border-color: #028548 #028548 transparent;
     font-weight: 600;
-    line-height: 1.3;
-    margin-bottom: 10px;
 }
 
-.book-details {
-    flex-grow: 1;
-}
-
-.detail-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 6px;
-    font-size: 0.85rem;
-}
-
-.detail-icon {
+.nav-tabs .nav-link:hover {
     color: #028548;
-    width: 14px;
-    margin-right: 8px;
-    font-size: 0.8rem;
+    border-color: #e9ecef #e9ecef #dee2e6;
 }
 
-.detail-text {
-    color: #6c757d;
-    font-weight: 500;
+/* Table Styles */
+.table-hover tbody tr:hover {
+    background-color: rgba(2, 133, 72, 0.05);
 }
 
-.subject-badge {
-    background: linear-gradient(135deg, #e3f2fd 0%, #f0f8ff 100%);
-    color: #028548;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    border: 1px solid #e1f5fe;
+/* Badge Styles */
+.badge {
+    font-size: 0.75em;
 }
 
-.isbn-section {
-    background: #f8f9fa;
-    border-top: 1px solid #e9ecef;
-}
-
-.isbn-text {
-    color: #6c757d;
-    font-weight: 500;
-}
-
-.card-footer-enhanced {
-    background: #fff;
-    border-top: 1px solid #e9ecef;
-    padding: 12px 15px;
-}
-
-.btn-detail {
-    background: linear-gradient(135deg, #028548 0%, #20c997 100%);
-    color: white;
-    border: none;
-    padding: 6px 16px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.btn-detail:hover {
-    background: linear-gradient(135deg, #026940 0%, #1ba085 100%);
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(2, 133, 72, 0.3);
-}
-
-.availability-status {
-    display: flex;
-    align-items: center;
-}
-
-.badge-available {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    color: white;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-.badge-offline {
-    background: linear-gradient(135deg, #6c757d 0%, #adb5bd 100%);
-    color: white;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-/* Quick Link Cards */
-.quick-link-card {
-    transition: all 0.3s ease;
-}
-
-.quick-link-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(2, 133, 72, 0.1) !important;
-}
-
-/* Responsive adjustments */
+/* Responsive */
 @media (max-width: 768px) {
-    .book-cover-container {
-        height: 120px;
+    .sticky-top {
+        position: relative !important;
+        top: auto !important;
     }
     
-    .book-info {
-        height: 120px;
-        padding: 15px !important;
+    .nav-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
     }
     
-    .book-title {
-        font-size: 0.9rem;
-    }
-    
-    .detail-item {
-        font-size: 0.8rem;
-        margin-bottom: 4px;
+    .nav-tabs .nav-item {
+        white-space: nowrap;
     }
 }
 
-@media (max-width: 576px) {
-    .catalog-card-enhanced .row.g-0 {
-        flex-direction: column;
+/* Print Styles */
+@media print {
+    .btn, .nav-tabs, .breadcrumb {
+        display: none !important;
     }
     
-    .catalog-card-enhanced .col-4,
-    .catalog-card-enhanced .col-8 {
-        flex: 0 0 100%;
-        max-width: 100%;
-    }
-    
-    .book-cover-container {
-        height: 200px;
-    }
-    
-    .book-info {
-        height: auto;
-        min-height: 140px;
+    .card {
+        border: 1px solid #dee2e6 !important;
+        box-shadow: none !important;
     }
 }
 </style>
@@ -546,55 +450,78 @@
 
 <?= $this->section('scripts') ?>
 <script>
-// Auto-focus search input
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.querySelector('input[name="search"]');
-    if (searchInput && !searchInput.value) {
-        searchInput.focus();
-    }
+// MARC Search functionality
+document.getElementById('marcSearch').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#marcTable tbody tr');
     
-    // Add loading effect for book covers
-    const bookCovers = document.querySelectorAll('.book-cover');
-    bookCovers.forEach(cover => {
-        cover.addEventListener('load', function() {
-            this.style.opacity = '1';
-        });
+    rows.forEach(row => {
+        const tag = row.querySelector('.marc-tag').textContent.toLowerCase();
+        const value = row.querySelector('.marc-value').textContent.toLowerCase();
         
-        cover.addEventListener('error', function() {
-            this.style.opacity = '1';
-            this.classList.add('error-cover');
-        });
-        
-        // Set initial opacity
-        cover.style.opacity = '0.7';
-        cover.style.transition = 'opacity 0.3s ease';
+        if (tag.includes(searchTerm) || value.includes(searchTerm)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
     });
 });
 
-// Search suggestions (mock data)
-document.querySelector('input[name="search"]').addEventListener('input', function(e) {
-    const query = e.target.value;
-    if (query.length > 2) {
-        // Here you can implement auto-suggestions
-        console.log('Search suggestion for:', query);
+// Print function
+function printCatalog() {
+    window.print();
+}
+
+// Share function
+function shareCatalog() {
+    if (navigator.share) {
+        navigator.share({
+            title: '<?= esc($catalog['Title']) ?>',
+            text: 'Lihat detail katalog: <?= esc($catalog['Title']) ?>',
+            url: window.location.href
+        });
+    } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            alert('Link telah disalin ke clipboard!');
+        });
+    }
+}
+
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    // Focus on MARC search when tab is activated
+    document.getElementById('marc-tab').addEventListener('shown.bs.tab', function() {
+        document.getElementById('marcSearch').focus();
+    });
+    
+    // Auto-resize MARC container based on content
+    const marcContainer = document.querySelector('.marc-container');
+    if (marcContainer) {
+        const tableHeight = document.querySelector('#marcTable').offsetHeight;
+        if (tableHeight < 400) {
+            marcContainer.style.maxHeight = 'none';
+        }
     }
 });
 
-// Add smooth scrolling for pagination
-document.addEventListener('click', function(e) {
-    if (e.target.closest('.pagination a')) {
-        e.preventDefault();
-        const link = e.target.closest('.pagination a');
-        const href = link.getAttribute('href');
-        
-        // Smooth scroll to catalog section
-        const catalogSection = document.querySelector('.catalog-card-enhanced').closest('section');
-        catalogSection.scrollIntoView({ behavior: 'smooth' });
-        
-        // Navigate after scroll
-        setTimeout(() => {
-            window.location.href = href;
-        }, 500);
+// Keyboard navigation for tabs
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey) {
+        switch(e.key) {
+            case '1':
+                e.preventDefault();
+                document.getElementById('overview-tab').click();
+                break;
+            case '2':
+                e.preventDefault();
+                document.getElementById('marc-tab').click();
+                break;
+            case '3':
+                e.preventDefault();
+                document.getElementById('copies-tab').click();
+                break;
+        }
     }
 });
 </script>
