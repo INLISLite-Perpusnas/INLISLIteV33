@@ -383,10 +383,10 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 			->select('col.NomorBarcode, col.UpdateDate')
 			->select('cat.Title, cat.PublishLocation, cat.Publisher, cat.PublishYear')
 			->join('catalogs cat', 'cat.ID = col.Catalog_id');
-			if(!empty(branch_id())){
-				$builder->where('col.Branch_id', branch_id());
+			// if(!empty(branch_id())){
+			// 	$builder->where('col.Branch_id', branch_id());
 				
-			}
+			// }
 
 		if (!empty($member_no)) {
 			$cli = get_ref_table('collectionloanitems', 'Collection_id', 'LoanStatus="Loan"', 'data');

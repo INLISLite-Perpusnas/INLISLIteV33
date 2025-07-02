@@ -42,33 +42,51 @@ class Anggota extends \Base\Controllers\BaseResourceController
 		return $this->respond($data, 200);
 	}
 
+	/**
+	 * Show an array of resource (paginated).
+	 *
+	 * @return mixed
+	 */
 	public function datatable($isKeranjang = 0)
 	{
+		/**
+		 * Query builder to get data from database
+		 * @var \CodeIgniter\Database\BaseBuilder $builder
+		 */
 		$db = db_connect('data');
-		$builder = $db->table('members as a')
-			->select('a.ID, a.ID as action, a.ID as cid')
-			->select('a.IsKeranjang, a.FullName, a.Phone, a.Email, a.PhotoUrl, a.MemberNo,  a.RegisterDate, a.EndDate, a.Branch_id')
-			->select('a.JenisAnggota_id, jenis_anggota.jenisanggota as JenisAnggota, a.StatusAnggota_id, status_anggota.Nama as StatusAnggota')
-			->select('b.ID as Branch_id, b.Name as Perpustakaan, b.Name, b.Code, b.NPP_Provinsi_id, b.NPP_KabKota_id, b.NPP_Kecamatan_id, b.NPP_Kelurahan_id, b.NPP_id')
-			->join('branchs b', 'b.ID = a.Branch_id', 'left')
-			->join('jenis_anggota', 'jenis_anggota.id = a.JenisAnggota_id')
-			->join('status_anggota', 'status_anggota.id = a.StatusAnggota_id');
-
-		if (user()->category == 'admin') {
-		} elseif (user()->category == 'sa_prov' && user()->branch_id === null) {
-			$npp_provinsi_id = preg_replace('/\./', '', user()->npp_provinsi_id);
-			$builder->where('b.NPP_Provinsi_id', $npp_provinsi_id);
-		} elseif (user()->category == 'sa_prov' && user()->branch_id !== null) {
-			$builder->where('a.Branch_id', branch_id());
-		} elseif (user()->category == 'sa_kabkot' && user()->branch_id === null) {
-			$npp_kabkota_id = preg_replace('/\./', '', user()->npp_kabkota_id);
-			$builder->where('b.NPP_KabKota_id', $npp_kabkota_id);
-		} elseif (user()->category == 'sa_kabkot' && user()->branch_id !== null) {
-			$builder->where('a.Branch_id', branch_id());
-		} else {
-			$builder->where('a.Branch_id', branch_id());
+		$builder = $db->table('members as a');
+		$builder->select([
+			// Kolom dari tabel members (a)
+			'a.ID',
+			'a.ID as action',
+			'a.ID as cid',
+			'a.IsKeranjang',
+			'a.FullName',
+			'a.Phone',
+			'a.Email',
+			'a.PhotoUrl',
+			'a.MemberNo',
+			'a.RegisterDate',
+			'a.EndDate',
+			'a.JenisAnggota_id',
+			'a.StatusAnggota_id',
+			
+			// Kolom dari tabel join
+			'jenis_anggota.jenisanggota as JenisAnggota',
+			'status_anggota.Nama as StatusAnggota'
+		]);
+		$builder->join('jenis_anggota', 'jenis_anggota.id = a.JenisAnggota_id', 'left'); // Menggunakan LEFT JOIN
+		$builder->join('status_anggota', 'status_anggota.id = a.StatusAnggota_id', 'left'); // Menggunakan LEFT JOIN
+		
+		if($isKeranjang == 1){
+			$builder->where('a.IsKeranjang', $isKeranjang);
 		}
 
+
+		/**
+		 * DataTables
+		 * @var \Hermawan\DataTables\DataTable $dataTable
+		 */
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
 			->edit('cid', function ($row) {
@@ -146,18 +164,9 @@ class Anggota extends \Base\Controllers\BaseResourceController
 				}
 				return $html;
 			})
-			->edit('IsKeranjang', function ($row) {
-				$checked = $row->IsKeranjang == 1 ? 'checked' : '';
-				$html = '<input type="checkbox" class="apply-status" data-href="' . base_url('api/anggota/switch/' . $row->ID) . '" data-checked="' . $checked . '" data-field="IsKeranjang" ' . $checked . ' data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="mini">';
-				return $html;
-			})
+		
 			->edit('action', function ($row) {
-				$edit = '<a href="' . base_url('anggota/edit/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Detail " class="btn btn-primary"><i class="pe-7s-look font-weight-bold"> </i></a>';
-				$is_allowed = !is_member('admin') && !is_member('sa_prov') && !is_member('sa_kabkota');
-				if ($is_allowed) {
-					$edit = '<a href="' . base_url('anggota/edit/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Ubah " class="btn btn-primary"><i class="pe-7s-note font-weight-bold"> </i></a>';
-				}
-
+				$edit = '<a href="' . base_url('anggota/edit/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Ubah " class="btn btn-primary"><i class="pe-7s-note font-weight-bold"> </i></a>';
 				$delete = '<a href="javascript:void(0);" data-href="' . base_url('anggota/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
 				if ($row->IsKeranjang == 1) {
 					$edit = '<a href="' . base_url('anggota/pulihkan_keranjang?ID[]=' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Pulihkan " class="btn btn-warning"><i class="fa fa-undo font-weight-bold"> </i></a>';
@@ -167,8 +176,7 @@ class Anggota extends \Base\Controllers\BaseResourceController
 			->toJson();
 
 		return $dataTable;
-	}
-
+}
 	public function detail($id = null)
 	{
 		$data = $this->anggotaModel->find($id);

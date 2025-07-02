@@ -21,8 +21,8 @@ class GuestBook extends \App\Controllers\BaseController
          $this->session = session();
 		 $this->db=\Config\Database::connect('data');
 		 $this->validation = \Config\Services::validation();
-		$this->memberguestModel = new \GuestBook\Models\MemberGuestModel();
-		$this->groupguestModel  = new \GuestBook\Models\GroupGuestModel();
+		$this->memberguestModel = new \BukuTamu\Models\MemberGuestModel();
+		$this->groupguestModel  =  new \BukuTamu\Models\GroupGuestModel();
 
 		helper('reference');
 		helper('peminjaman');

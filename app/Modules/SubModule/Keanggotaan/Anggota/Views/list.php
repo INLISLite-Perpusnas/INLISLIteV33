@@ -138,8 +138,6 @@ if (is_member('sa_kabkot')) {
 							<th class="text-center" width="35">
 								<input type="checkbox" class="check_data" title="Pilih Semua">
 							</th>
-
-							<th class="text-center"><span class="text-primary">Branch ID</span> <br> NPP / Perpustakaan</th>
 							<th>Nama Anggota</th>
 							<th>No. Anggota</th>
 							<th width="100">Tgl. Register</th>
@@ -198,10 +196,6 @@ if (is_member('sa_kabkot')) {
 					searchable: false
 				},
 				{
-					data: 'Perpustakaan',
-					className: 'text-left'
-				},
-				{
 					data: 'FullName'
 				},
 				{
@@ -225,37 +219,10 @@ if (is_member('sa_kabkot')) {
 					searchable: false,
 					orderable: false
 				},
-				{
-					data: 'NPP_Provinsi_id', //9
-					visible: false,
-				},
-				{
-					data: 'NPP_KabKota_id', //10
-					visible: false,
-				},
-				{
-					data: 'NPP_Kecamatan_id', //11
-					visible: false,
-				},
-				{
-					data: 'NPP_Kelurahan_id', //12
-					visible: false,
-				},
-				{
-					data: 'Branch_id', //13
-					visible: false,
-				},
-				{
-					data: 'Code', //14
-					visible: false,
-				},
-				{
-					data: 'Name', //15
-					visible: false,
-				},
+			
 			],
 			"order": [
-				[2, "asc"]
+				[1, "desc"]
 			],
 			"drawCallback": function(data, type, full, meta) {
 				var api = this.api();

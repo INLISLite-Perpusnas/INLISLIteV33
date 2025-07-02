@@ -174,7 +174,7 @@ $slug = $request->getGet('slug') ?? '';
 				},
 			],
 			"order": [
-				[6, "desc"]
+				[9, "desc"]
 			],
 			"drawCallback": function(data, type, full, meta) {
 				var api = this.api();
