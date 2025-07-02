@@ -9,7 +9,7 @@
 		</tr>
 	</thead>
 	<tbody>
-		<?php foreach (get_sumbangan($anggota->id) as $row) : ?>
+		<?php foreach (get_sumbangan($anggota->ID) as $row) : ?>
 		<tr>
 			<td width="35"></td>
 			<td><?=$row->jumlah?></td>

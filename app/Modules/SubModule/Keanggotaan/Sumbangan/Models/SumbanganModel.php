@@ -4,7 +4,7 @@ namespace Sumbangan\Models;
 
 class SumbanganModel extends \App\Models\BaseModel
 {
-    protected $DBGroup      = 'inlis';
+    protected $DBGroup      = 'data';
     protected $table      = 'sumbangan';
     protected $primaryKey = 'ID';
     protected $returnType     = 'object';

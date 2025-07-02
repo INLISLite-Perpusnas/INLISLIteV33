@@ -14,23 +14,19 @@ class Home extends \Base\Controllers\BaseController
     public $authorize;
     public $katalogModel;
     public $visitorModel;
+    public $eksemplarModel;
     public $db;
 
     function __construct()
     {
         $this->visitorModel = new \Opac\Models\VisitorModel();
         $this->katalogModel = new \Katalog\Models\KatalogModel();
+        $this->eksemplarModel = new \Eksemplar\Models\EksemplarModel();
         $this->db = \Config\Database::connect('data');
     }
 
     public function index()
-/*************  ✨ Windsurf Command ⭐  *************/
-    /**
-     * Menampilkan halaman beranda
-     * 
-     * @return view halaman beranda
-     */
-/*******  a3ed90a5-4b46-492d-b485-6b820347082a  *******/    {
+  {
         $this->data['title'] = 'Beranda - Perpustakaan Digital';
         
         // Get featured books/collections (latest 8 books)
@@ -70,7 +66,7 @@ class Home extends \Base\Controllers\BaseController
     private function getLibraryStatistics()
     {
         try {
-            $totalBooks = $this->katalogModel->countAllResults();
+            $totalBooks = $this->eksemplarModel->countAllResults();
             
             // You can add more statistics from other tables
             return [
@@ -110,14 +106,14 @@ class Home extends \Base\Controllers\BaseController
     private function getBorrowedBooks()
     {
         try {
-            if ($this->db->tableExists('loans')) {
-                return $this->db->table('loans')
-                    ->where('status', 'borrowed')
+            if ($this->db->tableExists('collectionloanitems')) {
+                return $this->db->table('collectionloanitems')
+                    ->where('LoanStatus', 'Loan')
                     ->countAllResults();
             }
-            return 45; // Dummy data
+            return 0; // Dummy data
         } catch (\Exception $e) {
-            return 45; // Dummy data
+            return 0; // Dummy data
         }
     }
 
@@ -234,7 +230,7 @@ class Home extends \Base\Controllers\BaseController
                 'description' => 'Pinjam buku secara mandiri',
                  'img'=>base_url('assets/img/peminjaman.png'),
                 'icon' => 'fas fa-hand-holding-heart',
-                'link' => base_url('loan/self-service'),
+                'link' => base_url('peminjaman-mandiri'),
                 'color' => 'danger'
             ],
             [
@@ -242,7 +238,7 @@ class Home extends \Base\Controllers\BaseController
                 'description' => 'Kembalikan buku secara mandiri',
                  'img'=>base_url('assets/img/pengembalian.png'),
                 'icon' => 'fas fa-undo',
-                'link' => base_url('return/self-service'),
+                'link' => base_url('pengembalian-mandiri'),
                 'color' => 'secondary'
             ]
         ];

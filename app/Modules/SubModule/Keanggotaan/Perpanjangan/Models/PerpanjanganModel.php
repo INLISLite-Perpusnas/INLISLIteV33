@@ -4,7 +4,7 @@ namespace Perpanjangan\Models;
 
 class PerpanjanganModel extends \App\Models\BaseModel
 {
-    protected $DBGroup    = 'inlis';
+    protected $DBGroup    = 'data';
     protected $table      = 'member_perpanjangan';
     protected $primaryKey = 'ID';
     protected $returnType     = 'object';

@@ -765,7 +765,7 @@ $rda = $request->getGet('rda') ?? 1;
 
 	<div class="card-footer p-0 pt-3">
 		<div class="form-group">
-			<?php if ($is_allowed) : ?>
+		
 				<div class="form-check form-check-inline">
 					<input type="hidden" name="IsRDA" value="<?= $rda ?? 1 ?>">
 					<input type="hidden" name="IsRedirect" value="0">
@@ -774,7 +774,7 @@ $rda = $request->getGet('rda') ?? 1;
 				</div>
 
 				<button type="submit" class="btn btn-primary btn-lg" name="submit"><i class="fa fa-save mr-2"></i> Simpan</button>
-			<?php endif; ?>
+		
 		</div>
 	</div>
 </div>

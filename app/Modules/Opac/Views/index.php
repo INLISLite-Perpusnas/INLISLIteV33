@@ -285,7 +285,7 @@
                                     }
                                     
                                     $coverPath = base_url('uploads/katalog/' . ($coverURL ?: 'default-cover.jpg'));
-                                    $defaultCover = base_url('uploads/katalog/default.png');
+                                    $defaultCover = base_url('assets/img/default-cover.png');
                                     ?>
                                     <img src="<?= $coverPath ?>" 
                                          style="max-width: 100px; max-height: 150px; width: 100%; object-fit: cover;"

@@ -448,12 +448,16 @@
                 <?php if (!empty($featured_books)): ?>
                     <?php foreach ($featured_books as $index => $book): ?>
                     <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="<?= ($index + 1) * 100 ?>">
-                        <div class="book-card">
+                    <?php 
+                     $coverPath = base_url('uploads/katalog/' . ($book->CoverURL ?: 'default-cover.jpg'));
+                     $defaultCover = base_url('assets/img/default-cover.png');
+                     ?>  
+                    <div class="book-card">
                             <div class="book-image">
-                                <i class="fas fa-book"></i>
+                             <img style="max-width: 200px; max-height: 200px; width: 100%; object-fit: cover;" src="<?= $coverPath ?>" alt="<?= esc($book->Title) ?>" onerror="this.onerror=null; this.src='<?= $defaultCover ?>';">
                             </div>
                             <div class="book-content">
-                                <h5 class="book-title"><?= esc($book->Title) ?></h5>
+                                <h5 class="book-title"><a href="<?= base_url('opac/detail/' . $book->ID) ?>"><?= esc($book->Title) ?></a></h5>
                                 <p class="book-author"><?= esc($book->Author ?: 'Penulis tidak diketahui') ?></p>
                                 <p class="book-publisher"><?= esc($book->Publisher ?: 'Penerbit tidak diketahui') ?></p>
                             </div>
@@ -470,7 +474,7 @@
                 <?php endif; ?>
             </div>
             <div class="text-center mt-4" data-aos="fade-up">
-                <a href="<?= base_url('opac/search') ?>" class="btn btn-primary btn-lg">
+                <a href="<?= base_url('opac') ?>" class="btn btn-primary btn-lg">
                     <i class="fas fa-eye me-2"></i>
                     Lihat Semua Koleksi
                 </a>

@@ -2,117 +2,229 @@
 
 namespace SelfReturn\Controllers;
 
-use \CodeIgniter\Files\File;
-
-class SelfReturn extends \App\Controllers\BaseController
+class SelfReturn extends \App\Controllers\BaseController 
 {
-    protected $auth;
-    protected $authorize;
-    protected $pengembalianModel;
-    protected $uploadPath;
-    protected $modulePath;
+    protected $db;
+    protected $session;
     
     function __construct()
     {
         $this->language = \Config\Services::language();
-		$this->language->setLocale('id');
+        $this->language->setLocale('id');
         
-        $this->pengembalianModel = new \Pengembalian\Models\PengembalianModel();
-		$this->collectionModel = new \Peminjaman\Models\CollectionModel();
-        $this->collectionLoanModel = new \Peminjaman\Models\CollectionLoanModel();
-        $this->collectionLoanItemModel = new \Peminjaman\Models\CollectionLoanItemModel();
-
-        $this->auth = \Myth\Auth\Config\Services::authentication();
-        $this->authorize = \Myth\Auth\Config\Services::authorization();
+        $this->db = \Config\Database::connect('data');
         $this->session = service('session');
-		$this->cart = new \App\Libraries\Cart();
-
-		helper('reference');
-		helper('peminjaman');
-		helper('pengembalian');
-		helper('member');
-		helper('lokasiruang');
     }
-
-	public function index()
+    
+    public function index()
     {
-		if(!isset($_COOKIE['location_code'])) return redirect()->to('lokasi?slug=pengembalian-mandiri');
-		if($_COOKIE['location_key'] != hash('sha256', $_COOKIE['location_code'])) return redirect()->to('lokasi?slug=pengembalian-mandiri');
-
-		$member_no = $this->request->getVar('member_no')??'';
-		$this->data['member_no'] = $member_no;
-
-		if(!empty($member_no)){
-			$member = get_ref_single('members','MemberNo="'.$member_no.'"','inlis');
-			if(!empty($member)){
-				$jenis_anggota = get_ref_single('jenis_anggota','id="'.$member->JenisAnggota_id.'"','inlis');
-				
-				$this->data['member'] = $member;
-				$this->data['jenis_anggota'] = $jenis_anggota;
-			} else {
-				set_message('toastr_msg','Nomor Anggota tidak ditemukan');
-				set_message('toastr_type', 'warning');
-				return redirect()->back();
-			}
-		}
-
-        $this->data['title'] = 'Pengembalian Mandiri';
-        $this->data['message'] = $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message');
-        echo view('SelfReturn\Views\add', $this->data);
+        // Get barcode parameter from URL
+        $nomorBarcode = $this->request->getGet('NomorBarcode');
+        
+        // Initialize data
+        $this->data['nomorBarcode'] = $nomorBarcode;
+        
+        // Get location data from cookie
+        $locationId = $this->request->getCookie('Location_id');
+        if (!$locationId) {
+            return redirect()->to('buku-tamu/lokasi');
+        }
+        
+        return view('SelfReturn\Views\simple_return_view', $this->data);
     }
-
-	public function do_return($id = null)
-	{
-		$carts = get_cart_return();
-		$cli_update_data = array();
-		if(!empty($id))
-		{
-			$cli_update_data[] = array(
-				'ID' => $id,
-				'LoanStatus' => 'Return',
-				'ActualReturn' => date('Y-m-d'),
-				'UpdateBy' => user_id(),
-				'UpdateTerminal' => $this->request->getIPAddress(),
-			);
-		} else {	
-			if(!empty($carts))
-			{
-				foreach($carts as $row){
-					$cli_update_data[] = array(
-						'ID' => str_replace('R','',$row->id),
-						'LoanStatus' => 'Return',
-						'ActualReturn' => date('Y-m-d'),
-						'UpdateBy' => user_id(),
-						'UpdateTerminal' => $this->request->getIPAddress(),
-					);
-				}
-			}
-		}
-
-		$cli_update = $this->collectionLoanItemModel->updateBatch($cli_update_data,'ID');
-		if ($cli_update) {
-			if(!empty($carts))
-			{				
-				foreach($carts as $row){
-					$this->cart->remove($row->id);
-				}
-			}
-
-			$this->session->setFlashdata('toastr_msg', 'Pengembalian Mandiri berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
-			$response = [
-				'error' => false,
-				'message' => 'Pengembalian berhasil disimpan',
-			];
-		} else {
-			$this->session->setFlashdata('toastr_msg', 'Pengembalian Mandiri gagal disimpan. Silakan coba lagi');
-			$this->session->setFlashdata('toastr_type', 'error');
-			$response = [
-				'error' => true,
-				'message' => 'Pengembalian Mandiri gagal disimpan. Silakan coba lagi',
-			];
-		}
-
-		return redirect()->back();
-	}
+    
+    public function processReturn()
+    {
+        try {
+            $nomorBarcode = $this->request->getPost('nomorBarcode');
+            
+            if (empty($nomorBarcode)) {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'Nomor barcode tidak boleh kosong'
+                ]);
+            }
+            
+            // Start transaction
+            $this->db->transStart();
+            
+            // Find the book collection
+            $collection = $this->db->table('collections')
+                ->select('collections.*, catalogs.Title, catalogs.Author')
+                ->join('catalogs', 'catalogs.ID = collections.Catalog_id', 'left')
+                ->where('collections.NomorBarcode', $nomorBarcode)
+                ->get()
+                ->getRow();
+            
+            if (!$collection) {
+                $this->db->transRollback();
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'Buku dengan barcode tersebut tidak ditemukan'
+                ]);
+            }
+            
+            // Check if book is currently on loan
+            $loanItem = $this->db->table('collectionloanitems')
+                ->where('Collection_id', $collection->ID)
+                ->where('LoanStatus', 'Loan')
+                ->where('ActualReturn IS NULL')
+                ->get()
+                ->getRow();
+            
+            if (!$loanItem) {
+                $this->db->transRollback();
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'Buku ini tidak sedang dipinjam atau sudah dikembalikan'
+                ]);
+            }
+            
+            $returnDate = date('Y-m-d H:i:s');
+            $dueDate = new \DateTime($loanItem->DueDate);
+            $actualReturnDate = new \DateTime($returnDate);
+            
+            // Calculate late days
+            $lateDays = 0;
+            if ($actualReturnDate > $dueDate) {
+                $lateDays = $actualReturnDate->diff($dueDate)->days;
+            }
+            
+            // Update loan item
+            $this->db->table('collectionloanitems')
+                ->where('ID', $loanItem->ID)
+                ->update([
+                    'ActualReturn' => $returnDate,
+                    'LateDays' => $lateDays,
+                    'LoanStatus' => 'Return',
+                    'UpdateBy' => 1,
+                    'UpdateDate' => $returnDate,
+                    'UpdateTerminal' => $this->request->getIPAddress()
+                ]);
+            
+            // Update collection status to available
+            $this->db->table('collections')
+                ->where('ID', $collection->ID)
+                ->update([
+                    'Status_id' => 1, // Available status
+                    'UpdateBy' => 1,
+                    'UpdateDate' => $returnDate,
+                    'UpdateTerminal' => $this->request->getIPAddress()
+                ]);
+            
+            // Update collection loan return count
+            $this->db->table('collectionloans')
+                ->where('ID', $loanItem->CollectionLoan_id)
+                ->set('ReturnCount', 'ReturnCount + 1', false)
+                ->set('UpdateBy', 1)
+                ->set('UpdateDate', $returnDate)
+                ->set('UpdateTerminal', $this->request->getIPAddress())
+                ->update();
+            
+            // Complete transaction
+            $this->db->transComplete();
+            
+            if ($this->db->transStatus() === false) {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'Terjadi kesalahan saat memproses pengembalian'
+                ]);
+            }
+            
+            $response = [
+                'status' => 'success',
+                'message' => 'Buku berhasil dikembalikan',
+                'data' => [
+                    'title' => $collection->Title,
+                    'author' => $collection->Author,
+                    'barcode' => $nomorBarcode,
+                    'return_date' => $returnDate,
+                    'due_date' => $loanItem->DueDate,
+                    'late_days' => $lateDays,
+                    'is_late' => $lateDays > 0
+                ]
+            ];
+            
+            return $this->response->setJSON($response);
+            
+        } catch (\Exception $e) {
+            $this->db->transRollback();
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
+            ]);
+        }
+    }
+    
+    public function checkBook()
+    {
+        $nomorBarcode = $this->request->getPost('nomorBarcode');
+        
+        if (empty($nomorBarcode)) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Nomor barcode tidak boleh kosong'
+            ]);
+        }
+        
+        // Find the book collection with loan information
+        $query = $this->db->table('collections c')
+            ->select('c.*, cat.Title, cat.Author, cli.DueDate, cli.LoanDate, cli.LoanStatus')
+            ->join('catalogs cat', 'cat.ID = c.Catalog_id', 'left')
+            ->join('collectionloanitems cli', 'cli.Collection_id = c.ID AND cli.LoanStatus = "Loan" AND cli.ActualReturn IS NULL', 'left')
+            ->where('c.NomorBarcode', $nomorBarcode)
+            ->get();
+        
+        $book = $query->getRow();
+        
+        if (!$book) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Buku dengan barcode tersebut tidak ditemukan'
+            ]);
+        }
+        
+        $response = [
+            'status' => 'success',
+            'data' => [
+                'title' => $book->Title,
+                'author' => $book->Author,
+                'barcode' => $nomorBarcode,
+                'is_on_loan' => !empty($book->LoanStatus),
+                'loan_date' => $book->LoanDate,
+                'due_date' => $book->DueDate,
+                'status_id' => $book->Status_id
+            ]
+        ];
+        
+        if (!empty($book->LoanStatus)) {
+            $dueDate = new \DateTime($book->DueDate);
+            $today = new \DateTime();
+            $response['data']['is_overdue'] = $today > $dueDate;
+            $response['data']['days_overdue'] = $today > $dueDate ? $today->diff($dueDate)->days : 0;
+        }
+        
+        return $this->response->setJSON($response);
+    }
+    
+    public function getReturnHistory()
+    {
+        $limit = $this->request->getGet('limit') ?? 10;
+        $offset = $this->request->getGet('offset') ?? 0;
+        
+        $query = $this->db->table('collectionloanitems cli')
+            ->select('cli.*, c.NomorBarcode, cat.Title, cat.Author')
+            ->join('collections c', 'c.ID = cli.Collection_id')
+            ->join('catalogs cat', 'cat.ID = c.Catalog_id', 'left')
+            ->where('cli.LoanStatus', 'Return')
+            ->orderBy('cli.ActualReturn', 'DESC')
+            ->limit($limit, $offset);
+        
+        $history = $query->get()->getResult();
+        
+        return $this->response->setJSON([
+            'status' => 'success',
+            'data' => $history
+        ]);
+    }
 }

@@ -2,13 +2,11 @@
 	$routes = \Config\Services::routes(true);
 }
 $routes->group('pengembalian-mandiri', ['namespace' => 'SelfReturn\Controllers'], function ($subroutes) {
-	/*** Route Update for SelfReturn ***/
-	$subroutes->add('', 'SelfReturn::index');
-	$subroutes->add('index', 'SelfReturn::index');
-
-	//custom
-	$subroutes->add('do_return', 'SelfReturn::do_return');
-	$subroutes->add('do_return/(:any)', 'SelfReturn::do_return/$1');
+    // Main routes - hanya perlu scan barcode
+	$subroutes->add('/', 'SelfReturn::index');
+    $subroutes->add('check-book', 'SelfReturn::checkBook');
+    $subroutes->add('process-return', 'SelfReturn::processReturn');
+    $subroutes->add('history', 'SelfReturn::getReturnHistory');
 });
 
 $routes->group('api/pengembalian-mandiri', ['namespace' => 'SelfReturn\Controllers\Api'], function ($subroutes) {

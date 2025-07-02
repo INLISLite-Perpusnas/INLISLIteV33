@@ -211,7 +211,7 @@ $tanggal_pengadaan = date('Y-m-d', strtotime($eksemplar->TanggalPengadaan));
 
 			<div class="card-footer p-0 pt-3">
 				<div class="form-group">
-					<?php if ($is_allowed) : ?>
+					
 						<div class="form-check form-check-inline">
 							<input type="hidden" name="Branch_id" id="Branch_id" value="<?= branch_id() ?>">
 							<input type="hidden" name="Catalog_id" id="Catalog_id" value="<?= $catalog_id ?>">
@@ -229,7 +229,7 @@ $tanggal_pengadaan = date('Y-m-d', strtotime($eksemplar->TanggalPengadaan));
 
 							<button type="submit" class="btn btn-primary btn-lg mr-2 ml-2" name="submit"><i class="fa fa-save"></i> Simpan</button>
 						</div>
-					<?php endif; ?>
+				
 				</div>
 			</div>
 		</div>

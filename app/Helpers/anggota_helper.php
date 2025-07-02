@@ -60,10 +60,10 @@ if (!function_exists('get_sumbangan')) {
     {        
 		$model = new \Sumbangan\Models\SumbanganModel();
         $query = $model
-            ->select('t_sumbangan.*');
+            ->select('sumbangan.*');
 
 		if(!empty($member_id)){
-			$query->where('t_member_id',$member_id);
+			$query->where('Member_id',$member_id);
 		}
 
 		$data = $query->get()->getResult();
@@ -74,28 +74,29 @@ if (!function_exists('get_sumbangan')) {
 if (!function_exists('get_perpanjangan')) {
     function get_perpanjangan($member_id = null)
     {        
-		$model = new \Sumbangan\Models\SumbanganModel();
+		$model = new \PerpanjanganAnggota\Models\PerpanjanganAnggotaModel();
         $query = $model
-            ->select('t_sumbangan.*');
+            ->select('member_perpanjangan.*');
 
 		if(!empty($member_id)){
-			$query->where('t_member_id',$member_id);
+			$query->where('Member_id',$member_id);
 		}
 
 		$data = $query->get()->getResult();
+    //   dd($data);
         return $data;
     }
 }
 
 if (!function_exists('get_peminjaman')) {
-    function get_peminjaman($member_id = null,$DBGroup='inlis')
+    function get_peminjaman($member_id = null,$DBGroup='data')
     {        
-		$model = new \Sumbangan\Models\SumbanganModel();
+		$model = new \Peminjaman\Models\CollectionLoanItemModel();
         $query = $model
-            ->select('t_sumbangan.*');
+            ->select('collectionloanitems.*');
 
 		if(!empty($member_id)){
-			$query->where('t_member_id',$member_id);
+			$query->where('Member_id',$member_id);
 		}
 
 		$data = $query->get()->getResult();
@@ -104,7 +105,7 @@ if (!function_exists('get_peminjaman')) {
 }
 
 if (!function_exists('get_pelanggaran')) {
-    function get_pelanggaran($member_id = null,$DBGroup='inlis')
+    function get_pelanggaran($member_id = null,$DBGroup='data')
     {        
 		$baseModel = new \Anggota\Models\pelanggaranModel();
 		$query = $baseModel;

@@ -38,9 +38,9 @@ class SelfLoan extends \App\Controllers\BaseController
         
         // Get location data from cookie
         $locationId = $this->request->getCookie('Location_id');
-        if ($locationId) {
-            $this->data['locationData'] = $this->getLocationData($locationId);
-        }
+		if (!$locationId) {
+			return redirect()->to('buku-tamu/lokasi');
+		}
         
         // Process member validation
         if ($memberNo) {

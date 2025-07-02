@@ -112,24 +112,8 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 		$builder = $db->table('collections as a')
 			->select('a.ID, a.ID as action, a.ID as Collection_id')
 			->select('a.NomorBarcode, a.TanggalPengadaan, a.NoInduk, a.Catalog_id, a.IsOPAC,a.ISDRM,a.IsQUARANTINE')
-			->select('a.Branch_id, a.Location_id')
-			->join('branchs b', 'b.ID = a.Branch_id', 'inner')
 			->where('a.IsQUARANTINE', $IsQUARANTINE);
 
-		if (user()->category == 'admin') {
-		} elseif (user()->category == 'sa_prov' && user()->branch_id === null) {
-			$npp_provinsi_id = preg_replace('/\./', '', user()->npp_provinsi_id);
-			$builder->where('b.NPP_Provinsi_id', $npp_provinsi_id);
-		} elseif (user()->category == 'sa_prov' && user()->branch_id !== null) {
-			$builder->where('a.Branch_id', branch_id());
-		} elseif (user()->category == 'sa_kabkot' && user()->branch_id === null) {
-			$npp_kabkota_id = preg_replace('/\./', '', user()->npp_kabkota_id);
-			$builder->where('b.NPP_KabKota_id', $npp_kabkota_id);
-		} elseif (user()->category == 'sa_kabkot' && user()->branch_id !== null) {
-			$builder->where('a.Branch_id', branch_id());
-		} else {
-			$builder->where('a.Branch_id', branch_id());
-		}
 
 		if (!empty($catalog_id)) {
 			$builder->where('a.Catalog_id', $catalog_id);
@@ -150,10 +134,7 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 				$catalog = get_ref_single('catalogs', 'ID=' . $row->Catalog_id, 'data');
 				$html  = ($catalog->Title ?? "") . '<br>';
 				$html .= '<b class="text-primary">' . ($catalog->Publikasi ?? "") . '</b><br>';
-				// if(!empty($catalog)){
-				// 	$worksheet = get_ref_single('worksheets','ID='.$catalog->Worksheet_id,'data');
-				// 	$html .= '<b>'.$worksheet->Name.'</b><br>';
-				// }
+			
 
 				return $html;
 			})
@@ -172,11 +153,9 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 			->edit('action', function ($row) use ($catalog_id) {
 				$edit = '<a href="' . base_url('eksemplar/edit/' . $row->ID . '?catalog_id=' . $catalog_id) . '" data-toggle="tooltip" data-placement="top" title="Detail" class="btn btn-primary show-data"><i class="pe-7s-look font-weight-bold"> </i></a>';
 				$delete = "";
-				$is_allowed = !is_member('admin') && !is_member('sa_prov') && !is_member('sa_kabkota');
-				if ($is_allowed) {
+			
 					$edit = '<a href="' . base_url('eksemplar/edit/' . $row->ID . '?catalog_id=' . $catalog_id) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
 					$delete .= '<a href="javascript:void(0);" data-href="' . base_url('eksemplar/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
-				}
 
 				return $edit . ' ' . $delete;
 			})
