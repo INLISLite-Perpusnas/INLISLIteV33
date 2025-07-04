@@ -33,7 +33,10 @@ class Opac extends \Base\Controllers\BaseController
         $this->collectionLoanModel =new \Peminjaman\Models\CollectionLoanModel();
         $this->eksemplarModel = new \Eksemplar\Models\EksemplarModel();
         $this->katalogRuasModel = new \Katalog\Models\KatalogRuasModel();
+       
+         helper('opac');
     }
+    
 
  public function index()
 {
@@ -49,12 +52,6 @@ class Opac extends \Base\Controllers\BaseController
             
             $this->data['member_no'] = $memberNo;
             $this->data['recommendations'] = $result['recommendations'];
-            $this->data['metrics'] = [
-                'precision' => $result['precision'],
-                'recall' => $result['recall'],
-                'ndcg' => $result['ndcg'],
-                'accuracy' => $result['accuracy']
-            ];
             $this->data['is_cold_start'] = $result['is_cold_start'];
             
             // Don't show regular catalogs when showing recommendations
@@ -91,16 +88,15 @@ class Opac extends \Base\Controllers\BaseController
 
 private function loadRegularCatalogs()
 {
-    // Original catalog loading logic
     $perPage = 12;
     $currentPage = $this->request->getVar('page') ?? 1;
-    
-    // Pencarian
+
+    // Pencarian utama
     $search = $this->request->getVar('search');
     $searchBy = $this->request->getVar('search_by') ?? 'Title';
-    
+
     $builder = $this->katalogModel->select('catalogs.*');
-    
+
     if ($search) {
         switch ($searchBy) {
             case 'Title':
@@ -120,14 +116,52 @@ private function loadRegularCatalogs()
                 break;
             default:
                 $builder->groupStart()
-                       ->like('Title', $search)
-                       ->orLike('Author', $search)
-                       ->orLike('Subject', $search)
-                       ->groupEnd();
+                    ->like('Title', $search)
+                    ->orLike('Author', $search)
+                    ->orLike('Subject', $search)
+                    ->groupEnd();
         }
     }
-    
+
+    // 🎯 Multiple search tambahan: cek jika ada di URL
+    $additionalFilters = ['Publisher', 'Author', 'PublishLocation', 'Subject', 'PublishYear'];
+    foreach ($additionalFilters as $filter) {
+        $value = $this->request->getVar($filter);
+        if (!empty($value)) {
+            $builder->like($filter, $value);
+        }
+    }
+
+    // --- Bagian yang sudah ada ---
     $this->data['catalogs'] = $builder->paginate($perPage);
+    $catalogs = $this->data['catalogs'];
+
+    $publishers = array_column($catalogs, 'Publisher');
+    $cleaned_publishers = array_map(fn($p) => rtrim(trim($p), ','), $publishers);
+    $publisher_counts = array_count_values($cleaned_publishers);
+
+    $author = array_column($catalogs, 'Author');
+    $cleaned_author = array_map(fn($a) => rtrim(trim($a), ','), $author);
+    $author_counts = array_count_values($cleaned_author);
+
+    $publish_location = array_column($catalogs, 'PublishLocation');
+    $cleaned_publish_location = array_map(fn($l) => rtrim(trim($l), ','), $publish_location);
+    $publish_location_counts = array_count_values($cleaned_publish_location);
+
+    $subject = array_column($catalogs, 'Subject');
+    $cleaned_subject = array_map(fn($s) => rtrim(trim($s), ','), $subject);
+    $subject_counts = array_count_values($cleaned_subject);
+
+    $created_dates = array_column($catalogs, 'CreateDate');
+    $years = array_map(fn($d) => date('Y', strtotime($d)), $created_dates);
+    $year_counts = array_count_values($years);
+
+    $this->data['year_counts'] = $year_counts;
+    $this->data['publish_location_counts'] = $publish_location_counts;
+    $this->data['subject_counts'] = $subject_counts;
+    $this->data['author_counts'] = $author_counts;
+    $this->data['publisher_counts'] = $publisher_counts;
+
     $this->data['pager'] = $this->katalogModel->pager;
     $this->data['search'] = $search;
     $this->data['search_by'] = $searchBy;

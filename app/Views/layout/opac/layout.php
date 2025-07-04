@@ -23,7 +23,7 @@ $logo = $branch ? $branch->Logo : "";
     
     <style>
         :root {
-            --primary-green: #28a745;
+            --primary-green:rgb(32, 85, 200);
             --primary-dark: #1e7e34;
             --accent-yellow: #ffc107;
             --text-white: #ffffff;
@@ -336,7 +336,7 @@ $logo = $branch ? $branch->Logo : "";
             </div>
             
             <div class="footer-bottom">
-                <p>&copy; 2025 Dinas Perpustakaan dan Arsip Provinsi Sumatera Utara. All Rights Reserved.</p>
+                <p>&copy; <?=$nama_perpustakaan?>. All Rights Reserved.</p>
             </div>
         </div>
     </footer>
