@@ -228,7 +228,7 @@
 
         /* Color variations for different sidebar sections */
         .bg-gradient-primary {
-            background: linear-gradient(45deg, #007bff, #0056b3) !important;
+            background: linear-gradient(135deg,rgb(105, 162, 202) 0%,rgba(48, 76, 113, 0.69) 100%);
         }
 
         .bg-gradient-success {
@@ -246,7 +246,7 @@
 
         /* Hero Section */
         .hero-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background:  linear-gradient(135deg,rgb(105, 162, 202) 0%,rgba(48, 76, 113, 0.69) 100%);
             color: white;
             padding: 60px 0;
         }

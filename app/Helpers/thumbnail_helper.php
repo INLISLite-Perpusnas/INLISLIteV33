@@ -1,4 +1,13 @@
 <?php
+
+// Include the Composer autoloader if it's not already loaded
+
+
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\Writer\PngWriter;
+
 if (!function_exists('base64_to_jpeg')) {
 	function base64_to_jpeg($base64_string, $output_file) {
 		$ifp = fopen( $output_file, 'wb' ); 
@@ -61,5 +70,35 @@ if (!function_exists('get_barcode_png')) {
 		$result			  = $barcodeImage;
 		return $result;
 	}
+}
+
+if (!function_exists('get_qrcode_png')) {
+    /**
+     * Generates a QR code image as a base64 PNG string.
+     *
+     * @param string $qrCodeData The data to encode in the QR code.
+     * @return string The base64 encoded PNG image data URI.
+     */
+    function get_qrcode_png($qrCodeData)
+    {
+        try {
+            $result = Builder::create()
+                ->writer(new PngWriter())
+                ->data($qrCodeData)
+                ->encoding(new Encoding('UTF-8'))
+                ->errorCorrectionLevel(ErrorCorrectionLevel::High) // High quality
+                ->size(300) // Size in pixels
+                ->margin(10) // Margin in pixels
+                ->build();
+
+            return $result->getDataUri(); // This directly returns 'data:image/png;base64,...'
+
+        } catch (Exception $e) {
+            // Handle error, e.g., return a placeholder or log the error
+            // For simplicity, we'll return an empty string on failure.
+            error_log('QR Code Generation Failed: ' . $e->getMessage());
+            return '';
+        }
+    }
 }
 

@@ -1,7 +1,6 @@
 <?php
 $request = service('request');
 helper('menu');
-$group=user()->category??'admin';
 
 ?>
 <div class="app-sidebar <?= get_parameter('sidebar-cs-class'); ?>">
@@ -80,10 +79,47 @@ $group=user()->category??'admin';
 				<?php set_parameter('sidebar-mode', 'auto'); ?>
 				<?php if (get_parameter('sidebar-mode') == 'auto') : ?>
 					<?php
-					$display_menu_backend = display_menu_backend(0, 1, $group);
+					$display_menu_backend = display_menu_backend(0, 1);
 					echo $display_menu_backend;
 					?>
-				
+				<?php else : ?>
+					<?php include 'navigation.php'; ?>
+					<?php foreach ($menuData as $menuItem) : ?>
+						<?php if ($menuItem['heading'] ?? false == true) : ?>
+							<li class="app-sidebar__heading"><?= $menuItem['title'] ?></li>
+						<?php else : ?>
+							<li class="<?= $menuItem['active'] ? 'mm-active' : '' ?>">
+								<a href="<?= (isset($menuItem['url']) && ($menuItem['url'] != '#')) ? base_url($menuItem['url']) : '#' ?>" class="">
+									<i class="metismenu-icon <?= $menuItem['icon'] ?? 'pe-7s-angle-right-circle' ?>" style=""></i>
+									<?= $menuItem['title'] ?> <?= (isset($menuItem['subMenu'])) ? '<i class="metismenu-state-icon pe-7s-angle-down caret-left"></i>' : '' ?>
+								</a>
+								<?php if (isset($menuItem['subMenu'])) : ?>
+									<ul class="mm-collapse">
+										<?php foreach ($menuItem['subMenu'] as $subMenuItem) : ?>
+											<li class="<?= $subMenuItem['active'] ? 'mm-active' : '' ?>">
+												<a href="<?= (isset($subMenuItem['url']) && ($subMenuItem['url'] != '#')) ? base_url($subMenuItem['url']) : '#' ?>" class="">
+													<i class="metismenu-icon <?= $subMenuItem['icon'] ?? 'pe-7s-angle-right-circle' ?>" style=""></i>
+													<?= $subMenuItem['title'] ?> <?= (isset($subMenuItem['subMenu'])) ? '<i class="metismenu-state-icon pe-7s-angle-down caret-left"></i>' : '' ?>
+												</a>
+												<?php if (isset($subMenuItem['subMenu'])) : ?>
+													<ul class="mm-collapse">
+														<?php foreach ($subMenuItem['subMenu'] as $subSubMenuItem) : ?>
+															<li class="<?= $subSubMenuItem['active'] ? 'mm-active' : '' ?>">
+																<a href="<?= (isset($subSubMenuItem['url']) && ($subSubMenuItem['url'] != '#')) ? base_url($subSubMenuItem['url']) : '#' ?>" class="">
+																	<i class="metismenu-icon <?= $subSubMenuItem['icon'] ?? 'pe-7s-angle-right-circle' ?>" style=""></i>
+																	<?= $subSubMenuItem['title'] ?>
+																</a>
+															</li>
+														<?php endforeach; ?>
+													</ul>
+												<?php endif; ?>
+											</li>
+										<?php endforeach; ?>
+									</ul>
+								<?php endif; ?>
+							</li>
+						<?php endif; ?>
+					<?php endforeach; ?>
 				<?php endif; ?>
 			</ul>
 		</div>

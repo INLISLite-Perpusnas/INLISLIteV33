@@ -53,6 +53,12 @@ function gen_no_barcode($i = 1)
 	$db = db_connect('data');
 	$query = $db->table('collections')->select('MAX(RIGHT(NomorBarcode,5)) as no')->get();
 	$no = $query->getRow()->no;
+	$formatQuery = $db->table('settingparameters')
+                     ->select('Value')
+                     ->where('Name', 'FormatNomorInduk')
+                     ->get();
+    
+    $formatResult = $formatQuery->getRow();
 	$format = get_parameter('nomor-barcode', '{yyyy}/PN/{99999}');
 	$format2 = str_replace('{yyyy}', date('Y'), $format);
 	$format3 = str_replace('{99999}', '', $format2);

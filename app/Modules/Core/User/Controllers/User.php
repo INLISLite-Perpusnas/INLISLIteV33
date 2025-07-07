@@ -40,33 +40,21 @@ class User extends \Base\Controllers\BaseController
         $this->data['slug'] = $slug;
         $this->data['branch_id'] = $branch_id;
 
-        if (!in_array($slug, ['admin', 'sa_prov', 'sa_kabkot'])) {
-            $branchModel = new \MitraPerpustakaan\Models\MitraPerpustakaanModel();
-            $branchBuilder = $branchModel
-                ->select('ID as code,  concat(Code, " - ", Name) as name')
-                ->where('Code <>', '')
-                ->orderBy('Name', 'ASC');
+      
+            // $branchModel = new \MitraPerpustakaan\Models\MitraPerpustakaanModel();
+            // $branchBuilder = $branchModel
+            //     ->select('ID as code,  concat(Code, " - ", Name) as name')
+            //     ->where('Code <>', '')
+            //     ->orderBy('Name', 'ASC');
 
-            if (!empty(user()->npp_provinsi_id)) {
-                $npp_provinsi_id = str_replace('.', '', user()->npp_provinsi_id);
-                $branchBuilder->where('NPP_Provinsi_id', $npp_provinsi_id);
-            }
+      
 
-            if (!empty(user()->npp_kabkota_id)) {
-                $npp_kabkota_id = str_replace('.', '', user()->npp_kabkota_id);
-                $branchBuilder->where('NPP_KabKota_id', $npp_kabkota_id);
-            }
-
-            if (in_array($slug, ['sa_umum'])) {
-                $branchBuilder->where('NPP_Jenis', 'UMUM');
-            }
-
-            $branchs = $branchBuilder->findAll();
-            foreach ($branchs as &$branch) {
-                $branch->name = preg_replace('/\s+/', ' ', $branch->name);
-            }
-            $this->data['branchs'] = $branchs;
-        }
+            // $branchs = $branchBuilder->findAll();
+            // foreach ($branchs as &$branch) {
+            //     $branch->name = preg_replace('/\s+/', ' ', $branch->name);
+            // }
+            // $this->data['branchs'] = $branchs;
+        
 
         echo view('User\Views\list', $this->data);
     }

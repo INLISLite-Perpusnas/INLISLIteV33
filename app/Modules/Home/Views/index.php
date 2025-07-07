@@ -8,7 +8,7 @@
             --secondary-color: #64748b;
             --accent-color: #f59e0b;
             --success-color: #059669;
-            --gradient-bg: linear-gradient(135deg,rgb(166, 248, 160) 0%,rgba(179, 255, 169, 0.69) 100%);
+            --gradient-bg: linear-gradient(135deg,rgb(105, 162, 202) 0%,rgba(48, 76, 113, 0.69) 100%);
         }
 
         body {

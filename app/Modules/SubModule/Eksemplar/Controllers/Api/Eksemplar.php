@@ -105,7 +105,7 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 		return $dataTable;
 	}
 
-	public function datatable($IsQUARANTINE = 0, $catalog_id = '')
+	public function datatable($IsQUARANTINE = 0, $catalog_id = '',$Iskeranjang=0)
 	{
 		$flag = 1;
 		$db = db_connect('data');
@@ -151,14 +151,25 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('action', function ($row) use ($catalog_id) {
-				$edit = '<a href="' . base_url('eksemplar/edit/' . $row->ID . '?catalog_id=' . $catalog_id) . '" data-toggle="tooltip" data-placement="top" title="Detail" class="btn btn-primary show-data"><i class="pe-7s-look font-weight-bold"> </i></a>';
-				$delete = "";
-			
-					$edit = '<a href="' . base_url('eksemplar/edit/' . $row->ID . '?catalog_id=' . $catalog_id) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-					$delete .= '<a href="javascript:void(0);" data-href="' . base_url('eksemplar/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+		// Tombol Edit selalu ditampilkan
+		$edit = '<a href="' . base_url('eksemplar/edit/' . $row->ID . '?catalog_id=' . $catalog_id) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
+		
+		// Siapkan variabel delete sebagai string kosong
+		$delete = ""; 
 
-				return $edit . ' ' . $delete;
-			})
+		// Hanya tampilkan tombol delete jika IsQUARANTINE TIDAK sama dengan 0.
+		// Asumsinya, nilai 1 berarti "di karantina" dan boleh dihapus.
+		if ($row->IsQUARANTINE != 0) {
+			$delete = '<a href="javascript:void(0);" data-href="' . base_url('eksemplar/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+		}
+		
+		// ===================================================================
+		// Akhir Bagian yang Diubah
+		// ===================================================================
+
+		// Gabungkan tombol edit dan delete (jika ada)
+		return $edit . ' ' . $delete;
+	})
 			->toJson();
 		return $dataTable;
 	}

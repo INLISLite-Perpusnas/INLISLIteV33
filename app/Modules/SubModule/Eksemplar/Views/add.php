@@ -1,4 +1,5 @@
 <?php
+$db=db_connect('data');
 $request = service('request');
 $slug = $request->getGet('slug');
 $select2 = select_two();
@@ -6,6 +7,8 @@ $nomor_manual = get_parameter('nomor-mode', 'manual') == 'manual';
 $branch_id = user()->branch_id ?? $request->getGet('branch_id');
 $return_catalog = $request->getGet('catalog_id') ?? '';
 $catalog_id = $request->getGet('catalog_id') ?? '';
+$worksheet_id=$db->table('catalogs')->where('ID', $catalog_id)->get()->getRow()->Worksheet_id ?? '';
+
 $catalog = get_catalog($catalog_id);
 ?>
 
@@ -149,10 +152,7 @@ $catalog = get_catalog($catalog_id);
                                 <div class="form input-group" title="Eksemplar">
                                     <input type="text" class="form-control" name="JumlahEksemplar" id="JumlahEksemplar"
                                         placeholder="" value='<?= set_value('JumlahEksemplar', '1') ?>' />
-                                    <div class="input-group-append">
-                                        <span id="generate-eksemplar-number"
-                                            class="add-eksemplar btn btn-outline-secondary">Generate</span>
-                                    </div>
+                                  
                                 </div>
                             </div>
                         </div>
@@ -195,69 +195,114 @@ $catalog = get_catalog($catalog_id);
                     <div class="form-group">
                         <div class="row">
                             <div class="col-lg-4 col-md-6">
-                                <label for="TanggalPengadaan">Tanggal Pengadaan</label>
+                                <label for="TanggalPengadaan">Tanggal Pengadaan *</label>
                                 <div>
-                                    <input type="date" class="form-control" name="TanggalPengadaan"
-                                        id="TanggalPengadaan" placeholder="" value='' />
-                                    <small id='TitleError'
-                                        class='form-text text-muted text-danger'><?= isset($validation) ? $validation->getError('Title') : ''; ?></small>
+                                    <input type="date" 
+                                           class="form-control <?= (isset($validation) && $validation->getError('TanggalPengadaan')) ? 'is-invalid' : '' ?>" 
+                                           name="TanggalPengadaan"
+                                           id="TanggalPengadaan" 
+                                           placeholder="" 
+                                           value="<?= set_value('TanggalPengadaan') ?>" />
+                                    <?php if (isset($validation) && $validation->getError('TanggalPengadaan')): ?>
+                                        <div class="invalid-feedback"><?= $validation->getError('TanggalPengadaan') ?></div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                             <div class="col-lg-4 col-md-6">
-                                <label for="groups">Jenis Sumber</label>
+                                <label for="groups">Jenis Sumber *</label>
                                 <div class="select-wrapper">
-                                    <select class="form-control selectx" name="Source_id" id="Source_id" tabindex="-1"
-                                        aria-hidden="true" style="width:100%">
+                                    <select class="form-control selectx <?= (isset($validation) && $validation->getError('Source_id')) ? 'is-invalid' : '' ?>" 
+                                            name="Source_id" 
+                                            id="Source_id" 
+                                            tabindex="-1"
+                                            aria-hidden="true" 
+                                            style="width:100%"
+                                            data-selected="<?= set_value('Source_id') ?>">
                                     </select>
+                                    <?php if (isset($validation) && $validation->getError('Source_id')): ?>
+                                        <div class="invalid-feedback"><?= $validation->getError('Source_id') ?></div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                             <div class="col-lg-4 col-md-6">
-                                <label for="groups">Nama Sumber</label>
+                                <label for="groups">Nama Sumber *</label>
                                 <div class="select-wrapper input-group">
-                                    <select class="form-control selectx" name="Partner_id" id="Partner_id" tabindex="-1"
-                                        aria-hidden="true" style="width:80%">
+                                    <select class="form-control selectx <?= (isset($validation) && $validation->getError('Partner_id')) ? 'is-invalid' : '' ?>" 
+                                            name="Partner_id" 
+                                            id="Partner_id" 
+                                            tabindex="-1"
+                                            aria-hidden="true" 
+                                            style="width:80%"
+                                            data-selected="<?= set_value('Partner_id') ?>">
                                     </select>
                                     <div class="input-group-append">
-                                        <button type="button" class="btn btn-primary" data-toggle="modal"
-                                            data-target="#modalAddPartner">
+                                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalAddPartner">
                                             <i class="fa fa-plus"></i>
                                         </button>
-                                        <button type="button" id="btnEditPartner" class="btn btn-warning"
-                                            data-toggle="modal" data-target="#modalEditPartner" disabled>
+                                        <button type="button" id="btnEditPartner" class="btn btn-warning" data-toggle="modal" data-target="#modalEditPartner" disabled>
                                             <i class="fa fa-edit"></i>
                                         </button>
                                     </div>
+                                    <?php if (isset($validation) && $validation->getError('Partner_id')): ?>
+                                        <div class="invalid-feedback d-block"><?= $validation->getError('Partner_id') ?></div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                             <div class="col-lg-4 col-md-6">
-                                <label for="groups">Bentuk Fisik</label>
+                                <label for="groups">Bentuk Fisik *</label>
                                 <div class="select-wrapper">
-                                    <select class="form-control selectx" name="Media_id" id="Media_id" tabindex="-1"
-                                        aria-hidden="true" style="width:100%">
+                                    <select class="form-control selectx <?= (isset($validation) && $validation->getError('Media_id')) ? 'is-invalid' : '' ?>" 
+                                            name="Media_id" 
+                                            id="Media_id" 
+                                            tabindex="-1"
+                                            aria-hidden="true" 
+                                            style="width:100%"
+                                            data-selected="<?= set_value('Media_id') ?>">
                                     </select>
+                                    <?php if (isset($validation) && $validation->getError('Media_id')): ?>
+                                        <div class="invalid-feedback"><?= $validation->getError('Media_id') ?></div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                             <div class="col-lg-4 col-md-6">
-                                <label for="groups">Kategori</label>
+                                <label for="groups">Kategori *</label>
                                 <div class="select-wrapper">
-                                    <select class="form-control selectx" name="Category_id" id="Category_id"
-                                        tabindex="-1" aria-hidden="true" style="width:100%">
+                                    <select class="form-control selectx <?= (isset($validation) && $validation->getError('Category_id')) ? 'is-invalid' : '' ?>" 
+                                            name="Category_id" 
+                                            id="Category_id"
+                                            tabindex="-1" 
+                                            aria-hidden="true" 
+                                            style="width:100%"
+                                            data-selected="<?= set_value('Category_id') ?>">
                                     </select>
+                                    <?php if (isset($validation) && $validation->getError('Category_id')): ?>
+                                        <div class="invalid-feedback"><?= $validation->getError('Category_id') ?></div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                             <div class="col-lg-4 col-md-6">
                                 <label for="groups">Akses</label>
                                 <div class="select-wrapper">
-                                    <select class="form-control selectx" name="Rule_id" id="Rule_id" tabindex="-1"
-                                        aria-hidden="true" style="width:100%">
+                                    <select class="form-control selectx" 
+                                            name="Rule_id" 
+                                            id="Rule_id" 
+                                            tabindex="-1"
+                                            aria-hidden="true" 
+                                            style="width:100%"
+                                            data-selected="<?= set_value('Rule_id') ?>">
                                     </select>
                                 </div>
                             </div>
                             <div class="col-lg-4 col-md-6">
                                 <label for="groups">Lokasi Perpustakaan</label>
                                 <div class="select-wrapper">
-                                    <select class="form-control selectx" name="Location_Library_id"
-                                        id="Location_Library_id" tabindex="-1" aria-hidden="true" style="width:100%">
+                                    <select class="form-control selectx" 
+                                            name="Location_Library_id"
+                                            id="Location_Library_id" 
+                                            tabindex="-1" 
+                                            aria-hidden="true" 
+                                            style="width:100%"
+                                            data-selected="<?= set_value('Location_Library_id') ?>">
                                         <option value="">-Pilih-</option>
                                     </select>
                                 </div>
@@ -265,8 +310,13 @@ $catalog = get_catalog($catalog_id);
                             <div class="col-lg-4 col-md-6">
                                 <label for="groups">Lokasi Ruang</label>
                                 <div class="select-wrapper">
-                                    <select class="form-control selectx" name="Location_id" id="Location_id"
-                                        tabindex="-1" aria-hidden="true" style="width:100%">
+                                    <select class="form-control selectx" 
+                                            name="Location_id" 
+                                            id="Location_id"
+                                            tabindex="-1" 
+                                            aria-hidden="true" 
+                                            style="width:100%"
+                                            data-selected="<?= set_value('Location_id') ?>">
                                         <option value="">-Pilih-</option>
                                     </select>
                                 </div>
@@ -274,31 +324,50 @@ $catalog = get_catalog($catalog_id);
                             <div class="col-lg-4 col-md-6">
                                 <label for="groups">Ketersediaan</label>
                                 <div class="select-wrapper">
-                                    <select class="form-control selectx" name="Status_id" id="Status_id" tabindex="-1"
-                                        aria-hidden="true" style="width:100%">
+                                    <select class="form-control selectx" 
+                                            name="Status_id" 
+                                            id="Status_id" 
+                                            tabindex="-1"
+                                            aria-hidden="true" 
+                                            style="width:100%"
+                                            data-selected="<?= set_value('Status_id') ?>">
                                     </select>
                                 </div>
                             </div>
                             <div class="col-lg-4 col-md-6">
                                 <label for="groups">Mata Uang</label>
                                 <div class="select-wrapper">
-                                    <select class="form-control selectx" name="Currency_id" id="Currency_id"
-                                        tabindex="-1" aria-hidden="true" style="width:100%">
+                                    <select class="form-control selectx" 
+                                            name="Currency_id" 
+                                            id="Currency_id"
+                                            tabindex="-1" 
+                                            aria-hidden="true" 
+                                            style="width:100%"
+                                            data-selected="<?= set_value('Currency_id') ?>">
                                     </select>
                                 </div>
                             </div>
                             <div class="col-lg-4 col-md-6">
                                 <label for="groups">Harga</label>
                                 <div>
-                                    <input type="text" class="form-control" name="Price" id="Price" placeholder=""
-                                        value="" />
+                                    <input type="text" 
+                                           class="form-control" 
+                                           name="Price" 
+                                           id="Price" 
+                                           placeholder=""
+                                           value="<?= set_value('Price') ?>" />
                                 </div>
                             </div>
                             <div class="col-lg-4 col-md-6">
                                 <label for="groups">Satuan Harga</label>
                                 <div class="select-wrapper">
-                                    <select class="form-control selectx" name="PriceType" id="Price_type" tabindex="-1"
-                                        aria-hidden="true" style="width:100%">
+                                    <select class="form-control selectx" 
+                                            name="PriceType" 
+                                            id="Price_type" 
+                                            tabindex="-1"
+                                            aria-hidden="true" 
+                                            style="width:100%"
+                                            data-selected="<?= set_value('PriceType') ?>">
                                     </select>
                                 </div>
                             </div>
@@ -320,6 +389,7 @@ $catalog = get_catalog($catalog_id);
                     <div class="form-check form-check-inline">
                         <input type="hidden" name="Branch_id" id="Branch_id" value="<?= $branch_id ?>">
                         <input type="hidden" name="Catalog_id" id="Catalog_id" value="<?= $catalog_id ?>">
+                        <input type="hidden" name="worksheet_id" id="worksheet_id" value="<?= $worksheet_id ?>">
 
                         <input type="hidden" name="IsRedirect" value="1">
 

@@ -70,6 +70,7 @@ class Anggota extends \Base\Controllers\BaseResourceController
 			'a.EndDate',
 			'a.JenisAnggota_id',
 			'a.StatusAnggota_id',
+			'a.CreateDate',
 			
 			// Kolom dari tabel join
 			'jenis_anggota.jenisanggota as JenisAnggota',

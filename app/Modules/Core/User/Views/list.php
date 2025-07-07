@@ -58,74 +58,7 @@ $slug = $request->getGet('slug');
 		<?php endforeach; ?>
 	</ul>
 
-	<?php if (is_profiling() && false) : ?>
-		<div class="main-card mb-3 card">
-			<div class="card-header"><i class="header-icon lnr-search icon-gradient bg-plum-plate"> </i> Filter
-				<div class="btn-actions-pane-right actions-icon-btn">
 
-				</div>
-			</div>
-			<div class="card-body">
-				<form name="form_items" id="form_search" action="">
-					<div class="row">
-						<div class="col-md-6">
-							<div class="form-group">
-								<label>Provinsi*</label>
-								<div class="select-wrapper">
-									<select required data-error="Pilih Provinsi" class="form-control select2" id="Province" name="Province" style="width:100%"></select>
-								</div>
-								<small class="help-block with-errors"></small>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="form-group">
-								<label>Kota*</label>
-								<div class="select-wrapper">
-									<select class="form-control select2" id="City" name="City" style="width:100%">
-										<option value="">-Select-</option>
-									</select>
-								</div>
-								<small class="help-block with-errors"></small>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="form-group">
-								<label>Kecamatan*</label>
-								<div class="select-wrapper">
-									<select class="form-control select2" id="District" name="Kecamatan" style="width:100%">
-										<option value="">-Select-</option>
-									</select>
-								</div>
-								<small class="help-block with-errors"></small>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="form-group">
-								<label>Kelurahan*</label>
-								<div class="select-wrapper">
-									<select class="form-control select2" id="SubDistrict" name="Kelurahan" style="width:100%">
-										<option value="">-Select-</option>
-									</select>
-								</div>
-								<small class="help-block with-errors"></small>
-							</div>
-						</div>
-					</div>
-					<div class="position-relative form-group">
-						<label for="groups">Perpustakaan Mitra*</label>
-						<div class="select-wrapper">
-							<select class="form-control selectx" name="branch_id" id="Branch" tabindex="-1" aria-hidden="true" style="width:100%">
-								<option value="">-Select-</option>
-							</select>
-						</div>
-					</div>
-					<div class="form-group">
-						<button type="submit" class="btn btn-primary">Apply</button>
-					</div>
-				</form>
-			</div>
-		</div>
-	<?php endif; ?>
 
 	<div class="main-card mb-3 card">
 		<div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel User

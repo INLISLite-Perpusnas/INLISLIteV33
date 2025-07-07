@@ -192,6 +192,154 @@ if ( ! function_exists('bulan'))
 }
 
 
+// Tambahkan function helper untuk generate member number
+if (!function_exists('generateMemberNumber')) {
+    function generateMemberNumber($identityNo = null) {
+        $db = db_connect('data');
+        
+        // Ambil setting dari tabel settingparameters
+        $setting = $db->table('settingparameters')
+                     ->where('Name', 'TipePenomoranAnggota')
+                     ->get()
+                     ->getRow();
+        
+        if (!$setting) {
+            // Default jika setting tidak ditemukan
+            return $identityNo ?? date('YmdHis');
+        }
+        
+        $tipeNomor = $setting->Value ?? '4'; // Default NIK jika Value kosong
+        $memberNo = '';
+        
+        switch($tipeNomor) {
+            case '1': // YYMMDD99999
+                $memberNo = generateFormat1();
+                break;
+            case '2': // YYYYMM99
+                $memberNo = generateFormat2();
+                break;
+            case '3': // 99999L2015
+                $memberNo = generateFormat3();
+                break;
+            case '4': // NIK
+            default:
+                $memberNo = $identityNo ?? generateAutoNumber();
+                break;
+        }
+        
+        return $memberNo;
+    }
+}
+
+if (!function_exists('generateFormat1')) {
+    function generateFormat1() {
+        // Format: YYMMDD99999
+        $db = db_connect('data');
+        $today = date('ymd'); // YY-MM-DD format
+        
+        // Cari nomor terakhir dengan prefix hari ini
+        $lastMember = $db->table('members')
+                        ->select('MemberNo')
+                        ->like('MemberNo', $today, 'after')
+                        ->where('LENGTH(MemberNo)', 11) // YYMMDD99999 = 11 karakter
+                        ->orderBy('MemberNo', 'DESC')
+                        ->limit(1)
+                        ->get()
+                        ->getRow();
+        
+        if ($lastMember) {
+            // Ambil 5 digit terakhir dan tambah 1
+            $lastNumber = (int)substr($lastMember->MemberNo, -5);
+            $newNumber = str_pad($lastNumber + 1, 5, '0', STR_PAD_LEFT);
+        } else {
+            $newNumber = '00001';
+        }
+        
+        return $today . $newNumber;
+    }
+}
+
+if (!function_exists('generateFormat2')) {
+    function generateFormat2() {
+        // Format: YYYYMM99
+        $db = db_connect('data');
+        $yearMonth = date('Ym'); // YYYY-MM format
+        
+        // Cari nomor terakhir dengan prefix bulan ini
+        $lastMember = $db->table('members')
+                        ->select('MemberNo')
+                        ->like('MemberNo', $yearMonth, 'after')
+                        ->where('LENGTH(MemberNo)', 8) // YYYYMM99 = 8 karakter
+                        ->orderBy('MemberNo', 'DESC')
+                        ->limit(1)
+                        ->get()
+                        ->getRow();
+        
+        if ($lastMember) {
+            // Ambil 2 digit terakhir dan tambah 1
+            $lastNumber = (int)substr($lastMember->MemberNo, -2);
+            $newNumber = str_pad($lastNumber + 1, 2, '0', STR_PAD_LEFT);
+        } else {
+            $newNumber = '01';
+        }
+        
+        return $yearMonth . $newNumber;
+    }
+}
+
+if (!function_exists('generateFormat3')) {
+    function generateFormat3() {
+        // Format: 99999L2015
+        $db = db_connect('data');
+        $year = date('Y'); // Current year
+        $suffix = 'L' . $year;
+        
+        // Cari nomor terakhir dengan suffix tahun ini
+        $lastMember = $db->table('members')
+                        ->select('MemberNo')
+                        ->like('MemberNo', $suffix, 'before')
+                        ->where('LENGTH(MemberNo)', 10) // 99999L2015 = 10 karakter
+                        ->orderBy('MemberNo', 'DESC')
+                        ->limit(1)
+                        ->get()
+                        ->getRow();
+        
+        if ($lastMember) {
+            // Ambil 5 digit pertama dan tambah 1
+            $lastNumber = (int)substr($lastMember->MemberNo, 0, 5);
+            $newNumber = str_pad($lastNumber + 1, 5, '0', STR_PAD_LEFT);
+        } else {
+            $newNumber = '00001';
+        }
+        
+        return $newNumber . $suffix;
+    }
+}
+
+if (!function_exists('generateAutoNumber')) {
+    function generateAutoNumber() {
+        // Auto increment number
+        $db = db_connect('data');
+        
+        $lastMember = $db->table('members')
+                        ->select('MemberNo')
+                        ->where('MemberNo REGEXP', '^[0-9]+$') // Hanya angka
+                        ->orderBy('CAST(MemberNo AS UNSIGNED)', 'DESC')
+                        ->limit(1)
+                        ->get()
+                        ->getRow();
+        
+        if ($lastMember) {
+            $newNumber = (int)$lastMember->MemberNo + 1;
+        } else {
+            $newNumber = 1;
+        }
+        
+        return str_pad($newNumber, 6, '0', STR_PAD_LEFT);
+    }
+}
+
+
 
 ?>
 

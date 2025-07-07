@@ -219,10 +219,14 @@ if (is_member('sa_kabkot')) {
 					searchable: false,
 					orderable: false
 				},
+				{
+					data:'CreateDate',
+					visible: false,
+				}
 			
 			],
 			"order": [
-				[1, "desc"]
+				[8, "desc"]
 			],
 			"drawCallback": function(data, type, full, meta) {
 				var api = this.api();

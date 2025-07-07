@@ -104,45 +104,6 @@
                             </div>
                         </div>
 
-                        <?php if (in_array($slug, ['admin', 'sa_prov', 'sa_kabkot'])) : ?>
-                            <div class="col-md-6 provinsi_id">
-                                <div class="position-relative form-group">
-                                    <label for="name">Provinsi</label>
-                                    <div class="select-wrapper">
-                                        <select class="form-control select2" id="provinsi_id" name="provinsi_id" style="width:100%; z-index: -1"></select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <?php if (in_array($slug, ['sa_kabkot'])) : ?>
-                                <div class="col-md-6 kabkota_id">
-                                    <div class="position-relative form-group">
-                                        <label for="name">Kota</label>
-                                        <div class="select-wrapper">
-                                            <select class="form-control select2" id="kabkota_id" name="kabkota_id" style="width:100%; z-index: -2">
-                                                <option value="">-Select-</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
-                        <?php else : ?>
-                            <input type="hidden" name="provinsi_id" id="provinsi_id" value="<?= user()->npp_provinsi_id ?>" />
-                            <input type="hidden" name="kabkota_id" id="kabkota_id" value="<?= user()->npp_kabkota_id ?>" />
-                            <div class="col-md-6 is_branch">
-                                <div class="position-relative form-group">
-                                    <label for="branch_id">NPP (Mitra Perpustakaan)</label>
-                                    <div class="select-wrapper">
-                                        <select class="form-control select2" name="branch_id" id="branch_id" style="width:100%;">
-                                            <option value="">Pilih</option>
-                                            <?php foreach ($branchs as $branch) : ?>
-                                                <option value="<?= $branch->code ?>"><?= ucwords($branch->name) ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endif; ?>
                     </div>
                 </div>
                 <div class="modal-footer">

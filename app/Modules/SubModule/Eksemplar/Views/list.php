@@ -7,6 +7,7 @@ $actions = array(
 	'cetak-label-a4-2' => 'Cetak Label A4-2 (Barcode + No. Panggil)',
 	'cetak-label-a4-3' => 'Cetak Label A4-3 (Barcode + No. Panggil + 1 Warna)',
 	'cetak-label-a4-4' => 'Cetak Label A4-4 (Barcode + No. Panggil + 1 Warna)',
+	'cetak-label-a4-4-qrcode' => 'Cetak Label A4-4 (Qrcode + No. Panggil + 1 Warna)',
 	// 'cetak-label-a4-5' => 'Cetak Label A4-4 (Barcode + No. Panggil + 1 Warna)',
 	// 'cetak-label-a4-5' => 'Cetak Label A4-4 (Barcode + No. Panggil + 1 Warna)',
 	'tampil-opac' => 'Tampilkan di Opac',
@@ -249,7 +250,7 @@ $actions = array(
 			"columns": [{
 					data: 'ID',
 					className: 'text-center',
-					orderable: false
+					orderable: true
 				},
 				{
 					data: 'NomorBarcode',
@@ -279,6 +280,8 @@ $actions = array(
 					className: 'text-center',
 					orderable: false
 				},
+			],"order": [
+				[0, "desc"]
 			],
 			"drawCallback": function(data, type, full, meta) {
 				var api = this.api();

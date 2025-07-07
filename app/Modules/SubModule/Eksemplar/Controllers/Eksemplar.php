@@ -43,106 +43,334 @@ class Eksemplar extends \Base\Controllers\BaseController
 		echo view('Eksemplar\Views\list_karantina', $data);
 	}
 
-	public function create()
-	{
-		if (!is_allowed('eksemplar/create')) {
-			set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
-			set_message('toastr_type', 'error');
-			return redirect()->to('eksemplar');
-		}
 
-		$this->data['title'] = 'Tambah Eksemplar';
-		$slug = $this->request->getGet('slug');
 
-		$this->validation->setRule('Catalog_id', 'Judul Katalog', 'required');
-		$this->validation->setRule('Branch_id', 'Branch ID', 'required');
-		$this->validation->setRule('Location_Library_id', 'Lokasi Perpustakaan', 'required');
-		$this->validation->setRule('Location_id', 'Lokasi Ruang', 'required');
-		if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
-			helper('form');
-			$post = $this->request->getPost();
-			$redirect = $post['redirect'];
+/**
+ * Corrected logic untuk generateNomorBarcode
+ * Array index genap = formatOptions, ganjil = separatorOptions
+ */
 
-			$collections = [];
-			$total = $post['JumlahEksemplar'];
+public function create()
+{
+    if (!is_allowed('eksemplar/create')) {
+        set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
+        set_message('toastr_type', 'error');
+        return redirect()->to('eksemplar');
+    }
 
-			for ($i = 1; $i <= $total; $i++) {
-				$save = [
-					'Catalog_id' => $post['Catalog_id'],
-					'Branch_id' => $post['Branch_id'],
-					'ISDRM' => $post['ISDRM'],
-					'Location_Library_id' => $post['Location_Library_id'],
-					'Location_id' => $post['Location_id'],
-					'NomorBarcode' => $post['NomorBarcode'][$i],
-					'NoInduk' => $post['NoInduk'][$i],
-					'RFID' => $post['RFID'][$i],
-					'CallNumber' => $post['CallNumber'],
-					'IsQUARANTINE' => '0',
-				];
+    $this->data['title'] = 'Tambah Eksemplar';
+    $slug = $this->request->getGet('slug');
 
-				if (!empty($post['TanggalPengadaan'])) {
-					$save['TanggalPengadaan'] = $post['TanggalPengadaan'];
-				}
-				if (!empty($post['Rule_id'])) {
-					$save['Rule_id'] = $post['Rule_id'];
-				}
-				if (!empty($post['Category_id'])) {
-					$save['Category_id'] = $post['Category_id'];
-				}
-				if (!empty($post['Currency_id'])) {
-					$save['Currency'] = $post['Currency_id'];
-				}
-				if (!empty($post['Media_id'])) {
-					$save['Media_id'] = $post['Media_id'];
-				}
-				if (!empty($post['Source_id'])) {
-					$save['Source_id'] = $post['Source_id'];
-				}
-				if (!empty($post['Status_id'])) {
-					$save['Status_id'] = $post['Status_id'];
-				}
-				if (!empty($post['Partner_id'])) {
-					$save['Partner_id'] = $post['Partner_id'];
-				}
-				if (!empty($post['Price'])) {
-					$save['Price'] = $post['Price'];
-				}
-				if (!empty($post['PriceType'])) {
-					$save['PriceType'] = $post['PriceType'];
-				}
+    $this->validation->setRule('Catalog_id', 'Judul Katalog', 'required');
+    $this->validation->setRule('Branch_id', 'Branch ID', 'required');
+    $this->validation->setRule('Location_Library_id', 'Lokasi Perpustakaan', 'required');
+    $this->validation->setRule('Location_id', 'Lokasi Ruang', 'required');
+    $this->validation->setRule('Source_id', 'Sumber Pengadaan', 'required');
+    $this->validation->setRule('Partner_id', 'Nama Sumber', 'required');
+    $this->validation->setRule('Media_id', 'Bentuk Fisik', 'required');
+    $this->validation->setRule('Category_id', 'Kategori Koleksi', 'required');
+    $this->validation->setRule('TanggalPengadaan', 'Tanggal Pengadaan', 'required');
+    
+    if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
+        helper('form');
+        $post = $this->request->getPost();
+        $redirect = $post['redirect'];
+    
+        $collections = [];
+        $total = $post['JumlahEksemplar'];
+           $Catalog_id = $post['Catalog_id'] ?? null;
+            if (empty($Catalog_id)) {
+                set_message('message', 'Judul Katalog tidak boleh kosong');
+                return redirect()->back()->withInput();
+            }
+        $worksheet_id=$this->db->table('catalogs')->where('ID', $Catalog_id)->get()->getRow()->Worksheet_id ?? '';
 
-				array_push($collections, $save);
-			}
-			// dd($collections);
+        for ($i = 1; $i <= $total; $i++) {
+            // Prepare data untuk generate barcode
+            $collectionData = [
+                'worksheet_id' => $worksheet_id ?? null,
+                'category_id' => $post['Category_id'] ?? null,
+                'media_id' => $post['Media_id'] ?? null,
+                'source_id' => $post['Source_id'] ?? null,
+                'partner_id' => $post['Partner_id'] ?? null
+            ];
+           
+        
+           
+            
+            // Generate NomorBarcode menggunakan logic yang benar
+            $nomorBarcode = $this->generateNomorBarcode($collectionData, $i);
+           
+          
+            
+            $save = [
+                'Catalog_id' => $post['Catalog_id'],
+                'Branch_id' => $post['Branch_id'],
+                'ISDRM' => $post['ISDRM'],
+                'Location_Library_id' => $post['Location_Library_id'],
+                'Location_id' => $post['Location_id'],
+                'NomorBarcode' => $nomorBarcode, // Generated barcode
+                'NoInduk' => $nomorBarcode,
+                'RFID' => $nomorBarcode,
+                'CallNumber' => $post['CallNumber'],
+                'IsQUARANTINE' => '0',
+            ];
 
-			if (!empty($collections)) {
-				try {
-					$this->eksemplarModel->insertBatch($collections);
-					set_message('toastr_msg', 'Eksemplar berhasil ditambah');
-					set_message('toastr_type', 'success');
-				} catch (\Throwable $e) {
-					set_message('toastr_msg', 'Eksemplar gagal ditambah');
-					set_message('toastr_type', 'warning');
-					set_message('message', 'Eksemplar gagal ditambah');
-				}
+            // ... rest of the save logic remains the same ...
+            if (!empty($post['TanggalPengadaan'])) {
+                $save['TanggalPengadaan'] = $post['TanggalPengadaan'];
+            }
+            if (!empty($post['Rule_id'])) {
+                $save['Rule_id'] = $post['Rule_id'];
+            }
+            if (!empty($post['Category_id'])) {
+                $save['Category_id'] = $post['Category_id'];
+            }
+            if (!empty($post['Currency_id'])) {
+                $save['Currency'] = $post['Currency_id'];
+            }
+            if (!empty($post['Media_id'])) {
+                $save['Media_id'] = $post['Media_id'];
+            }
+            if (!empty($post['Source_id'])) {
+                $save['Source_id'] = $post['Source_id'];
+            }
+            if (!empty($post['Status_id'])) {
+                $save['Status_id'] = $post['Status_id'];
+            }
+            if (!empty($post['Partner_id'])) {
+                $save['Partner_id'] = $post['Partner_id'];
+            }
+            if (!empty($post['Price'])) {
+                $save['Price'] = $post['Price'];
+            }
+            if (!empty($post['PriceType'])) {
+                $save['PriceType'] = $post['PriceType'];
+            }
 
-				$IsRedirect = $this->request->getPost('IsRedirect');
-				if ($IsRedirect == 1) {
-					if (!empty($redirect)) {
-						return redirect()->to($redirect);
-					} else {
-						return redirect()->to('eksemplar');
-					}
-				} else {
-					return redirect()->back()->withInput();
-				}
-			}
-		} else {
-			$this->data['redirect'] = base_url('eksemplar/create');
-			set_message('message', $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message'));
-			echo view('Eksemplar\Views\add', $this->data);
-		}
-	}
+            array_push($collections, $save);
+        }
+
+        if (!empty($collections)) {
+            try {
+                $this->eksemplarModel->insertBatch($collections);
+                set_message('toastr_msg', 'Eksemplar berhasil ditambah');
+                set_message('toastr_type', 'success');
+            } catch (\Throwable $e) {
+                set_message('toastr_msg', 'Eksemplar gagal ditambah');
+                set_message('toastr_type', 'warning');
+                set_message('message', 'Eksemplar gagal ditambah');
+            }
+
+            $IsRedirect = $this->request->getPost('IsRedirect');
+            if ($IsRedirect == 1) {
+                if (!empty($redirect)) {
+                    return redirect()->to($redirect);
+                } else {
+                    return redirect()->to('eksemplar');
+                }
+            } else {
+                return redirect()->back()->withInput();
+            }
+        }
+    } else {
+        $this->data['redirect'] = base_url('eksemplar/create');
+        set_message('message', $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message'));
+        echo view('Eksemplar\Views\add', $this->data);
+    }
+}
+
+
+private function generateNomorBarcode($collectionData = [], $increment = 1)
+{
+  
+    $db = db_connect('data');
+    $query = $db->table('collections')->select('MAX(RIGHT(NomorBarcode,5)) as no')->get();
+    $no = $query->getRow()->no;
+    
+    // Cek FormatNomorInduk dari settingparameters
+    $formatQuery = $db->table('settingparameters')
+                     ->select('Value')
+                     ->where('Name', 'FormatNomorInduk')
+                     ->get();
+    
+    $formatResult = $formatQuery->getRow();
+    
+    if ($formatResult && !empty($formatResult->Value)) {
+        $formatString = $formatResult->Value;
+    } else {
+        // Fallback ke parameter lama
+        $formatString = get_parameter('nomor-barcode', '{yyyy}/PN/{99999}');
+    }
+    
+    // Jika format tidak menggunakan array format (tidak ada |), process seperti biasa
+    if (strpos($formatString, '|') === false) {
+        $format2 = str_replace('{yyyy}', date('Y'), $formatString);
+        $format3 = str_replace('{99999}', '', $format2);
+        
+        if (empty($no)) {
+            $no = 1;
+        } else {
+            $no = intval($no) + $increment;
+            $no = str_pad($no, 5, "0", STR_PAD_LEFT);
+        }
+        
+        return $format3 . $no;
+    }
+    
+    // Process format array menggunakan logic yang sama seperti getFormatPreview()
+    $formatArray = explode('|', $formatString);
+    $result = '';
+    
+    $separatorOptions = [
+        '2' => '',              // -Kosong-
+        '3' => '/',
+        '4' => '-',
+        '5' => '.'
+    ];
+    
+    // Loop melalui array dengan pattern: Format → Separator → Format → Separator
+    for ($i = 0; $i < count($formatArray); $i++) {
+        $value = trim($formatArray[$i]);
+    
+        
+        // Index genap (0,2,4,6,8) = Format Options
+        if ($i % 2 === 0) {
+            // Process Format Options
+           
+            if ($value !== '0') { // Skip jika kosong
+                
+                // Cek jika ada manual input dengan {}
+                if (preg_match('/\{([^}]+)\}/', $value, $matches)) {
+                    if ($matches[1] === '99999') {
+                        $result .= '{99999}'; // Placeholder untuk auto number
+                    } else {
+                        $result .= $matches[1]; // Manual input seperti Dispusip, Nias
+                    }
+                } else if (is_numeric($value)) {
+                    // Process format code
+                    switch ($value) {
+                        case '1': // Manual Input (sudah diproses di atas dengan {})
+                            break;
+                            
+                        case '2': // Kode Jenis Bahan dari worksheets.Code
+                            if (!empty($collectionData['worksheet_id'])) {
+                                $queryWS = $db->table('worksheets')->select('Code')->where('ID', $collectionData['worksheet_id'])->get();
+                                $resultWS = $queryWS->getRow();
+                                $result .= $resultWS ? $resultWS->Code : '';
+                             
+                             
+                            }
+                            break;
+                            
+                        case '3': // Kode Kategori Koleksi dari collectioncategorys.Code
+                            if (!empty($collectionData['category_id'])) {
+                                $queryCat = $db->table('collectioncategorys')->select('Code')->where('ID', $collectionData['category_id'])->get();
+                                $resultCat = $queryCat->getRow();
+                                $result .= $resultCat ? $resultCat->Code : '';
+                            }
+                            break;
+                            
+                        case '4': // Kode Bentuk Fisik dari collectionmedias.Code
+                            if (!empty($collectionData['media_id'])) {
+                                $queryMedia = $db->table('collectionmedias')->select('Code')->where('ID', $collectionData['media_id'])->get();
+                                $resultMedia = $queryMedia->getRow();
+                                $result .= $resultMedia ? $resultMedia->Code : '';
+                            }
+                            break;
+                            
+                        case '5': // Kode Jenis Sumber Pengadaan dari partners.Name
+                            if (!empty($collectionData['partner_id'])) {
+                                $queryPartner = $db->table('partners')->select('Name')->where('ID', $collectionData['partner_id'])->get();
+                                $resultPartner = $queryPartner->getRow();
+                                $result .= $resultPartner ? $resultPartner->Name : '';
+                            }
+                            break;
+                            
+                        case '6': // 99999 - Auto increment
+                            $result .= '{99999}';
+                            break;
+                            
+                        case '7': // YYYY - Current year
+                            $result .= date('Y');
+                            break;
+                            
+                        default:
+                            // Format tidak dikenal, skip
+                            break;
+                    }
+                }
+            }
+        } 
+        // Index ganjil (1,3,5,7,9) = Separator Options
+        else {
+            // Process Separator Options
+            if ($value !== '2' && isset($separatorOptions[$value])) { // Skip jika kosong
+                $result .= $separatorOptions[$value];
+            }
+        }
+    }
+    
+    // Remove {99999} placeholder
+    $result = str_replace('{99999}', '', $result);
+    
+    // Generate auto increment number
+    if (empty($no)) {
+        $no = 1;
+    } else {
+        $no = intval($no) + $increment;
+        $no = str_pad($no, 5, "0", STR_PAD_LEFT);
+    }
+    
+    return $result . $no;
+}
+
+/*
+Contoh 1: $FormatNomorInduk = "4|3|2|3|6|2|0|2|0"
+Array: ['4', '3', '2', '3', '6', '2', '0', '2', '0']
+
+Proses:
+Index 0: 4 (Format) → Kode Bentuk Fisik → 'PRINT'
+Index 1: 3 (Separator) → '/'
+Index 2: 2 (Format) → Kode Jenis Bahan → 'BK'  
+Index 3: 3 (Separator) → '/'
+Index 4: 6 (Format) → 99999 → '{99999}' (placeholder)
+Index 5: 2 (Separator) → '' (kosong, abaikan)
+Index 6: 0 (Format) → -Kosong- (abaikan)
+Index 7: 2 (Separator) → '' (kosong, abaikan)
+Index 8: 0 (Format) → -Kosong- (abaikan)
+
+Hasil: PRINT/BK/{99999} → PRINT/BK/ + auto_number
+Final: PRINT/BK/00001
+
+Contoh 2: $FormatNomorInduk = "{Dispusip}|3|{Nias}|3|7|3|6|2|0"
+Array: ['{Dispusip}', '3', '{Nias}', '3', '7', '3', '6', '2', '0']
+
+Proses:
+Index 0: {Dispusip} (Format) → Manual Input → 'Dispusip'
+Index 1: 3 (Separator) → '/'
+Index 2: {Nias} (Format) → Manual Input → 'Nias'
+Index 3: 3 (Separator) → '/'
+Index 4: 7 (Format) → YYYY → '2024'
+Index 5: 3 (Separator) → '/'
+Index 6: 6 (Format) → 99999 → '{99999}' (placeholder)
+Index 7: 2 (Separator) → '' (kosong, abaikan)
+Index 8: 0 (Format) → -Kosong- (abaikan)
+
+Hasil: Dispusip/Nias/2024/{99999} → Dispusip/Nias/2024/ + auto_number
+Final: Dispusip/Nias/2024/00001
+
+Logic Pattern:
+- Index genap = Format Options
+- Index ganjil = Separator Options  
+- Jika format = '0' → abaikan
+- Jika separator = '2' → abaikan (kosong)
+- Manual input dengan {} → ambil value di dalam kurung
+- Format 6 → placeholder {99999} untuk auto increment
+*/
+
+
+
 
 	public function edit($id)
 	{
@@ -487,54 +715,66 @@ class Eksemplar extends \Base\Controllers\BaseController
 	}
 
 	
-	public function print_label()
-	{
-		helper('thumbnail');
-		$this->data['title'] = 'Cetak Label Eksemplar';
+    public function print_label()
+    {
+        helper('thumbnail');
+        $this->data['title'] = 'Cetak Label Eksemplar';
 
-		$this->validation->setRule('eksemplar_ids', 'Eksemplar', 'required');
-		if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
-			helper('form');
-			$post = $this->request->getPost();
+        $this->validation->setRule('eksemplar_ids', 'Eksemplar', 'required');
+        if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
+            helper('form');
+            $post = $this->request->getPost();
 
-			$template = $post['eksemplar_tpl'];
-			$eksemplar_ids = $post['eksemplar_ids'];
-			$eksemplar_ids_arr = explode(',', $eksemplar_ids);
-		
+            $template = $post['eksemplar_tpl'];
+        
+            $eksemplar_ids = $post['eksemplar_ids'];
+            $eksemplar_ids_arr = explode(',', $eksemplar_ids);
+        
+            $db = db_connect('data');
+            $builder = $db->table('collections as a')
+                ->select('a.ID, a.ID as action')
+                ->select('a.NomorBarcode')
+                ->select('b.Title, b.CallNumber')
+                ->join('catalogs b', 'b.ID=a.Catalog_id')
+                ->whereIn('a.ID', $eksemplar_ids_arr);
 
-			$db = db_connect('data');
-			$builder = $db->table('collections as a')
-				->select('a.ID, a.ID as action')
-				->select('a.NomorBarcode')
-				->select('b.Title, b.CallNumber')
-				->join('catalogs b', 'b.ID=a.Catalog_id')
-				->whereIn('a.ID', $eksemplar_ids_arr);
+            $eksemplar_data = $builder->get()->getResultObject();
+            $nama_perpustakaan=$db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value?:"Perpustakaan Mitra";
 
-			$eksemplar_data = $builder->get()->getResultObject();
+            $LabelData = [];
+            foreach ($eksemplar_data as $row) {
+                
+                // ===================================================================
+                // BAGIAN YANG DIUBAH: Logika Kondisional untuk Barcode/QR Code
+                // ===================================================================
 
-			$LabelData = [];
-			foreach ($eksemplar_data as $row) {
-				array_push($LabelData, array(
-					'Title' => character_limiter($row->Title, 20),
-					'Barcode' => $row->NomorBarcode,
-					'CallNumber' => $row->CallNumber,
-					'NamaPerpustakaan' => 'Perpusnas RI',
-					'Warna1' => '#FFFF66',
-					'BarcodePNG' => get_barcode_png($row->NomorBarcode),
-				));
-			}
+                // Gunakan str_contains() jika Anda menggunakan PHP 8 atau lebih baru.
+                // Fungsi ini akan mengembalikan true jika kata 'qrcode' ditemukan di dalam nama template.
+                if (str_contains($template, 'qrcode')) {
+                    $barcodeImage = get_qrcode_png($row->NomorBarcode);
+                } else {
+                    $barcodeImage = get_barcode_png($row->NomorBarcode);
+                }
 
-			// $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
-			// $pdf->SetPrintHeader(false);
-			// $pdf->AddPage();
-			view('Eksemplar\Views\template\\' . $template, array('LabelData' => $LabelData));
-			// $pdf->writeHTML($html, true, false, false, false, '');
-			// $pdf->Output('example_006.pdf', 'D');
-			// die;
-		} else {
-			set_message('message', $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message'));
-		}
-	}
+               
+
+                array_push($LabelData, array(
+                    'Title' => character_limiter($row->Title, 20),
+                    'Barcode' => $row->NomorBarcode,
+                    'CallNumber' => $row->CallNumber,
+                    'NamaPerpustakaan' => $nama_perpustakaan?? 'Perpustakaan Mitra',
+                    'Warna1' => '#FFFF66',
+                    // Gunakan variabel yang sudah diisi secara kondisional
+                    'BarcodePNG' => $barcodeImage, 
+                ));
+            }
+            view('Eksemplar\Views\template\\' . $template, array('LabelData' => $LabelData));
+
+
+        } else {
+            set_message('message', $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message'));
+        }
+    }
 
 	public function report()
 	{

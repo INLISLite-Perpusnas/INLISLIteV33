@@ -96,92 +96,98 @@ $slug = $request->getGet('slug') ?? 'katalog_add';
                 </div>
 
                 <!-- Format Nomor Induk -->
-                <div class="form-group mb-3">
-                    <label class="form-label"><strong>Format Nomor Induk</strong></label>
-                    <div class="row">
+              <!-- Format Nomor Induk dengan Debug -->
+<div class="form-group mb-3">
+    <label class="form-label"><strong>Format Nomor Induk</strong></label>
+    <div class="row">
+        <?php 
+        // Array untuk menyimpan format options
+        $formatOptions = [
+            '0' => '-Kosong-',
+            '1' => 'Manual Input', 
+            '2' => 'Kode Jenis Bahan',
+            '3' => 'Kode Kategori Koleksi',
+            '4' => 'Kode Bentuk Fisik', 
+            '5' => 'Kode Jenis Sumber Pengadaan',
+            '6' => '99999',
+            '7' => 'YYYY'
+        ];
+        
+        $separatorOptions = [
+            '2' => '-Kosong-',
+            '3' => '/',
+            '4' => '-',
+            '5' => '.'
+        ];
+        
+        // Parse format dari database
+        $dbFormatValues = [];
+        $manualValues = [];
+        if (isset($FormatNomorInduk) && !empty($FormatNomorInduk)) {
+            $dbFormatValues = explode('|', $FormatNomorInduk);
+            // Extract manual values jika ada
+            foreach ($dbFormatValues as $index => $value) {
+                if (preg_match('/\{(.+)\}/', $value, $matches)) {
+                    $manualValues[$index] = $matches[1];
+                    $dbFormatValues[$index] = '1'; // Set ke Manual Input
+                }
+            }
+        }
+        
+        // Generate 9 select boxes untuk format
+        for ($i = 1; $i <= 9; $i++): 
+            $isEven = ($i % 2 == 0);
+            $arrayIndex = $i - 1; // Index untuk array (0-8)
+            
+            // Ukuran kolom
+            if ($i == 1 || $i == 3 || $i == 5 || $i == 7 || $i == 9) {
+                $colSize = 'col-md-2';
+            } else {
+                $colSize = 'col-md-1';
+            }
+            
+            // Ambil nilai dari database
+            $currentValue = isset($dbFormatValues[$arrayIndex]) ? $dbFormatValues[$arrayIndex] : '0';
+        ?>
+            <div class="<?= $colSize ?>">
+                <div class="form-group">
+                    <small class="text-muted">Pos <?= $i ?></small>
+                    
+                    <select class="form-control format-select" id="FormatNomorInduk<?= $i ?>" name="FormatNomorInduk[]" data-position="<?= $i ?>">
+                        <?php if ($isEven): ?>
+                            <!-- Separator options for even positions -->
+                            <?php foreach ($separatorOptions as $value => $label): ?>
+                                <option value="<?= $value ?>" <?= ($currentValue == $value) ? 'selected' : '' ?>><?= $label ?></option>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <!-- Format options for odd positions -->
+                            <?php foreach ($formatOptions as $value => $label): ?>
+                                <option value="<?= $value ?>" <?= ($currentValue == $value) ? 'selected' : '' ?>><?= $label ?></option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+                    
+                    <!-- Manual Input Field untuk posisi ganjil -->
+                    <?php if (!$isEven): ?>
                         <?php 
-                        // Array untuk menyimpan format options
-                        $formatOptions = [
-                            '0' => '-Kosong-',
-                            '1' => 'Manual Input', 
-                            '2' => 'Kode Jenis Bahan',
-                            '3' => 'Kode Kategori Koleksi',
-                            '4' => 'Kode Bentuk Fisik', 
-                            '5' => 'Kode Jenis Sumber Pengadaan',
-                            '6' => '99999',
-                            '7' => 'YYYY'
-                        ];
-                        
-                        $separatorOptions = [
-                            '2' => '-Kosong-',
-                            '3' => '/',
-                            '4' => '-',
-                            '5' => '.'
-                        ];
-                        
-                        // Parse format dari database (contoh: "0|5|0|3|7|3|6|2|0")
-                        $dbFormatValues = [];
-                        $manualValues = [];
-                        if (isset($FormatNomorInduk) && !empty($FormatNomorInduk)) {
-                            $dbFormatValues = explode('|', $FormatNomorInduk);
-                            // Extract manual values jika ada
-                            foreach ($dbFormatValues as $index => $value) {
-                                if (preg_match('/\{(.+)\}/', $value, $matches)) {
-                                    $manualValues[] = $matches[1];
-                                    $dbFormatValues[$index] = '1'; // Set ke Manual Input
-                                }
-                            }
-                        }
-                        
-                        // Generate 9 select boxes untuk format
-                        for ($i = 1; $i <= 9; $i++): 
-                            $isEven = ($i % 2 == 0);
-                            
-                            // Ukuran kolom yang lebih proporsional
-                            if ($i == 1 || $i == 3 || $i == 5 || $i == 7 || $i == 9) {
-                                // Format options - lebih lebar
-                                $colSize = 'col-md-2';
-                            } else {
-                                // Separator options - lebih kecil
-                                $colSize = 'col-md-1';
-                            }
-                            
-                            // Ambil nilai dari database jika ada, jika tidak gunakan default
-                            $currentValue = isset($dbFormatValues[$i-1]) ? $dbFormatValues[$i-1] : '0';
+                        // Ambil nilai manual untuk posisi ini
+                        $manualValue = isset($manualValues[$arrayIndex]) ? $manualValues[$arrayIndex] : '';
                         ?>
-                            <div class="<?= $colSize ?>">
-                                <div class="form-group">
-                                    <select class="form-control format-select" id="FormatNomorInduk<?= $i ?>" name="FormatNomorInduk[]" data-position="<?= $i ?>">
-                                        <?php if ($isEven): ?>
-                                            <!-- Separator options for even positions -->
-                                            <?php foreach ($separatorOptions as $value => $label): ?>
-                                                <option value="<?= $value ?>" <?= ($currentValue == $value) ? 'selected' : '' ?>><?= $label ?></option>
-                                            <?php endforeach; ?>
-                                        <?php else: ?>
-                                            <!-- Format options for odd positions -->
-                                            <?php foreach ($formatOptions as $value => $label): ?>
-                                                <option value="<?= $value ?>" <?= ($currentValue == $value) ? 'selected' : '' ?>><?= $label ?></option>
-                                            <?php endforeach; ?>
-                                        <?php endif; ?>
-                                    </select>
-                                    
-                                    <!-- Manual Input Field (muncul di bawah select jika dipilih Manual Input) -->
-                                    <?php if (!$isEven): // Hanya untuk posisi ganjil (format options) ?>
-                                        <div class="manual-input-field" id="manualField<?= $i ?>" style="display: none; margin-top: 8px;">
-                                            <input type="text" 
-                                                   name="ManualInput[]" 
-                                                   class="form-control manual-input" 
-                                                   placeholder="Masukkan teks manual"
-                                                   data-position="<?= $i ?>"
-                                                   value="<?= isset($manualValues[array_search($i-1, array_keys(array_filter($dbFormatValues, function($v, $k) { return $k % 2 == 0 && $v == '1'; }, ARRAY_FILTER_USE_BOTH)))]) ? $manualValues[array_search($i-1, array_keys(array_filter($dbFormatValues, function($v, $k) { return $k % 2 == 0 && $v == '1'; }, ARRAY_FILTER_USE_BOTH)))] : '' ?>">
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        <?php endfor; ?>
-                    </div>
-
+                        <div class="manual-input-field" id="manualField<?= $i ?>" style="display: <?= ($currentValue == '1') ? 'block' : 'none' ?>; margin-top: 8px;">
+                            <input type="text" 
+                                   name="ManualInput_<?= $arrayIndex ?>" 
+                                   class="form-control manual-input" 
+                                   placeholder="Masukkan teks manual"
+                                   data-position="<?= $i ?>"
+                                   data-array-index="<?= $arrayIndex ?>"
+                                   value="<?= htmlspecialchars($manualValue) ?>">
+                        </div>
+                    <?php endif; ?>
                 </div>
+            </div>
+        <?php endfor; ?>
+    </div>
+</div>
 
                 <!-- Preview Format -->
                 <div class="row mb-3">
@@ -238,7 +244,6 @@ $slug = $request->getGet('slug') ?? 'katalog_add';
 </div>
 
 <script>
-// Script untuk preview format nomor induk dan manual input
 document.addEventListener('DOMContentLoaded', function() {
     const formatSelects = document.querySelectorAll('[id^="FormatNomorInduk"]');
     const previewElement = document.getElementById('formatPreview');
@@ -313,12 +318,11 @@ document.addEventListener('DOMContentLoaded', function() {
         previewElement.textContent = preview || 'Format belum dipilih';
     }
     
-    // Event listeners untuk select changes
+    // Event listeners
     formatSelects.forEach(select => {
         select.addEventListener('change', updateManualInputFields);
     });
     
-    // Event listeners untuk manual input changes
     document.querySelectorAll('.manual-input').forEach(input => {
         input.addEventListener('input', updatePreview);
     });
