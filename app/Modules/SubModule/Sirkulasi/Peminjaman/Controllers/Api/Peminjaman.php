@@ -65,20 +65,20 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 			->join('location_library loc', 'loc.ID = col.Location_Library_id')
 			->where('cli.LoanStatus', 'Loan');
 
-		if (user()->category == 'admin') {
-		} elseif (user()->category == 'sa_prov' && user()->branch_id === null) {
-			$npp_provinsi_id = preg_replace('/\./', '', user()->npp_provinsi_id);
-			$builder->where('b.NPP_Provinsi_id', $npp_provinsi_id);
-		} elseif (user()->category == 'sa_prov' && user()->branch_id !== null) {
-			$builder->where('a.Branch_id', branch_id());
-		} elseif (user()->category == 'sa_kabkot' && user()->branch_id === null) {
-			$npp_kabkota_id = preg_replace('/\./', '', user()->npp_kabkota_id);
-			$builder->where('b.NPP_KabKota_id', $npp_kabkota_id);
-		} elseif (user()->category == 'sa_kabkot' && user()->branch_id !== null) {
-			$builder->where('a.Branch_id', branch_id());
-		} else {
-			$builder->where('a.Branch_id', branch_id());
-		}
+		// if (user()->category == 'admin') {
+		// } elseif (user()->category == 'sa_prov' && user()->branch_id === null) {
+		// 	$npp_provinsi_id = preg_replace('/\./', '', user()->npp_provinsi_id);
+		// 	$builder->where('b.NPP_Provinsi_id', $npp_provinsi_id);
+		// } elseif (user()->category == 'sa_prov' && user()->branch_id !== null) {
+		// 	$builder->where('a.Branch_id', branch_id());
+		// } elseif (user()->category == 'sa_kabkot' && user()->branch_id === null) {
+		// 	$npp_kabkota_id = preg_replace('/\./', '', user()->npp_kabkota_id);
+		// 	$builder->where('b.NPP_KabKota_id', $npp_kabkota_id);
+		// } elseif (user()->category == 'sa_kabkot' && user()->branch_id !== null) {
+		// 	$builder->where('a.Branch_id', branch_id());
+		// } else {
+		// 	$builder->where('a.Branch_id', branch_id());
+		// }
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')

@@ -8,52 +8,52 @@ CI_ENVIRONMENT = development
 # APP
 #--------------------------------------------------------------------
 app.indexPage = ''
-app.baseURL   = 'http://localhost:8080'
-app.siteURL   = 'http://localhost:8080'
+app.baseURL   = 'http://localhost:8000'
+app.siteURL   = 'http://localhost:8000'
 app.checkURL  = false
 
 #--------------------------------------------------------------------
 # DATABASE
 #--------------------------------------------------------------------
-database.default.hostname = 127.0.0.1
+database.default.hostname = 192.168.2.9
 database.default.database = inlislite_core
-database.default.username = root
-database.default.password = 
+database.default.username = pusdatin
+database.default.password = Pusdatin123$
 database.default.DBDriver = MySQLi
 database.default.port	  = 3306
 
-database.default_sl.hostname = 127.0.0.1
+database.default_sl.hostname = 192.168.2.9
 database.default_sl.database = inlislite_core
-database.default_sl.username = root
-database.default_sl.password = 
+database.default_sl.username = pusdatin
+database.default_sl.password = Pusdatin123$
 database.default_sl.DBDriver = MySQLi
 database.default_sl.port	  = 3306
 
-database.backend.hostname = 127.0.0.1
+database.backend.hostname = 192.168.2.9
 database.backend.database = inlislite_backend
-database.backend.username = root
-database.backend.password = 
+database.backend.username = pusdatin
+database.backend.password = Pusdatin123$
 database.backend.DBDriver = MySQLi
 database.backend.port     = 3306
 
-database.backensl.hostname = 127.0.0.1
+database.backensl.hostname = 192.168.2.9
 database.backensl.database = inlislite_backend
-database.backensl.username = root
-database.backensl.password = 
+database.backensl.username = pusdatin
+database.backensl.password = Pusdatin123$
 database.backensl.DBDriver = MySQLi
 database.backensl.port     = 3306
 
-database.data.hostname    = 127.0.0.1
+database.data.hostname    = 192.168.2.9
 database.data.database    = inlislite_data
-database.data.username    = root
-database.data.password    = 
+database.data.username    = pusdatin
+database.data.password    = Pusdatin123$
 database.data.DBDriver    = MySQLi
 database.data.port        = 3306
 
-database.data_sl.hostname    = 127.0.0.1
+database.data_sl.hostname    = 192.168.2.9
 database.data_sl.database    = inlislite_data
-database.data_sl.username    = root
-database.data_sl.password    = 
+database.data_sl.username    = pusdatin
+database.data_sl.password    = Pusdatin123$
 database.data_sl.DBDriver    = MySQLi
 database.data_sl.port        = 3306
 

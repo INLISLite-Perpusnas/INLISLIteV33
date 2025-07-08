@@ -43,11 +43,12 @@ class Filters extends BaseConfig
             // 'csrf',
             // 'invalidchars',
             'session' => ['except' => ['', 'logout*', 'login*', 'home*', 'auth/a/*', 'api/katalog/*', 'api/eksemplar/*','api/sirkulasi-peminjaman/*','api/sirkulasi-pengembalian/*','opac*', 'buku-tamu*',
-            'api-lokasi-ruang/check*','baca-ditempat*','peminjaman-mandiri*','pengembalian-mandiri*']],
+            'api-lokasi-ruang/check*','baca-ditempat*','peminjaman-mandiri*','pengembalian-mandiri*','oai*']],
             'cors',
             'permissions' => ['except' => [
                 '',
                 'logout*',
+                'oai*',
                 'login*',
                 'peminjaman-mandiri*',
                 'pengembalian-mandiri*',

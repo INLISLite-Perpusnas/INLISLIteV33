@@ -54,7 +54,7 @@ if ($request->getVar('fullscreen') == 1) {
     <?php endif; ?>
     <style>
         .site-name {
-            font-size: 18px;
+            font-size: 25px;
             margin: .75rem 0;
             font-weight: 700;
             color: #fff;

@@ -1207,23 +1207,13 @@ public function create()
 		}
 	}
 
-	public function print_card(int $id = null)
+	public function print_card($id)
 	{
-		$templateModel = new BaseModel('t_template');
-		if (empty($template)) {
-			$template = $templateModel->where('active', 1)->first();
-			dd($template);
-		}
-
-		if (empty($template)) {
-			echo "Tidak ada template untuk di cetak";
-			exit;
-		}
+	
 
 		$anggota = $this->anggotaModel->find($id);
 
-		// $bg = file_get_contents(ROOTPATH . 'public/uploads/card-bg.jpg');
-		$bg = file_get_contents(ROOTPATH . 'public/uploads/master-template/' . $template->file_image);
+		
 		$bg_base64 = 'data:image/png;base64,' . base64_encode($bg);
 		$photo = file_get_contents(ROOTPATH . 'public/uploads/anggota/' . $anggota->PhotoUrl);
 		$photo_base64 = 'data:image/png;base64,' . base64_encode($photo);
@@ -1286,19 +1276,27 @@ public function create()
 		} else {
 			$photo_html = '<img src="' . $photo_base64 . '" width="225px" height="250px" style="background-color: #ffffff; padding: 5px; margin-bottom: 15px"/>';
 		}
+		$db=db_connect('data');
+		$nama_perpustakaan=$db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value?:"Perpustakaan Mitra";
+		// Corrected line 6
+		$branch = $db->table('branchs')->where('Name', $nama_perpustakaan)->get()->getRow();
+		$logo = $branch ? $branch->Logo : "";
+		$perpus_logo = file_get_contents(ROOTPATH . 'public/uploads/branch/' . $logo);
+		$perpus_logo_base64 = 'data:image/png;base64,' . base64_encode($perpus_logo);
+		$photo_html2 = '<img src="' . $perpus_logo_base64 . '" width="100" height="100" style="background-color: #ffffff; padding: 5px; margin-bottom: 15px"/>';
 
 		$barcode = new \Picqer\Barcode\BarcodeGeneratorPNG();
 		$barcode_base64 = 'data:image/png;base64,' . base64_encode($barcode->getBarcode($anggota->MemberNo ?? '0000000000000', $barcode::TYPE_CODE_39, 2, 100, [0, 0, 0]));
 		$barcode_html = '<img src="' . $barcode_base64 . '" alt="Barcode" style="background-color: #ffffff; padding: 5px;"/>';
 		$qrcode_base64 = (new QRCode($options))->render($anggota->MemberNo);
-		$qrcode_html = '<img src="' . $qrcode_base64 . '" alt="Qrcode" style="background-color: #ffffff; padding: 2px; margin-top: 20px" width="225px" height="225px"/>';
+		$qrcode_html = '<img src="' . $qrcode_base64 . '" alt="Qrcode" style="background-color: #ffffff; padding: 2px; margin-top: 20px" width="150px" height="150px"/>';
 
 		$content = $template->content ?? '';
-		$perpus_logo = '';
 		$jenis_anggota_id = $anggota->JenisAnggota_id;
 		$jenis_anggota = $this->jenisanggotaModel->find($jenis_anggota_id);
 		$content = str_replace('{perpus_bg}', $bg_base64, $content);
-		$content = str_replace('{perpus_logo}', $perpus_logo, $content);
+		$content = str_replace('{perpus_logo}', $photo_html2, $content);
+		$content = str_replace('{perpus_nama}', $nama_perpustakaan, $content);
 		$content = str_replace('{perpus_kartu}', 'KARTU ANGGOTA', $content);
 		$content = str_replace('{perpus_nama}', 'Perpustakaan Mitra Perpusnas', $content);
 		$content = str_replace('{perpus_alamat}', 'Jl. Medan Merdeka Selatan, No. 11A', $content);

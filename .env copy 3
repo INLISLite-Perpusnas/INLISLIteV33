@@ -1,77 +1,14 @@
-#--------------------------------------------------------------------
-# ENVIRONMENT
-#--------------------------------------------------------------------
-CI_ENVIRONMENT = development
-#CI_ENVIRONMENT = production
+<VirtualHost *:8000>
+    ServerName dev-inlislite4.perpusnas.go.id
+    ServerAlias dev-inlislite4.perpusnas.go.id
+    ServerAlias 192.168.2.9    # Tambahkan ini
+    DocumentRoot /var/www/html/backend-inlislite/public
 
-#--------------------------------------------------------------------
-# APP
-#--------------------------------------------------------------------
-app.indexPage = ''
-app.baseURL   = 'http://localhost:8080'
-app.siteURL   = 'http://localhost:8080'
-app.checkURL  = false
+    <Directory /var/www/html/backend/public>
+        AllowOverride All
+        Require all granted
+    </Directory>
 
-#--------------------------------------------------------------------
-# DATABASE
-#--------------------------------------------------------------------
-#--------------------------------------------------------------------
-# DATABASE
-#--------------------------------------------------------------------
-database.default.hostname = 192.168.7.154
-database.default.database = inlislite_core
-database.default.username = inlislite
-database.default.password = P@ssw0rd2023
-database.default.DBDriver = MySQLi
-; database.default.port	  = 3306
-
-database.default_sl.hostname = 192.168.7.154
-database.default_sl.database = inlislite_core
-database.default_sl.username = inlislite
-database.default_sl.password = P@ssw0rd2023
-database.default_sl.DBDriver = MySQLi
-; database.default_sl.port	  = 3306
-
-database.backend.hostname = 192.168.7.154
-database.backend.database = inlislite_backend
-database.backend.username = inlislite
-database.backend.password = P@ssw0rd2023
-database.backend.DBDriver = MySQLi
-; database.backend.port     = 3306
-
-database.backensl.hostname = 192.168.7.154
-database.backensl.database = inlislite_backend
-database.backensl.username = inlislite
-database.backensl.password = P@ssw0rd2023
-database.backensl.DBDriver = MySQLi
-; database.backensl.port     = 3306
-
-database.data.hostname    = 192.168.7.154
-database.data.database    = inlislite_data
-database.data.username    = inlislite
-database.data.password    = P@ssw0rd2023
-database.data.DBDriver    = MySQLi
-; database.data.port        = 3306
-
-database.data_sl.hostname    = 192.168.7.154
-database.data_sl.database    = inlislite_data
-database.data_sl.username    = inlislite
-database.data_sl.password    = P@ssw0rd2023
-database.data_sl.DBDriver    = MySQLi
-; database.data_sl.port        = 3306
-
-#--------------------------------------------------------------------
-# INLISLite
-#--------------------------------------------------------------------
-encryption.key 			  = INLISLITE-PERPUSNAS-RI
-security.TOKEN_SECRET 	  = cskhfuwt48wbfjn3i4utnjf38754hf3yfbjc93758thrjsnf83hcwn8437
-security.TOKEN_IAT   	  = 10
-security.TOKEN_NBF    	  = 60
-security.TOKEN_EXP    	  = 3600
-security.TOKEN_ALG    	  = 'HS256'
-
-API_AUTH              	  = 'http://localhost:8001/api/auth'
-API_BRANCH            	  = 'http://localhost:8002/api/branch'
-API_CATALOG           	  = 'http://localhost:8003/api/catalog'
-API_REGION            	  = 'http://localhost:8004/api/region'
-API_USER              	  = 'http://localhost:8005/api/user'
+    ErrorLog ${APACHE_LOG_DIR}/laravel_error.log
+    CustomLog ${APACHE_LOG_DIR}/laravel_access.log combined
+</VirtualHost>
