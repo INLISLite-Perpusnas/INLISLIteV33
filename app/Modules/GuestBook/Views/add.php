@@ -381,6 +381,7 @@
 				<p class="search-subtitle">Masukkan nomor anggota untuk melanjutkan ke buku tamu</p>
 				
 				<form method="get" action="<?= base_url('buku-tamu') ?>" class="search-form">
+					<?=csrf_field()?>
 					<div class="search-input-group">
 						<input type="text" 
 							   class="search-input" 

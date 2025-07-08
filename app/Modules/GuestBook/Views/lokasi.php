@@ -11,6 +11,7 @@
 				<div class="contact-wrap contact-pages mb-0">
 					<div class="contact-form contact-form-mb">
 						<form id="frm_register" method="post">
+							<?=csrf_field()?>
 							<div class="row">
 								<div class="col-md-12">
 									<div class="form-group">

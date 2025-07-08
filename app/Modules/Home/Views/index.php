@@ -8,7 +8,7 @@
             --secondary-color: #64748b;
             --accent-color: #f59e0b;
             --success-color: #059669;
-            --gradient-bg: linear-gradient(135deg,rgb(105, 162, 202) 0%,rgba(48, 76, 113, 0.69) 100%);
+            --gradient-bg: linear-gradient(135deg,rgb(105, 162, 202) 0%,rgba(62, 99, 146, 0.69) 100%);
         }
 
         body {
@@ -373,6 +373,7 @@
                 <div class="col-lg-8">
                     <div class="search-card" data-aos="fade-up">
                         <form id="searchForm">
+                            <?=csrf_field()?>
                             <div class="input-group">
                                 <input type="text" class="form-control search-input" id="searchInput" 
                                        placeholder="Cari buku, penulis, atau penerbit...">
@@ -536,7 +537,7 @@
                 
                 if (query) {
                     // Redirect to search page with query
-                    window.location.href = '<?= base_url('opac/search') ?>?q=' + encodeURIComponent(query);
+                   window.location.href = '<?= base_url('opac') ?>?search_by=&search=' + encodeURIComponent(query);
                 } else {
                     // Show alert if empty
                     alert('Silakan masukkan kata kunci pencarian');

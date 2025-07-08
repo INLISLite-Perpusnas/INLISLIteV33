@@ -401,6 +401,7 @@
   <!-- Recommendation Search Box -->
                 <div class="recommendation-search mb-4">
                     <form method="GET" action="<?= base_url('opac') ?>" id="recommendationForm">
+                        <?=csrf_field()?>
                         <div class="card shadow-sm">
                             <div class="card-header bg-warning text-dark">
                                 <h6 class="mb-0">
@@ -434,6 +435,7 @@
                     <!-- Regular Search Box -->
                     <div class="search-box">
                         <form method="GET" action="#">
+                            <?=csrf_field()?>
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <select class="form-select" name="search_by">

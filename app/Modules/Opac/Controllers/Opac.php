@@ -35,6 +35,8 @@ class Opac extends \Base\Controllers\BaseController
         $this->katalogRuasModel = new \Katalog\Models\KatalogRuasModel();
        
          helper('opac');
+         helper('sanitize');
+
     }
     
 
@@ -92,8 +94,10 @@ private function loadRegularCatalogs()
     $currentPage = $this->request->getVar('page') ?? 1;
 
     // Pencarian utama
-    $search = $this->request->getVar('search');
-    $searchBy = $this->request->getVar('search_by') ?? 'Title';
+   $search = sanitizeSearch($this->request->getVar('search'));
+    $searchBy = sanitizeSearch($this->request->getVar('search_by') ?? 'Title');
+ 
+
 
     $builder = $this->katalogModel->select('catalogs.*');
 
@@ -126,11 +130,11 @@ private function loadRegularCatalogs()
     // 🎯 Multiple search tambahan: cek jika ada di URL
     $additionalFilters = ['Publisher', 'Author', 'PublishLocation', 'Subject', 'PublishYear'];
     foreach ($additionalFilters as $filter) {
-        $value = $this->request->getVar($filter);
-        if (!empty($value)) {
-            $builder->like($filter, $value);
-        }
+    $value = sanitizeSearch($this->request->getVar($filter));
+    if (!empty($value)) {
+        $builder->like($filter, $value);
     }
+}
 
     // --- Bagian yang sudah ada ---
     $this->data['catalogs'] = $builder->paginate($perPage);
