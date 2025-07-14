@@ -23,6 +23,7 @@ class User extends \Base\Controllers\BaseResourceController
 	public $modulePath;
 	public $password;
 	public $request;
+	public $settingModel;
 
 	function __construct()
 	{
@@ -36,13 +37,14 @@ class User extends \Base\Controllers\BaseResourceController
 
 		$this->userModel = new \User\Models\UserModel();
 		$this->groupModel = new \Group\Models\GroupModel();
+		$this->settingModel = new \PenomoranKoleksi\Models\PenomoranKoleksiModel();
 
 		$this->modulePath = ROOTPATH . 'public/uploads/user/';
 		$this->uploadPath = WRITEPATH . 'uploads/';
 
-		// if (!file_exists($this->modulePath)) {
-		// 	mkdir($this->modulePath);
-		// }
+		if (!file_exists($this->modulePath)) {
+			mkdir($this->modulePath);
+		}
 
 		helper('adminigniter');
 		helper('region');
@@ -52,29 +54,18 @@ class User extends \Base\Controllers\BaseResourceController
 	public function datatable()
 	{
 		$slug = $this->request->getGet('slug') ?? '';
-		$npp_provinsi_id = $this->request->getGet('npp_provinsi_id') ?? '';
-		$npp_kabkota_id = $this->request->getGet('npp_kabkota_id') ?? '';
-		$npp_kecamatan_id = $this->request->getGet('npp_kecamatan_id') ?? '';
+	
 
 		$db = db_connect('default');
 		$builder = $db->table('users as a')
 			->select('a.id, a.id as action, a.username,a.email, concat(a.first_name, " ", a.last_name) as full_name, a.first_name, a.last_name, a.active, a.updated_at, a.id as group_id')
-			->select('a.branch_id, a.address, a.npp_provinsi_id, a.npp_kabkota_id, a.npp_kecamatan_id, a.NPP_Kelurahan_id')
 			->like('a.category', $slug);
 
 		if (empty($slug)) {
 			$builder->where('id <', 0);
 		}
 
-		if (is_member('sa_prov')) {
-			$npp_provinsi_id = user()->npp_provinsi_id ?? $npp_provinsi_id;
-			if (!empty($npp_provinsi_id)) {
-				$builder->where('a.npp_provinsi_id', $npp_provinsi_id);
-			} else {
-				$builder->where('a.ID', 0);
-			}
-		}
-
+	
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
 			->edit('first_name', function ($row) {
@@ -95,19 +86,7 @@ class User extends \Base\Controllers\BaseResourceController
 
 				return $html;
 			})
-			->edit('address', function ($row) {
-				$html = '';
-				if (!empty(npp_region($row->npp_provinsi_id, 1))) {
-					$html .=  'Prov: <b>' . npp_region($row->npp_provinsi_id, 1)->name . '</b><br>';
-				}
-				if (!empty(npp_region($row->npp_kabkota_id, 2))) {
-					$html .=  'Kota/Kab: <b>' . npp_region($row->npp_kabkota_id, 2)->name . '</b><br>';
-				}
-				if (!empty(npp_region($row->npp_kecamatan_id, 2))) {
-					$html .=  'Kec: <b>' . npp_region($row->npp_kecamatan_id, 3)->name . '</b><br>';
-				}
-				return $html;
-			})
+		
 			->edit('group_id', function ($row) {
 				$groups = $this->userModel->getGroups($row->id);
 				$html = '';
@@ -117,27 +96,25 @@ class User extends \Base\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('branch_id', function ($row) {
-				$branch = get_branch($row->branch_id);
+				$npp_perpustakaan = $this->settingModel->where('Name', 'NPPPerpustakaan')->first()->Value ?? 'NPP Perpustakaan Mitra';
+				$nama_perpustakaan = $this->settingModel->where('Name', 'NamaPerpustakaan')->first()->Value ?? 'Perpustakaan Mitra';	
+				$alamat_perpustakaan = $this->settingModel->where('Name', 'NamaLokasiPerpustakaan')->first()->Value ?? 'Alamat Perpustakaan Mitra';
 				$html = '<dl>';
-				if (!empty($branch->NPP_id)) {
+				if (!empty($npp_perpustakaan)) {
 					$html .= '<dt>NPP</dt>';
-					$html .= '<dd>' . ($branch->Code ?? '') . '</dd>';
+					$html .= '<dd>' . ($npp_perpustakaan ?? '') . '</dd>';
 				}
 
-				if (!empty($branch->Name)) {
+				if (!empty($nama_perpustakaan)) {
 					$html .= '<dt>Nama</dt>';
-					$html .= '<dd>' . strtoupper($branch->Name ?? '-') . '</dd>';
+					$html .= '<dd>' . strtoupper($nama_perpustakaan) . '</dd>';
 				}
 
-				if (!empty($branch->NPP_Jenis)) {
+				if (!empty($alamat_perpustakaan)) {
 					$html .= '<dt>Jenis</dt>';
-					$html .= '<dd>' . strtoupper($branch->NPP_Jenis ?? '-') . '</dd>';
+					$html .= '<dd>' . strtoupper($alamat_perpustakaan ?? '-') . '</dd>';
 				}
 
-				if (!empty($branch->Address)) {
-					$html .= '<dt>Alamat</dt>';
-					$html .= '<dd>' . strtoupper($branch->Address ?? '-') . '</dd>';
-				}
 				$html .= '</dl>';
 
 				return $html;
@@ -329,6 +306,31 @@ class User extends \Base\Controllers\BaseResourceController
 						$this->authorize->addUserToGroup($id, $group_id);
 					}
 				}
+					// Update settings
+					$dataToUpdate = [
+						'NamaPerpustakaan' => trim($this->request->getPost('perpus_nama')),
+						'NamaLokasiPerpustakaan' => trim($this->request->getPost('perpus_alamat')),
+						'NPPPerpustakaan' => trim($this->request->getPost('perpus_npp')),
+						'EmailPerpustakaan' => trim($this->request->getPost('perpus_email')),
+						'JenisPerpustakaan' => trim($this->request->getPost('perpus_jenis')),
+					];
+                  
+					$success = true;
+					foreach ($dataToUpdate as $name => $value) {
+						$row = $this->settingModel->where('Name', $name)->first();
+					
+						if ($row) {
+							if (!$this->settingModel->update($row->ID, ['Value' => $value])) {
+								$success = false;
+							}
+						} else {
+							if (!$this->settingModel->insert(['Name' => $name, 'Value' => $value])) {
+								$success = false;
+							}
+						}
+					}
+				
+
 
 				$this->session->setFlashdata('toastr_msg', 'Profil User berhasil disimpan');
 				$this->session->setFlashdata('toastr_type', 'success');
@@ -434,19 +436,7 @@ class User extends \Base\Controllers\BaseResourceController
 			->select('count(*) as total')
 			->like('a.Code', $search);
 
-		if ($slug == 'sa_prov') {
-			$include = ['PROVINSI'];
-			$builder_count->whereIn('a.NPP_SubJenis', $include);
-		} elseif ($slug == 'sa_kabkot') {
-			$include = ['KABUPATEN/KOTA'];
-			$builder_count->whereIn('a.NPP_SubJenis', $include);
-		} elseif ($slug == 'sa_pkpt') {
-			$include = ['SEKOLAH TINGGI', 'UNIVERSITAS', 'POLITEKNIK', 'AKADEMI', 'INSTITUT', 'KHUSUS LAINNYA', 'INSTANSI SWASTA', 'KEMENTERIAN/LEMBAGA', 'INSTANSI DAERAH', 'LAPAS', 'RUMAH SAKIT'];
-			$builder_count->whereIn('a.NPP_SubJenis', $include);
-		} elseif ($slug == 'sa_psm') {
-			$include = ['PAUD', 'TK', 'SD', 'MI', 'SDLB', 'SMP', 'MTS', 'SMA', 'SMALB', 'MA'];
-			$builder_count->whereIn('a.NPP_SubJenis', $include);
-		}
+		
 
 		$total = $builder_count->get()->getRow()->total ?? 0;
 
@@ -460,26 +450,21 @@ class User extends \Base\Controllers\BaseResourceController
 			->like('a.Code', $search)
 			->limit($per_page, $limit);
 
-		if ($slug == 'sa_prov') {
-			$include = ['PROVINSI'];
-			$builder->whereIn('a.NPP_SubJenis', $include);
-		} elseif ($slug == 'sa_kabkot') {
-			$include = ['KABUPATEN/KOTA'];
-			$builder->whereIn('a.NPP_SubJenis', $include);
-		} elseif ($slug == 'sa_pkpt') {
-			$include = ['SEKOLAH TINGGI', 'UNIVERSITAS', 'POLITEKNIK', 'AKADEMI', 'INSTITUT', 'KHUSUS LAINNYA', 'INSTANSI SWASTA', 'KEMENTERIAN/LEMBAGA', 'INSTANSI DAERAH', 'LAPAS', 'RUMAH SAKIT', 'RUMAH IBADAH'];
-			$builder->whereIn('a.NPP_SubJenis', $include);
-		} elseif ($slug == 'sa_psm') {
-			$include = ['PAUD', 'TK', 'SD', 'MI', 'SDLB', 'SMP', 'MTS', 'SMA', 'SMALB', 'MA'];
-			$builder->whereIn('a.NPP_SubJenis', $include);
-		}
-
+		
 		$items = $builder->get()->getResult();
 		$response = array(
 			'items' => $items,
 			'total' => $total,
 		);
-
+		if ($page * $per_page >= $total) {
+			$response['pagination'] = array(
+				'more' => false
+			);
+		} else {
+			$response['pagination'] = array(
+				'more' => true
+			);
+		}
 		return $this->simpleResponse($response);
 	}
 }

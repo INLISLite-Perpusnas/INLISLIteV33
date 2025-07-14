@@ -3,9 +3,8 @@ $db=db_connect('data');
 $nama_perpustakaan=$db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value?:"Perpustakaan Mitra";
 $alamat=$db->table('settingparameters')->where('Name', 'NamaLokasiPerpustakaan')->get()->getRow()->Value?:"Jl.Perpustakaan Mitra";
 
-// Corrected line 6
-$branch = $db->table('branchs')->where('Name', $nama_perpustakaan)->get()->getRow();
-$logo = $branch ? $branch->Logo : "";
+$logo = $db->table('settingparameters')->where('Name', 'Logo')->get()->getRow()->Value;
+
 
 ?>
 <!DOCTYPE html>

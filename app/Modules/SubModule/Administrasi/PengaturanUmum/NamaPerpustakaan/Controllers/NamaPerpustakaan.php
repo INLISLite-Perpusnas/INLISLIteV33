@@ -13,12 +13,19 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 	public $branchModel;
 	public $modulePath;
 	public $settingModel;
+	public $db;
+	public $uploadPath;
+	public $validation;
+	public $session;
 
 
 	function __construct()
 	{
 		$this->auth = \Myth\Auth\Config\Services::authentication();
 		$this->authorize = \Myth\Auth\Config\Services::authorization();
+		$this->db= db_connect('data');
+		$this->validation = \Config\Services::validation();
+		$this->session = session();
 		$this->branchModel = new \NamaPerpustakaan\Models\BranchModel();
 		$this->settingModel = new \PenomoranKoleksi\Models\PenomoranKoleksiModel();
 
@@ -33,15 +40,25 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 	public function index()
 	{
 	
-		if (branch_id() == 0) {
-			set_message('toastr_msg', 'Informasi Branch ID belum ada');
-			set_message('toastr_type', 'info');
-			return redirect()->to('/user/profile');
-		}
+		
+		$logo=$this->db->table('settingparameters')->where('Name', 'Logo')->get()->getRow()->Value?:"Perpustakaan Mitra";
+		$logokop=$this->db->table('settingparameters')->where('Name', 'LogoKop')->get()->getRow()->Value?:"Perpustakaan Mitra";
+		
+        $this->data['logo']=$logo;
+		$this->data['logo_kop']=$logokop;
 
-		$branch = $this->branchModel->find(branch_id());
-	
-		$this->data['branch'] = $branch;
+		$this->data['nama_perpustakaan'] = $this->settingModel->where('Name', 'NamaPerpustakaan')->first()->Value ?? 'Perpustakaan Mitra';
+		$this->data['nama_lokasi_perpustakaan'] = $this->settingModel->where('Name', 'NamaLokasiPerpustakaan')->first()->Value ?? 'Alamat Perpustakaan Mitra';
+		$this->data['npp_perpustakaan'] = $this->settingModel->where('Name', 'NPPPerpustakaan')->first()->Value ?? 'NPP Perpustakaan Mitra';
+		$this->data['lokasi_perpustakaan'] = $this->settingModel->where('Name', 'NamaLokasiPerpustakaan')->first()->Value ?? 'Lokasi Perpustakaan Mitra';
+		$this->data['email_perpustakaan'] = $this->settingModel->where('Name', 'EmailPerpustakaan')->first()->Value ?? 'email@perpustakaan.mitra';
+		$this->data['jam_operasional'] = $this->settingModel->where('Name', 'JamOperasional')->first()->Value ?? 'Jam Operasional Perpustakaan Mitra';
+		$this->data['instagram'] = $this->settingModel->where('Name', 'Instagram')->first()->Value ?? '';
+		$this->data['facebook'] = $this->settingModel->where('Name', 'Facebook')->first()->Value ?? '';
+		$this->data['youtube'] = $this->settingModel->where('Name', 'Youtube')->first()->Value ?? '';
+		$this->data['phone'] = $this->settingModel->where('Name', 'Phone')->first()->Value ?? '';
+		$this->data['is_use_kop'] = $this->settingModel->where('Name', 'IsUseKop')->first()->Value ?? 0;
+		$this->data['jenis_perpustakaan'] = $this->settingModel->where('Name', 'JenisPerpustakaan')->first()->Value ?? '';
 		$this->data['title'] = 'Nama Perpustakaan';
 
 		echo view('NamaPerpustakaan\Views\update', $this->data);
@@ -49,39 +66,30 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 
 	public function update()
 {
-	$this->validation->setRule('Name', 'Nama Perpustakaan', 'required');
+	$this->validation->setRule('nama_perpustakaan', 'Nama Perpustakaan', 'required');
 
 	if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
-		$Url = $this->request->getPost('Url') ?? '';
-		$branch = $this->branchModel->where('slug', $Url)->first();
-
-		if ($branch && $branch->ID != branch_id()) {
-			set_message('toastr_msg', 'URL Perpustakaan sudah digunakan');
-			set_message('toastr_type', 'error');
-			return redirect()->back();
-		}
+		
+		
 
 		$LayananOperasionl_Str = htmlspecialchars($this->request->getPost('LayananOperasionl') ?? '', ENT_QUOTES, 'UTF-8');
 
-		$update_data = [
-			'Name' => trim($this->request->getPost('Name')),
-			'Email' => trim($this->request->getPost('Email')),
-			'Phone' => trim($this->request->getPost('Phone')),
-			'Address' => trim($this->request->getPost('Address')),
-			'IG' => trim($this->request->getPost('IG')),
-			'FB' => trim($this->request->getPost('FB')),
-			'YT' => trim($this->request->getPost('YT')),
-			'TW' => trim($this->request->getPost('TW')),
-			'slug' => $Url,
-			'LayananOperasionl' => $LayananOperasionl_Str,
-		];
+		
 
-		$updateBranch = $this->branchModel->update(branch_id(), $update_data);
-
+		
 		// Update settings
 		$dataToUpdate = [
-			'NamaPerpustakaan' => trim($this->request->getPost('Name')),
-			'NamaLokasiPerpustakaan' => trim($this->request->getPost('Address')),
+			'NamaPerpustakaan' => trim($this->request->getPost('nama_perpustakaan')),
+			'NamaLokasiPerpustakaan' => trim($this->request->getPost('nama_lokasi_perpustakaan')),
+			'NPPPerpustakaan' => trim($this->request->getPost('npp_perpustakaan')),
+			'EmailPerpustakaan' => trim($this->request->getPost('email_perpustakaan')),
+			'JamOperasional' => trim($this->request->getPost('jam_operasional')),
+			'Instagram' => trim($this->request->getPost('instagram')),
+			'Facebook' => trim($this->request->getPost('facebook')),
+			'Youtube' => trim($this->request->getPost('youtube')),
+			'Phone' => trim($this->request->getPost('phone')),
+			'IsUseKop' => $this->request->getPost('IsUseKop') ? 1 : 0,
+			'LayananOperasionl' => $LayananOperasionl_Str,
 		];
 
 		$success = true;
@@ -91,14 +99,10 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 				if (!$this->settingModel->update($row->ID, ['Value' => $value])) {
 					$success = false;
 				}
-			} else {
-				if (!$this->settingModel->insert(['Name' => $name, 'Value' => $value])) {
-					$success = false;
-				}
 			}
 		}
 
-		if ($updateBranch && $success) {
+		if ($success) {
 			set_message('toastr_msg', 'Perubahan berhasil disimpan');
 			set_message('toastr_type', 'success');
 		} else {
@@ -115,49 +119,5 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 }
 
 
-	public function upload_file()
-	{
-		$upload_id = $this->request->getPost('upload_id');
-		$upload_field = $this->request->getPost('upload_field');
-		$upload_title = $this->request->getPost('upload_title');
-
-		$update_data = [];
-
-		$files = (array) $this->request->getPost('file_pendukung');
-		if (count($files)) {
-			$listed_file = array();
-			foreach ($files as $uuid => $name) {
-				if (file_exists($this->uploadPath . $name)) {
-					$file = new File($this->uploadPath . $name);
-					$newFileName = $file->getRandomName();
-					$file->move($this->modulePath, $newFileName);
-					$listed_file[] = $newFileName;
-				}
-			}
-			$update_data[$upload_field] = implode(',', $listed_file);
-		}
-
-		$updateData = $this->branchModel->update($upload_id, $update_data);
-		if ($updateData) {
-			$this->session->setFlashdata('toastr_msg', 'Upload file berhasil');
-			$this->session->setFlashdata('toastr_type', 'success');
-			$response = [
-				'status'   => 201,
-				'error'    => null,
-				'messages' => [
-					'success' => 'Upload file berhasil'
-				]
-			];
-			return $this->respondCreated($response);
-		} else {
-			$response = [
-				'status'   => 400,
-				'error'    => null,
-				'messages' => [
-					'error' => 'Upload file gagal'
-				]
-			];
-			return $this->fail($response);
-		}
-	}
+	
 }

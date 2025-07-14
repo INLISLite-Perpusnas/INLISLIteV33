@@ -38,25 +38,8 @@ class Katalog extends \Base\Controllers\BaseResourceController
 		$builder = $db->table('catalogs as a')
 			->select('a.ID, a.BIBID, a.Title,  a.Edition, a. Publisher, a.PhysicalDescription, a.ControlNumber, a.IsOPAC, a.IsRDA')
 			->select('a.ID as action, 0 as Eksemplar')
-			->select('b.ID as Branch_id, b.Name as Perpustakaan, b.Name, b.Code, b.NPP_Provinsi_id, b.NPP_KabKota_id, b.NPP_Kecamatan_id, b.NPP_Kelurahan_id, b.NPP_id')
-			->join('branchs b', 'b.ID = a.Branch_id', 'inner')
-			->where('a.IsQUARANTINE', $IsQUARANTINE);
-		
-
-		if (user()->category == 'admin') {
-		} elseif (user()->category == 'sa_prov' && user()->branch_id === null) {
-			$npp_provinsi_id = preg_replace('/\./', '', user()->npp_provinsi_id);
-			$builder->where('b.NPP_Provinsi_id', $npp_provinsi_id);
-		} elseif (user()->category == 'sa_prov' && user()->branch_id !== null) {
-			$builder->where('a.Branch_id', branch_id());
-		} elseif (user()->category == 'sa_kabkot' && user()->branch_id === null) {
-			$npp_kabkota_id = preg_replace('/\./', '', user()->npp_kabkota_id);
-			$builder->where('b.NPP_KabKota_id', $npp_kabkota_id);
-		} elseif (user()->category == 'sa_kabkot' && user()->branch_id !== null) {
-			$builder->where('a.Branch_id', branch_id());
-		} else {
-			$builder->where('a.Branch_id', branch_id());
-		}
+			->where('a.IsQUARANTINE', $IsQUARANTINE)
+			->orderBy('a.ID', 'DESC');
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
@@ -64,11 +47,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 				$html = '<input type="checkbox" class="check" name="ID[]" value="' . $row->ID . '">';
 				return $html;
 			})
-			->edit('Perpustakaan', function ($row) {
-				$html = '<b class="text-primary">' . $row->Branch_id . '</b><br><b>' . $row->Code . '</b><br>' . $row->Name;
-
-				return $html;
-			})
+		
 			->edit('BIBID', function ($row) {
 				$html  = $row->BIBID . '<br>';
 

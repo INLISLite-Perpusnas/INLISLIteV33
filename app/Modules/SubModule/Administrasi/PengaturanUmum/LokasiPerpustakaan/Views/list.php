@@ -130,7 +130,6 @@ $slug = $request->getGet('slug') ?? '';
                 <thead>
                     <tr>
                         <th class="text-center" width="35">No</th>
-                        <th class="text-center"><span class="text-primary">Branch ID</span> <br> NPP / Mitra Perpustakaan</th>
                         <th class="text-center" width="100">Kode</th>
                         <th class="text-center" width="200">Nama Lokasi Perpustakaan</th>
                         <th class="text-center">Alamat</th>
@@ -176,10 +175,6 @@ $slug = $request->getGet('slug') ?? '';
                     data: 'no',
                     className: 'text-center',
                     orderable: false
-                },
-                {
-                    data: 'Perpustakaan',
-                    className: 'text-left'
                 },
                 {
                     data: 'Code',

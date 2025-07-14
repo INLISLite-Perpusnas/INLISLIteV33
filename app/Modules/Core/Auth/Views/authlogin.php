@@ -169,6 +169,25 @@
         color: #0343A7;
     }
 
+    /* reCAPTCHA Container Styling */
+    .recaptcha-container {
+        margin: 24px 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .g-recaptcha {
+        transform: scale(0.9);
+        transform-origin: center;
+    }
+
+    @media (max-width: 480px) {
+        .g-recaptcha {
+            transform: scale(0.8);
+        }
+    }
+
     .btn-login {
         width: 100%;
         padding: 16px;
@@ -185,6 +204,12 @@
         margin-top: 8px;
     }
 
+    .btn-login:disabled {
+        background: #cbd5e0;
+        cursor: not-allowed;
+        transform: none;
+    }
+
     .btn-login::before {
         content: '';
         position: absolute;
@@ -196,11 +221,11 @@
         transition: left 0.6s;
     }
 
-    .btn-login:hover::before {
+    .btn-login:hover:not(:disabled)::before {
         left: 100%;
     }
 
-    .btn-login:hover {
+    .btn-login:hover:not(:disabled) {
         transform: translateY(-2px);
         box-shadow: 0 10px 25px rgba(3, 67, 167, 0.3);
     }
@@ -353,11 +378,9 @@
                 
                 <!-- Logo and Title -->
                 <div class="logo-container">
-                
-                        <img style="width: 80px; height: 80px; object-fit: contain; border-radius: 16px; margin-bottom: 20px;" src="<?= !empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png') ?>" alt="Logo">
-                
-                       
-                
+                    <img style="width: 80px; height: 80px; object-fit: contain; border-radius: 16px; margin-bottom: 20px;" 
+                         src="<?= !empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png') ?>" 
+                         alt="Logo">
                     
                     <h1 class="app-title">Login INLISLite</h1>
                     <p class="app-subtitle">
@@ -411,8 +434,24 @@
                     </div>
                 </div>
 
+                <!-- Google reCAPTCHA -->
+                <div class="recaptcha-container">
+                    <?php if (!empty($recaptcha_site_key)): ?>
+                        <div class="g-recaptcha" 
+                             data-sitekey="<?= $recaptcha_site_key ?>"
+                             data-callback="enableSubmitBtn"
+                             data-expired-callback="disableSubmitBtn"
+                             data-error-callback="disableSubmitBtn"></div>
+                    <?php else: ?>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            reCAPTCHA belum dikonfigurasi. Hubungi administrator.
+                        </div>
+                    <?php endif; ?>
+                </div>
+
                 <!-- Login Button -->
-                <button type="submit" class="btn-login" id="loginBtn">
+                <button type="submit" class="btn-login" id="loginBtn" disabled>
                     <i class="fas fa-sign-in-alt me-2"></i>
                     Masuk ke Sistem
                 </button>
@@ -444,7 +483,28 @@
     </div>
 </div>
 
+<!-- Google reCAPTCHA Script -->
+<?php if (!empty($recaptcha_site_key)): ?>
+<script src="https://www.google.com/recaptcha/api.js?hl=id" async defer></script>
+<?php endif; ?>
+
 <script>
+// reCAPTCHA callback functions
+function enableSubmitBtn() {
+    console.log('reCAPTCHA verified successfully');
+    document.getElementById('loginBtn').disabled = false;
+}
+
+function disableSubmitBtn() {
+    console.log('reCAPTCHA expired or failed');
+    document.getElementById('loginBtn').disabled = true;
+}
+
+// Fungsi untuk memastikan reCAPTCHA dimuat dengan benar
+function onRecaptchaLoad() {
+    console.log('reCAPTCHA loaded successfully');
+}
+
 // Toggle password visibility
 function togglePassword() {
     const passwordInput = document.getElementById('password');
@@ -460,10 +520,28 @@ function togglePassword() {
 }
 
 // Form submission with loading state
-document.getElementById('loginForm').addEventListener('submit', function() {
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    <?php if (!empty($recaptcha_site_key)): ?>
+    // Cek apakah reCAPTCHA sudah dimuat
+    if (typeof grecaptcha === 'undefined') {
+        e.preventDefault();
+        alert('reCAPTCHA belum dimuat. Silakan refresh halaman dan coba lagi.');
+        return false;
+    }
+    
+    const recaptchaResponse = grecaptcha.getResponse();
+    
+    if (!recaptchaResponse || recaptchaResponse.length === 0) {
+        e.preventDefault();
+        alert('Harap selesaikan verifikasi reCAPTCHA terlebih dahulu.');
+        return false;
+    }
+    <?php endif; ?>
+    
     const loginBtn = document.getElementById('loginBtn');
     loginBtn.classList.add('loading');
     loginBtn.innerHTML = 'Memproses...';
+    loginBtn.disabled = true;
 });
 
 // Focus enhancement
@@ -482,6 +560,15 @@ document.querySelectorAll('.form-control').forEach(input => {
 // Enhanced security: Clear form on page unload
 window.addEventListener('beforeunload', function() {
     document.getElementById('password').value = '';
+    <?php if (!empty($recaptcha_site_key)): ?>
+    if (typeof grecaptcha !== 'undefined') {
+        try {
+            grecaptcha.reset();
+        } catch (e) {
+            console.log('reCAPTCHA reset failed:', e);
+        }
+    }
+    <?php endif; ?>
 });
 
 // Auto-focus on first empty field
@@ -495,6 +582,43 @@ window.addEventListener('load', function() {
         passwordField.focus();
     }
 });
+
+// Reset reCAPTCHA on form reset
+document.getElementById('loginForm').addEventListener('reset', function() {
+    <?php if (!empty($recaptcha_site_key)): ?>
+    if (typeof grecaptcha !== 'undefined') {
+        try {
+            grecaptcha.reset();
+        } catch (e) {
+            console.log('reCAPTCHA reset failed:', e);
+        }
+    }
+    disableSubmitBtn();
+    <?php endif; ?>
+});
+
+// Debugging: Log reCAPTCHA status
+<?php if (!empty($recaptcha_site_key)): ?>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('reCAPTCHA Site Key:', '<?= $recaptcha_site_key ?>');
+    
+    // Tunggu reCAPTCHA dimuat
+    const checkRecaptcha = setInterval(function() {
+        if (typeof grecaptcha !== 'undefined') {
+            console.log('reCAPTCHA API loaded successfully');
+            clearInterval(checkRecaptcha);
+        }
+    }, 100);
+    
+    // Timeout setelah 10 detik
+    setTimeout(function() {
+        clearInterval(checkRecaptcha);
+        if (typeof grecaptcha === 'undefined') {
+            console.error('reCAPTCHA failed to load after 10 seconds');
+        }
+    }, 10000);
+});
+<?php endif; ?>
 </script>
 
 <?= $this->endSection('page'); ?>

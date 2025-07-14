@@ -1,4 +1,33 @@
 <?php
+
+
+if (!function_exists('get_username')) {
+    /**
+     * Get username by user_id
+     *
+     * @param int|null $user_id
+     * @return string
+     */
+    function get_username($user_id = null)
+    {
+        if (empty($user_id)) {
+            return '-'; // atau bisa return 'Unknown'
+        }
+
+        $db = \Config\Database::connect(); // CI4 way
+        $builder = $db->table('users');
+        $builder->select('username');
+        $builder->where('id', $user_id);
+        $query = $builder->get()->getRow();
+
+        if ($query) {
+            return $query->username;
+        }
+
+        return '-'; // default kalau tidak ditemukan
+    }
+}
+
 if (!function_exists('get_session')) {
     function get_session($name)
     {

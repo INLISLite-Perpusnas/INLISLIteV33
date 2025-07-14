@@ -95,16 +95,27 @@ $branch = get_ref_single('branchs', 'ID=' . $user->branch_id, 'data');
                         </div>
                     <?php endif ?>
 
-                    <?php if (is_member('admin') || is_member('sa_pus') || is_member('sa_prov') || is_member('sa_kabkot')) : ?>
-                        <div class="position-relative form-group">
-                            <label for="branch_id">NPP (Mitra Perpustakaan)</label>
-                            <div class="select-wrapper">
-                                <select class="form-control select2" name="branch_id" id="branch_id" style="width:100%">
-                                    <option value="<?= ($branch->ID ?? '-') ?>"><?= ($branch->Code ?? '-') ?> - <?= ($branch->Name ?? '') ?></option>
-                                </select>
-                            </div>
+                    <?php if (is_member('admin')) : ?>
+                <div class="position-relative form-group">
+                    <label for="search_perpus">Cari NPP atau Nama Perpustakaan</label>
+                    <div class="input-group">
+                        <input type="text" id="search_perpus" class="form-control" placeholder="Ketik NPP atau Nama...">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button" id="btn_search_perpus">Cari</button>
                         </div>
-                    <?php endif ?>
+                    </div>
+                    <div id="search_results" class="list-group mt-2"></div>
+                    <input type="hidden" name="branch_id" id="branch_id" value="<?= $user->branch_id ?>">
+                    <input type="hidden" name="perpus_npp" id="perpus_npp">
+                <input type="hidden" name="perpus_nama" id="perpus_nama">
+                <input type="hidden" name="perpus_alamat" id="perpus_alamat">
+                <input type="hidden" name="perpus_email" id="perpus_email">
+                <input type="hidden" name="perpus_jenis" id="perpus_jenis">
+
+                </div>
+                <?php endif ?>
+
+
 
                 </div>
                 <div class="modal-footer">
@@ -169,35 +180,63 @@ $branch = get_ref_single('branchs', 'ID=' . $user->branch_id, 'data');
         return false;
     });
 </script>
-
 <script>
-    var URL = "<?= base_url('api/user/select2_branch') ?>";
-    $('#branch_id').select2({
-        dropdownParent: $('#modal_edit'),
-        minimumInputLength: 3,
-        allowClear: true,
-        placeholder: 'Pilih',
-        ajax: {
-            dataType: 'json',
-            url: URL,
-            delay: 800,
-            data: function(params) {
-                return {
-                    search: params.term,
-                    page: params.page
-                }
-            },
-            processResults: function(data, params) {
-                params.page = params.page || 1;
-                console.log(data);
-                return {
-                    results: data.items,
-                    pagination: {
-                        more: (params.page * 10) < data.total
-                    }
-                }
-            },
-            cache: true,
+document.addEventListener('DOMContentLoaded', function() {
+    var searchInput = document.getElementById('search_perpus');
+    var searchButton = document.getElementById('btn_search_perpus');
+    var resultsContainer = document.getElementById('search_results');
+
+    searchButton.addEventListener('click', function() {
+        var keyword = searchInput.value.trim();
+        resultsContainer.innerHTML = '';
+
+        if (keyword.length < 5) {
+            alert('Masukkan minimal 5 karakter untuk pencarian.');
+            return;
         }
+
+        fetch('<?= env('FLASK_API_BASEURL') ?>/perpustakaan?q=' + encodeURIComponent(keyword))
+            .then(response => response.json())
+            .then(data => {
+                if (data.data && data.data.length > 0) {
+                    data.data.forEach(function(item) {
+                        var el = document.createElement('a');
+                        el.href = '#';
+                        el.className = 'list-group-item list-group-item-action';
+                        el.textContent = 'NPP: ' + item.npp + ' | Nama: ' + item.nama;
+                       el.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        document.getElementById('branch_id').value = item.id;
+                        searchInput.value = item.npp + ' - ' + item.nama;
+                        resultsContainer.innerHTML = '';
+
+                        // set field lain
+                        document.getElementById('perpus_npp').value = item.npp;
+                        document.getElementById('perpus_jenis').value = item.jenis;
+                        document.getElementById('perpus_nama').value = item.nama;
+                        document.getElementById('perpus_alamat').value = item.alamat || '';
+                        document.getElementById('perpus_email').value = item.email || '';
+                    });
+
+                        resultsContainer.appendChild(el);
+                    });
+                } else {
+                    var noData = document.createElement('div');
+                    noData.className = 'list-group-item';
+                    noData.textContent = 'Tidak ada data ditemukan.';
+                    resultsContainer.appendChild(noData);
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                var errorEl = document.createElement('div');
+                errorEl.className = 'list-group-item text-danger';
+                errorEl.textContent = 'Terjadi kesalahan saat pencarian.';
+                resultsContainer.appendChild(errorEl);
+            });
     });
+});
+
 </script>
+
+

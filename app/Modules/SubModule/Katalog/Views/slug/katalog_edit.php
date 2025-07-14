@@ -1,6 +1,7 @@
 <?php
 $request = service('request');
 $worksheet_id = $catalog->Worksheet_id ?? 1;
+
 $select2 = select_two();
 $rda = $request->getGet('rda') ?? 1;
 ?>
@@ -762,6 +763,29 @@ $rda = $request->getGet('rda') ?? 1;
 			<input type="checkbox" class="apply-status" name="IsOPAC" data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="normal" <?= $catalog->IsOPAC == 1 ? 'checked' : '' ?>>
 		</div>
 	</div>
+	<div class="table-responsive">
+    <table class="table table-bordered table-striped mb-0">
+        <tbody>
+            <tr>
+                <th scope="row">Dibuat Oleh</th>
+                <td><?= $CreateBy ?></td>
+            </tr>
+            <tr>
+                <th scope="row">Diperbarui Oleh</th>
+                <td><?= $UpdateBy ?></td>
+            </tr>
+            <tr>
+                <th scope="row">Dibuat Pada</th>
+                <td><?= $catalog->CreateDate ?></td>
+            </tr>
+            <tr>
+                <th scope="row">Diperbarui Pada</th>
+                <td><?= $catalog->UpdateDate ?></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
 
 	<div class="card-footer p-0 pt-3">
 		<div class="form-group">

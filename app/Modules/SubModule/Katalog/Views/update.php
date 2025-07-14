@@ -59,6 +59,7 @@ $actions = array(
 	<form id="frm_edit" class="main-card mb-3 card" method="post" action="">
 		<?= $this->include("Katalog\Views\slug\\$slug"); ?>
 	</form>
+	
 
 	<a href="<?= base_url('katalog') ?>" class="btn btn-secondary btn-lg mb-3"><i class="fa fa-list mr-2"></i> Kembali ke Daftar Katalog</a>
 </div>

@@ -51,7 +51,7 @@ $slug = $request->getGet('slug') ?? '';
 								<div class="position-relative form-group">
 									<label for="Code">NPP</label>
 									<div>
-										<input type="text" class="form-control" name="Code" id="Code" placeholder="" value="<?= set_value('Code', $branch->Code) ?>" readonly>
+										<input type="text" class="form-control" name="npp_perpustakaan" id="npp_perpustakaan" placeholder="" value="<?= set_value('npp_perpustakaan', $npp_perpustakaan) ?>" readonly>
 									</div>
 								</div>
 							</div>
@@ -59,7 +59,7 @@ $slug = $request->getGet('slug') ?? '';
 								<div class="position-relative form-group">
 									<label for="Name">Nama Lembaga</label>
 									<div>
-										<input type="text" class="form-control" name="Name" id="Name" placeholder="" value="<?= set_value('Name', $branch->Name) ?>" readonly>
+										<input type="text" class="form-control" name="nama_perpustakaan" id="nama_perpustakaan" placeholder="" value="<?= set_value('nama_perpustakaan', $nama_perpustakaan) ?>" readonly>
 									</div>
 								</div>
 							</div>
@@ -80,7 +80,7 @@ $slug = $request->getGet('slug') ?? '';
 								<div class="position-relative form-group">
 									<label for="Address">Alamat</label>
 									<div>
-										<textarea class="form-control" name="Address" id="Address" placeholder=""><?= set_value('Address', $branch->Address) ?></textarea>
+										<textarea class="form-control" name="nama_lokasi_perpustakaan" id="nama_lokasi_perpustakaan" placeholder=""><?= set_value('nama_lokasi_perpustakaan', $nama_lokasi_perpustakaan) ?></textarea>
 									</div>
 								</div>
 							</div>
@@ -88,27 +88,28 @@ $slug = $request->getGet('slug') ?? '';
 						<div class="form-row">
 							<div class="col-md-6">
 								<div class="position-relative form-group">
-									<label for="Email">Email</label>
+									<label for="Email">Jenis Perpustakaan</label>
 									<div>
-										<input type="text" class="form-control" name="Email" id="Email" placeholder="" value="<?= set_value('Email', $branch->Email) ?>">
+										<input type="text" class="form-control" name="jenis_perpustakaan" id="jenis_perpustakaan" placeholder="" value="<?= set_value('jenis_perpustakaan', $jenis_perpustakaan) ?>">
 									</div>
 								</div>
 							</div>
 							<div class="col-md-6">
 								<div class="position-relative form-group">
-									<label for="Phone">No. Telepon</label>
+									<label for="Email">Email</label>
 									<div>
-										<input type="text" class="form-control" name="Phone" id="Phone" placeholder="" value="<?= set_value('Phone', $branch->Phone) ?>">
+										<input type="text" class="form-control" name="email_perpustakaan" id="email_perpustakaan" placeholder="" value="<?= set_value('email_perpustakaan', $email_perpustakaan) ?>">
 									</div>
 								</div>
 							</div>
+							
 						</div>
 						<div class="form-row">
 							<div class="col-md-6">
 								<div class="position-relative form-group">
 									<label for="IG">Instagram</label>
 									<div>
-										<input type="text" class="form-control" name="IG" id="IG" placeholder="" value="<?= set_value('IG', $branch->IG) ?>">
+										<input type="text" class="form-control" name="instagram" id="instagram" placeholder="" value="<?= set_value('instagram', $instagram) ?>">
 									</div>
 								</div>
 							</div>
@@ -116,25 +117,26 @@ $slug = $request->getGet('slug') ?? '';
 								<div class="position-relative form-group">
 									<label for="YT">Youtube</label>
 									<div>
-										<input type="text" class="form-control" name="YT" id="YT" placeholder="" value="<?= set_value('YT', $branch->YT) ?>">
+										<input type="text" class="form-control" name="youtube" id="YT" placeholder="" value="<?= set_value('youtube', $youtube) ?>">
 									</div>
 								</div>
 							</div>
 						</div>
 						<div class="form-row">
+
 							<div class="col-md-6">
 								<div class="position-relative form-group">
-									<label for="TW">Twitter</label>
+									<label for="FB">Facebook</label>
 									<div>
-										<input type="text" class="form-control" name="TW" id="TW" placeholder="" value="<?= set_value('TW', $branch->TW) ?>">
+										<input type="text" class="form-control" name="facebook" id="FB" placeholder="" value="<?= set_value('facebook', $facebook) ?>">
 									</div>
 								</div>
 							</div>
 							<div class="col-md-6">
 								<div class="position-relative form-group">
-									<label for="FB">Facebook</label>
+									<label for="Phone">No. Telepon</label>
 									<div>
-										<input type="text" class="form-control" name="FB" id="FB" placeholder="" value="<?= set_value('FB', $branch->FB) ?>">
+										<input type="text" class="form-control" name="phone" id="phone" placeholder="" value="<?= set_value('phone', $phone) ?>">
 									</div>
 								</div>
 							</div>
@@ -142,7 +144,7 @@ $slug = $request->getGet('slug') ?? '';
 						<div class="form-row">
 							<div class="col-md-12">
 								<div class="position-relative form-group">
-									<label for="LayananOperasionl">Alamat</label>
+									<label for="LayananOperasionl">Jam Oprasional</label>
 									<div>
 										<?php
 										$LayananOperasionl_Str = '&lt;b&gt;Jam Operasional Layanan&lt;/b&gt;&lt;br&gt;
@@ -164,7 +166,7 @@ $slug = $request->getGet('slug') ?? '';
 								<div class="form-group" style="display: inline-block">
 									<div>
 										<label for="IsUseKop">Gunakan Kop di Laporan </label><br>
-										<input type="checkbox" class="apply-status" name="IsUseKop" data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="normal" <?= (get_setting_parameter('IsUseKop', is_profiling()) == 1 ? 'checked' : '') ?>>
+										<input type="checkbox" class="apply-status" name="IsUseKop" data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="normal" value="<?= set_checkbox('IsUseKop', '1', $is_use_kop) ?>" <?= ($is_use_kop) ? 'checked' : '' ?>>
 									</div>
 								</div>
 							</div>
@@ -181,9 +183,13 @@ $slug = $request->getGet('slug') ?? '';
 			<div class="main-card mb-3 card">
 				<div class="card-header">
 					<i class="header-icon lnr-pencil icon-gradient bg-plum-plate"> </i> Pengaturan Logo
+					<!-- GANTI button Anda dengan ini -->
 					<div class="btn-actions-pane-right actions-icon-btn">
 						<div class="menu-header-btn-pane">
-							<a href="javascript:void(0);" data-id="<?= branch_id() ?>" data-format=".jpg,.png" data-format-title="Format (JPG|PNG). Max 1 Files @ 1MB" data-field="Logo" data-title="Upload Logo" class="mb-2 mr-2 btn btn-warning upload-data">
+							<a href="javascript:void(0);"
+								data-toggle="modal"
+								data-target="#modal_upload_logo"
+								class="mb-2 mr-2 btn btn-warning">
 								<i class="fa fa-edit"></i> Update Logo
 							</a>
 						</div>
@@ -192,7 +198,7 @@ $slug = $request->getGet('slug') ?? '';
 				<div class="card-body">
 					<?php
 					$default = base_url('perpusnas.png');
-					$file_image = (!empty($branch->Logo)) ? base_url('uploads/branch/' . $branch->Logo) : $default;
+					$file_image = (!empty($logo)) ? base_url('uploads/branch/' . $logo) : $default;
 					?>
 					<div class="form-row">
 						<div class="col-md-12">
@@ -211,8 +217,11 @@ $slug = $request->getGet('slug') ?? '';
 					<i class="header-icon lnr-pencil icon-gradient bg-plum-plate"> </i> Pengaturan Kop
 					<div class="btn-actions-pane-right actions-icon-btn">
 						<div class="menu-header-btn-pane">
-							<a href="javascript:void(0);" data-id="<?= branch_id() ?>" data-format=".jpg,.png" data-format-title="Format (JPG|PNG). Max 1 Files @ 1MB" data-field="CoverLetter" data-title="Upload Kop Surat" class="mb-2 mr-2 btn btn-warning upload-data">
-								<i class="fa fa-edit"></i> Update Kop
+							<a href="javascript:void(0);"
+								data-toggle="modal"
+								data-target="#modal_upload_logokop"
+								class="mb-2 mr-2 btn btn-warning">
+								<i class="fa fa-edit"></i> Update Kop Laporan
 							</a>
 						</div>
 					</div>
@@ -220,7 +229,7 @@ $slug = $request->getGet('slug') ?? '';
 				<div class="card-body">
 					<?php
 					$default = base_url('perpusnas.png');
-					$file_image = (!empty($branch->CoverLetter)) ? base_url('uploads/branch/' . $branch->CoverLetter) : $default;
+					$file_image = (!empty($logo_kop)) ? base_url('uploads/branch/' . $logo_kop) : $default;
 					?>
 					<div class="form-row">
 						<div class="col-md-12">
@@ -241,4 +250,5 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->section('script') ?>
 <?= $this->include('NamaPerpustakaan\Views\upload_modal'); ?>
+<?= $this->include('NamaPerpustakaan\Views\upload_modal_kop'); ?>
 <?= $this->endSection('script') ?>

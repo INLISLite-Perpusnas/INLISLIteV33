@@ -34,12 +34,8 @@ class LokasiPerpustakaan extends \Base\Controllers\BaseResourceController
 		$branch_id = user()->branch_id ?? $this->request->getGet('branch_id');
 		$builder = $db->table('location_library as a')
 			->select('a.ID, a.ID as action, a.Code, a.Name, a.Address')
-			->select('a.description, a.sort, a.active')
-			->select('branchs.ID as Branch_id, branchs.Name as Perpustakaan, branchs.Name, branchs.Code, branchs.NPP_Provinsi_id, branchs.NPP_KabKota_id, branchs.NPP_Kecamatan_id, branchs.NPP_Kelurahan_id, branchs.NPP_id')
-			->join('branchs', 'branchs.ID = a.Branch_id', 'left');
-		if (branch_id() > 0) {
-			$builder->where('a.Branch_id', branch_id());
-		}
+			->select('a.description, a.sort, a.active');
+
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
 			->edit('Code', function ($row) {

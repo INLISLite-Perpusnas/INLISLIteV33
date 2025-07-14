@@ -463,9 +463,9 @@ function get_setting_parameter($paramName, $branch = false)
 	$builder = new DataModel($tableName);
 	$query = $builder->where('Name', $paramName);
 
-	if ($branch) {
-		$query->where('Branch_id', user()->branch_id);
-	}
+	// if ($branch) {
+	// 	$query->where('Branch_id', user()->branch_id);
+	// }
 
 	$param = $query->get()->getRow();
 

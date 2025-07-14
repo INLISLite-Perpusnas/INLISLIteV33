@@ -34,7 +34,7 @@ $request = service('request');
 	<div class="main-card mb-3 card">
 		<div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Daftar Katalog
 			<div class="btn-actions-pane-right actions-icon-btn">
-				<?php if (is_allowed('katalog/create') && (branch_id() > 0)) : ?>
+				<?php if (is_allowed('katalog/create')) : ?>
 					<?php if (get_setting_parameter('FormEntriKatalog', is_profiling()) == 'Simple') : ?>
 						<a href="<?= base_url('katalog/create?rda=1') ?>" class=" btn btn-primary" title=""><i class="fa fa-plus"></i>
 							Tambah Katalog RDA
@@ -62,7 +62,7 @@ $request = service('request');
 								<th class="text-center" width="35">
 									<input type="checkbox" class="check_data" title="Pilih Semua">
 								</th>
-								<th class="text-center"><span class="text-primary">Branch ID</span> <br> NPP / Perpustakaan</th>
+					
 								<th class="text-center">BIBID</th>
 								<th class="text-center">Judul</th>
 								<th class="text-center">Edisi</th>
@@ -123,10 +123,6 @@ $request = service('request');
 					orderable: false
 				},
 				{
-					data: 'Perpustakaan',
-					className: 'text-left'
-				},
-				{
 					data: 'BIBID',
 					className: 'text-left'
 				},
@@ -166,7 +162,7 @@ $request = service('request');
 				},
 			],
 			"order": [
-				[0, "desc"]
+				[0, "asc"]
 			],
 			"drawCallback": function(data, type, full, meta) {
 				var api = this.api();

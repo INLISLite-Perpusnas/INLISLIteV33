@@ -1,183 +1,229 @@
-<div class="modal fade" id="modal_upload_img" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+<!-- Modal Upload Logo - HTML sama seperti sebelumnya -->
+<div class="modal fade" id="modal_upload_logo" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-md" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Upload File - <span id="upload_title_span"></span>
+                    <i class="fas fa-upload"></i> Upload Logo
                 </h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form id="frm_upload" method="post" data-action="" data-id="" enctype="multipart/form-data">
+            <form id="frm_upload_logo" enctype="multipart/form-data">
+                <?=csrf_field()?>
+                <input type="hidden" name="category" value="logo">
                 <div class="modal-body">
-                    <div id="frm_upload_message"></div>
-                    <div class="form-row">
-                        <div class="col-md-12">
-                            <div class="position-relative form-group">
-                                <label for="file_pendukung" class="">File <span id="upload_title_span2"></span>*</label>
-                                <div id="file_pendukung" class="dropzone"></div>
-                                <div id="file_pendukung_listed"></div>
-                                <div>
-                                    <small class="info help-block"><span id="upload_data_format_title"></span></small>
-                                </div>
+                    <div id="upload_message"></div>
+                    
+                    <!-- Current Logo Preview -->
+                    <div class="form-group">
+                        <label>Logo Saat Ini:</label>
+                        <div id="current_logo_preview" class="text-center mb-3">
+                            <img id="current_logo_img" src="" alt="Current Logo" 
+                                 class="img-thumbnail" style="max-width: 200px; max-height: 150px; display: none;">
+                            <div id="no_logo_message" class="text-muted">
+                                <i class="fas fa-image fa-3x"></i>
+                                <p>Belum ada logo</p>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- File Input -->
+                    <div class="form-group">
+                        <label for="logo_file">Pilih File Logo*</label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="logo_file" name="logo_file" 
+                                   accept="image/jpeg,image/jpg,image/png,image/gif">
+                            <label class="custom-file-label" for="logo_file">Pilih file...</label>
+                        </div>
+                        <small class="form-text text-muted">
+                            Format: JPG, JPEG, PNG, GIF. Maksimal: 2MB
+                        </small>
+                    </div>
+
+                    <!-- Preview Upload -->
+                    <div class="form-group">
+                        <label>Preview:</label>
+                        <div id="upload_preview" class="text-center" style="display: none;">
+                            <img id="preview_img" src="" alt="Preview" 
+                                 class="img-thumbnail" style="max-width: 200px; max-height: 150px;">
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <input type="hidden" name="upload_id" id="upload_id" value="">
-                    <input type="hidden" name="upload_parent_id" id="upload_parent_id" value="">
-                    <input type="hidden" name="upload_field" id="upload_field" value="">
-                    <input type="hidden" name="upload_title" id="upload_title" value="">
-
-                    <input type="hidden" name="upload_data_dropzone_url" id="upload_data_dropzone_url" value="">
-                    <input type="hidden" name="upload_data_url" id="upload_data_url" value="">
-                    <input type="hidden" name="upload_data_format" id="upload_data_format" value="">
-                    <input type="hidden" name="upload_data_file" id="upload_data_file" value="">
-                    <input type="hidden" name="upload_data_redirect" id="upload_data_redirect" value="">
-
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal"><?= lang('App.btn.close') ?></button>
-                    <button type="submit" class="btn btn-primary" name="submit"><?= lang('App.btn.save') ?></button>
+                    <button type="button" id="btn_delete_logo" class="btn btn-danger mr-auto" style="display: none;">
+                        <i class="fas fa-trash"></i> Hapus Logo
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload"></i> Upload
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
+
+
 <script>
-    var defaultDropzoneUrl = "<?= base_url('master-nama-perpustakaan/do_upload') ?>";
-    var defaultUrl = "<?= base_url('master-nama-perpustakaan/upload_file') ?>";
-    var defaultFormat = ".png, .jpg, .jpeg";
-    var defaultFile = 1;
-    var defaultRedirect = "<?= base_url('master-nama-perpustakaan') ?>";
-    var defaultFormatTitle = "";
-
-    $('.upload-data').click(function() {
-        Dropzone.autoDiscover = false;
-        var id = $(this).attr('data-id');
-        var parent_id = $(this).attr('data-parent');
-        var field = $(this).attr('data-field');
-        var title = $(this).attr('data-title');
-
-        $('#frm_upload').attr("data-id", id);
-        $('#frm_upload').attr("data-field", field);
-        $('#frm_upload').attr("data-title", title);
-
-        console.log(id)
-        console.log(field)
-        console.log(title)
-
-        var data_dropzone_url = $(this).attr('data-dropzone-url');
-        if (data_dropzone_url) {
-            $('#upload_data_dropzone_url').val(data_dropzone_url);
-        } else {
-            $('#upload_data_dropzone_url').val(defaultDropzoneUrl);
-        }
-        console.log('upload_data_dropzone_url: ' + $('#upload_data_dropzone_url').val());
-
-        var data_url = $(this).attr('data-url');
-        if (data_url) {
-            $('#upload_data_url').val(data_url);
-        } else {
-            $('#upload_data_url').val(defaultUrl);
-        }
-        console.log('upload_data_url: ' + $('#upload_data_url').val());
-
-        var data_format = $(this).attr('data-format');
-        if (data_format) {
-            defaultFormat = data_format;
-            $('#upload_data_format').val(data_format);
-        } else {
-            $('#upload_data_format').val(defaultFormat);
-        }
-        console.log('upload_data_format: ' + $('#upload_data_format').val());
-
-        var data_file = $(this).attr('data-file');
-        if (data_file) {
-            defaultFile = data_file;
-            $('#upload_data_file').val(data_file);
-        } else {
-            $('#upload_data_file').val(defaultFile);
-        }
-        console.log('upload_data_file: ' + $('#upload_data_file').val());
-
-        var data_redirect = $(this).attr('data-redirect');
-        if (data_redirect) {
-            $('#upload_data_redirect').val(data_redirect);
-        } else {
-            $('#upload_data_redirect').val(defaultRedirect);
-        }
-        console.log('upload_data_redirect: ' + $('#upload_data_redirect').val());
-
-        var data_format_title = $(this).attr('data-format-title');
-        if (data_format_title) {
-            $('#upload_data_format_title').html(data_format_title);
-        } else {
-            $('#upload_data_format_title').html(defaultFormatTitle);
-        }
-
-        $('#modal_upload_img').modal('show');
-        $('#upload_id').val(id);
-        $('#upload_parent_id').val(parent_id);
-        $('#upload_field').val(field);
-        $('#upload_title').val(title);
-        $('#upload_title_span').html(title);
-
-        setDropzone('file_pendukung', 'master-nama-perpustakaan', $('#upload_data_format').val(), $('#upload_data_file').val(), 1);
+$(document).ready(function() {
+    // Load current logo when modal opens
+    $('#modal_upload_logo').on('show.bs.modal', function() {
+        loadCurrentLogo();
     });
 
-    $('#frm_upload').submit(function(event) {
-        event.preventDefault()
-        var data_post = $(this).serializeArray();
-        var id = $('#upload_id').val();
-        var parent_id = $('#upload_parent_id').val();
+    // File input change handler
+    $('#logo_file').on('change', function() {
+        var file = this.files[0];
+        if (file) {
+            // Update label
+            $('.custom-file-label').text(file.name);
+            
+            // Show preview
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                $('#preview_img').attr('src', e.target.result);
+                $('#upload_preview').show();
+            };
+            reader.readAsDataURL(file);
+        } else {
+            $('.custom-file-label').text('Pilih file...');
+            $('#upload_preview').hide();
+        }
+    });
 
-        $('.loading').show()
+    // Form submission
+    $('#frm_upload_logo').on('submit', function(e) {
+        e.preventDefault();
+        
+        var file = $('#logo_file')[0].files[0];
+        if (!file) {
+            showMessage('error', 'Silakan pilih file terlebih dahulu');
+            return;
+        }
+
+        var formData = new FormData();
+        formData.append('logo_file', file);
+
+        $('#loading_overlay').show();
+        $('#upload_message').html('');
 
         $.ajax({
-                url: $('#upload_data_url').val(),
-                type: 'POST',
-                dataType: 'json',
-                data: data_post,
-            })
-            .done(function(res) {
-                console.log(res)
-                if (res.status === 201) {
-                    Swal.fire({
-                        title: 'Success',
-                        text: 'File berhasil disimpan',
-                        type: 'success',
-                        showConfirmButton: false,
-                        timer: 3000
-                    })
+            // URL YANG SUDAH DISESUAIKAN DENGAN ROUTE BARU
+            url: '<?= base_url('api/master-nama-perpustakaan/logo-upload') ?>',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: 'json'
+        })
+        .done(function(response) {
+            if (response.status === 200) {
+                showMessage('success', response.message);
+                loadCurrentLogo();
+                
+                // Reset form
+                $('#frm_upload_logo')[0].reset();
+                $('.custom-file-label').text('Pilih file...');
+                $('#upload_preview').hide();
+                
+                // Close modal after 2 seconds
+                setTimeout(function() {
+                    $('#modal_upload_logo').modal('hide');
+                }, 2000);
+            } else {
+                showMessage('error', response.message);
+                if (response.errors) {
+                    var errorList = '<ul>';
+                    for (var field in response.errors) {
+                        errorList += '<li>' + response.errors[field] + '</li>';
+                    }
+                    errorList += '</ul>';
+                    showMessage('error', 'Validation Error:' + errorList);
+                }
+            }
+        })
+        .fail(function(xhr) {
+            var errorMsg = 'Terjadi kesalahan saat upload';
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                errorMsg = xhr.responseJSON.message;
+            }
+            showMessage('error', errorMsg);
+        })
+        .always(function() {
+            $('#loading_overlay').hide();
+        });
+    });
 
-                    setTimeout(function() {
-                        window.location.href = $('#upload_data_redirect').val();
-                    }, 2000)
+    // Delete logo
+    $('#btn_delete_logo').on('click', function() {
+        if (confirm('Apakah Anda yakin ingin menghapus logo?')) {
+            $('#loading_overlay').show();
+            
+            $.ajax({
+                // URL YANG SUDAH DISESUAIKAN DENGAN ROUTE BARU
+                url: '<?= base_url('api/master-nama-perpustakaan/logo/delete') ?>',
+                type: 'DELETE',
+                dataType: 'json'
+            })
+            .done(function(response) {
+                if (response.status === 200) {
+                    showMessage('success', response.message);
+                    loadCurrentLogo();
                 } else {
-                    $('#frm_upload_message').html(res.messages.error)
+                    showMessage('error', response.message);
                 }
             })
-            .fail(function(res) {
-                console.log(res)
-                // $('#frm_upload_message').html(res.responseJSON.messages.error)
+            .fail(function(xhr) {
+                showMessage('error', 'Terjadi kesalahan saat menghapus logo');
             })
             .always(function() {
-                $('.loading').hide()
+                $('#loading_overlay').hide();
             });
-
-        return false;
+        }
     });
 
-    $('#modal_upload_img').on('hidden.bs.modal', function() {
-        $(this).find('form').trigger('reset');
-        $('#frm_upload_message').html('');
-        file_pendukung = null;
-        file_pendukung.disable();
-    });
+    // Load current logo
+    function loadCurrentLogo() {
+        $.ajax({
+            // URL YANG SUDAH DISESUAIKAN DENGAN ROUTE BARU
+            url: '<?= base_url('api/master-nama-perpustakaan/logo/current') ?>',
+            type: 'GET',
+            dataType: 'json'
+        })
+        .done(function(response) {
+            if (response.status === 200 && response.data.exists) {
+                $('#current_logo_img').attr('src', response.data.url).show();
+                $('#no_logo_message').hide();
+                $('#btn_delete_logo').show();
+            } else {
+                $('#current_logo_img').hide();
+                $('#no_logo_message').show();
+                $('#btn_delete_logo').hide();
+            }
+        })
+        .fail(function() {
+            $('#current_logo_img').hide();
+            $('#no_logo_message').show();
+            $('#btn_delete_logo').hide();
+        });
+    }
 
-    $('#modal_upload_img').on('shown.bs.modal', function(e) {
-        //
-    });
+    // Show message helper
+    function showMessage(type, message) {
+        var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+        var icon = type === 'success' ? 'check-circle' : 'exclamation-triangle';
+        
+        $('#upload_message').html(
+            '<div class="alert ' + alertClass + ' alert-dismissible fade show" role="alert">' +
+                '<i class="fas fa-' + icon + '"></i> ' + message +
+                '<button type="button" class="close" data-dismiss="alert">' +
+                    '<span aria-hidden="true">&times;</span>' +
+                '</button>' +
+            '</div>'
+        );
+    }
+});
 </script>

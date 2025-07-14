@@ -89,20 +89,7 @@
                                 <small class="help-block with-errors"></small>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label>Jenis Admin </label>
-                                <div class="select-wrapper">
-                                    <select class="form-control select2" id="is_branch" name="is_branch" style="width:100%">
-                                        <?php if (in_array($slug, ['admin', 'sa_prov', 'sa_kabkot'])) : ?>
-                                            <option value="0" selected>Admin Wilayah</option>
-                                        <?php endif; ?>
-                                        <option value="1">Admin Lembaga</option>
-                                    </select>
-                                </div>
-                                <small class="help-block with-errors"></small>
-                            </div>
-                        </div>
+                      
 
                     </div>
                 </div>
@@ -177,37 +164,3 @@
     });
 </script>
 
-<script>
-    let npp_provinsi_id = '<?= user()->npp_provinsi_id ?>';
-    getData(`<?= base_url('api/region/province') ?>`, `#provinsi_id`, npp_provinsi_id, 'Pilih');
-
-    <?php if (in_array($slug, ['sa_kabkot'])) : ?>
-        if (npp_provinsi_id) {
-            getData(`<?= base_url('api/region/city') ?>/${npp_provinsi_id}.`, `#kabkota_id`, false, 'Pilih');
-        }
-
-        $('#provinsi_id').change(function(e) {
-            var provinsi_id = $(this).val();
-            if (!provinsi_id) {
-                $('#kabkota_id').html('<option value="">Pilih</option>');
-            } else {
-                getData(`<?= base_url('api/region/city') ?>/${provinsi_id}.`, `#kabkota_id`, false, 'Pilih');
-
-                $('#kabkota_id').select2({
-                    width: '100%', // Adjust as needed
-                    placeholder: "Pilih",
-                    allowClear: true,
-                    dropdownParent: $('#modal_create') // Append the dropdown to the modal
-                });
-            }
-        });
-    <?php endif; ?>
-
-    $("#is_branch").change(function() {
-        if ($(this).val() == 0) {
-            $(".is_branch").hide();
-        } else {
-            $(".is_branch").show();
-        }
-    });
-</script>

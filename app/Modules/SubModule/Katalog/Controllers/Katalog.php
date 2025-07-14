@@ -51,6 +51,7 @@ class Katalog extends \Base\Controllers\BaseController
 		helper('katalog');
 		helper('region');
 		helper('form');
+		helper('app');
 	}
 
 	public function index()
@@ -468,6 +469,16 @@ class Katalog extends \Base\Controllers\BaseController
 		$slug = $this->request->getGet('slug');
 
 		$catalog = $this->katalogModel->find($catalog_id);
+			if (empty($catalog)) {
+			set_message('toastr_msg', 'Katalog tidak ditemukan');
+			set_message('toastr_type', 'error');
+			return redirect()->to('katalog');
+		}
+		$CreateBy = get_username($catalog->CreateBy ?? 0);
+		$UpdateBy = get_username($catalog->UpdateBy ?? 0);
+		$data['CreateBy'] = $CreateBy;
+		$data['UpdateBy'] = $UpdateBy;
+	
 		$data['catalog'] = $catalog;
 
 		$worksheet = $this->worksheetModel->find($catalog->Worksheet_id);
