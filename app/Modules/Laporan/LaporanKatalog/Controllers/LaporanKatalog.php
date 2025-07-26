@@ -55,7 +55,7 @@ class LaporanKatalog extends \Base\Controllers\BaseController
     {
         $columns = json_decode($this->request->getPost('columns'), true);
         $filterType = $this->request->getPost('filter_type');
-        $branch_id = branch_id();
+       
         
         if (empty($columns)) {
             return '<div class="alert alert-warning">Pilih minimal satu kolom untuk preview data</div>';
@@ -64,10 +64,7 @@ class LaporanKatalog extends \Base\Controllers\BaseController
         // Build query based on filter
         $query = $this->katalogModel->select($columns);
 
-        // Branch ID filter if profiling
-        if (is_profiling()) {
-            $query->where('Branch_id', $branch_id);
-        }
+       
 
         switch ($filterType) {
             case 'date':
@@ -152,11 +149,7 @@ class LaporanKatalog extends \Base\Controllers\BaseController
         // Build query
         $query = $this->katalogModel->select($selectedColumns);
 
-        // Branch ID filter if profiling
-        if (is_profiling()) {
-            $query->where('Branch_id', $branch_id);
-        }
-
+  
         // Apply filters
         switch ($filterType) {
             case 'date':

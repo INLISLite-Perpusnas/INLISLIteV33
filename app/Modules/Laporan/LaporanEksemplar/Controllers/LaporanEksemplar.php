@@ -66,7 +66,7 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
     {
         $columns = json_decode($this->request->getPost('columns'), true);
         $filterType = $this->request->getPost('filter_type');
-        $branch_id = branch_id();
+     
         
         if (empty($columns)) {
             return '<div class="alert alert-warning">Pilih minimal satu kolom untuk preview data</div>';
@@ -85,10 +85,7 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
                 ->join('(SELECT ID, Name as Perpustakaan FROM location_library) AS libraries','collections.Location_Library_id = libraries.ID', 'LEFT')
                 ->select($columns);
 
-        // Branch ID filter if profiling
-        if (is_profiling()) {
-            $query->where('collections.Branch_id', $branch_id);
-        }
+     
 
         switch ($filterType) {
             case 'date':
@@ -202,7 +199,7 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
 
         $selectedColumns = $this->request->getPost('columns');
         $filterType = $this->request->getPost('filter_type');
-        $branch_id = branch_id();
+      
         
         // Build query
         $query = $this->eksemplarModel
@@ -217,11 +214,7 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
                 ->join('(SELECT ID, Name as Perpustakaan FROM location_library) AS libraries','collections.Location_Library_id = libraries.ID', 'LEFT')
                 ->select($selectedColumns);
 
-        // Branch ID filter if profiling
-        if (is_profiling()) {
-            $query->where('collections.Branch_id', $branch_id);
-        }
-
+      
         // Apply filters
         switch ($filterType) {
             case 'date':

@@ -60,13 +60,11 @@ class LaporanAnggota extends \Base\Controllers\BaseController
         $endDate = $this->request->getPost('end_date');
         $month = $this->request->getPost('month');
         $year = $this->request->getPost('year');
-		$branch_id = branch_id();
+	
 
         // Build query based on filter
         $query = $this->anggotaModel->select($selectedColumns);
-		if (is_profiling()) {
-            $query->where('Branch_id', $branch_id);
-        }
+		
 
         switch ($filterType) {
             case 'date':
@@ -141,9 +139,7 @@ class LaporanAnggota extends \Base\Controllers\BaseController
 
         // Build query based on filter
         $query = $this->anggotaModel->select($columns);
-		if (is_profiling()) {
-			$query->where('Branch_id', $branch_id);
-		}
+		
 		
 
         switch ($filterType) {
