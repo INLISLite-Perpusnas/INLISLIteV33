@@ -8,7 +8,7 @@ use Firebase\JWT\Key;
 
 class Auth extends MythAuthController
 {
-	public function login()
+public function login()
 	{
 		
 		if (logged_in()) {
@@ -19,28 +19,28 @@ class Auth extends MythAuthController
         $logo=$db->table('settingparameters')->where('Name', 'Logo')->get()->getRow()->Value?:"Perpustakaan Mitra";
         $data['logo']=$logo;
         
-        // Tambahkan reCAPTCHA site key
-        $data['recaptcha_site_key'] = getenv('RECAPTCHA_SITE_KEY');
+        // Tambahkan hCaptcha site key
+        $data['hcaptcha_site_key'] = getenv('HCAPTCHA_SITE_KEY');
 
 		$data['title'] = 'Login Form | Profiling';
 		echo view('Auth\Views\authlogin', $data);
 	}
 
 	/**
-	 * Verify Google reCAPTCHA
+	 * Verify hCaptcha
 	 */
-	private function verifyRecaptcha($recaptchaResponse)
+	private function verifyHcaptcha($hcaptchaResponse)
 	{
-		$secretKey = getenv('RECAPTCHA_SECRET_KEY');
+		$secretKey = getenv('HCAPTCHA_SECRET_KEY');
 		
-		if (empty($recaptchaResponse)) {
+		if (empty($hcaptchaResponse)) {
 			return false;
 		}
 		
-		$url = 'https://www.google.com/recaptcha/api/siteverify';
+		$url = 'https://hcaptcha.com/siteverify';
 		$data = [
 			'secret' => $secretKey,
-			'response' => $recaptchaResponse,
+			'response' => $hcaptchaResponse,
 			'remoteip' => $this->request->getIPAddress()
 		];
 		
@@ -69,11 +69,11 @@ class Auth extends MythAuthController
 		try {
 			$username = $this->request->getPost('login');
 			$password = $this->request->getPost('password');
-			$recaptchaResponse = $this->request->getPost('g-recaptcha-response');
+			$hcaptchaResponse = $this->request->getPost('h-captcha-response');
 			
-			// Verifikasi reCAPTCHA terlebih dahulu
-			if (!$this->verifyRecaptcha($recaptchaResponse)) {
-				session()->set('error', "Verifikasi reCAPTCHA gagal. Silakan coba lagi.");
+			// Verifikasi hCaptcha terlebih dahulu
+			if (!$this->verifyHcaptcha($hcaptchaResponse)) {
+				session()->set('error', "Verifikasi hCaptcha gagal. Silakan coba lagi.");
 				return redirect()->back()->withInput();
 			}
 			

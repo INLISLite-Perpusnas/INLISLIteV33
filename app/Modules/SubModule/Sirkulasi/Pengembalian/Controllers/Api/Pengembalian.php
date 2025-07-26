@@ -54,25 +54,24 @@ class Pengembalian extends \Base\Controllers\BaseResourceController
 			->join('collectionloanitems cli', 'cli.CollectionLoan_id = cl.ID')
 			->join('collections col', 'col.ID = cli.Collection_id')
 			->join('catalogs a', 'a.ID = col.Catalog_id')
-			->join('branchs b', 'b.ID = a.Branch_id', 'inner')
 			->join('members m', 'm.ID = cli.member_id')
 			->join('location_library loc', 'loc.ID = col.Location_Library_id')
 			->where('cli.LoanStatus', 'Return');
 
-		if (user()->category == 'admin') {
-		} elseif (user()->category == 'sa_prov' && user()->branch_id === null) {
-			$npp_provinsi_id = preg_replace('/\./', '', user()->npp_provinsi_id);
-			$builder->where('b.NPP_Provinsi_id', $npp_provinsi_id);
-		} elseif (user()->category == 'sa_prov' && user()->branch_id !== null) {
-			$builder->where('a.Branch_id', branch_id());
-		} elseif (user()->category == 'sa_kabkot' && user()->branch_id === null) {
-			$npp_kabkota_id = preg_replace('/\./', '', user()->npp_kabkota_id);
-			$builder->where('b.NPP_KabKota_id', $npp_kabkota_id);
-		} elseif (user()->category == 'sa_kabkot' && user()->branch_id !== null) {
-			$builder->where('a.Branch_id', branch_id());
-		} else {
-			$builder->where('a.Branch_id', branch_id());
-		}
+		// if (user()->category == 'admin') {
+		// } elseif (user()->category == 'sa_prov' && user()->branch_id === null) {
+		// 	$npp_provinsi_id = preg_replace('/\./', '', user()->npp_provinsi_id);
+		// 	$builder->where('b.NPP_Provinsi_id', $npp_provinsi_id);
+		// } elseif (user()->category == 'sa_prov' && user()->branch_id !== null) {
+		// 	$builder->where('a.Branch_id', branch_id());
+		// } elseif (user()->category == 'sa_kabkot' && user()->branch_id === null) {
+		// 	$npp_kabkota_id = preg_replace('/\./', '', user()->npp_kabkota_id);
+		// 	$builder->where('b.NPP_KabKota_id', $npp_kabkota_id);
+		// } elseif (user()->category == 'sa_kabkot' && user()->branch_id !== null) {
+		// 	$builder->where('a.Branch_id', branch_id());
+		// } else {
+		// 	$builder->where('a.Branch_id', branch_id());
+		// }
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')

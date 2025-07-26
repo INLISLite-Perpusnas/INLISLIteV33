@@ -26,11 +26,11 @@
     <!-- upload foto -->
     <?= $this->include("Anggota\Views\section\component_update\upload_foto"); ?>
 
-    <?php if ($is_allowed) : ?>
+  
         <div class="form-group mt-1">
             <button type="submit" class="btn btn-lg btn-primary" id="btn-submit" name="submit">
                 <i class="fa fa-save"></i> Simpan
             </button>
         </div>
-    <?php endif; ?>
+  
 </form>

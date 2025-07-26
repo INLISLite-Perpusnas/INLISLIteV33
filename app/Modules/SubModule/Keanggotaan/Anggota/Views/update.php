@@ -74,6 +74,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 		<div class="card-body">
 			<div id="infoMessage"><?= $message ?? ''; ?></div>
 			<?= get_message('message'); ?>
+			  
 
 			<?= $this->include("Anggota\Views\section\\$slug"); ?>
 

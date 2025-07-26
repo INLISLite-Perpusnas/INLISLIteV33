@@ -169,21 +169,21 @@
         color: #0343A7;
     }
 
-    /* reCAPTCHA Container Styling */
-    .recaptcha-container {
+    /* hCaptcha Container Styling */
+    .hcaptcha-container {
         margin: 24px 0;
         display: flex;
         justify-content: center;
         align-items: center;
     }
 
-    .g-recaptcha {
+    .h-captcha {
         transform: scale(0.9);
         transform-origin: center;
     }
 
     @media (max-width: 480px) {
-        .g-recaptcha {
+        .h-captcha {
             transform: scale(0.8);
         }
     }
@@ -434,18 +434,18 @@
                     </div>
                 </div>
 
-                <!-- Google reCAPTCHA -->
-                <div class="recaptcha-container">
-                    <?php if (!empty($recaptcha_site_key)): ?>
-                        <div class="g-recaptcha" 
-                             data-sitekey="<?= $recaptcha_site_key ?>"
-                             data-callback="enableSubmitBtn"
-                             data-expired-callback="disableSubmitBtn"
-                             data-error-callback="disableSubmitBtn"></div>
+                <!-- hCaptcha -->
+                <div class="hcaptcha-container">
+                    <?php if (!empty($hcaptcha_site_key)): ?>
+                        <div class="h-captcha" 
+                             data-sitekey="<?= $hcaptcha_site_key ?>"
+                             data-callback="onHcaptchaSuccess"
+                             data-expired-callback="onHcaptchaExpired"
+                             data-error-callback="onHcaptchaError"></div>
                     <?php else: ?>
                         <div class="alert alert-warning">
                             <i class="fas fa-exclamation-triangle"></i>
-                            reCAPTCHA belum dikonfigurasi. Hubungi administrator.
+                            hCaptcha belum dikonfigurasi. Hubungi administrator.
                         </div>
                     <?php endif; ?>
                 </div>
@@ -483,26 +483,26 @@
     </div>
 </div>
 
-<!-- Google reCAPTCHA Script -->
-<?php if (!empty($recaptcha_site_key)): ?>
-<script src="https://www.google.com/recaptcha/api.js?hl=id" async defer></script>
+<!-- hCaptcha Script -->
+<?php if (!empty($hcaptcha_site_key)): ?>
+<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
 <?php endif; ?>
 
 <script>
-// reCAPTCHA callback functions
-function enableSubmitBtn() {
-    console.log('reCAPTCHA verified successfully');
+// hCaptcha callback functions
+function onHcaptchaSuccess(token) {
+    console.log('hCaptcha verified successfully');
     document.getElementById('loginBtn').disabled = false;
 }
 
-function disableSubmitBtn() {
-    console.log('reCAPTCHA expired or failed');
+function onHcaptchaExpired() {
+    console.log('hCaptcha expired');
     document.getElementById('loginBtn').disabled = true;
 }
 
-// Fungsi untuk memastikan reCAPTCHA dimuat dengan benar
-function onRecaptchaLoad() {
-    console.log('reCAPTCHA loaded successfully');
+function onHcaptchaError(error) {
+    console.log('hCaptcha error:', error);
+    document.getElementById('loginBtn').disabled = true;
 }
 
 // Toggle password visibility
@@ -521,19 +521,19 @@ function togglePassword() {
 
 // Form submission with loading state
 document.getElementById('loginForm').addEventListener('submit', function(e) {
-    <?php if (!empty($recaptcha_site_key)): ?>
-    // Cek apakah reCAPTCHA sudah dimuat
-    if (typeof grecaptcha === 'undefined') {
+    <?php if (!empty($hcaptcha_site_key)): ?>
+    // Cek apakah hCaptcha sudah dimuat
+    if (typeof hcaptcha === 'undefined') {
         e.preventDefault();
-        alert('reCAPTCHA belum dimuat. Silakan refresh halaman dan coba lagi.');
+        alert('hCaptcha belum dimuat. Silakan refresh halaman dan coba lagi.');
         return false;
     }
     
-    const recaptchaResponse = grecaptcha.getResponse();
+    const hcaptchaResponse = hcaptcha.getResponse();
     
-    if (!recaptchaResponse || recaptchaResponse.length === 0) {
+    if (!hcaptchaResponse || hcaptchaResponse.length === 0) {
         e.preventDefault();
-        alert('Harap selesaikan verifikasi reCAPTCHA terlebih dahulu.');
+        alert('Harap selesaikan verifikasi hCaptcha terlebih dahulu.');
         return false;
     }
     <?php endif; ?>
@@ -560,12 +560,12 @@ document.querySelectorAll('.form-control').forEach(input => {
 // Enhanced security: Clear form on page unload
 window.addEventListener('beforeunload', function() {
     document.getElementById('password').value = '';
-    <?php if (!empty($recaptcha_site_key)): ?>
-    if (typeof grecaptcha !== 'undefined') {
+    <?php if (!empty($hcaptcha_site_key)): ?>
+    if (typeof hcaptcha !== 'undefined') {
         try {
-            grecaptcha.reset();
+            hcaptcha.reset();
         } catch (e) {
-            console.log('reCAPTCHA reset failed:', e);
+            console.log('hCaptcha reset failed:', e);
         }
     }
     <?php endif; ?>
@@ -583,38 +583,38 @@ window.addEventListener('load', function() {
     }
 });
 
-// Reset reCAPTCHA on form reset
+// Reset hCaptcha on form reset
 document.getElementById('loginForm').addEventListener('reset', function() {
-    <?php if (!empty($recaptcha_site_key)): ?>
-    if (typeof grecaptcha !== 'undefined') {
+    <?php if (!empty($hcaptcha_site_key)): ?>
+    if (typeof hcaptcha !== 'undefined') {
         try {
-            grecaptcha.reset();
+            hcaptcha.reset();
         } catch (e) {
-            console.log('reCAPTCHA reset failed:', e);
+            console.log('hCaptcha reset failed:', e);
         }
     }
-    disableSubmitBtn();
+    document.getElementById('loginBtn').disabled = true;
     <?php endif; ?>
 });
 
-// Debugging: Log reCAPTCHA status
-<?php if (!empty($recaptcha_site_key)): ?>
+// Debugging: Log hCaptcha status
+<?php if (!empty($hcaptcha_site_key)): ?>
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('reCAPTCHA Site Key:', '<?= $recaptcha_site_key ?>');
+    console.log('hCaptcha Site Key:', '<?= $hcaptcha_site_key ?>');
     
-    // Tunggu reCAPTCHA dimuat
-    const checkRecaptcha = setInterval(function() {
-        if (typeof grecaptcha !== 'undefined') {
-            console.log('reCAPTCHA API loaded successfully');
-            clearInterval(checkRecaptcha);
+    // Tunggu hCaptcha dimuat
+    const checkHcaptcha = setInterval(function() {
+        if (typeof hcaptcha !== 'undefined') {
+            console.log('hCaptcha API loaded successfully');
+            clearInterval(checkHcaptcha);
         }
     }, 100);
     
     // Timeout setelah 10 detik
     setTimeout(function() {
-        clearInterval(checkRecaptcha);
-        if (typeof grecaptcha === 'undefined') {
-            console.error('reCAPTCHA failed to load after 10 seconds');
+        clearInterval(checkHcaptcha);
+        if (typeof hcaptcha === 'undefined') {
+            console.error('hCaptcha failed to load after 10 seconds');
         }
     }, 10000);
 });

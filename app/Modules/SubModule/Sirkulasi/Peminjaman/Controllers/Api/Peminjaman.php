@@ -60,10 +60,10 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 			->join('collectionloanitems cli', 'cli.CollectionLoan_id = cl.ID')
 			->join('collections col', 'col.ID = cli.Collection_id')
 			->join('catalogs a', 'a.ID = col.Catalog_id')
-			->join('branchs b', 'b.ID = a.Branch_id', 'inner')
 			->join('members m', 'm.ID = cli.member_id')
 			->join('location_library loc', 'loc.ID = col.Location_Library_id')
 			->where('cli.LoanStatus', 'Loan');
+		
 
 		// if (user()->category == 'admin') {
 		// } elseif (user()->category == 'sa_prov' && user()->branch_id === null) {
