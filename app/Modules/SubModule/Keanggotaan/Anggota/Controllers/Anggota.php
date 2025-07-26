@@ -103,252 +103,7 @@ class Anggota extends \Base\Controllers\BaseController
 		echo view('Anggota\Views\list_keranjang', $this->data);
 	}
 
-	public function createold()
-	{
-		if (!is_allowed('anggota/create')) {
-			set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
-			set_message('toastr_type', 'error');
-			return redirect()->to('anggota');
-		}
-
-		$jenis_anggota = get_ref_single('jenis_anggota', 'UPPER(jenisanggota) = "UMUM"', 'data');
-		$masa_berlaku = $jenis_anggota->MasaBerlakuAnggota ?? 365;
-		$start = date('Y-m-d');
-		$start_date = new \DateTime($start);
-		$end = new \DateTime($start);
-		$end_date = $end->add(new \DateInterval('P' . $masa_berlaku . 'D'));
-		$this->data['date'] = date_format($start_date, "Y-m-d");
-		$this->data['EndDate'] = date_format($end_date, "Y-m-d");
-		$MemberNo = $this->request->getPost('IdentityNo');
-
-		$this->data['title'] = 'Tambah Anggota';
-
-		$this->validation->setRules(
-			[
-				'Fullname' => [
-					'label'  => 'Fullname',
-					'rules'  => 'required',
-					'errors' => [
-						'required' => 'Nama Tidak boleh kosong',
-					],
-				],
-				'Email' => [
-					'label'  => 'Email',
-					'rules'  => 'required|valid_email',
-					'errors' => [
-						'valid_email' => 'Masukan email yang benar',
-						'required' => 'Email Tidak boleh Kosong',
-					],
-				],
-
-				'JenisAnggota_id' => [
-					'label'  => 'Jenis Anggota',
-					'rules'  => 'required',
-					'errors' => [
-						'required' => 'Jenis Anggota tidak boleh kosong',
-					],
-				],
-
-				'StatusAnggota_id' => [
-					'label'  => 'Status Anggota',
-					'rules'  => 'required',
-					'errors' => [
-						'required' => 'Status Anggota tidak boleh kosong',
-					],
-				],
-			]
-		);
-
-
-		if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
-			$save_data = [
-				'Fullname' => $this->request->getPost('Fullname'),
-				'MemberNo' => $MemberNo,
-				'IdentityNo' => $this->request->getPost('IdentityNo'),
-				'PlaceOfBirth' => $this->request->getPost('PlaceOfBirth'),
-				'DateOfBirth' =>  $this->request->getPost('DateOfBirth'),
-				'Address' => $this->request->getPost('Address'),
-				'AddressNow' => $this->request->getPost('AddressNow'),
-				'Phone' => $this->request->getPost('Phone'),
-				'InstitutionName' => $this->request->getPost('InstitutionName'),
-				'InstitutionAddress' => $this->request->getPost('InstitutionAddress'),
-				'InstitutionPhone' => $this->request->getPost('InstitutionPhone'),
-				'MotherMaidenName' => $this->request->getPost('MotherMaidenName'),
-				'Email' => $this->request->getPost('Email'),
-				'RT' => $this->request->getPost('RT'),
-				'RTNow' => $this->request->getPost('RTNow'),
-				'RWNow' => $this->request->getPost('RWNow'),
-				'RW' => $this->request->getPost('RW'),
-				'TahunAjaran' => $this->request->getPost('TahunAjaran'),
-				'IdentityType_id' => $this->request->getPost('IdentityType_id'),
-				'MaritalStatus_id' => $this->request->getPost('MaritalStatus_id'),
-				'Sex_id' 	=> $this->request->getPost('Sex_id'),
-				'JenjangPendidikan_id' 	=> $this->request->getPost('JenjangPendidikan_id'),
-				'Job_id' 	=> $this->request->getPost('Job_id'),
-				'JenisAnggota_id' 	=> $this->request->getPost('JenisAnggota_id'),
-				'Agama_id' 	=> $this->request->getPost('Agama_id'),
-				'UnitKerja_id' 	=> $this->request->getPost('UnitKerja_id'),
-				'Fakultas_id' 	=> $this->request->getPost('Fakultas_id'),
-				'Jurusan_id' 	=> $this->request->getPost('Jurusan_id'),
-				'StatusAnggota_id' => $this->request->getPost('StatusAnggota_id'),
-				'RegisterDate' => date("Y-m-d H:i:s"),
-				'EndDate' => $this->request->getPost('EndDate'),
-				'CreateBy' => login_id(),
-				'Branch_id' => branch_id()
-			];
-
-			$province = $this->request->getPost('Province');
-			if (!empty($province)) {
-				$save_data['ProvinceCode'] = $province;
-				$region = $this->regionModel->where('code', $province)->first();
-				$save_data['Province'] = $region->name;
-			}
-
-			$city = $this->request->getPost('City');
-			if (!empty($city)) {
-				$save_data['CityCode'] = $city;
-				$region = $this->regionModel->where('code', $city)->first();
-				$save_data['City'] = $region->name;
-			}
-
-			$kecamatan = $this->request->getPost('Kecamatan');
-			if (!empty($kecamatan)) {
-				$save_data['KecamatanCode'] = $kecamatan;
-				$region = $this->regionModel->where('code', $kecamatan)->first();
-				$save_data['Kecamatan'] = $region->name;
-			}
-
-			$kelurahan = $this->request->getPost('Kelurahan');
-			if (!empty($kelurahan)) {
-				$save_data['KelurahanCode'] = $kelurahan;
-				$region = $this->regionModel->where('code', $kelurahan)->first();
-				$save_data['Kelurahan'] = $region->name;
-			}
-
-			$provinceNow = $this->request->getPost('ProvinceNow');
-			if (!empty($provinceNow)) {
-				$save_data['ProvinceNowCode'] = $provinceNow;
-				$region = $this->regionModel->where('code', $provinceNow)->first();
-				$save_data['ProvinceNow'] = $region->name;
-			}
-
-			$cityNow = $this->request->getPost('CityNow');
-			if (!empty($cityNow)) {
-				$save_data['CityNowCode'] = $cityNow;
-				$region = $this->regionModel->where('code', $cityNow)->first();
-				$save_data['CityNow'] = $region->name;
-			}
-
-			$kecamatanNow = $this->request->getPost('KecamatanNow');
-			if (!empty($kecamatanNow)) {
-				$save_data['KecamatanNowCode'] = $kecamatanNow;
-				$region = $this->regionModel->where('code', $kecamatanNow)->first();
-				$save_data['KecamatanNow'] = $region->name;
-			}
-
-			$kelurahanNow = $this->request->getPost('KelurahanNow');
-			if (!empty($kelurahanNow)) {
-				$save_data['KelurahanNowCode'] = $kelurahanNow;
-				$region = $this->regionModel->where('code', $kelurahanNow)->first();
-				$save_data['KelurahanNow'] = $region->name;
-			}
-			// dd($save_data);
-
-			// Logic Upload
-			$files = (array) $this->request->getPost('PhotoUrl');
-			if (count($files)) {
-				$listed_file = array();
-				foreach ($files as $uuid => $name) {
-					if (file_exists($this->uploadPath . $name)) {
-						$file = new File($this->uploadPath . $name);
-						$newFileName = $file->getRandomName();
-						$file->move($this->modulePath, $newFileName);
-						$listed_file[] = $newFileName;
-					}
-				}
-				$save_data['PhotoUrl'] = implode(',', $listed_file);
-			}
-
-			$base64_string = $this->request->getPost('camera_image');
-			if (!empty($base64_string)) {
-				$file = new File($this->uploadPath);
-				$newFileName = $file->getRandomName() . '.jpg';
-				base64_to_jpeg($base64_string, $this->modulePath . $newFileName);
-				$save_data['PhotoUrl'] =  $newFileName;
-			}
-
-			// simpan data ke tabel members
-			$newAnggotaId = $this->anggotaModel->protect(false)->insert($save_data);
-
-			if ($newAnggotaId) {
-				//    simpan data ke akses jenis buku
-				$Koleksi = $this->request->getPost('CategoryLoan_id');
-				if (!empty($Koleksi)) {
-					$Count = count($Koleksi);
-
-					$save_akses_koleksi_temp = [];
-					$save_akses_koleksi = [];
-					for ($x = 0; $x < $Count; $x++) {
-						$save_akses_koleksi_temp = [
-							'Member_id' => $newAnggotaId,
-							'CategoryLoan_id' => $Koleksi[$x],
-						];
-						array_push($save_akses_koleksi, $save_akses_koleksi_temp);
-					}
-
-					if (!empty($save_akses_koleksi)) {
-						$this->AksesKoleksiModel->insertBatch($save_akses_koleksi);
-					}
-				}
-
-				//    simpan data ke akses lokasi peprustakaan
-				$Locations = $this->request->getPost('LocationLoan_id');
-				$CountLocation = count($Locations);
-				$save_akses_lokasi_temp = [];
-				$save_akses_lokasi = [];
-				for ($x = 0; $x < $CountLocation; $x++) {
-					$save_akses_lokasi_temp = [
-						'Member_id' => $newAnggotaId,
-						'LocationLoan_id' => $Locations[$x],
-					];
-					array_push($save_akses_lokasi, $save_akses_lokasi_temp);
-				}
-
-				if (!empty($save_akses_lokasi)) {
-					$this->anggotahakaksesModel->insertBatch($save_akses_lokasi);
-				}
-				//  simpan data ke tabel users
-				// $email = $this->request->getPost('Email');
-				$password = get_parameter('password-default', 'inlislite=');
-				$activate_hash = bin2hex(random_bytes(16));
-				$db = db_connect('default');
-				$users = $db->table('users');
-
-				$data_user = [
-					'username' => $MemberNo,
-					'password_hash' => $password,
-					'anggota' => $newAnggotaId,
-					'email' => $save_data['Email'],
-					'activate_hash' => $activate_hash,
-					'active' => 0
-				];
-
-				$users->insert($data_user);
-
-
-				set_message('toastr_msg', 'Data Anggota berhasil disimpan');
-				set_message('toastr_type', 'success');
-				return redirect()->to('/anggota');
-			} else {
-				set_message('message', $this->validation->getErrors() ? $this->validation->listErrors() : lang('Anggota.info.failed_saved'));
-				echo view('Anggota\Views\add', $this->data);
-			}
-		} else {
-			$this->data['redirect'] = base_url('anggota/create');
-			set_message('message', $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message'));
-			echo view('Anggota\Views\add', $this->data);
-		}
-	}
+	
 public function create()
 {
     if (!is_allowed('anggota/create')) {
@@ -356,7 +111,24 @@ public function create()
         set_message('toastr_type', 'error');
         return redirect()->to('anggota');
     }
+                          
+    $db = db_connect('data');
+	$this->data['db'] = $db;
+	$jenisperpustakaan=$db->table('settingparameters')->where('Name', 'JenisPerpustakaan')->get()->getRow()->Value?:"UMUM";
+	if($jenisperpustakaan=="UMUM"){
+		$this->data['jenis_perpustakaan_id'] = 1;
+	
+	}elseif($jenisperpustakaan=="KHUSUS"){
+		$this->data['jenis_perpustakaan_id'] = 2;
+	}elseif($jenisperpustakaan=="PERGURUAN TINGGI"){
+		$this->data['jenis_perpustakaan_id'] = 3;
+	}
+	else{
+		$this->data['jenis_perpustakaan_id'] = 4;
+	}
 
+                    
+                            
     $jenis_anggota = get_ref_single('jenis_anggota', 'UPPER(jenisanggota) = "UMUM"', 'data');
     $masa_berlaku = $jenis_anggota->MasaBerlakuAnggota ?? 365;
     $start = date('Y-m-d');
@@ -381,14 +153,15 @@ public function create()
                 'required' => 'Nama Tidak boleh kosong',
             ],
         ],
-        'Email' => [
-            'label'  => 'Email',
-            'rules'  => 'required|valid_email',
-            'errors' => [
-                'valid_email' => 'Masukan email yang benar',
-                'required' => 'Email Tidak boleh Kosong',
-            ],
-        ],
+      'Email' => [
+		'label'  => 'Email',
+		'rules'  => 'required|valid_email|is_unique[members.Email]',
+		'errors' => [
+			'valid_email' => 'Masukan email yang benar',
+			'required'    => 'Email Tidak boleh Kosong',
+			'is_unique'   => 'Email ini sudah terdaftar.',
+		],
+		],
         'JenisAnggota_id' => [
             'label'  => 'Jenis Anggota',
             'rules'  => 'required',

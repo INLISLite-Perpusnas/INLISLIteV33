@@ -14,12 +14,15 @@ class MasterJurusan extends \Base\Controllers\BaseResourceController
 	protected $session;
 	protected $modulePath;
 	protected $uploadPath;
+	protected $db;
+
 
 	function __construct()
 	{
 		$this->jurusanModel = new \MasterJurusan\Models\MasterJurusanModel();
 		$this->validation = \Config\Services::validation();
 		$this->session = session();
+		$this->db=db_connect('data');
 		$this->modulePath = ROOTPATH . 'public/uploads/jurusan/';
 		$this->uploadPath = WRITEPATH . 'uploads/';
 		helper('reference');
@@ -33,12 +36,7 @@ class MasterJurusan extends \Base\Controllers\BaseResourceController
 		$db = db_connect('data');
 		$builder = $db->table('master_jurusan as a')
 			->select('a.id, a.id as action,a.Nama, a.UpdateDate')
-			->select('a.active')
-			->where('a.Branch_id', 0);
-
-		if (is_profiling()) {
-			$builder->orWhere('a.Branch_id', user()->branch_id);
-		}
+			->select('a.active');
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
@@ -108,7 +106,39 @@ class MasterJurusan extends \Base\Controllers\BaseResourceController
 
 		return $this->simpleResponse($response);
 	}
+    public function getjurusan($fakultas_id = null)
+    {
+        try {
+            if (empty($fakultas_id)) {
+                return $this->fail('Fakultas ID is required', 400);
+            }
 
+            // Validasi fakultas_id exists
+            $fakultasExists = $this->db->table('master_fakultas')
+                ->where('id', $fakultas_id)
+                ->countAllResults();
+
+            if ($fakultasExists == 0) {
+                return $this->failNotFound('Fakultas tidak ditemukan');
+            }
+
+            $jurusan = $this->db->table('master_jurusan')
+                ->select('id, id_fakultas, Nama')
+                ->where('id_fakultas', $fakultas_id)
+                ->orderBy('Nama', 'ASC')
+                ->get()
+                ->getResult();
+
+            return $this->respond([
+                'success' => true,
+                'message' => 'Data jurusan berhasil diambil',
+                'data' => $jurusan,
+                'fakultas_id' => $fakultas_id
+            ]);
+        } catch (\Exception $e) {
+            return $this->failServerError('Gagal mengambil data jurusan: ' . $e->getMessage());
+        }
+    }
 	public function edit($id = null)
 	{
 		$update_data = [

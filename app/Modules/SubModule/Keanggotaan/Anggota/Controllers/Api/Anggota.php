@@ -82,8 +82,7 @@ class Anggota extends \Base\Controllers\BaseResourceController
 		if($isKeranjang == 1){
 			$builder->where('a.IsKeranjang', $isKeranjang);
 		}
-
-
+       
 		/**
 		 * DataTables
 		 * @var \Hermawan\DataTables\DataTable $dataTable

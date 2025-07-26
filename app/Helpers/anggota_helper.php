@@ -341,5 +341,35 @@ if (!function_exists('generateAutoNumber')) {
 
 
 
+
+if (!function_exists('is_form_field_active')) {
+    /**
+     * Memeriksa apakah sebuah field pada form pendaftaran anggota aktif
+     * berdasarkan jenis perpustakaan.
+     *
+     * @param string $field_name Nama field yang ingin diperiksa (e.g., 'Jenis Identitas').
+     * @param int $jenis_perpustakaan_id ID dari jenis perpustakaan.
+     * @return bool Mengembalikan true jika aktif, false jika tidak.
+     */
+    function is_form_field_active(string $field_id, int $jenis_perpustakaan_id): bool
+    {
+        $db = db_connect('data');
+        $field_setting = $db->table('members_form as a')
+            ->select('a.active')
+            ->join('member_fields as b', 'b.id = a.Member_Field_id')
+            ->where('a.Jenis_Perpustakaan_id', $jenis_perpustakaan_id)
+            ->where('a.Member_Field_id', $field_id)
+            ->get()->getRow();
+
+        // Kembalikan true jika data ditemukan DAN statusnya aktif (1)
+        if ($field_setting && $field_setting->active == 1) {
+            return true;
+        }
+
+        return false;
+    }
+}
+
+
 ?>
 

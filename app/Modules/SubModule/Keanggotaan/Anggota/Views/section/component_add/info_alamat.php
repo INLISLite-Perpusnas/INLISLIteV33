@@ -27,6 +27,7 @@
                                 </div>
                             </div>
 
+                            <?php if (is_form_field_active('7', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label for="name">Provinsi*</label>
@@ -35,6 +36,8 @@
                                     </div>
                                 </div>
                             </div>
+                            <?php endif; ?>
+                              <?php if (is_form_field_active('6', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label for="name">Kota*</label>
@@ -45,6 +48,8 @@
                                     </div>
                                 </div>
                             </div>
+                            <?php endif; ?>
+                              <?php if (is_form_field_active('39', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label for="name">Kecamatan*</label>
@@ -55,6 +60,8 @@
                                     </div>
                                 </div>
                             </div>
+                            <?php endif; ?>
+                              <?php if (is_form_field_active('40', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label for="name">Kelurahan*</label>
@@ -65,8 +72,12 @@
                                     </div>
                                 </div>
                             </div>
+                            <?php endif; ?>
+
+                         
                             <div class="col-md-3">
                                 <div class="row">
+                                      <?php if (is_form_field_active('41', $jenis_perpustakaan_id)) : ?>
                                     <div class="col">
                                         <div class="position-relative form-group">
                                             <label for="name">RT</label>
@@ -75,6 +86,8 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <?php endif;?>
+                                    <?php if (is_form_field_active('42', $jenis_perpustakaan_id)) : ?>
                                     <div class="col">
                                         <div class="position-relative form-group">
                                             <label for="name">RW</label>
@@ -83,6 +96,7 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
@@ -94,11 +108,14 @@
                             </div>
                         </div>
                         <div class="form-row">
+                         
                             <div class="col-md-12">
                                 <input type="checkbox" class="is_similar" name="is_similar" id="is_similar" value="">
                                 <label for="is_similar">Centang jika alamat domisili sama dengan alamat
                                     identitas</label>
                             </div>
+                           
+                             <?php if (is_form_field_active('8', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-12">
                                 <div class="position-relative form-group">
                                     <label for="name">Alamat</label>
@@ -107,7 +124,8 @@
                                     </div>
                                 </div>
                             </div>
-
+                             <?php endif; ?>
+                              <?php if (is_form_field_active('10', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label for="name">Provinsi*</label>
@@ -116,6 +134,8 @@
                                     </div>
                                 </div>
                             </div>
+                            <?php endif; ?>
+                              <?php if (is_form_field_active('9', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label for="name">Kota*</label>
@@ -126,6 +146,8 @@
                                     </div>
                                 </div>
                             </div>
+                            <?php endif; ?>
+                            <?php if (is_form_field_active('43', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label for="name">Kecamatan*</label>
@@ -136,6 +158,9 @@
                                     </div>
                                 </div>
                             </div>
+                            <?php endif; ?>
+
+                             <?php if (is_form_field_active('44', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label for="name">Kelurahan*</label>
@@ -146,8 +171,11 @@
                                     </div>
                                 </div>
                             </div>
+                            <?php endif; ?>
+                          
                             <div class="col-md-3">
                                 <div class="row">
+                                      <?php if (is_form_field_active('45', $jenis_perpustakaan_id)) : ?>
                                     <div class="col">
                                         <div class="position-relative form-group">
                                             <label for="name">RT</label>
@@ -156,6 +184,8 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <?php endif; ?>
+                                    <?php if (is_form_field_active('46', $jenis_perpustakaan_id)) : ?>
                                     <div class="col">
                                         <div class="position-relative form-group">
                                             <label for="name">RW</label>
@@ -164,6 +194,7 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>

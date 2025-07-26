@@ -19,6 +19,7 @@ $routes->group('api/jurusan', ['namespace' => 'MasterJurusan\Controllers\Api'], 
 	$subroutes->get('', 'MasterJurusan::index');
 	$subroutes->add('detail/(:any)', 'MasterJurusan::detail/$1');
 	$subroutes->add('create', 'MasterJurusan::create');
+	 $subroutes->get('getjurusan/(:num)', 'MasterJurusan::getjurusan/$1');
 	$subroutes->add('edit/(:any)', 'MasterJurusan::edit/$1');
 	$subroutes->add('delete/(:any)', 'MasterJurusan::delete/$1');
 

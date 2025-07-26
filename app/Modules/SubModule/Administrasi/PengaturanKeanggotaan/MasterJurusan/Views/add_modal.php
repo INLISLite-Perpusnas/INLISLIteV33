@@ -17,14 +17,9 @@
 							<div class="form-group">
 								<label for="Nama">Nama Fakultas</label>
 								<div>
-									<?php
-										// Assume $branch_id is available from your session or controller
-										$branch_id = user()->branch_id; // Replace this with how you get the current user's branch_id
-									   
-									?>
 									<select required name="id_fakultas" id="frm_add_id_fakultas" class="form-control">
 										<option value="">Pilih Fakultas</option>
-										<?php foreach (get_ref_table('master_fakultas', 'id, Nama',$branch_id,'data') as $row): ?>
+										<?php foreach (get_ref_table('master_fakultas', 'id, Nama',null,'data') as $row): ?>
 								           <option data-date="<?= $row->Nama ?>" value="<?=$row->id?>" <?=set_select('id_fakultas',$row->id)?>><?=$row->Nama?></option>
 							                <?php endforeach;?>
 

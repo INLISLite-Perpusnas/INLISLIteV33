@@ -22,27 +22,38 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
-                                <div class="position-relative form-group">
-                                    <label>Jenis identitas</label>
-                                    <select class="form-control" name="IdentityType_id" id="IdentityType_id" placeholder="Jenis identitas">
-                                        <option value="" disabled selected>
-                                            Jenis identitas
-                                        </option>
-                                        <?php foreach (get_table('master_jenis_identitas', 'id, Nama', null, 'data') as $row) : ?>
-                                            <option value="<?= $row->id ?>" <?= set_select('IdentityType_id', $row->id) ?>><?= $row->Nama ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="position-relative form-group">
-                                    <label for="name">Nomor Identitas</label>
-                                    <div>
-                                        <input type="text" class="form-control" id="frm_create_IdentityNo" name="IdentityNo" placeholder="Nomor identitas" value="<?= set_value('IdentityNo'); ?>" maxlength="16" required />
+
+                            
+
+                            <?php // Gunakan helper untuk "Jenis Identitas" 
+                            ?>
+                            <?php if (is_form_field_active('13', $jenis_perpustakaan_id)) : ?>
+                                <div class="col-md-3">
+                                    <div class="position-relative form-group">
+                                        <label>Jenis Identitas</label>
+                                        <select class="form-control" name="IdentityType_id" id="IdentityType_id" placeholder="Jenis identitas">
+                                            <option value="" disabled selected>Jenis identitas</option>
+                                            <?php foreach (get_table('master_jenis_identitas', 'id, Nama', null, 'data') as $row) : ?>
+                                                <option value="<?= $row->id ?>" <?= set_select('IdentityType_id', $row->id) ?>><?= $row->Nama ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
                                     </div>
                                 </div>
-                            </div>
+                            <?php endif; ?>
+
+                            <?php // Gunakan helper untuk "Nomor Identitas" 
+                            ?>
+                            <?php if (is_form_field_active('14', $jenis_perpustakaan_id)) : ?>
+                                <div class="col-md-3">
+                                    <div class="position-relative form-group">
+                                        <label for="name">Nomor Identitas</label>
+                                        <div>
+                                            <input type="text" class="form-control" id="frm_create_IdentityNo" name="IdentityNo" placeholder="Nomor identitas" value="<?= set_value('IdentityNo'); ?>" maxlength="16" required />
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label for="name">Tempat Lahir</label>
@@ -60,6 +71,7 @@
                                     </div>
                                 </div>
                             </div>
+                              <?php if (is_form_field_active('20', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label>Status Perkawinan</label>
@@ -69,7 +81,9 @@
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
+
                             </div>
+                            <?php endif; ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label>Agama</label>
@@ -96,7 +110,9 @@
                                 <h5>Kontak</h5>
                             </div>
                         </div>
+                       
                         <div class="form-row">
+                             <?php if (is_form_field_active('29', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label for="name">Alamat Email*</label>
@@ -105,14 +121,17 @@
                                     </div>
                                 </div>
                             </div>
+                            <?php endif; ?>
+                            <?php if (is_form_field_active('11', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
-                                    <label for="name">No. Telepon</label>
+                                    <label for="name">No. HP</label>
                                     <div>
                                         <input type="text" class="form-control" id="frm_create_NoHp" name="Phone" placeholder="No. Telepon" value="<?= set_value('Phone'); ?>" maxlength="15" />
                                     </div>
                                 </div>
                             </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

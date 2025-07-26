@@ -78,6 +78,7 @@ class JenisPerpustakaan extends \Base\Controllers\BaseResourceController
 			->select('a.ID as id, a.ID as form_id, a.Member_Field_id as field_id, a.Jenis_Perpustakaan_id as jenis_perpustakaan_id, b.name as field_name, a.active, b.mandatory ')
 			->join('member_fields as b', 'b.id = a.Member_Field_id')
 			->where('a.Jenis_Perpustakaan_id', $id);
+		
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
@@ -89,7 +90,7 @@ class JenisPerpustakaan extends \Base\Controllers\BaseResourceController
 			})
 			->edit('active', function ($row) {
 				if ($row->mandatory == 0) {
-					$active = get_member_form($row->field_id, $row->jenis_perpustakaan_id, branch_id());
+					$active = get_member_form($row->field_id, $row->jenis_perpustakaan_id);
 					$checked = $active == 1 ? 'checked' : '';
 					$html = '<input type="checkbox" class="apply-status" data-href="' . base_url('api-jenis-perpustakaan/update_field/' . $row->id . '?form_id=' . $row->form_id . '&field_id=' . $row->field_id . '&jenis_perpustakaan_id=' . $row->jenis_perpustakaan_id) . '" data-checked="' . $checked . '" data-field="active" ' . $checked . ' data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="mini">';
 					return $html;
