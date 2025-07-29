@@ -38,7 +38,7 @@
 								<div class="position-relative form-group">
 									<label for="name">Tanggal Berakhir</label>
 									<div>
-										<input type="text" class="form-control" id="EndDate" name="EndDate" placeholder="Tanggal Berakhir" value="<?= set_value('RegisterDate', substr($anggota->EndDate, 1, 10)); ?>" readonly />
+										<input type="text" class="form-control" id="EndDate" name="EndDate" placeholder="Tanggal Berakhir" value="<?= set_value('RegisterDate', substr($anggota->EndDate, 0, 10)); ?>" readonly />
 									</div>
 								</div>
 							</div>

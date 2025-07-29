@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kartu Anggota Perpustakaan - PDF Generator</title>
+    <title>Kartu Anggota Perpustakaan - Bagian Belakang</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <style>
         /* --- Print Styles untuk PDF --- */
         @media print {
@@ -160,11 +160,12 @@
             gap: 10px;
             justify-content: center;
             margin-top: 15px;
+            flex-wrap: wrap;
         }
 
         .preset-color {
-            width: 30px;
-            height: 30px;
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
             cursor: pointer;
             border: 3px solid white;
@@ -212,15 +213,23 @@
             width: 1004px;
             height: 618px;
             /* Default background */
-            background: linear-gradient(135deg, #ffe061 0%, #f4c430 50%, #e0a818 100%);
+            background: linear-gradient(135deg, #f4c430 0%, #f8c43a 50%, #e0a818 100%);
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            overflow: hidden;
-            position: relative;
-            display: flex;
             border-radius: 24px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 60px;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+            min-height: 618px;
+            max-height: 618px;
+            min-width: 1004px;
+            max-width: 1004px;
         }
 
         /* Color overlay for background tinting */
@@ -231,127 +240,140 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: var(--overlay-color, rgba(255, 224, 97, 0.3));
+            background: var(--overlay-color, rgba(244, 196, 48, 0.3));
             z-index: 1;
             transition: background 0.3s ease;
         }
 
-        /* --- Header Section (Logo & Library Name) --- */
-        .header-section {
+        /* --- Decorative Elements --- */
+        .decorative-shape {
             position: absolute;
-            top: 30px;
-            left: 40px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            z-index: 10;
+            z-index: 2;
+            opacity: 0.1;
         }
-        
-        .logo {
-            width: 100px;
-            height: 100px;
+
+        .shape-1 {
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.15);
             border-radius: 50%;
-            border: 4px solid white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            object-fit: cover;
+            animation: float 8s ease-in-out infinite;
         }
-        
-        .library-name {
-            font-weight: 900;
-            color: #4a442a;
-            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+
+        .shape-2 {
+            bottom: -30px;
+            left: -30px;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            animation: rotate 15s linear infinite;
         }
-        
-        .library-name h1 {
-            font-size: 24px;
+
+        .shape-3 {
+            top: 40%;
+            left: -20px;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.08);
+            transform: rotate(45deg);
+            animation: pulse 6s ease-in-out infinite;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.08; transform: rotate(45deg) scale(1); }
+            50% { opacity: 0.15; transform: rotate(45deg) scale(1.1); }
+        }
+
+        /* --- Content Sections --- */
+        .terms-section {
+            z-index: 10;
+            position: relative;
+        }
+
+        .terms-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2c5530;
+            margin-bottom: 40px;
+            text-align: left;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
+        }
+
+        .terms-list {
+            list-style: none;
+            padding: 0;
             margin: 0;
-            line-height: 1.2;
-            max-width: 400px;
-        }
-        
-        /* --- Main Layout Panels (Flexbox) --- */
-        .left-panel, .right-panel {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            height: 100%;
-            z-index: 5;
+            counter-reset: item;
         }
 
-        .left-panel {
-            flex-basis: 60%;
-            align-items: center;
-        }
-
-        .right-panel {
-            flex-basis: 40%;
-            background-color: rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(10px);
-        }
-        
-        /* --- Left Panel Content --- */
-        .fullname {
-            font-size: 40px;
-            font-weight: 900;
-            margin-bottom: 25px;
-            color: #4a442a;
-            text-align: center;
-            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
-        }
-        
-        .qrcode-placeholder {
-            background-color: #ffffff;
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        .qrcode-placeholder img {
-             width: 180px;
-             height: 180px;
-             display: block;
-        }
-
-        /* --- Right Panel Content --- */
-        .member-type {
-            background-color: black;
-            color: white;
-            font-size: 32px;
-            font-weight: 700;
-            padding: 12px 40px;
-            border-radius: 50px;
-            margin-bottom: 20px;
-        }
-        
-        .member-no {
-            font-size: 32px;
-            font-weight: 700;
-            color: #4a442a;
-            margin-bottom: 25px;
-            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
-        }
-        
-        .expiry-photo-section {
-            text-align: center;
-        }
-        
-        .expiry-date {
+        .terms-list li {
             font-size: 24px;
-            margin-bottom: 15px;
-            color: #4a442a;
-            font-weight: 700;
-            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+            font-weight: 500;
+            color: #2c5530;
+            margin-bottom: 20px;
+            line-height: 1.4;
+            display: flex;
+            align-items: flex-start;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.3);
         }
-        
-        .member-photo {
-            width: 250px;
-            height: 280px;
-            border: 8px solid white;
-            object-fit: cover;
-            border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+
+        .terms-list li::before {
+            content: counter(item) ". ";
+            counter-increment: item;
+            font-weight: 700;
+            color: #2c5530;
+            margin-right: 8px;
+            min-width: 30px;
+        }
+
+        /* --- Separator Line --- */
+        .separator {
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent 0%, #2c5530 20%, #2c5530 80%, transparent 100%);
+            margin: 30px 0;
+            z-index: 10;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* --- Footer Section --- */
+        .footer-section {
+            text-align: center;
+            z-index: 10;
+            position: relative;
+        }
+
+        .office-name {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c5530;
+            margin-bottom: 8px;
+            line-height: 1.3;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
+        }
+
+        .office-address {
+            font-size: 20px;
+            font-weight: 500;
+            color: #2c5530;
+            opacity: 0.9;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.3);
         }
 
         /* --- Status Messages --- */
@@ -374,49 +396,69 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 1200px) {
+            .card-container {
+                transform: scale(0.7);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .card-container {
+                transform: scale(0.5);
+            }
+        }
     </style>
 </head>
 <body>
     <div class="upload-section">
-        <h3>🎨 Kustomisasi Background & Warna</h3>
+        <h3>🎨 Kustomisasi Background Bagian Belakang</h3>
         
         <div class="upload-grid">
             <div class="upload-item">
                 <label for="bgImage">📷 Upload Background Image:</label>
-               <input type="file" id="bgImage" accept="image/*" onchange="handleBackgroundUpload(event)">
+                <input type="file" id="bgImage" accept="image/*" onchange="loadBackgroundImage(event)">
                 <small style="color: #666; display: block; margin-top: 5px;">Format: JPG, PNG, GIF</small>
             </div>
             
             <div class="upload-item">
                 <label>🎨 Atau Pilih Warna Background:</label>
-                <input type="color" id="bgColorPicker" value="#ffe061" onchange="changeBackgroundColor(this.value)" style="width: 100%; height: 50px; border: none; border-radius: 8px; cursor: pointer;">
+                <input type="color" id="bgColorPicker" value="#f4c430" onchange="changeBackgroundColor(this.value)" style="width: 100%; height: 50px; border: none; border-radius: 8px; cursor: pointer;">
             </div>
         </div>
 
         <div class="color-section">
             <div class="color-item">
                 <label>Warna Overlay:</label>
-                <input type="color" id="overlayColor" value="#ffe061" onchange="changeOverlayColor(this.value)">
+                <input type="color" id="overlayColor" value="#f4c430" onchange="changeOverlayColor(this.value)">
             </div>
             <div class="color-item">
                 <label>Opacity Overlay:</label>
                 <input type="range" id="overlayOpacity" min="0" max="100" value="30" onchange="changeOverlayOpacity(this.value)" style="width: 100%;">
                 <span id="opacityValue">30%</span>
             </div>
+            <div class="color-item">
+                <label>Warna Teks:</label>
+                <input type="color" id="textColor" value="#2c5530" onchange="changeTextColor(this.value)">
+            </div>
         </div>
 
         <div class="preset-colors">
-            <div class="preset-color" style="background: linear-gradient(135deg, #ffe061, #f4c430);" onclick="applyPresetGradient('linear-gradient(135deg, #ffe061 0%, #f4c430 50%, #e0a818 100%)', '#ffe061')" title="Kuning Emas"></div>
+            <div class="preset-color" style="background: linear-gradient(135deg, #f4c430, #f8c43a);" onclick="applyPresetGradient('linear-gradient(135deg, #f4c430 0%, #f8c43a 50%, #e0a818 100%)', '#f4c430')" title="Kuning Emas (Default)"></div>
             <div class="preset-color" style="background: linear-gradient(135deg, #4CAF50, #2E7D32);" onclick="applyPresetGradient('linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)', '#4CAF50')" title="Hijau"></div>
             <div class="preset-color" style="background: linear-gradient(135deg, #2196F3, #1565C0);" onclick="applyPresetGradient('linear-gradient(135deg, #2196F3 0%, #1565C0 100%)', '#2196F3')" title="Biru"></div>
             <div class="preset-color" style="background: linear-gradient(135deg, #FF5722, #D32F2F);" onclick="applyPresetGradient('linear-gradient(135deg, #FF5722 0%, #D32F2F 100%)', '#FF5722')" title="Merah"></div>
             <div class="preset-color" style="background: linear-gradient(135deg, #9C27B0, #6A1B9A);" onclick="applyPresetGradient('linear-gradient(135deg, #9C27B0 0%, #6A1B9A 100%)', '#9C27B0')" title="Ungu"></div>
             <div class="preset-color" style="background: linear-gradient(135deg, #607D8B, #37474F);" onclick="applyPresetGradient('linear-gradient(135deg, #607D8B 0%, #37474F 100%)', '#607D8B')" title="Abu-abu"></div>
+            <div class="preset-color" style="background: linear-gradient(135deg, #FF9800, #F57C00);" onclick="applyPresetGradient('linear-gradient(135deg, #FF9800 0%, #F57C00 100%)', '#FF9800')" title="Orange"></div>
+            <div class="preset-color" style="background: linear-gradient(135deg, #795548, #5D4037);" onclick="applyPresetGradient('linear-gradient(135deg, #795548 0%, #5D4037 100%)', '#795548')" title="Cokelat"></div>
         </div>
 
         <div style="margin-top: 15px;">
             <button onclick="removeBackground()" style="background: #FF5722; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">🗑️ Hapus Background</button>
             <button onclick="resetToDefault()" style="background: #FF9800; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">🔄 Reset Default</button>
+            <button onclick="toggleAnimations()" id="animBtn" style="background: #673AB7; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">🎭 Matikan Animasi</button>
         </div>
     </div>
 
@@ -425,47 +467,34 @@
         <button onclick="downloadAsHTML()" class="download-btn">💾 Download HTML</button>
         <button onclick="generatePDFWithLibrary()" class="download-btn">📄 Generate PDF (Advanced)</button>
     </div>
-<!-- Card dengan data PHP (simulasi) -->
-   <div class="card-container" id="libraryCard" style="<?= $backgroundStyle ?>">
-        <!-- Header dengan Logo dan Nama Perpustakaan -->
-        <div class="header-section">
-         
-            <img style="width: 150px; height: 150px; object-fit: contain; border-radius: 16px; margin-bottom: 20px;" src=" <?php echo $logo_base64; ?> " alt="Logo Perpustakaan" id="logoImage">
-            
-            <div class="library-name">
-                <!-- Simulasi PHP: <?php echo $perpus_name; ?> -->
-                <h1> <?php echo $perpus_name; ?></h1>
-            </div>
-        </div>
-        
-        <!-- Panel Kiri -->
-        <div class="left-panel">
-            <div class="fullname">
-                <?php echo $anggota->Fullname; ?>
-               
-            </div>
-            <div class="qrcode-placeholder">
-                <!-- Simulasi PHP: <?php echo $qr_image; ?> -->
-                <img src=" <?php echo $qr_image; ?>" alt="QR Code" id="qrImage">
-            </div>
+
+    <div class="card-container" id="libraryCardBack">
+        <!-- Decorative Shapes -->
+        <div class="decorative-shape shape-1"></div>
+        <div class="decorative-shape shape-2"></div>
+        <div class="decorative-shape shape-3"></div>
+
+        <!-- Terms and Conditions Section -->
+        <div class="terms-section">
+            <h2 class="terms-title">SYARAT DAN KETENTUAN</h2>
+            <ol class="terms-list">
+                <li>Kartu ini tidak dapat dipindahtangankan</li>
+                <li>Berlaku sesuai masa aktif yang tertera</li>
+                <li>Wajib membawa kartu saat berkunjung</li>
+                <li>Kehilangan kartu harap segera melapor</li>
+            </ol>
         </div>
 
-        <!-- Panel Kanan -->
-        <div class="right-panel">
-            <div class="member-type">
-               <?php echo $jenis_anggota_nama; ?>
-              
+        <!-- Separator Line -->
+        <div class="separator"></div>
+
+        <!-- Footer Section -->
+        <div class="footer-section">
+            <div class="office-name">
+               <?= $perpus_name?>
             </div>
-            <div class="member-no">
-               <?php echo $anggota->MemberNo; ?>
-            
-            </div>
-            <div class="expiry-photo-section">
-                <div class="expiry-date">
-                    Berlaku Hingga<br>
-                  <?php echo $end_date; ?>
-                </div>
-                <img src="<?php echo $photo_base64; ?>" alt="Foto Anggota" class="member-photo" id="memberPhoto">
+            <div class="office-address">
+               <?=$lokasi_perpustakaan ?>
             </div>
         </div>
     </div>
@@ -476,6 +505,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <script>
+        let animationsEnabled = true;
+
         function showStatus(message, type = 'success') {
             const statusDiv = document.getElementById('status');
             statusDiv.className = `status ${type}`;
@@ -488,60 +519,25 @@
         }
 
         // Background Image Handler
-        // Ganti fungsi lama dengan yang ini
-async function handleBackgroundUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // 1. Tampilkan preview lokal secara instan
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const cardContainer = document.getElementById('libraryCard');
-        cardContainer.style.background = `url('${e.target.result}')`;
-        cardContainer.style.backgroundSize = 'cover';
-        cardContainer.style.backgroundPosition = 'center';
-        cardContainer.style.backgroundRepeat = 'no-repeat';
-    };
-    reader.readAsDataURL(file);
-
-    // 2. Siapkan dan kirim file ke server
-    const formData = new FormData();
-    formData.append('bgImage', file);
-
-    // Jika Anda mengaktifkan proteksi CSRF di CI4, uncomment baris ini
-    // formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
-
-    try {
-        showStatus('Sedang mengupload background...', 'success');
-        
-        // Gunakan URL yang sudah didaftarkan di routes.php
-        const response = await fetch('<?= site_url("anggota/uploadBackground") ?>', {
-            method: 'POST',
-            body: formData,
-        });
-        
-        const result = await response.json();
-
-        if (result.success) {
-            showStatus(result.message, 'success');
-        } else {
-            const errorMessage = result.errors ? Object.values(result.errors).join(', ') : result.message;
-            showStatus(`Error: ${errorMessage}`, 'error');
+        function loadBackgroundImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const cardContainer = document.getElementById('libraryCardBack');
+                    cardContainer.style.background = `url('${e.target.result}')`;
+                    cardContainer.style.backgroundSize = 'cover';
+                    cardContainer.style.backgroundPosition = 'center';
+                    cardContainer.style.backgroundRepeat = 'no-repeat';
+                    showStatus('✅ Background image berhasil diupload!');
+                };
+                reader.readAsDataURL(file);
+            }
         }
-    } catch (error) {
-        showStatus('Terjadi kesalahan koneksi saat mengupload file.', 'error');
-        console.error('Upload failed:', error);
-    }
-}
-
-// Terakhir, ubah atribut onchange di tag input file Anda
-// <input type="file" id="bgImage" accept="image/*" onchange="loadBackgroundImage(event)">
-// menjadi:
-// <input type="file" id="bgImage" accept="image/*" onchange="handleBackgroundUpload(event)">
 
         // Background Color Handler
         function changeBackgroundColor(color) {
-            const cardContainer = document.getElementById('libraryCard');
+            const cardContainer = document.getElementById('libraryCardBack');
             cardContainer.style.background = color;
             document.getElementById('overlayColor').value = color;
             updateOverlay();
@@ -560,11 +556,24 @@ async function handleBackgroundUpload(event) {
             updateOverlay();
         }
 
+        // Text Color Handler
+        function changeTextColor(color) {
+            const elements = document.querySelectorAll('.terms-title, .terms-list li, .office-name, .office-address, .separator');
+            elements.forEach(element => {
+                if (element.classList.contains('separator')) {
+                    element.style.background = `linear-gradient(90deg, transparent 0%, ${color} 20%, ${color} 80%, transparent 100%)`;
+                } else {
+                    element.style.color = color;
+                }
+            });
+            showStatus('✅ Warna teks berhasil diubah!');
+        }
+
         // Update Overlay
         function updateOverlay() {
             const color = document.getElementById('overlayColor').value;
             const opacity = document.getElementById('overlayOpacity').value / 100;
-            const cardContainer = document.getElementById('libraryCard');
+            const cardContainer = document.getElementById('libraryCardBack');
             
             // Convert hex to rgba
             const r = parseInt(color.substr(1, 2), 16);
@@ -576,19 +585,21 @@ async function handleBackgroundUpload(event) {
 
         // Apply Preset Gradient
         function applyPresetGradient(gradient, overlayColor) {
-            const cardContainer = document.getElementById('libraryCard');
+            const cardContainer = document.getElementById('libraryCardBack');
             cardContainer.style.background = gradient;
             document.getElementById('overlayColor').value = overlayColor;
+            document.getElementById('bgColorPicker').value = overlayColor;
             updateOverlay();
             showStatus('✅ Preset warna berhasil diterapkan!');
         }
 
         // Remove Background
         function removeBackground() {
-            const cardContainer = document.getElementById('libraryCard');
-            cardContainer.style.background = 'linear-gradient(135deg, #ffe061 0%, #f4c430 50%, #e0a818 100%)';
-            cardContainer.style.setProperty('--overlay-color', 'rgba(255, 224, 97, 0.3)');
-            document.getElementById('overlayColor').value = '#ffe061';
+            const cardContainer = document.getElementById('libraryCardBack');
+            cardContainer.style.background = 'linear-gradient(135deg, #f4c430 0%, #f8c43a 50%, #e0a818 100%)';
+            cardContainer.style.setProperty('--overlay-color', 'rgba(244, 196, 48, 0.3)');
+            document.getElementById('overlayColor').value = '#f4c430';
+            document.getElementById('bgColorPicker').value = '#f4c430';
             document.getElementById('overlayOpacity').value = 30;
             document.getElementById('opacityValue').textContent = '30%';
             showStatus('✅ Background berhasil dihapus!');
@@ -597,10 +608,42 @@ async function handleBackgroundUpload(event) {
         // Reset to Default
         function resetToDefault() {
             removeBackground();
-            document.getElementById('bgColorPicker').value = '#ffe061';
+            
+            // Reset text color
+            document.getElementById('textColor').value = '#2c5530';
+            changeTextColor('#2c5530');
+            
             // Clear file input
             document.getElementById('bgImage').value = '';
-            showStatus('✅ Kartu berhasil direset ke default!');
+            
+            // Enable animations
+            if (!animationsEnabled) {
+                toggleAnimations();
+            }
+            
+            showStatus('✅ Kartu bagian belakang berhasil direset ke default!');
+        }
+
+        // Toggle Animations
+        function toggleAnimations() {
+            const shapes = document.querySelectorAll('.decorative-shape');
+            const btn = document.getElementById('animBtn');
+            
+            if (animationsEnabled) {
+                shapes.forEach(shape => {
+                    shape.style.animation = 'none';
+                });
+                btn.textContent = '🎭 Nyalakan Animasi';
+                animationsEnabled = false;
+                showStatus('✅ Animasi dimatikan');
+            } else {
+                document.querySelector('.shape-1').style.animation = 'float 8s ease-in-out infinite';
+                document.querySelector('.shape-2').style.animation = 'rotate 15s linear infinite';
+                document.querySelector('.shape-3').style.animation = 'pulse 6s ease-in-out infinite';
+                btn.textContent = '🎭 Matikan Animasi';
+                animationsEnabled = true;
+                showStatus('✅ Animasi dinyalakan');
+            }
         }
 
         // Print Function
@@ -658,14 +701,14 @@ async function handleBackgroundUpload(event) {
         function downloadAsHTML() {
             try {
                 const htmlContent = `<!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kartu Anggota Perpustakaan</title>
+    <title>Kartu Anggota Perpustakaan - Bagian Belakang</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <style>
         ${document.querySelector('style').textContent}
         
@@ -680,7 +723,7 @@ async function handleBackgroundUpload(event) {
     </style>
 </head>
 <body>
-    ${document.getElementById('libraryCard').outerHTML}
+    ${document.getElementById('libraryCardBack').outerHTML}
 </body>
 </html>`;
 
@@ -688,13 +731,13 @@ async function handleBackgroundUpload(event) {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'kartu-anggota-perpustakaan.html';
+                a.download = 'kartu-anggota-perpustakaan-belakang-custom.html';
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
                 
-                showStatus('File HTML berhasil didownload!');
+                showStatus('File HTML bagian belakang berhasil didownload!');
             } catch (error) {
                 showStatus('Error saat mendownload HTML: ' + error.message, 'error');
             }
@@ -703,11 +746,10 @@ async function handleBackgroundUpload(event) {
         // Generate PDF Function
         async function generatePDFWithLibrary() {
             try {
-                showStatus('Sedang menggenerate PDF...', 'success');
+                showStatus('Sedang menggenerate PDF bagian belakang...', 'success');
                 
-                const element = document.getElementById('libraryCard');
+                const element = document.getElementById('libraryCardBack');
                 
-                // Hide other elements
                 const controls = document.querySelector('.controls');
                 const status = document.querySelector('#status');
                 const uploadSections = document.querySelectorAll('.upload-section');
@@ -727,11 +769,10 @@ async function handleBackgroundUpload(event) {
                     height: 618,
                     scrollX: 0,
                     scrollY: 0,
-                    windowWidth: 1200,
-                    windowHeight: 800
+                    windowWidth: 1400,
+                    windowHeight: 900
                 });
                 
-                // Restore elements
                 controls.style.display = 'block';
                 status.style.display = 'block';
                 uploadSections.forEach(section => section.style.display = 'block');
@@ -740,8 +781,12 @@ async function handleBackgroundUpload(event) {
                 
                 const { jsPDF } = window.jspdf;
                 
-                const cardWidthMM = 254;
-                const cardHeightMM = 157;
+                const originalWidth = 1004;
+                const originalHeight = 618;
+                const ratio = originalWidth / originalHeight;
+                
+                const cardWidthMM = 297;
+                const cardHeightMM = Math.round(cardWidthMM / ratio);
                 
                 const pdf = new jsPDF({
                     orientation: 'landscape',
@@ -751,9 +796,9 @@ async function handleBackgroundUpload(event) {
                 
                 pdf.addImage(imgData, 'PNG', 0, 0, cardWidthMM, cardHeightMM, '', 'FAST');
                 
-                pdf.save('kartu-anggota-perpustakaan.pdf');
+                pdf.save('kartu-anggota-perpustakaan-belakang-custom.pdf');
                 
-                showStatus('PDF berhasil digenerate dan didownload!');
+                showStatus('PDF bagian belakang berhasil digenerate dan didownload!');
                 
             } catch (error) {
                 showStatus('Error saat menggenerate PDF: ' + error.message, 'error');
@@ -761,10 +806,11 @@ async function handleBackgroundUpload(event) {
             }
         }
 
+      
         // Initialize
         window.addEventListener('load', function() {
-            console.log('Card with PHP data and background customization loaded successfully');
-            updateOverlay(); // Set initial overlay
+            console.log('Card back with customization loaded successfully');
+            updateOverlay();
         });
     </script>
 </body>

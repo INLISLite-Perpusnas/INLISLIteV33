@@ -159,6 +159,40 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 		targetSelect.append(sourceOptions);
 		targetSelect.val(selectedValue).trigger('change');
 	}
+
+	  // Script untuk Fakultas dan Jurusan
+    $(document).ready(function() {
+        // Ketika Fakultas dipilih, load Jurusan yang sesuai
+        $('#Fakultas_id').change(function() {
+            var fakultasId = $(this).val();
+            var jurusanSelect = $('#Jurusan_id');
+            
+            // Reset jurusan select
+            jurusanSelect.empty();
+            jurusanSelect.append('<option value="">Pilih Jurusan</option>');
+            
+            if (fakultasId) {
+                // Ambil data jurusan berdasarkan fakultas_id
+                $.ajax({
+                    url: `<?= base_url('api/jurusan/getjurusan') ?>/${fakultasId}`,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success && response.data) {
+                            $.each(response.data, function(key, jurusan) {
+                                jurusanSelect.append(
+                                    `<option value="${jurusan.id}">${jurusan.Nama}</option>`
+                                );
+                            });
+                        }
+                    },
+                    error: function() {
+                        console.log('Error loading jurusan data');
+                    }
+                });
+            }
+        });
+    });
 </script>
 <script type="text/javascript">
 	$(function() {

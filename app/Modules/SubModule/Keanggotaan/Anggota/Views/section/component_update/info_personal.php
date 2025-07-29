@@ -11,6 +11,7 @@
                 </div>
                 <div data-parent="#accordion_personal" id="collapse_personal" class="collapse show">
                     <div class="card-body">
+                      
                         <div class="form-row">
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
@@ -20,6 +21,7 @@
                                     </div>
                                 </div>
                             </div>
+                              <?php if (is_form_field_active('13', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label>Jenis Identitas</label>
@@ -31,6 +33,8 @@
                                     </select>
                                 </div>
                             </div>
+                            <?php endif; ?>
+                                 <?php if (is_form_field_active('14', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label for="name">Nomor Identitas</label>
@@ -39,6 +43,8 @@
                                     </div>
                                 </div>
                             </div>
+                            <?php endif; ?>
+
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label for="name">Tempat Lahir</label>
@@ -51,11 +57,12 @@
                                 <div class="position-relative form-group" id="tgl1">
                                     <label for="name">Tanggal Lahir</label>
                                     <div>
-                                        <input type="date" class="form-control" id="date-time" name="DateOfBirth" placeholder="Tanggal Lahir" value="<?= set_value('DateOfBirth', $anggota->DateOfBirth); ?>" />
+                                        <input type="date" class="form-control" id="date-time" name="DateOfBirth" placeholder="Tanggal Lahir" value="<?= set_value('DateOfBirth', substr(($anggota->DateOfBirth), 0, 10)); ?>" />
                                         <span class="input-group-addon"><span class="glyphicon-calendar glyphicon"></span></span>
                                     </div>
                                 </div>
                             </div>
+                            <?php if (is_form_field_active('20', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label>Status Perkawinan</label>
@@ -66,6 +73,8 @@
                                     </select>
                                 </div>
                             </div>
+                            <?php endif; ?>
+                             <?php if (is_form_field_active('17', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label>Agama</label>
@@ -77,6 +86,8 @@
                                     </select>
                                 </div>
                             </div>
+                            <?php endif; ?>
+                             <?php if (is_form_field_active('15', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label>Jenis Kelamin</label>
@@ -87,6 +98,7 @@
                                     </select>
                                 </div>
                             </div>
+                            <?php endif; ?>
                         </div>
                         <div class="form-row">
                             <div class="col-md-12">
@@ -94,6 +106,7 @@
                             </div>
                         </div>
                         <div class="form-row">
+                               <?php if (is_form_field_active('29', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label for="name">Alamat Email*</label>
@@ -102,14 +115,17 @@
                                     </div>
                                 </div>
                             </div>
+                            <?php endif; ?>
+                             <?php if (is_form_field_active('11', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label for="name">No. Telepon</label>
                                     <div>
-                                        <input type="text" class="form-control" id="frm_create_NoHp" name="NoHp" placeholder="No. Telepon" value="<?= set_value('NoHp', $anggota->NoHp); ?>" />
+                                        <input type="text" class="form-control" id="frm_create_NoHp" name="Phone" placeholder="No. Telepon" value="<?= set_value('Phone', $anggota->Phone); ?>" />
                                     </div>
                                 </div>
                             </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

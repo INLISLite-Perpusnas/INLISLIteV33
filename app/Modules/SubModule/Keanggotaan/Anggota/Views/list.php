@@ -67,7 +67,6 @@ if (is_member('sa_kabkot')) {
 							</div>
 						</div>
 
-
 						<div class="col-md-6">
 							<div class="form-group">
 								<label>Kota / Kabupaten</label>
@@ -154,6 +153,7 @@ if (is_member('sa_kabkot')) {
 		<div class="card-footer">
 			<div class="d-block">
 				<button type="button" id="proses_keranjang" class="btn btn-warning" data-toggle="tooltip" data-placement="top" title="Semua anggota yang terpilih"><i class="fa fa-shopping-cart"></i> Pindahkan ke Keranjang</button>
+				<button type="button" id="print_kartu" class="btn btn-primary ml-2" data-toggle="tooltip" data-placement="top" title="Print kartu anggota yang terpilih"><i class="fa fa-print"></i> Print Kartu</button>
 			</div>
 		</div>
 	</div>
@@ -294,6 +294,134 @@ if (is_member('sa_kabkot')) {
 		return false;
 	});
 
+	// Event handler untuk tombol Print Kartu
+	$('#print_kartu').click(function() {
+		// Debug: cek semua checkbox yang ada
+		console.log('All checkboxes in table:', $('#tbl_data input[type="checkbox"]'));
+		
+		// Coba beberapa selector berbeda untuk menangkap checkbox
+		var checkedBoxes = $('#tbl_data input[type="checkbox"]:checked').not('.check_data');
+		
+		console.log('Checked boxes found:', checkedBoxes.length);
+		console.log('Checked boxes:', checkedBoxes);
+		
+		if (checkedBoxes.length === 0) {
+			Swal.fire({
+				title: 'Peringatan',
+				text: 'Silakan pilih minimal satu anggota untuk dicetak kartunya',
+				type: 'warning',
+				showConfirmButton: true,
+				confirmButtonText: 'OK'
+			});
+			return false;
+		}
+
+		// Collect all selected IDs
+		var selectedIds = [];
+		checkedBoxes.each(function() {
+			var checkboxValue = $(this).val();
+			var checkboxName = $(this).attr('name');
+			var checkboxId = $(this).attr('id');
+			
+			console.log('Checkbox - Value:', checkboxValue, 'Name:', checkboxName, 'ID:', checkboxId);
+			
+			if (checkboxValue && checkboxValue !== 'on') {
+				selectedIds.push(checkboxValue);
+			}
+		});
+
+		console.log('Selected IDs:', selectedIds);
+
+		// Konfirmasi sebelum print
+		Swal.fire({
+			title: 'Konfirmasi Print Kartu',
+			html: `Akan mencetak kartu untuk <strong>${selectedIds.length}</strong> anggota yang dipilih`,
+			type: 'question',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#dd6b55',
+			confirmButtonText: 'Ya, Print Kartu',
+			cancelButtonText: 'Batal'
+		}).then((result) => {
+			if (result.value) {
+				// Kirim data ke controller
+				printKartuAnggota(selectedIds);
+			}
+		});
+		
+		return false;
+	});
+
+	// Fungsi untuk mengirim data ke controller print kartu
+	function printKartuAnggota(ids) {
+		// Method 1: Kirim via POST dengan form hidden
+		var form = $('<form></form>');
+		form.attr('method', 'post');
+		form.attr('action', '<?= base_url('anggota/multipleprint') ?>');
+		form.attr('target', '_blank'); // Buka di tab baru
+
+		// Tambahkan CSRF token jika ada
+		<?php if (csrf_token()): ?>
+		form.append('<input type="hidden" name="<?= csrf_token() ?>" value="<?= csrf_hash() ?>" />');
+		<?php endif; ?>
+
+		// Tambahkan IDs sebagai array
+		$.each(ids, function(index, value) {
+			form.append('<input type="hidden" name="member_ids[]" value="' + value + '" />');
+		});
+
+		// Append form ke body dan submit
+		$('body').append(form);
+		form.submit();
+		form.remove();
+
+		// Method 2 Alternative: Kirim via AJAX jika ingin response JSON
+		/*
+		$.ajax({
+			url: '<?= base_url('anggota/print_kartu') ?>',
+			type: 'POST',
+			data: {
+				member_ids: ids,
+				<?= csrf_token() ?>: '<?= csrf_hash() ?>'
+			},
+			success: function(response) {
+				console.log('Response from controller:', response);
+				
+				if (response.error === false) {
+					// Jika controller mengembalikan URL file PDF
+					if (response.pdf_url) {
+						window.open(response.pdf_url, '_blank');
+					}
+					
+					Swal.fire({
+						title: 'Berhasil',
+						text: response.message || 'Kartu berhasil dicetak',
+						type: 'success',
+						showConfirmButton: false,
+						timer: 3000
+					});
+				} else {
+					Swal.fire({
+						title: 'Gagal',
+						text: response.message || 'Gagal mencetak kartu',
+						type: 'error',
+						showConfirmButton: true
+					});
+				}
+			},
+			error: function(xhr, status, error) {
+				console.error('AJAX Error:', error);
+				Swal.fire({
+					title: 'Error',
+					text: 'Terjadi kesalahan saat mengirim data ke server',
+					type: 'error',
+					showConfirmButton: true
+				});
+			}
+		});
+		*/
+	}
+
 	$("body").on("click", ".remove-data", function() {
 		var url = $(this).attr('data-href');
 		console.log(url);
@@ -313,7 +441,6 @@ if (is_member('sa_kabkot')) {
 		});
 		return false;
 	});
-
 
 	function ajax_post(url, data_post) {
 		$.ajax({
@@ -353,96 +480,6 @@ if (is_member('sa_kabkot')) {
 					timer: 5000
 				}).then(() => {});
 			});
-	}
-</script>
-
-<script>
-	let is_profiling = `<?= is_profiling() ?>`;
-	let is_admin = `<?= is_member('admin') ?>`;
-	let is_sa_prov = `<?= is_member('sa_prov') ?>`;
-	let is_sa_kabkot = `<?= is_member('sa_kabkot') ?>`;
-	let is_sa_pkpt = `<?= is_member('sa_pkpt') ?>`;
-	let is_sa_psm = `<?= is_member('sa_psm') ?>`;
-	let npp_provinsi_id = '<?= user()->npp_provinsi_id ?>';
-	let npp_kabkota_id = '<?= user()->npp_kabkota_id ?>';
-	let npp_provinsi = '<?= $npp_provinsi ?>';
-	let npp_kabkota = '<?= $npp_kabkota ?>';
-
-	if (is_profiling) {
-		if (is_sa_kabkot || is_sa_prov) {
-			$('#provinsi_id').html(`<option value="">${npp_provinsi}</option>`);
-
-			if (is_sa_kabkot) {
-				$('#kabkota_id').html(`<option value="">${npp_kabkota}</option>`);
-				getData(`<?= base_url('api/region/district') ?>/${npp_kabkota_id}`, `#kecamatan_id`, false, 'Pilih');
-			} else {
-				getData(`<?= base_url('api/region/city') ?>/${npp_provinsi_id}.`, `#kabkota_id`, false, 'Pilih');
-			}
-		} else {
-			getData(`<?= base_url('api/region/province') ?>`, `#provinsi_id`, false, 'Pilih');
-		}
-
-		$('#provinsi_id').change(function(e) {
-			var provinsi_id = $(this).val();
-			if (!provinsi_id) {
-				$('#kabkota_id').html('<option value="">Pilih</option>');
-				$('#kecamatan_id').html('<option value="">Pilih</option>');
-				$('#kelurahan_id').html('<option value="">Pilih</option>');
-				$('#npp').html('<option value="">Pilih</option>');
-			} else {
-				t.columns(9).search(provinsi_id).draw();
-				getData(`<?= base_url('api/region/city') ?>/${provinsi_id}.`, `#kabkota_id`, false, 'Pilih');
-
-				var code = provinsi_id.replace(".", "").replace(".", "");
-				getData(`<?= base_url('api-mitra-perpustakaan/branch') ?>/${code}/NPP_Provinsi_id`, `#npp`, false, 'Pilih', true);
-			}
-		});
-
-		$('#kabkota_id').change(function(e) {
-			var kabkota_id = $(this).val();
-			if (!kabkota_id) {
-				$('#kecamatan_id').html('<option value="">Pilih</option>');
-				$('#kelurahan_id').html('<option value="">Pilih</option>');
-				$('#npp').html('<option value="">Pilih</option>');
-			} else {
-				t.columns(10).search(kabkota_id.replace(".", "")).draw();
-				getData(`<?= base_url('api/region/district') ?>/${kabkota_id}`, `#kecamatan_id`, false, 'Pilih');
-
-				var code = kabkota_id.replace(".", "").replace(".", "");
-				getData(`<?= base_url('api-mitra-perpustakaan/branch') ?>/${code}/NPP_KabKota_id`, `#npp`, false, 'Pilih', true);
-			}
-		});
-
-		$('#kecamatan_id').change(function(e) {
-			var kecamatan_id = $(this).val();
-			if (!kecamatan_id) {
-				$('#kelurahan_id').html('<option value="">Pilih</option>');
-				$('#npp').html('<option value="">Pilih</option>');
-			} else {
-				t.columns(11).search(kecamatan_id.replace(".", "").replace(".", "")).draw();
-				getData(`<?= base_url('api/region/sub_district') ?>/${kecamatan_id}`, `#kelurahan_id`, false, 'Pilih');
-
-				var code = kecamatan_id.replace(".", "").replace(".", "");
-				getData(`<?= base_url('api-mitra-perpustakaan/branch') ?>/${code}/NPP_Kecamatan_id`, `#npp`, false, 'Pilih', true);
-			}
-		});
-
-		$('#kelurahan_id').change(function(e) {
-			var kelurahan_id = $(this).val();
-			if (!kecamatan_id) {
-				$('#npp').html('<option value="">Pilih</option>');
-			} else {
-				t.columns(12).search(kelurahan_id.replace(".", "").replace(".", "").replace(".", "")).draw();
-
-				var code = kelurahan_id.replace(".", "").replace(".", "").replace(".", "");
-				getData(`<?= base_url('api-mitra-perpustakaan/branch') ?>/${code}/NPP_Kelurahan_id`, `#npp`, false, 'Pilih', true);
-			}
-		});
-
-		$('#npp').change(function(e) {
-			var npp_id = $(this).val();
-			t.columns(13).search(npp_id).draw();
-		});
 	}
 </script>
 

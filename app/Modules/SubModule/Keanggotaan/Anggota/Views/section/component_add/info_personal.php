@@ -13,6 +13,18 @@
                 </div>
                 <div data-parent="#accordion" id="collapse_madatory0" class="collapse show" style="">
                     <div class="card-body">
+                       <?php if($TipeNomorAnggota=="Manual"):?>
+                         <div class="form-row">
+                            <div class="col-md-6">
+                                <div class="position-relative form-group">
+                                    <label for="name">Nomor Anggota*</label>
+                                    <div>
+                                        <input type="text" class="form-control" id="frm_create_ID" name="MemberNo" placeholder="Nomor Anggota" value="<?= set_value('MemberNo'); ?>"/>
+                                    </div>
+                                </div>
+                            </div> 
+                        </div>
+                        <?php endif ?>
                         <div class="form-row">
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
@@ -84,6 +96,7 @@
 
                             </div>
                             <?php endif; ?>
+                             <?php if (is_form_field_active('17', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label>Agama</label>
@@ -94,6 +107,8 @@
                                     </select>
                                 </div>
                             </div>
+                            <?php endif; ?>
+                             <?php if (is_form_field_active('15', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <label>Jenis Kelamin</label>
@@ -104,6 +119,7 @@
                                     </select>
                                 </div>
                             </div>
+                            <?php endif; ?>
                         </div>
                         <div class="form-row">
                             <div class="col-md-12">
