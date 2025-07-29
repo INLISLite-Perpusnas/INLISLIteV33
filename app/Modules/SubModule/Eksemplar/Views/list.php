@@ -34,7 +34,7 @@ $actions = array(
 			<div class="page-title-actions">
 				<nav class="" aria-label="breadcrumb">
 					<ol class="breadcrumb">
-						<li class="breadcrumb-item"><a href="<?= base_url('Eksemplar') ?>"><i class="fa fa-home"></i> Home</a></li>
+						<li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
 						<li class="active breadcrumb-item" aria-current="page">Eksemplar</li>
 					</ol>
 				</nav>
