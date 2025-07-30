@@ -23,6 +23,7 @@ $routes->group('katalog', ['namespace' => 'Katalog\Controllers'], function ($sub
 	$subroutes->add('flip', 'Katalog::flip');
 	$subroutes->add('importviews', 'Katalog::importviews');
 	// app/Config/Routes.php
+	$subroutes->add('ekspor_marc', 'Katalog::ekspor_marc');
 
 	$subroutes->add('marc-import', 'Katalog::showCreateForm');
 	$subroutes->add('create-marc-from-file', 'Katalog::createFromMarcFile');
