@@ -42,7 +42,7 @@
                                 <div class="position-relative form-group">
                                     <label for="name">Masa Berlaku</label>
                                     <div>
-                                        <input type="text" class="form-control" id="EndDate" name="EndDate" placeholder="Masa Berlaku" value="" readonly />
+                                        <input type="datetime" class="form-control" id="EndDate" name="EndDate" placeholder="Masa Berlaku" value="" readonly />
                                     </div>
                                 </div>
                             </div>
