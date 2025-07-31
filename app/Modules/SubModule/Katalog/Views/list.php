@@ -32,25 +32,43 @@ $request = service('request');
 
 
 	<div class="main-card mb-3 card">
-		<div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Daftar Katalog
-			<div class="btn-actions-pane-right actions-icon-btn">
+		<div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+			<div><i class="header-icon lnr-list icon-gradient bg-plum-plate"></i> Tabel Daftar Katalog</div>
+
+			<div class="d-flex align-items-center flex-wrap">
 				<?php if (is_allowed('katalog/create')) : ?>
 					<?php if (get_setting_parameter('FormEntriKatalog', is_profiling()) == 'Simple') : ?>
-						<a href="<?= base_url('katalog/create?rda=1') ?>" class=" btn btn-primary" title=""><i class="fa fa-plus"></i>
-							Tambah Katalog RDA
+						<a href="<?= base_url('katalog/create?rda=1') ?>" class="btn btn-primary btn-sm mr-2">
+							<i class="fa fa-plus"></i> Tambah Katalog RDA
 						</a>
-						<a href="<?= base_url('katalog/create?rda=0') ?>" class=" btn btn-success" title=""><i class="fa fa-plus"></i>
-							Tambah Katalog AACR
+						<a href="<?= base_url('katalog/create?rda=0') ?>" class="btn btn-success btn-sm mr-2">
+							<i class="fa fa-plus"></i> Tambah Katalog AACR
 						</a>
 					<?php else : ?>
-						<a href="<?= base_url('katalog/create_marc') ?>" class=" btn btn-success" title=""><i class="fa fa-plus"></i>
-							Tambah Katalog
+						<a href="<?= base_url('katalog/create_marc') ?>" class="btn btn-success btn-sm mr-2">
+							<i class="fa fa-plus"></i> Tambah Katalog
 						</a>
 					<?php endif; ?>
 				<?php endif; ?>
-				<a href="<?= base_url('report/katalog') ?>" class="btn btn-secondary" title=""><i class="fa fa-file-excel"></i>
-					Ekspor Laporan
+
+				<a href="<?= base_url('report/katalog') ?>" class="btn btn-secondary btn-sm mr-2">
+					<i class="fa fa-file-excel"></i> Ekspor Laporan
 				</a>
+
+				<div class="dropdown">
+					<button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button"
+						id="downloadMarcDropdownKatalog" data-toggle="dropdown" aria-expanded="false">
+						<i class="fas fa-download"></i> Ekspor Katalog MARC
+					</button>
+					<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="downloadMarcDropdownKatalog">
+						<!-- <li><a class="dropdown-item" href="#" onclick="submitExport('mrc')">Export MARC (.mrc)</a></li> -->
+						<!-- <li><a class="dropdown-item" href="#" onclick="submitExport('json')">Export JSON</a></li> -->
+						<li><a class="dropdown-item" href="#" onclick="submitExport('txt')">Export TXT</a></li>
+						<!-- <li><a class="dropdown-item" href="#" onclick="submitExport('xml')">Export XML</a></li> -->
+						<!-- <li><a class="dropdown-item" href="#" onclick="submitExport('csv')">Export CSV</a></li> -->
+						<li><a class="dropdown-item" href="#" onclick="submitExport('xlsx')">Export Excel</a></li>
+					</ul>
+				</div>
 			</div>
 		</div>
 		<div class="card-body">
@@ -62,7 +80,7 @@ $request = service('request');
 								<th class="text-center" width="35">
 									<input type="checkbox" class="check_data" title="Pilih Semua">
 								</th>
-					
+
 								<th class="text-center">BIBID</th>
 								<th class="text-center">Judul</th>
 								<th class="text-center">Edisi</th>
@@ -288,6 +306,13 @@ $request = service('request');
 		});
 		return false;
 	});
+
+	function submitExport(format) {
+		var form = $('#form_items');
+		var serialize_bulk = form.serialize() + '&format=' + format;
+		var url = "<?= base_url('katalog/ekspor_marc') ?>" + '?' + serialize_bulk;
+		window.location.href = url;
+	}
 </script>
 
 <?= $this->endSection('script'); ?>

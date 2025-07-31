@@ -6,9 +6,12 @@ use Base\Models\BaseModel;
 use Base\Models\DataModel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use CodeIgniter\API\ResponseTrait;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use Scriptotek\Marc\Collection; 
+use Scriptotek\Marc\Collection;
 
 class Katalog extends \Base\Controllers\BaseController
 {
@@ -21,7 +24,7 @@ class Katalog extends \Base\Controllers\BaseController
 	public $uploadPath;
 	public $modulePath;
 	public $validation;
-	Public $db;
+	public $db;
 	public $eksemplarModel;
 
 	function __construct()
@@ -34,7 +37,7 @@ class Katalog extends \Base\Controllers\BaseController
 		$this->uploadPath = ROOTPATH . 'public/uploads/';
 		$this->modulePath = ROOTPATH . 'public/uploads/katalog/';
 		$this->validation = \Config\Services::validation();
-		  $this->db = \Config\Database::connect('data');
+		$this->db = \Config\Database::connect('data');
 
 		if (!file_exists($this->uploadPath)) {
 			mkdir($this->uploadPath);
@@ -152,7 +155,165 @@ class Katalog extends \Base\Controllers\BaseController
 
 		return redirect()->back();
 	}
+	public function ekspor_marc()
+	{
+		$IDs = $this->request->getVar('ID');
+		$format = $this->request->getVar('format') ?? 'mrc';
 
+		if (!$IDs || empty($format)) {
+			return redirect()->back()->with('error', 'Format dan data katalog harus dipilih.');
+		}
+
+		$collection = [];
+
+		foreach ($IDs as $id) {
+			$catalog = $this->katalogModel->asArray()->find($id);
+			if (!$catalog) continue;
+
+			// Ambil ruas MARC dari model
+			$record = $this->katalogRuasModel
+				->select('*')
+				->where('CatalogId', $id)
+				->orderBy('Sequence', 'ASC')
+				->findAll();
+			$collection[] = $record;
+		}
+
+		if (count($collection) === 0) {
+			return redirect()->back()->with('error', 'Tidak ada data MARC yang ditemukan.');
+		}
+
+		switch ($format) {
+			case 'txt':
+				$content = '';
+				foreach ($collection as $record) {
+					$content .= "MARC-" . $record[0]->ID . "\n";
+					$content .= "=LDR  00000nam  2200000   4500\n";
+
+					foreach ($record as $field) {
+						$tag = str_pad($field->Tag, 3, '0', STR_PAD_LEFT);
+						$ind1 = $field->Indicator1 ?: ' ';
+						$ind2 = $field->Indicator2 ?: ' ';
+						$value = $field->Value;
+
+						if (intval($tag) < 10) {
+							// Control fields
+							$content .= "={$tag}  {$value}\n";
+						} else {
+							// Data fields
+							$content .= "={$tag}  {$ind1}{$ind2}\${$value}\n";
+						}
+					}
+					$content .= "\n"; // Tambahkan baris baru antar record
+				}
+				return $this->response
+					->setHeader('Content-Type', 'text/plain')
+					->setHeader('Content-Disposition', 'attachment; filename="export_marc.txt"')
+					->setBody($content);
+
+			case 'xlsx':
+				$spreadsheet = new Spreadsheet();
+				$sheet = $spreadsheet->getActiveSheet();
+
+				// Set header
+				// $headers = ['Id Katalog', 'Tag', 'Ind1', 'Ind2', 'Nilai', 'Urutan'];
+				$headers = ['Id Katalog', 'Tag', 'Ind1', 'Ind2', 'Nilai'];
+				$sheet->fromArray($headers, NULL, 'A1');
+
+				// Format Header
+				$sheet->getStyle('A1:E1')->getFont()->setBold(true);
+				$sheet->getStyle('A1:E1')->getFill()->applyFromArray([
+					'fillType' => Fill::FILL_SOLID,
+					'startColor' => ['argb' => 'FFDDDDDD'],
+				]);
+
+				$row = 2; // Mulai dari baris kedua setelah header
+				$lastKatalogId = null;
+
+				foreach ($collection as $record) {
+					$idKatalog = $record[0]->ID ?? '';
+
+					// Urutkan record berdasarkan aturan custom
+					usort($record, function ($a, $b) {
+						// Pastikan 'a' tetap di awal (jika itu yang dimaksud)
+						if ($a->Tag === 'a') return -1;
+						if ($b->Tag === 'a') return 1;
+
+						$aIsNum = is_numeric($a->Tag);
+						$bIsNum = is_numeric($b->Tag);
+
+						if ($aIsNum && $bIsNum) {
+							return (int)$a->Tag <=> (int)$b->Tag;
+						}
+						if ($aIsNum) return -1;
+						if ($bIsNum) return 1;
+
+						// Sama-sama non-numeric
+						return strcmp($a->Tag, $b->Tag);
+					});
+
+					// Reset urutan jika ID katalog berubah
+					if ($idKatalog !== $lastKatalogId) {
+						$urutan = 1;
+						$lastKatalogId = $idKatalog;
+					}
+
+					foreach ($record as $field) {
+						$tag = str_pad($field->Tag, 3, '0', STR_PAD_LEFT);
+						$ind1 = $field->Indicator1 ?: ' ';
+						$ind2 = $field->Indicator2 ?: ' ';
+						$value = $field->Value;
+
+						if (intval($tag) < 10) {
+							// Control fields
+							$sheet->setCellValue('A' . $row, ($urutan == 1) ? $idKatalog : '');
+							$sheet->setCellValue('B' . $row, $tag);
+							$sheet->setCellValue('E' . $row, $value);
+						} else {
+							// Data fields
+							$sheet->setCellValue('A' . $row, ($urutan == 1) ? $idKatalog : '');
+							$sheet->setCellValue('B' . $row, $tag);
+							$sheet->setCellValue('C' . $row, $ind1);
+							$sheet->setCellValue('D' . $row, $ind2);
+							$sheet->setCellValue('E' . $row, $value);
+						}
+
+						$row++;
+						$urutan++;
+					}
+				}
+
+				// Tambahkan border ke seluruh area data
+				$lastRow = $row - 1;
+				$sheet->getStyle('A1:E' . $lastRow)->applyFromArray([
+					'borders' => [
+						'allBorders' => ['borderStyle' => Border::BORDER_THIN],
+					],
+				]);
+
+				// Auto-size kolom
+				foreach (range('A', 'E') as $col) {
+					$sheet->getColumnDimension($col)->setAutoSize(true);
+				}
+
+				// Rata kiri dan tengah vertikal
+				$sheet->getStyle('A1:E' . $lastRow)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+				$sheet->getStyle('A1:E' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+
+
+				$writer = new Xlsx($spreadsheet);
+				$filename = 'export_marc.xlsx';
+
+				header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+				header("Content-Disposition: attachment; filename=\"$filename\"");
+				header('Cache-Control: max-age=0');
+				$writer->save('php://output');
+				exit;
+
+			default:
+				return redirect()->back()->with('error', 'Format tidak dikenali.');
+		}
+	}
 	public function create_marc()
 	{
 		if (!is_allowed('katalog/create')) {
@@ -469,7 +630,7 @@ class Katalog extends \Base\Controllers\BaseController
 		$slug = $this->request->getGet('slug');
 
 		$catalog = $this->katalogModel->find($catalog_id);
-			if (empty($catalog)) {
+		if (empty($catalog)) {
 			set_message('toastr_msg', 'Katalog tidak ditemukan');
 			set_message('toastr_type', 'error');
 			return redirect()->to('katalog');
@@ -478,7 +639,7 @@ class Katalog extends \Base\Controllers\BaseController
 		$UpdateBy = get_username($catalog->UpdateBy ?? 0);
 		$data['CreateBy'] = $CreateBy;
 		$data['UpdateBy'] = $UpdateBy;
-	
+
 		$data['catalog'] = $catalog;
 
 		$worksheet = $this->worksheetModel->find($catalog->Worksheet_id);
@@ -877,7 +1038,7 @@ class Katalog extends \Base\Controllers\BaseController
 			->join('branchs b', 'b.ID = a.Branch_id', 'inner')
 			->where('a.IsQUARANTINE', 0);
 
-	
+
 
 		$results = $builder->get()->getResult();
 
@@ -954,409 +1115,406 @@ class Katalog extends \Base\Controllers\BaseController
 	}
 
 	public function view_decrypted($ID)
-    {
-        // Load the file model
-  
+	{
+		// Load the file model
 
-        // Get the file record
-        $file = $this->fileModel->find($ID);
+
+		// Get the file record
+		$file = $this->fileModel->find($ID);
 		if (!$file || !file_exists($this->modulePath . $file->FileURL)) {
-            return $this->response->setStatusCode(404)->setBody('File not found');
-        }
+			return $this->response->setStatusCode(404)->setBody('File not found');
+		}
 
-        // Instead of serving the file directly, we'll render a view with our custom PDF viewer
-        return view('Katalog\Views\slug\pdf_viewer', ['fileId' => $ID, 'fileName' => $file->FileURL]);
-    }
+		// Instead of serving the file directly, we'll render a view with our custom PDF viewer
+		return view('Katalog\Views\slug\pdf_viewer', ['fileId' => $ID, 'fileName' => $file->FileURL]);
+	}
 
-    public function get_decrypted_content($ID)
-    {
-       
-        $file = $this->fileModel->find($ID);
+	public function get_decrypted_content($ID)
+	{
 
-        if (!$file || !file_exists($this->modulePath . $file->FileURL)) {
-            return $this->response->setStatusCode(404)->setBody('File not found');
-        }
+		$file = $this->fileModel->find($ID);
 
-        $tempDecryptedFile = tempnam(sys_get_temp_dir(), 'decrypted_');
-        $encryption = new \App\Libraries\Encryption();
-        $encryption->decryptFile($this->modulePath . $file->FileURL, $tempDecryptedFile);
+		if (!$file || !file_exists($this->modulePath . $file->FileURL)) {
+			return $this->response->setStatusCode(404)->setBody('File not found');
+		}
 
-        $this->response->setContentType('application/pdf');
-        $this->response->setHeader('Content-Disposition', 'inline; filename="' . $file->FileURL . '"');
-        $this->response->setHeader('X-Frame-Options', 'SAMEORIGIN');
-        $this->response->setHeader('Content-Security-Policy', "default-src 'self'; object-src 'self'");
+		$tempDecryptedFile = tempnam(sys_get_temp_dir(), 'decrypted_');
+		$encryption = new \App\Libraries\Encryption();
+		$encryption->decryptFile($this->modulePath . $file->FileURL, $tempDecryptedFile);
 
-        $content = file_get_contents($tempDecryptedFile);
-        unlink($tempDecryptedFile);
+		$this->response->setContentType('application/pdf');
+		$this->response->setHeader('Content-Disposition', 'inline; filename="' . $file->FileURL . '"');
+		$this->response->setHeader('X-Frame-Options', 'SAMEORIGIN');
+		$this->response->setHeader('Content-Security-Policy', "default-src 'self'; object-src 'self'");
 
-        return $this->response->setBody($content);
-    }
-// Fungsi untuk menampilkan form
-public function showCreateForm()
-{
-	echo view('Katalog\Views\marc_import_form');
-}
-public function createFromMarcFile()
-{
-    if ($this->request->getMethod() !== 'post') {
-        return $this->response->setStatusCode(405)->setJSON(['success' => false, 'message' => 'Metode tidak diizinkan']);
-    }
+		$content = file_get_contents($tempDecryptedFile);
+		unlink($tempDecryptedFile);
 
-    $file = $this->request->getFile('marc_file');
+		return $this->response->setBody($content);
+	}
+	// Fungsi untuk menampilkan form
+	public function showCreateForm()
+	{
+		echo view('Katalog\Views\marc_import_form');
+	}
+	public function createFromMarcFile()
+	{
+		if ($this->request->getMethod() !== 'post') {
+			return $this->response->setStatusCode(405)->setJSON(['success' => false, 'message' => 'Metode tidak diizinkan']);
+		}
 
-    $this->db->transStart();
+		$file = $this->request->getFile('marc_file');
 
-    try {
-        // Baca file MARC menggunakan File_MARC langsung
-        $marcContent = file_get_contents($file->getTempName());
-        $marc = new \File_MARC($marcContent, \File_MARC::SOURCE_STRING);
-        
-        $record = $marc->next(); // Ambil record pertama
-        
-        if (!$record) {
-            throw new \Exception("Tidak ada record MARC yang valid ditemukan");
-        }
+		$this->db->transStart();
 
-        $catalogData = [];
+		try {
+			// Baca file MARC menggunakan File_MARC langsung
+			$marcContent = file_get_contents($file->getTempName());
+			$marc = new \File_MARC($marcContent, \File_MARC::SOURCE_STRING);
 
-        // Mapping data MARC menggunakan File_MARC
-        $field001 = $record->getField('001');
-        $catalogData['ControlNumber'] = $field001 ? $field001->getData() : null;
-        
-        $field035 = $record->getField('035');
-        $catalogData['BIBID'] = ($field035 && $field035->getSubfield('a')) ? $field035->getSubfield('a')->getData() : null;
-        
-        $field100 = $record->getField('100');
-        $catalogData['Author'] = ($field100 && $field100->getSubfield('a')) ? $field100->getSubfield('a')->getData() : null;
-        
-        // Title (245)
-        $field245 = $record->getField('245');
-        $title_a = ($field245 && $field245->getSubfield('a')) ? $field245->getSubfield('a')->getData() : '';
-        $subtitle = ($field245 && $field245->getSubfield('b')) ? $field245->getSubfield('b')->getData() : '';
-        $authorResp = ($field245 && $field245->getSubfield('c')) ? $field245->getSubfield('c')->getData() : '';
-        $catalogData['Title'] = trim(rtrim(trim("{$title_a} {$subtitle}"),':') . " / {$authorResp}");
-        
-        // Edition (250)
-        $field250 = $record->getField('250');
-        $catalogData['Edition'] = ($field250 && $field250->getSubfield('a')) ? $field250->getSubfield('a')->getData() : null;
-        
-        // Publication (260)
-        $field260 = $record->getField('260');
-		
-        $pub_a = ($field260 && $field260->getSubfield('a')) ? $field260->getSubfield('a')->getData() : '';
-		
-        $pub_b = ($field260 && $field260->getSubfield('b')) ? $field260->getSubfield('b')->getData() : '';
-        $pub_c = ($field260 && $field260->getSubfield('c')) ? $field260->getSubfield('c')->getData() : '';
-        
-        $catalogData['PublishLocation'] = $pub_a;
-        $catalogData['Publisher'] = $pub_b;
-        $catalogData['PublishYear'] = $pub_c;
-        $catalogData['Publikasi'] = trim("{$catalogData['PublishLocation']}: {$catalogData['Publisher']}, {$catalogData['PublishYear']}");
-		
-        
-        // Physical Description (300)
-        $field300 = $record->getField('300');
-        $catalogData['PhysicalDescription'] = ($field300 && $field300->getSubfield('a')) ? $field300->getSubfield('a')->getData() : null;
-        
-        // Subject (650)
-        $field650 = $record->getField('650');
-        $catalogData['Subject'] = ($field650 && $field650->getSubfield('a')) ? $field650->getSubfield('a')->getData() : null;
-        
-        // ISBN (020)
-        $field020 = $record->getField('020');
-        $catalogData['ISBN'] = ($field020 && $field020->getSubfield('a')) ? $field020->getSubfield('a')->getData() : null;
-        
-        // Dewey (082)
-        $field082 = $record->getField('082');
-        $catalogData['DeweyNo'] = ($field082 && $field082->getSubfield('a')) ? $field082->getSubfield('a')->getData() : null;
-        
-        // Call Number (084)
-        $field084 = $record->getField('084');
-        $catalogData['CallNumber'] = ($field084 && $field084->getSubfield('a')) ? $field084->getSubfield('a')->getData() : null;
-        
-        // Default values
-        $catalogData['IsOPAC'] = 1;
-        $catalogData['Worksheet_id'] = 1;
-        $catalogData['Branch_id'] = 2522;
-        $catalogData['CreateBy'] = 33;
-        $catalogData['CreateDate'] = date('Y-m-d H:i:s');
-        $catalogData['CreateTerminal'] = $this->request->getIPAddress();
-        $catalogData['active'] = 1;
-	
-        // Filter data sesuai field tabel
-        $tableFields = $this->db->getFieldNames('catalogs');
-        $filteredData = [];
-        foreach ($catalogData as $key => $value) {
-            if (in_array($key, $tableFields)) {
-                $filteredData[$key] = $value;
-            }
-        }
+			$record = $marc->next(); // Ambil record pertama
 
-        // Insert ke catalogs
-        $insertResult = $this->db->table('catalogs')->insert($filteredData);
-        
-        if (!$insertResult) {
-            throw new \Exception("Gagal menyimpan data ke tabel catalogs: " . $this->db->error()['message']);
-        }
-        
-        $newCatalogId = $this->db->insertID();
-        
-        if (!$newCatalogId) {
-            throw new \Exception("Gagal mendapatkan ID catalog yang baru diinsert");
-        }
+			if (!$record) {
+				throw new \Exception("Tidak ada record MARC yang valid ditemukan");
+			}
 
-        // Insert ke catalog_ruas dengan parsing yang benar
-        $ruasBatchData = [];
-        $sequence = 1;
-        
-        // Ambil semua fields menggunakan File_MARC
-        $fields = $record->getFields();
-        foreach ($fields as $field) {
-            $tag = $field->getTag();
-            
-            // Jika control field (001, 003, 005, 006, 007, 008, 009)
-            if ($tag < '010') {
-                $ruasBatchData[] = [
-                    'CatalogId' => $newCatalogId,
-                    'Tag' => $tag,
-                    'Indicator1' => null,
-                    'Indicator2' => null,
-                    'Value' => $field->getData(),
-                    'Sequence' => $sequence++,
-                ];
-            } else {
-                // Data field dengan indicator dan subfield
-                $indicator1 = $field->getIndicator(1);
-                $indicator2 = $field->getIndicator(2);
-                
-                // Convert space atau null ke #
-                $indicator1 = ($indicator1 === ' ' || $indicator1 === null) ? '#' : $indicator1;
-                $indicator2 = ($indicator2 === ' ' || $indicator2 === null) ? '#' : $indicator2;
-                
-                // Ambil semua subfield
-                $subfields = $field->getSubfields();
-                if (!empty($subfields)) {
-                    foreach ($subfields as $subfield) {
-                        $ruasBatchData[] = [
-                            'CatalogId' => $newCatalogId,
-                            'Tag' => $tag,
-                            'Indicator1' => $indicator1,
-                            'Indicator2' => $indicator2,
-                            'Value' => '$' . $subfield->getCode() . ' ' . $subfield->getData(),
-                            'Sequence' => $sequence++,
-                        ];
-                    }
-                } else {
-                    // Jika tidak ada subfield, simpan sebagai field kosong
-                    $ruasBatchData[] = [
-                        'CatalogId' => $newCatalogId,
-                        'Tag' => $tag,
-                        'Indicator1' => $indicator1,
-                        'Indicator2' => $indicator2,
-                        'Value' => '',
-                        'Sequence' => $sequence++,
-                    ];
-                }
-            }
-        }
-        
-        if (!empty($ruasBatchData)) {
-            $this->db->table('catalog_ruas')->insertBatch($ruasBatchData);
-        }
+			$catalogData = [];
 
-        $this->db->transCommit();
+			// Mapping data MARC menggunakan File_MARC
+			$field001 = $record->getField('001');
+			$catalogData['ControlNumber'] = $field001 ? $field001->getData() : null;
 
-        return $this->response->setJSON([
-            'success' => true, 
-            'catalog_id' => $newCatalogId, 
-            'title' => $catalogData['Title']
-        ]);
+			$field035 = $record->getField('035');
+			$catalogData['BIBID'] = ($field035 && $field035->getSubfield('a')) ? $field035->getSubfield('a')->getData() : null;
 
-    } catch (\Exception $e) {
-        $this->db->transRollback();
-        return $this->response->setJSON([
-            'success' => false, 
-            'message' => 'Error: ' . $e->getMessage()
-        ]);
-    }
-}
-public function createFromMarcFileold()
-{
-    if ($this->request->getMethod() !== 'post') {
-        return $this->response->setStatusCode(405)->setJSON(['success' => false, 'message' => 'Metode tidak diizinkan']);
-    }
+			$field100 = $record->getField('100');
+			$catalogData['Author'] = ($field100 && $field100->getSubfield('a')) ? $field100->getSubfield('a')->getData() : null;
 
-    $file = $this->request->getFile('marc_file');
+			// Title (245)
+			$field245 = $record->getField('245');
+			$title_a = ($field245 && $field245->getSubfield('a')) ? $field245->getSubfield('a')->getData() : '';
+			$subtitle = ($field245 && $field245->getSubfield('b')) ? $field245->getSubfield('b')->getData() : '';
+			$authorResp = ($field245 && $field245->getSubfield('c')) ? $field245->getSubfield('c')->getData() : '';
+			$catalogData['Title'] = trim(rtrim(trim("{$title_a} {$subtitle}"), ':') . " / {$authorResp}");
 
-    $this->db->transStart();
+			// Edition (250)
+			$field250 = $record->getField('250');
+			$catalogData['Edition'] = ($field250 && $field250->getSubfield('a')) ? $field250->getSubfield('a')->getData() : null;
 
-    try {
-        // Baca file MARC menggunakan File_MARC langsung
-        $marcContent = file_get_contents($file->getTempName());
-        $marc = new \File_MARC($marcContent, \File_MARC::SOURCE_STRING);
-        
-        $record = $marc->next(); // Ambil record pertama
-        
-        if (!$record) {
-            throw new \Exception("Tidak ada record MARC yang valid ditemukan");
-        }
+			// Publication (260)
+			$field260 = $record->getField('260');
 
-        $catalogData = [];
+			$pub_a = ($field260 && $field260->getSubfield('a')) ? $field260->getSubfield('a')->getData() : '';
 
-        // Mapping data MARC menggunakan File_MARC
-        $field001 = $record->getField('001');
-        $catalogData['ControlNumber'] = $field001 ? $field001->getData() : null;
-        
-        $field035 = $record->getField('035');
-        $catalogData['BIBID'] = ($field035 && $field035->getSubfield('a')) ? $field035->getSubfield('a')->getData() : null;
-        
-        $field100 = $record->getField('100');
-        $catalogData['Author'] = ($field100 && $field100->getSubfield('a')) ? $field100->getSubfield('a')->getData() : null;
-        
-        // Title (245)
-        $field245 = $record->getField('245');
-        $title_a = ($field245 && $field245->getSubfield('a')) ? $field245->getSubfield('a')->getData() : '';
-        $subtitle = ($field245 && $field245->getSubfield('b')) ? $field245->getSubfield('b')->getData() : '';
-        $authorResp = ($field245 && $field245->getSubfield('c')) ? $field245->getSubfield('c')->getData() : '';
-        $catalogData['Title'] = trim(rtrim(trim("{$title_a} {$subtitle}"),':') . " / {$authorResp}");
-        
-        // Edition (250)
-        $field250 = $record->getField('250');
-        $catalogData['Edition'] = ($field250 && $field250->getSubfield('a')) ? $field250->getSubfield('a')->getData() : null;
-        
-        // Publication (260)
-        $field260 = $record->getField('264');
-		dd($field260);
-        $pub_a = ($field260 && $field260->getSubfield('a')) ? $field260->getSubfield('a')->getData() : '';
-        $pub_b = ($field260 && $field260->getSubfield('b')) ? $field260->getSubfield('b')->getData() : '';
-        $pub_c = ($field260 && $field260->getSubfield('c')) ? $field260->getSubfield('c')->getData() : '';
-        
-        $catalogData['PublishLocation'] = rtrim(trim($pub_a), ':');
-        $catalogData['Publisher'] = rtrim(trim($pub_b), ',');
-        $catalogData['PublishYear'] = $pub_c;
-        $catalogData['Publikasi'] = trim("{$catalogData['PublishLocation']}: {$catalogData['Publisher']}, {$catalogData['PublishYear']}");
-        
-        // Physical Description (300)
-        $field300 = $record->getField('300');
-        $catalogData['PhysicalDescription'] = ($field300 && $field300->getSubfield('a')) ? $field300->getSubfield('a')->getData() : null;
-        
-        // Subject (650)
-        $field650 = $record->getField('650');
-        $catalogData['Subject'] = ($field650 && $field650->getSubfield('a')) ? $field650->getSubfield('a')->getData() : null;
-        
-        // ISBN (020)
-        $field020 = $record->getField('020');
-        $catalogData['ISBN'] = ($field020 && $field020->getSubfield('a')) ? $field020->getSubfield('a')->getData() : null;
-        
-        // Dewey (082)
-        $field082 = $record->getField('082');
-        $catalogData['DeweyNo'] = ($field082 && $field082->getSubfield('a')) ? $field082->getSubfield('a')->getData() : null;
-        
-        // Call Number (084)
-        $field084 = $record->getField('084');
-        $catalogData['CallNumber'] = ($field084 && $field084->getSubfield('a')) ? $field084->getSubfield('a')->getData() : null;
-        
-        // Default values
-        $catalogData['IsOPAC'] = 1;
-        $catalogData['Worksheet_id'] = 1;
-        $catalogData['Branch_id'] = 2522;
-        $catalogData['CreateBy'] = 33;
-        $catalogData['CreateDate'] = date('Y-m-d H:i:s');
-        $catalogData['CreateTerminal'] = $this->request->getIPAddress();
-        $catalogData['active'] = 1;
-dd($catalogData);
-        // Filter data sesuai field tabel
-        $tableFields = $this->db->getFieldNames('catalogs');
-        $filteredData = [];
-        foreach ($catalogData as $key => $value) {
-            if (in_array($key, $tableFields)) {
-                $filteredData[$key] = $value;
-            }
-        }
+			$pub_b = ($field260 && $field260->getSubfield('b')) ? $field260->getSubfield('b')->getData() : '';
+			$pub_c = ($field260 && $field260->getSubfield('c')) ? $field260->getSubfield('c')->getData() : '';
 
-        // Insert ke catalogs
-        $insertResult = $this->db->table('catalogs')->insert($filteredData);
-        
-        if (!$insertResult) {
-            throw new \Exception("Gagal menyimpan data ke tabel catalogs: " . $this->db->error()['message']);
-        }
-        
-        $newCatalogId = $this->db->insertID();
-        
-        if (!$newCatalogId) {
-            throw new \Exception("Gagal mendapatkan ID catalog yang baru diinsert");
-        }
+			$catalogData['PublishLocation'] = $pub_a;
+			$catalogData['Publisher'] = $pub_b;
+			$catalogData['PublishYear'] = $pub_c;
+			$catalogData['Publikasi'] = trim("{$catalogData['PublishLocation']}: {$catalogData['Publisher']}, {$catalogData['PublishYear']}");
 
-        // Insert ke catalog_ruas dengan parsing yang benar
-        $ruasBatchData = [];
-        $sequence = 1;
-        
-        // Ambil semua fields menggunakan File_MARC
-        $fields = $record->getFields();
-        foreach ($fields as $field) {
-            $tag = $field->getTag();
-            
-            // Jika control field (001, 003, 005, 006, 007, 008, 009)
-            if ($tag < '010') {
-                $ruasBatchData[] = [
-                    'CatalogId' => $newCatalogId,
-                    'Tag' => $tag,
-                    'Indicator1' => null,
-                    'Indicator2' => null,
-                    'Value' => $field->getData(),
-                    'Sequence' => $sequence++,
-                ];
-            } else {
-                // Data field dengan indicator dan subfield
-                $indicator1 = $field->getIndicator(1);
-                $indicator2 = $field->getIndicator(2);
-                
-                // Ambil semua subfield
-                $subfields = $field->getSubfields();
-                if (!empty($subfields)) {
-                    foreach ($subfields as $subfield) {
-                        $ruasBatchData[] = [
-                            'CatalogId' => $newCatalogId,
-                            'Tag' => $tag,
-                            'Indicator1' => $indicator1 === ' ' ? null : $indicator1,
-                            'Indicator2' => $indicator2 === ' ' ? null : $indicator2,
-                            'Value' => $subfield->getCode() . $subfield->getData(),
-                            'Sequence' => $sequence++,
-                        ];
-                    }
-                } else {
-                    // Jika tidak ada subfield, simpan sebagai field kosong
-                    $ruasBatchData[] = [
-                        'CatalogId' => $newCatalogId,
-                        'Tag' => $tag,
-                        'Indicator1' => $indicator1 === ' ' ? null : $indicator1,
-                        'Indicator2' => $indicator2 === ' ' ? null : $indicator2,
-                        'Value' => '',
-                        'Sequence' => $sequence++,
-                    ];
-                }
-            }
-        }
-        
-        if (!empty($ruasBatchData)) {
-            $this->db->table('catalog_ruas')->insertBatch($ruasBatchData);
-        }
 
-        $this->db->transCommit();
+			// Physical Description (300)
+			$field300 = $record->getField('300');
+			$catalogData['PhysicalDescription'] = ($field300 && $field300->getSubfield('a')) ? $field300->getSubfield('a')->getData() : null;
 
-        return $this->response->setJSON([
-            'success' => true, 
-            'catalog_id' => $newCatalogId, 
-            'title' => $catalogData['Title']
-        ]);
+			// Subject (650)
+			$field650 = $record->getField('650');
+			$catalogData['Subject'] = ($field650 && $field650->getSubfield('a')) ? $field650->getSubfield('a')->getData() : null;
 
-    } catch (\Exception $e) {
-        $this->db->transRollback();
-        return $this->response->setJSON([
-            'success' => false, 
-            'message' => 'Error: ' . $e->getMessage()
-        ]);
-    }
-}
-	
+			// ISBN (020)
+			$field020 = $record->getField('020');
+			$catalogData['ISBN'] = ($field020 && $field020->getSubfield('a')) ? $field020->getSubfield('a')->getData() : null;
+
+			// Dewey (082)
+			$field082 = $record->getField('082');
+			$catalogData['DeweyNo'] = ($field082 && $field082->getSubfield('a')) ? $field082->getSubfield('a')->getData() : null;
+
+			// Call Number (084)
+			$field084 = $record->getField('084');
+			$catalogData['CallNumber'] = ($field084 && $field084->getSubfield('a')) ? $field084->getSubfield('a')->getData() : null;
+
+			// Default values
+			$catalogData['IsOPAC'] = 1;
+			$catalogData['Worksheet_id'] = 1;
+			$catalogData['Branch_id'] = 2522;
+			$catalogData['CreateBy'] = 33;
+			$catalogData['CreateDate'] = date('Y-m-d H:i:s');
+			$catalogData['CreateTerminal'] = $this->request->getIPAddress();
+			$catalogData['active'] = 1;
+
+			// Filter data sesuai field tabel
+			$tableFields = $this->db->getFieldNames('catalogs');
+			$filteredData = [];
+			foreach ($catalogData as $key => $value) {
+				if (in_array($key, $tableFields)) {
+					$filteredData[$key] = $value;
+				}
+			}
+
+			// Insert ke catalogs
+			$insertResult = $this->db->table('catalogs')->insert($filteredData);
+
+			if (!$insertResult) {
+				throw new \Exception("Gagal menyimpan data ke tabel catalogs: " . $this->db->error()['message']);
+			}
+
+			$newCatalogId = $this->db->insertID();
+
+			if (!$newCatalogId) {
+				throw new \Exception("Gagal mendapatkan ID catalog yang baru diinsert");
+			}
+
+			// Insert ke catalog_ruas dengan parsing yang benar
+			$ruasBatchData = [];
+			$sequence = 1;
+
+			// Ambil semua fields menggunakan File_MARC
+			$fields = $record->getFields();
+			foreach ($fields as $field) {
+				$tag = $field->getTag();
+
+				// Jika control field (001, 003, 005, 006, 007, 008, 009)
+				if ($tag < '010') {
+					$ruasBatchData[] = [
+						'CatalogId' => $newCatalogId,
+						'Tag' => $tag,
+						'Indicator1' => null,
+						'Indicator2' => null,
+						'Value' => $field->getData(),
+						'Sequence' => $sequence++,
+					];
+				} else {
+					// Data field dengan indicator dan subfield
+					$indicator1 = $field->getIndicator(1);
+					$indicator2 = $field->getIndicator(2);
+
+					// Convert space atau null ke #
+					$indicator1 = ($indicator1 === ' ' || $indicator1 === null) ? '#' : $indicator1;
+					$indicator2 = ($indicator2 === ' ' || $indicator2 === null) ? '#' : $indicator2;
+
+					// Ambil semua subfield
+					$subfields = $field->getSubfields();
+					if (!empty($subfields)) {
+						foreach ($subfields as $subfield) {
+							$ruasBatchData[] = [
+								'CatalogId' => $newCatalogId,
+								'Tag' => $tag,
+								'Indicator1' => $indicator1,
+								'Indicator2' => $indicator2,
+								'Value' => '$' . $subfield->getCode() . ' ' . $subfield->getData(),
+								'Sequence' => $sequence++,
+							];
+						}
+					} else {
+						// Jika tidak ada subfield, simpan sebagai field kosong
+						$ruasBatchData[] = [
+							'CatalogId' => $newCatalogId,
+							'Tag' => $tag,
+							'Indicator1' => $indicator1,
+							'Indicator2' => $indicator2,
+							'Value' => '',
+							'Sequence' => $sequence++,
+						];
+					}
+				}
+			}
+
+			if (!empty($ruasBatchData)) {
+				$this->db->table('catalog_ruas')->insertBatch($ruasBatchData);
+			}
+
+			$this->db->transCommit();
+
+			return $this->response->setJSON([
+				'success' => true,
+				'catalog_id' => $newCatalogId,
+				'title' => $catalogData['Title']
+			]);
+		} catch (\Exception $e) {
+			$this->db->transRollback();
+			return $this->response->setJSON([
+				'success' => false,
+				'message' => 'Error: ' . $e->getMessage()
+			]);
+		}
+	}
+	public function createFromMarcFileold()
+	{
+		if ($this->request->getMethod() !== 'post') {
+			return $this->response->setStatusCode(405)->setJSON(['success' => false, 'message' => 'Metode tidak diizinkan']);
+		}
+
+		$file = $this->request->getFile('marc_file');
+
+		$this->db->transStart();
+
+		try {
+			// Baca file MARC menggunakan File_MARC langsung
+			$marcContent = file_get_contents($file->getTempName());
+			$marc = new \File_MARC($marcContent, \File_MARC::SOURCE_STRING);
+
+			$record = $marc->next(); // Ambil record pertama
+
+			if (!$record) {
+				throw new \Exception("Tidak ada record MARC yang valid ditemukan");
+			}
+
+			$catalogData = [];
+
+			// Mapping data MARC menggunakan File_MARC
+			$field001 = $record->getField('001');
+			$catalogData['ControlNumber'] = $field001 ? $field001->getData() : null;
+
+			$field035 = $record->getField('035');
+			$catalogData['BIBID'] = ($field035 && $field035->getSubfield('a')) ? $field035->getSubfield('a')->getData() : null;
+
+			$field100 = $record->getField('100');
+			$catalogData['Author'] = ($field100 && $field100->getSubfield('a')) ? $field100->getSubfield('a')->getData() : null;
+
+			// Title (245)
+			$field245 = $record->getField('245');
+			$title_a = ($field245 && $field245->getSubfield('a')) ? $field245->getSubfield('a')->getData() : '';
+			$subtitle = ($field245 && $field245->getSubfield('b')) ? $field245->getSubfield('b')->getData() : '';
+			$authorResp = ($field245 && $field245->getSubfield('c')) ? $field245->getSubfield('c')->getData() : '';
+			$catalogData['Title'] = trim(rtrim(trim("{$title_a} {$subtitle}"), ':') . " / {$authorResp}");
+
+			// Edition (250)
+			$field250 = $record->getField('250');
+			$catalogData['Edition'] = ($field250 && $field250->getSubfield('a')) ? $field250->getSubfield('a')->getData() : null;
+
+			// Publication (260)
+			$field260 = $record->getField('264');
+			dd($field260);
+			$pub_a = ($field260 && $field260->getSubfield('a')) ? $field260->getSubfield('a')->getData() : '';
+			$pub_b = ($field260 && $field260->getSubfield('b')) ? $field260->getSubfield('b')->getData() : '';
+			$pub_c = ($field260 && $field260->getSubfield('c')) ? $field260->getSubfield('c')->getData() : '';
+
+			$catalogData['PublishLocation'] = rtrim(trim($pub_a), ':');
+			$catalogData['Publisher'] = rtrim(trim($pub_b), ',');
+			$catalogData['PublishYear'] = $pub_c;
+			$catalogData['Publikasi'] = trim("{$catalogData['PublishLocation']}: {$catalogData['Publisher']}, {$catalogData['PublishYear']}");
+
+			// Physical Description (300)
+			$field300 = $record->getField('300');
+			$catalogData['PhysicalDescription'] = ($field300 && $field300->getSubfield('a')) ? $field300->getSubfield('a')->getData() : null;
+
+			// Subject (650)
+			$field650 = $record->getField('650');
+			$catalogData['Subject'] = ($field650 && $field650->getSubfield('a')) ? $field650->getSubfield('a')->getData() : null;
+
+			// ISBN (020)
+			$field020 = $record->getField('020');
+			$catalogData['ISBN'] = ($field020 && $field020->getSubfield('a')) ? $field020->getSubfield('a')->getData() : null;
+
+			// Dewey (082)
+			$field082 = $record->getField('082');
+			$catalogData['DeweyNo'] = ($field082 && $field082->getSubfield('a')) ? $field082->getSubfield('a')->getData() : null;
+
+			// Call Number (084)
+			$field084 = $record->getField('084');
+			$catalogData['CallNumber'] = ($field084 && $field084->getSubfield('a')) ? $field084->getSubfield('a')->getData() : null;
+
+			// Default values
+			$catalogData['IsOPAC'] = 1;
+			$catalogData['Worksheet_id'] = 1;
+			$catalogData['Branch_id'] = 2522;
+			$catalogData['CreateBy'] = 33;
+			$catalogData['CreateDate'] = date('Y-m-d H:i:s');
+			$catalogData['CreateTerminal'] = $this->request->getIPAddress();
+			$catalogData['active'] = 1;
+			dd($catalogData);
+			// Filter data sesuai field tabel
+			$tableFields = $this->db->getFieldNames('catalogs');
+			$filteredData = [];
+			foreach ($catalogData as $key => $value) {
+				if (in_array($key, $tableFields)) {
+					$filteredData[$key] = $value;
+				}
+			}
+
+			// Insert ke catalogs
+			$insertResult = $this->db->table('catalogs')->insert($filteredData);
+
+			if (!$insertResult) {
+				throw new \Exception("Gagal menyimpan data ke tabel catalogs: " . $this->db->error()['message']);
+			}
+
+			$newCatalogId = $this->db->insertID();
+
+			if (!$newCatalogId) {
+				throw new \Exception("Gagal mendapatkan ID catalog yang baru diinsert");
+			}
+
+			// Insert ke catalog_ruas dengan parsing yang benar
+			$ruasBatchData = [];
+			$sequence = 1;
+
+			// Ambil semua fields menggunakan File_MARC
+			$fields = $record->getFields();
+			foreach ($fields as $field) {
+				$tag = $field->getTag();
+
+				// Jika control field (001, 003, 005, 006, 007, 008, 009)
+				if ($tag < '010') {
+					$ruasBatchData[] = [
+						'CatalogId' => $newCatalogId,
+						'Tag' => $tag,
+						'Indicator1' => null,
+						'Indicator2' => null,
+						'Value' => $field->getData(),
+						'Sequence' => $sequence++,
+					];
+				} else {
+					// Data field dengan indicator dan subfield
+					$indicator1 = $field->getIndicator(1);
+					$indicator2 = $field->getIndicator(2);
+
+					// Ambil semua subfield
+					$subfields = $field->getSubfields();
+					if (!empty($subfields)) {
+						foreach ($subfields as $subfield) {
+							$ruasBatchData[] = [
+								'CatalogId' => $newCatalogId,
+								'Tag' => $tag,
+								'Indicator1' => $indicator1 === ' ' ? null : $indicator1,
+								'Indicator2' => $indicator2 === ' ' ? null : $indicator2,
+								'Value' => $subfield->getCode() . $subfield->getData(),
+								'Sequence' => $sequence++,
+							];
+						}
+					} else {
+						// Jika tidak ada subfield, simpan sebagai field kosong
+						$ruasBatchData[] = [
+							'CatalogId' => $newCatalogId,
+							'Tag' => $tag,
+							'Indicator1' => $indicator1 === ' ' ? null : $indicator1,
+							'Indicator2' => $indicator2 === ' ' ? null : $indicator2,
+							'Value' => '',
+							'Sequence' => $sequence++,
+						];
+					}
+				}
+			}
+
+			if (!empty($ruasBatchData)) {
+				$this->db->table('catalog_ruas')->insertBatch($ruasBatchData);
+			}
+
+			$this->db->transCommit();
+
+			return $this->response->setJSON([
+				'success' => true,
+				'catalog_id' => $newCatalogId,
+				'title' => $catalogData['Title']
+			]);
+		} catch (\Exception $e) {
+			$this->db->transRollback();
+			return $this->response->setJSON([
+				'success' => false,
+				'message' => 'Error: ' . $e->getMessage()
+			]);
+		}
+	}
 }
