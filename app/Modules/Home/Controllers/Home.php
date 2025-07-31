@@ -23,6 +23,7 @@ class Home extends \Base\Controllers\BaseController
         $this->katalogModel = new \Katalog\Models\KatalogModel();
         $this->eksemplarModel = new \Eksemplar\Models\EksemplarModel();
         $this->db = \Config\Database::connect('data');
+        helper('reference');
     }
 
     public function index()
@@ -280,4 +281,9 @@ class Home extends \Base\Controllers\BaseController
             ]);
         }
     }
+
+   public function pendaftaran_online(){
+      $this->data['title'] = 'Pendaftaran Online';
+    return view('Home\Views\pendaftaran-online', $this->data);
+   }
 }

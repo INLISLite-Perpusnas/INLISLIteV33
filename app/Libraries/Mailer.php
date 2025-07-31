@@ -46,60 +46,62 @@ class Mailer
         }
     }
 
-    public function send_via_google(
-        $to = '',
-        $subject = '',
-        $data = [],
-        $is_debug = false
-    ) {
-        $mail = new PHPMailer(true);
-        $is_sent = false;
-        try {
-            // $mail->SMTPDebug = SMTP::DEBUG_SERVER;
-            $mail->isSMTP();
-            $mail->Host = get_parameter(
-                'mail-smtp_host',
-                'smtp.googlemail.com'
-            );
-            $mail->SMTPAuth = true;
-            $mail->Username = get_parameter(
-                'mail-smtp_user',
-                'inlislite.dev@gmail.com'
-            );
-            $mail->Password = get_parameter('mail-smtp_pass', 'Inlislite999!');
-            $mail->SMTPSecure = 'ssl';
-            $mail->Port = 465;
-
-            $mail->setFrom(
-                get_parameter('mail-smtp_user', 'inlislite.dev@gmail.com'),
-                'Inlislite Admin'
-            ); // silahkan ganti dengan alamat email Anda
-            $mail->addAddress($to);
-            $mail->addReplyTo(
-                get_parameter('mail-smtp_user', 'inlislite.dev@gmail.com'),
-                'Inlislite Admin'
-            ); // silahkan ganti dengan alamat email Anda
-            // Content
-            $mail->isHTML(true); // Set email format to HTML
-            $mail->Subject = $subject;
-            $mail->Body = view('Home\Views\signup_email', $data);
-            $mail->AltBody =
-                'This is the body in plain text for non-HTML mail clients';
-            $status = true;
-
-            // Send email
-            if (!$mail->send()) {
-                return false;
-            } else {
-                return true;
-            }
-        } catch (Exception $e) {
-            $messages = 'Send Email failed. Error: ' . $mail->ErrorInfo;
-            $status = false;
-            return false;
-        }
+   public function send_via_google(
+    $to = '',
+    $subject = '',
+    $data = [],
+    $is_debug = false
+) {
+    // --- AWAL PERBAIKAN ---
+    // Cek jika parameter pertama adalah array (karena pemanggilan fungsi yang keliru)
+    if (is_array($to)) {
+        $emailData = $to; // Ganti nama variabel agar lebih jelas
+        $to = $emailData['email'] ?? ''; // Ekstrak alamat email yang sebenarnya
+        $subject = $emailData['subject'] ?? $subject; // Ekstrak subjek email
+        $body = $emailData['body'] ?? view('Home\Views\signup_email', $data); // Gunakan body dari array jika ada
+    } else {
+        // Jika fungsi dipanggil dengan benar, render body dari view
+        $body = view('Home\Views\signup_email', $data);
     }
+    // --- AKHIR PERBAIKAN ---
 
+    $mail = new PHPMailer(true);
+    try {
+        // $mail->SMTPDebug = SMTP::DEBUG_SERVER;
+        $mail->isSMTP();
+        $mail->Host = 'smtp.googlemail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = 'dalidalimar3@gmail.com';
+        $mail->Password = 'onzoohklalmmcvno'; // WAJIB GUNAKAN APP PASSWORD
+        $mail->SMTPSecure = 'ssl';
+        $mail->Port = 465;
+
+        $mail->setFrom('Inlislite Admin');
+        
+        // Sekarang $to sudah pasti string
+        $mail->addAddress($to); 
+
+        $mail->addReplyTo(get_parameter('email-default', 'info_ppbh@perpusnas.go.id'), 'Inlislite Admin');
+        
+        // Konten
+        $mail->isHTML(true);
+        $mail->Subject = $subject;
+        $mail->Body = $body; // Gunakan body yang sudah ditentukan
+        $mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+
+        // Kirim email
+        if (!$mail->send()) {
+            // Jika perlu debugging, Anda bisa log error di sini
+            // error_log('Mailer Error: ' . $mail->ErrorInfo);
+            return false;
+        } else {
+            return true;
+        }
+    } catch (Exception $e) {
+        // error_log('Mailer Exception: ' . $mail->ErrorInfo);
+        return false;
+    }
+}
     public function send_via_corporate($data, $is_debug = false)
     {
         $mail = new PHPMailer(true);

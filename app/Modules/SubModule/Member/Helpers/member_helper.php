@@ -73,6 +73,7 @@ if (!function_exists('member_register')) {
 				'active' => 0
 			];
 			$user = new Myth\Auth\Entities\User($data_user);
+			
 			$users->withGroup('anggota');
 
 			try {
@@ -82,7 +83,8 @@ if (!function_exists('member_register')) {
 				$form_data['StatusAnggota_id'] = 3;
 
 				$member_id = $memberModel->insert($form_data);
-				$response = member_notify($email, $password, $activate_hash, $form_data);
+				$response = member_notify($email,$username, $password, $activate_hash, $form_data);
+				
 			} catch (\Exception $e) {
 				// rollback user here
 				$response = [
@@ -98,67 +100,150 @@ if (!function_exists('member_register')) {
     }
 }
 
+
+
 if (!function_exists('member_notify')) {
-    function member_notify($email, $password = null, $hash = '', $data = [], $activation = true)
+    function member_notify($email, $username, $password = null, $hash = '', $data = [], $activation = true)
     {
-        //Send Email
+        // Load email library
+        $emailService = \Config\Services::email();
+        
+        // Email configuration (bisa dipindah ke config file)
+        $config = [
+            'protocol' => 'smtp',
+            'SMTPHost' => getenv('email.SMTPHost') ?: 'smtp.gmail.com',
+            'SMTPUser' => getenv('email.SMTPUser') ?: 'your-email@gmail.com',
+            'SMTPPass' => getenv('email.SMTPPass') ?: 'your-app-password',
+            'SMTPPort' => getenv('email.SMTPPort') ?: 587,
+            'SMTPCrypto' => 'tls',
+            'mailType' => 'html',
+            'charset' => 'utf-8',
+            'newline' => "\r\n"
+        ];
+        
+        $emailService->initialize($config);
+
+        // Setup email data
         $login_url = getenv('view.loginUrl');
         $activate_url = getenv('view.activateUrl');
         $reset_url = getenv('view.resetUrl');
         $logo_url = base_url('uploads/logo.png');
         $site_name = get_parameter('site-name');
         $site_description = get_parameter('site-description');
-		$subject = 'Pendaftaran - Keanggotan Online';
-		$succeed = 'Terima kasih, email verifikasi berhasil dikirim. <br>Silakan cek email Anda';
-		$failed = 'Maaf, email verifikasi gagal dikirim. Silakan coba lagi';
+        $from_email = getenv('email.fromEmail') ?: getenv('email.SMTPUser');
+        $from_name = getenv('email.fromName') ?: $site_name;
+        
+        $subject = 'Pendaftaran - Keanggotan Online';
+        $succeed = 'Terima kasih, email verifikasi berhasil dikirim. <br>Silakan cek email Anda';
+        $failed = 'Maaf, email verifikasi gagal dikirim. Silakan coba lagi';
 
-		$body = view('Member\Views\email\register', [
-			'login_url' => $login_url,
-			'action_url' => $activate_url . '/' . $hash,
-			'logo_url' => $logo_url,
-			'site_name' => $site_name,
-			'site_description' => $site_description,
-			'data' => $data,
-			'username' => $data->username,
-			'password' => $password,
-		]);
-
-		if($activation == false){
-			$body = view('Member\Views\email\reset', [
-				'login_url' => $login_url,
-				'action_url' => $reset_url . '/' . $hash.'?username='.$data->username,
-				'logo_url' => $logo_url,
-				'site_name' => $site_name,
-				'site_description' => $site_description,
-				'data' => $data,
-				'username' => $data->username,
-				'password' => $password,
-			]);
-
-			$subject = 'Lupa Password - Keanggotan Online';
-		}
-
-        $mailer = new \App\Libraries\Mailer();
-        $mailer_data = [
-            'email' => $email,
-            'subject' => $subject,
-            'body' => $body,
-        ];
-
-        $sent = $mailer->send($mailer_data);
-        if ($sent) {
-            $response = [
-                'error' => false,
-                'message' => $succeed,
+        // Generate email body based on type
+        if ($activation == true) {
+            $body = view('Member\Views\email\register', [
+                'login_url' => $login_url,
+                'action_url' => $activate_url . '/' . $hash,
+                'logo_url' => $logo_url,
+                'site_name' => $site_name,
+                'site_description' => $site_description,
                 'data' => $data,
-            ];
+                'username' => $username,
+                'password' => $password,
+            ]);
         } else {
+            $body = view('Member\Views\email\reset', [
+                'login_url' => $login_url,
+                'action_url' => $reset_url . '/' . $hash . '?username=' . $data['username'],
+                'logo_url' => $logo_url,
+                'site_name' => $site_name,
+                'site_description' => $site_description,
+                'data' => $data,
+                'username' => $username,
+                'password' => $password,
+            ]);
+            $subject = 'Lupa Password - Keanggotan Online';
+        }
+
+        // Setup email
+        $emailService->setFrom($from_email, $from_name);
+        $emailService->setTo($email);
+        $emailService->setSubject($subject);
+        $emailService->setMessage($body);
+
+        // Send email
+        try {
+            $sent = $emailService->send();
+            
+            // Log email for debugging
+            log_message('info', 'Email sent to: ' . $email . ' - Status: ' . ($sent ? 'Success' : 'Failed'));
+            
+            if ($sent) {
+                $response = [
+                    'error' => false,
+                    'message' => $succeed,
+                    'data' => $data,
+                ];
+            } else {
+                // Get email debug info
+                $debug_info = $emailService->printDebugger(['headers']);
+                log_message('error', 'Email send failed: ' . $debug_info);
+                
+                $response = [
+                    'error' => true,
+                    'message' => $failed,
+                    'debug' => $debug_info
+                ];
+            }
+        } catch (\Exception $e) {
+            log_message('error', 'Email exception: ' . $e->getMessage());
             $response = [
                 'error' => true,
                 'message' => $failed,
+                'debug' => $e->getMessage()
             ];
         }
+
         return $response;
+    }
+}
+
+// Fungsi helper untuk testing email configuration
+if (!function_exists('test_email_config')) {
+    function test_email_config()
+    {
+        $emailService = \Config\Services::email();
+        
+        $config = [
+            'protocol' => 'smtp',
+            'SMTPHost' => getenv('email.SMTPHost') ?: 'smtp.gmail.com',
+            'SMTPUser' => getenv('email.SMTPUser') ?: 'your-email@gmail.com',
+            'SMTPPass' => getenv('email.SMTPPass') ?: 'your-app-password',
+            'SMTPPort' => getenv('email.SMTPPort') ?: 587,
+            'SMTPCrypto' => 'tls',
+            'mailType' => 'html',
+            'charset' => 'utf-8',
+            'newline' => "\r\n"
+        ];
+        
+        $emailService->initialize($config);
+        $emailService->setFrom(getenv('email.SMTPUser'), 'Test Email');
+        $emailService->setTo('test@example.com');
+        $emailService->setSubject('Test Email Configuration');
+        $emailService->setMessage('<h1>Test Email</h1><p>Konfigurasi email berhasil!</p>');
+        
+        try {
+            $result = $emailService->send();
+            return [
+                'success' => $result,
+                'message' => $result ? 'Email berhasil dikirim' : 'Email gagal dikirim',
+                'debug' => $emailService->printDebugger(['headers'])
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+                'debug' => $emailService->printDebugger(['headers'])
+            ];
+        }
     }
 }
 

@@ -6,11 +6,14 @@
 $routes->group('home', ['namespace' => 'Home\Controllers'], function ($subroutes) {
 	$subroutes->add('', 'Home::index');
 	$subroutes->add('index', 'Home::index');
+	$subroutes->add('pendaftaran_online', 'Home::pendaftaran_online');
 
 });
 
 $routes->group('api/home', ['namespace' => 'Home\Controllers\Api'], function ($subroutes) {//crud
 	$subroutes->add('', 'Home::index');
+	$subroutes->add('index', 'Home::index');
+	$subroutes->add('pendaftaran_online', 'Home::pendaftaran_online');
 	$subroutes->add('index', 'Home::index');
 
 	

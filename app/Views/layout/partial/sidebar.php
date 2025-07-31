@@ -60,7 +60,7 @@ $group=user()->category??'admin';
 									<img width="100" class="rounded-circle" src="<?= $image ?>" onerror="this.onerror=null;this.src='<?= $default ?>';" alt="">
 								</div>
 
-								<p class="font-weight-bold"><?= user()->first_name . ' ' . user()->last_name  ?></p>
+								<p class="font-weight-bold"><?= user()->username ?></p>
 							</a>
 							<a href="<?= base_url('user/profile') ?>" class="list-group-item-info list-group-item">
 								Profil Saya

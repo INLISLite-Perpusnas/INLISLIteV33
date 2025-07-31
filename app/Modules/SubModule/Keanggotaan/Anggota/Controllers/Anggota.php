@@ -91,6 +91,12 @@ class Anggota extends \Base\Controllers\BaseController
 
 	public function index()
 	{
+		// is_allowed('anggota/index');
+		    if (!is_allowed('anggota/index')) {
+            set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
+            set_message('toastr_type', 'error');
+            return redirect()->to('dashboard');
+        }
 		$this->data['title'] = ' Anggota';
 		$this->data['message'] = $this->validation->getErrors()
 			? $this->validation->listErrors()
@@ -459,14 +465,40 @@ public function create()
 
 		$anggota = $this->anggotaModel->find($ID);
 		$this->data['title'] = 'Ubah Anggota';
-		$this->data['is_allowed'] = !is_member('admin') && !is_member('sa_prov') && !is_member('sa_kabkota');
 		$this->data['anggota'] = $anggota;
 		$this->data['hak_akses_koleksi'] = $hak_akses_koleksi;
 		$this->data['arr_hak_akses_koleksi'] = $arr_hak_akses_koleksi;
 		$this->data['hak_akses_lokasi'] = $hak_akses_lokasi;
 		$this->data['arr_hak_akses_lokasi'] = $arr_hak_akses_lokasi;
 
-		$this->validation->setRule('FullName', 'Nama Anggota', 'trim');
+	 $this->validation->setRules([
+        'Fullname' => [
+            'label'  => 'Fullname',
+            'rules'  => 'required',
+            'errors' => [
+                'required' => 'Nama Tidak boleh kosong',
+            ],
+        ],
+      'Email' => [
+		'label'  => 'Email',
+		'rules'  => 'required',
+		'errors' => ['required'    => 'Email Tidak boleh Kosong',],
+		],
+        'JenisAnggota_id' => [
+            'label'  => 'Jenis Anggota',
+            'rules'  => 'required',
+            'errors' => [
+                'required' => 'Jenis Anggota tidak boleh kosong',
+            ],
+        ],
+        'StatusAnggota_id' => [
+            'label'  => 'Status Anggota',
+            'rules'  => 'required',
+            'errors' => [
+                'required' => 'Status Anggota tidak boleh kosong',
+            ],
+        ],
+    ]);
 		if ($this->request->getPost()) {
 			if ($this->validation->withRequest($this->request)->run()) {
 				$update_data = [
