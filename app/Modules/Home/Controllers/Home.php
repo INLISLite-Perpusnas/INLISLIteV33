@@ -223,7 +223,7 @@ class Home extends \Base\Controllers\BaseController
                 'description' => 'Daftar menjadi anggota perpustakaan',
                  'img'=>base_url('assets/img/anggota.png'),
                 'icon' => 'fas fa-user-plus',
-                'link' => base_url('membership/register'),
+                'link' => base_url('home/pendaftaran_online'),
                 'color' => 'warning'
             ],
             [
