@@ -99,7 +99,7 @@ private function loadRegularCatalogs()
  
 
 
-    $builder = $this->katalogModel->select('catalogs.*');
+    $builder = $this->katalogModel->select('catalogs.*')->orderBy("ID","Desc");
 
     if ($search) {
         switch ($searchBy) {

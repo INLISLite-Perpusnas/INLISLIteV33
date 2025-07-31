@@ -44,7 +44,7 @@
 
         .sidebar-section {
             padding-left: 15px;
-            padding-right: 0;
+            padding-right: 25px;
         }
 
         /* Sidebar Styling */
@@ -531,6 +531,190 @@
     <section class="content-section">
         <div class="main-container">
             <div class="row">
+                 <!-- Sidebar (Right Side) - Adjusted width and positioning -->
+                <div class="col-lg-3 sidebar-section">
+                    <div class="sidebar-container">
+                        <!-- Collection Statistics -->
+                        <div class="card sidebar-card">
+                            <div class="card-header bg-gradient-primary">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-chart-pie me-2"></i>Lebih Lengkap
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Total Books -->
+                                <div class="stat-item">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-books text-primary"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h6 class="stat-value"><?= isset($total_records) ? number_format($total_records) : '0' ?></h6>
+                                        <small class="text-muted">Total Koleksi</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Publishers -->
+                        <?php if (isset($publisher_counts) && !empty($publisher_counts)): ?>
+                            <div class="card sidebar-card">
+                                <div class="card-header bg-gradient-success">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-building me-2"></i>Penerbit Teratas
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="stat-list">
+                                        <?php
+                                        arsort($publisher_counts);
+                                        $top_publishers = array_slice($publisher_counts, 0, 5, true);
+                                        foreach ($top_publishers as $publisher => $count):
+                                            if (!empty(trim($publisher))):
+                                        ?>
+                                                <div class="stat-list-item">
+                                                    <a href="<?= esc(buildFilterUrl('Publisher', $publisher)) ?>" class="stat-name text-decoration-none">
+                                                        <?= esc(substr($publisher, 0, 25)) ?><?= strlen($publisher) > 25 ? '...' : '' ?>
+                                                    </a>
+                                                    <span class="badge bg-info text-white"><?= $count ?></span>
+                                                </div>
+                                        <?php
+                                            endif;
+                                        endforeach;
+                                        ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                        <!-- Authors -->
+                        <?php if (isset($author_counts) && !empty($author_counts)): ?>
+                            <div class="card sidebar-card">
+                                <div class="card-header bg-gradient-info">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-user-edit me-2"></i>Pengarang Teratas
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="stat-list">
+                                        <?php
+                                        arsort($author_counts);
+                                        $top_authors = array_slice($author_counts, 0, 5, true);
+                                        foreach ($top_authors as $author => $count):
+                                            if (!empty(trim($author))):
+                                        ?>
+                                                <div class="stat-list-item">
+                                                    <a href="<?= esc(buildFilterUrl('Author', $author)) ?>" class="stat-name text-decoration-none">
+                                                        <?= esc(substr($author, 0, 25)) ?><?= strlen($author) > 25 ? '...' : '' ?>
+                                                    </a>
+
+                                                    <span class="badge bg-info text-white"><?= $count ?></span>
+                                                </div>
+                                        <?php
+                                            endif;
+                                        endforeach;
+                                        ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                        <!-- Subjects -->
+                        <?php if (isset($subject_counts) && !empty($subject_counts)): ?>
+                            <div class="card sidebar-card">
+                                <div class="card-header bg-gradient-warning">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-tags me-2"></i>Subjek Teratas
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="stat-list">
+                                        <?php
+                                        arsort($subject_counts);
+                                        $top_subjects = array_slice($subject_counts, 0, 5, true);
+                                        foreach ($top_subjects as $subject => $count):
+                                            if (!empty(trim($subject))):
+                                        ?>
+                                                <div class="stat-list-item">
+                                                    <a href="<?= esc(buildFilterUrl('Subject', $subject)) ?>" class="stat-name text-decoration-none">
+                                                        <?= esc(substr($subject, 0, 25)) ?><?= strlen($subject) > 25 ? '...' : '' ?>
+                                                    </a>
+
+                                                    <span class="badge bg-info text-white"><?= $count ?></span>
+                                                </div>
+                                        <?php
+                                            endif;
+                                        endforeach;
+                                        ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                        <!-- Publication Years -->
+                        <?php if (isset($year_counts) && !empty($year_counts)): ?>
+                            <div class="card sidebar-card">
+                                <div class="card-header" style="background: linear-gradient(45deg, #fd7e14, #e85d04); color: white;">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-calendar-alt me-2"></i>Tahun Terbit
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="stat-list">
+                                        <?php
+                                        arsort($year_counts);
+                                        $top_years = array_slice($year_counts, 0, 5, true);
+                                        foreach ($top_years as $year => $count):
+                                            if (!empty(trim($year)) && $year != '1970'):
+                                        ?>
+                                                <div class="stat-list-item">
+                                                    <a href="<?= esc(buildFilterUrl('PublishYear', $year)) ?>" class="stat-name text-decoration-none">
+                                                        <?= esc($year) ?>
+                                                    </a>
+
+                                                    <span class="badge bg-info text-white"><?= $count ?></span>
+                                                </div>
+                                        <?php
+                                            endif;
+                                        endforeach;
+                                        ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                        <!-- Publication Locatons -->
+                        <?php if (isset($publish_location_counts) && !empty($publish_location_counts)): ?>
+                            <div class="card sidebar-card">
+                                <div class="card-header" style="background: linear-gradient(45deg, #fd7e14, #e85d04); color: white;">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-calendar-alt me-2"></i>KatalogRuasModel Terbit
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="stat-list">
+                                        <?php
+                                        arsort($publish_location_counts);
+                                        $top_locations = array_slice($publish_location_counts, 0, 8, true);
+                                        foreach ($top_locations as $location => $count):
+                                            if (!empty(trim($location))):
+                                        ?>
+                                                <div class="stat-list-item">
+                                                    <a href="<?= esc(buildFilterUrl('PublishLocation', $location)) ?>" class="stat-name text-decoration-none">
+                                                        <?= esc(substr($location, 0, 20)) ?><?= strlen($location) > 20 ? '...' : '' ?>
+                                                    </a>
+
+                                                    <span class="badge bg-info text-white"><?= $count ?></span>
+                                                </div>
+                                        <?php
+                                            endif;
+                                        endforeach;
+                                        ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
                 <!-- Main Content Area (Left Side) - Adjusted width -->
                 <div class="col-lg-9 catalog-section">
                     <div class="text-center mb-5">
@@ -727,193 +911,8 @@
                         <?php endif; ?>
                     </div>
                 </div>
-
-                <!-- Sidebar (Right Side) - Adjusted width and positioning -->
-                <div class="col-lg-3 sidebar-section">
-                    <div class="sidebar-container">
-                        <!-- Collection Statistics -->
-                        <div class="card sidebar-card">
-                            <div class="card-header bg-gradient-primary">
-                                <h5 class="card-title mb-0">
-                                    <i class="fas fa-chart-pie me-2"></i>Lebih Lengkap
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <!-- Total Books -->
-                                <div class="stat-item">
-                                    <div class="stat-icon">
-                                        <i class="fas fa-books text-primary"></i>
-                                    </div>
-                                    <div class="stat-info">
-                                        <h6 class="stat-value"><?= isset($total_records) ? number_format($total_records) : '0' ?></h6>
-                                        <small class="text-muted">Total Koleksi</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Publishers -->
-                        <?php if (isset($publisher_counts) && !empty($publisher_counts)): ?>
-                            <div class="card sidebar-card">
-                                <div class="card-header bg-gradient-success">
-                                    <h5 class="card-title mb-0">
-                                        <i class="fas fa-building me-2"></i>Penerbit Teratas
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="stat-list">
-                                        <?php
-                                        arsort($publisher_counts);
-                                        $top_publishers = array_slice($publisher_counts, 0, 5, true);
-                                        foreach ($top_publishers as $publisher => $count):
-                                            if (!empty(trim($publisher))):
-                                        ?>
-                                                <div class="stat-list-item">
-                                                    <a href="<?= esc(buildFilterUrl('Publisher', $publisher)) ?>" class="stat-name text-decoration-none">
-                                                        <?= esc(substr($publisher, 0, 25)) ?><?= strlen($publisher) > 25 ? '...' : '' ?>
-                                                    </a>
-                                                    <span class="badge bg-info text-white"><?= $count ?></span>
-                                                </div>
-                                        <?php
-                                            endif;
-                                        endforeach;
-                                        ?>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endif; ?>
-
-                        <!-- Authors -->
-                        <?php if (isset($author_counts) && !empty($author_counts)): ?>
-                            <div class="card sidebar-card">
-                                <div class="card-header bg-gradient-info">
-                                    <h5 class="card-title mb-0">
-                                        <i class="fas fa-user-edit me-2"></i>Pengarang Teratas
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="stat-list">
-                                        <?php
-                                        arsort($author_counts);
-                                        $top_authors = array_slice($author_counts, 0, 5, true);
-                                        foreach ($top_authors as $author => $count):
-                                            if (!empty(trim($author))):
-                                        ?>
-                                                <div class="stat-list-item">
-                                                    <a href="<?= esc(buildFilterUrl('Author', $author)) ?>" class="stat-name text-decoration-none">
-                                                        <?= esc(substr($author, 0, 25)) ?><?= strlen($author) > 25 ? '...' : '' ?>
-                                                    </a>
-
-                                                    <span class="badge bg-info text-white"><?= $count ?></span>
-                                                </div>
-                                        <?php
-                                            endif;
-                                        endforeach;
-                                        ?>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endif; ?>
-
-                        <!-- Subjects -->
-                        <?php if (isset($subject_counts) && !empty($subject_counts)): ?>
-                            <div class="card sidebar-card">
-                                <div class="card-header bg-gradient-warning">
-                                    <h5 class="card-title mb-0">
-                                        <i class="fas fa-tags me-2"></i>Subjek Teratas
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="stat-list">
-                                        <?php
-                                        arsort($subject_counts);
-                                        $top_subjects = array_slice($subject_counts, 0, 5, true);
-                                        foreach ($top_subjects as $subject => $count):
-                                            if (!empty(trim($subject))):
-                                        ?>
-                                                <div class="stat-list-item">
-                                                    <a href="<?= esc(buildFilterUrl('Subject', $subject)) ?>" class="stat-name text-decoration-none">
-                                                        <?= esc(substr($subject, 0, 25)) ?><?= strlen($subject) > 25 ? '...' : '' ?>
-                                                    </a>
-
-                                                    <span class="badge bg-info text-white"><?= $count ?></span>
-                                                </div>
-                                        <?php
-                                            endif;
-                                        endforeach;
-                                        ?>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endif; ?>
-
-                        <!-- Publication Years -->
-                        <?php if (isset($year_counts) && !empty($year_counts)): ?>
-                            <div class="card sidebar-card">
-                                <div class="card-header" style="background: linear-gradient(45deg, #fd7e14, #e85d04); color: white;">
-                                    <h5 class="card-title mb-0">
-                                        <i class="fas fa-calendar-alt me-2"></i>Tahun Terbit
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="stat-list">
-                                        <?php
-                                        arsort($year_counts);
-                                        $top_years = array_slice($year_counts, 0, 5, true);
-                                        foreach ($top_years as $year => $count):
-                                            if (!empty(trim($year)) && $year != '1970'):
-                                        ?>
-                                                <div class="stat-list-item">
-                                                    <a href="<?= esc(buildFilterUrl('PublishYear', $year)) ?>" class="stat-name text-decoration-none">
-                                                        <?= esc($year) ?>
-                                                    </a>
-
-                                                    <span class="badge bg-info text-white"><?= $count ?></span>
-                                                </div>
-                                        <?php
-                                            endif;
-                                        endforeach;
-                                        ?>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endif; ?>
-
-                        <!-- Publication Locatons -->
-                        <?php if (isset($publish_location_counts) && !empty($publish_location_counts)): ?>
-                            <div class="card sidebar-card">
-                                <div class="card-header" style="background: linear-gradient(45deg, #fd7e14, #e85d04); color: white;">
-                                    <h5 class="card-title mb-0">
-                                        <i class="fas fa-calendar-alt me-2"></i>KatalogRuasModel Terbit
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="stat-list">
-                                        <?php
-                                        arsort($publish_location_counts);
-                                        $top_locations = array_slice($publish_location_counts, 0, 8, true);
-                                        foreach ($top_locations as $location => $count):
-                                            if (!empty(trim($location))):
-                                        ?>
-                                                <div class="stat-list-item">
-                                                    <a href="<?= esc(buildFilterUrl('PublishLocation', $location)) ?>" class="stat-name text-decoration-none">
-                                                        <?= esc(substr($location, 0, 20)) ?><?= strlen($location) > 20 ? '...' : '' ?>
-                                                    </a>
-
-                                                    <span class="badge bg-info text-white"><?= $count ?></span>
-                                                </div>
-                                        <?php
-                                            endif;
-                                        endforeach;
-                                        ?>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-
-                <!-- Pagination -->
+            </div>
+               <!-- Pagination -->
                 <?php if (empty($member_no) && isset($pager) && $pager->getPageCount() > 1): ?>
                 <div class="row">
                     <div class="col-12">
@@ -923,7 +922,6 @@
                     </div>
                 </div>
                 <?php endif; ?>
-            </div>
         </div>
     </section>
 
