@@ -87,7 +87,7 @@ $member_no = $request->getGet('member_no');
 				},
 			],
 			"order": [
-				['2', 'asc']
+				['0', 'desc']
 			],
 			"drawCallback": function(data, type, full, meta) {
 				var api = this.api();

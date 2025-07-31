@@ -35,25 +35,11 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 		$builder = $db->table('catalogs as a')
 			->select('a.ID, a.ID as action')
 			->select('a.ControlNumber, a.BIBID, a.Title, a.Author, a.Edition, a.Publisher, a.PublishLocation, a.PublishYear, a.Publikasi, a.Subject, a.PhysicalDescription, a.ISBN, a.CallNumber, a.Note, a.Languages, a.DeweyNo, a.ApproveDateOPAC, a.IsOPAC, a.IsBNI, a.IsKIN, a.IsRDA, a.CoverURL, a.Worksheet_id, a.CreateBy, a.CreateDate, a.CreateTerminal, a.UpdateBy, a.UpdateDate, a.UpdateTerminal, a.MARC_LOC, a.PRESERVASI_ID, a.QUARANTINEDBY, a.QUARANTINEDDATE, a.QUARANTINEDTERMINAL, a.Member_id, a.KIILastUploadDate')
-			->select('a.Branch_id, a.Location_id')
+			->select('a.Location_id')
 			->select('0 as Eksemplar')
-			->join('branchs b', 'b.ID = a.Branch_id', 'inner')
 			->where('a.IsQUARANTINE', $IsQUARANTINE);
 
-		if (user()->category == 'admin') {
-		} elseif (user()->category == 'sa_prov' && user()->branch_id === null) {
-			$npp_provinsi_id = preg_replace('/\./', '', user()->npp_provinsi_id);
-			$builder->where('b.NPP_Provinsi_id', $npp_provinsi_id);
-		} elseif (user()->category == 'sa_prov' && user()->branch_id !== null) {
-			$builder->where('a.Branch_id', branch_id());
-		} elseif (user()->category == 'sa_kabkot' && user()->branch_id === null) {
-			$npp_kabkota_id = preg_replace('/\./', '', user()->npp_kabkota_id);
-			$builder->where('b.NPP_KabKota_id', $npp_kabkota_id);
-		} elseif (user()->category == 'sa_kabkot' && user()->branch_id !== null) {
-			$builder->where('a.Branch_id', branch_id());
-		} else {
-			$builder->where('a.Branch_id', branch_id());
-		}
+	
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
