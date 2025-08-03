@@ -495,9 +495,6 @@
                         <a href="<?= base_url('opac') ?>" class="btn btn-outline-primary">
                             <i class="fas fa-search me-2"></i>Cari Lagi
                         </a>
-                        <a href="<?= base_url('opac/search') ?>" class="btn btn-outline-success">
-                            <i class="fas fa-search-plus me-2"></i>Pencarian Lanjutan
-                        </a>
                         <a href="<?= base_url('opac/browse') ?>" class="btn btn-outline-info">
                             <i class="fas fa-list me-2"></i>Browse Katalog
                         </a>
@@ -513,22 +510,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-6 mb-3">
-                            <div class="bg-primary text-white p-3 rounded">
-                                <i class="fas fa-eye fa-2x mb-2"></i>
-                                <h6 class="mb-0"><?= rand(50, 500) ?></h6>
-                                <small>Dilihat</small>
-                            </div>
-                        </div>
-                        <div class="col-6 mb-3">
-                            <div class="bg-success text-white p-3 rounded">
-                                <i class="fas fa-download fa-2x mb-2"></i>
-                                <h6 class="mb-0"><?= rand(10, 100) ?></h6>
-                                <small>Diunduh</small>
-                            </div>
-                        </div>
-                    </div>
+                 
 
                     <hr>
 

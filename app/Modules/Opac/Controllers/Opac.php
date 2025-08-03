@@ -21,177 +21,174 @@ class Opac extends \Base\Controllers\BaseController
     public $collectionLoanModel;
     public $eksemplarModel;
     public $katalogRuasModel;
-    
+
 
     function __construct()
     {
         $this->visitorModel = new \Opac\Models\VisitorModel();
         $this->katalogModel = new \Katalog\Models\KatalogModel();
-        $this->db=\Config\Database::connect('data');
+        $this->db = \Config\Database::connect('data');
         $this->fileModel = new \Katalog\Models\FileModel();
-          $this->memberModel = new \Anggota\Models\AnggotaModel();
-        $this->collectionLoanModel =new \Peminjaman\Models\CollectionLoanModel();
+        $this->memberModel = new \Anggota\Models\AnggotaModel();
+        $this->collectionLoanModel = new \Peminjaman\Models\CollectionLoanModel();
         $this->eksemplarModel = new \Eksemplar\Models\EksemplarModel();
         $this->katalogRuasModel = new \Katalog\Models\KatalogRuasModel();
-       
-         helper('opac');
-         helper('sanitize');
 
+        helper('opac');
+        helper('sanitize');
     }
-    
 
- public function index()
-{
-    $this->data['title'] = 'OPAC - Online Public Access Catalog';
-    
-    // Check for member number (for recommendations)
-    $memberNo = $this->request->getVar('member_no');
-    
-    if ($memberNo) {
-        // Handle recommendations
-        try {
-            $result = $this->calculateRecommendations($memberNo);
-            
-            $this->data['member_no'] = $memberNo;
-            $this->data['recommendations'] = $result['recommendations'];
-            $this->data['is_cold_start'] = $result['is_cold_start'];
-            
-            // Don't show regular catalogs when showing recommendations
-            $this->data['catalogs'] = [];
-            $this->data['pager'] = null;
-            $this->data['search'] = null;
-            $this->data['search_by'] = null;
-            $this->data['total_records'] = 0;
-            
-        } catch (\Exception $e) {
-            // If recommendation fails, fall back to regular catalog display
-            $this->data['member_no'] = $memberNo;
-            $this->data['recommendations'] = [];
-            $this->data['metrics'] = null;
-            $this->data['is_cold_start'] = true;
-            $this->data['recommendation_error'] = $e->getMessage();
-            
-            // Show regular catalogs as fallback
+
+    public function index()
+    {
+         // 🎯 1. Mulai timer
+        $startTime = microtime(true);
+        $this->data['title'] = 'OPAC - Online Public Access Catalog';
+
+        // Check for member number (for recommendations)
+        $memberNo = $this->request->getVar('member_no');
+
+        if ($memberNo) {
+            // Handle recommendations
+            try {
+                $result = $this->calculateRecommendations($memberNo);
+
+                $this->data['member_no'] = $memberNo;
+                $this->data['recommendations'] = $result['recommendations'];
+                $this->data['is_cold_start'] = $result['is_cold_start'];
+
+                // Don't show regular catalogs when showing recommendations
+                $this->data['catalogs'] = [];
+                $this->data['pager'] = null;
+                $this->data['search'] = null;
+                $this->data['search_by'] = null;
+                $this->data['total_records'] = 0;
+            } catch (\Exception $e) {
+                // If recommendation fails, fall back to regular catalog display
+                $this->data['member_no'] = $memberNo;
+                $this->data['recommendations'] = [];
+                $this->data['metrics'] = null;
+                $this->data['is_cold_start'] = true;
+                $this->data['recommendation_error'] = $e->getMessage();
+
+                // Show regular catalogs as fallback
+                $this->loadRegularCatalogs();
+            }
+        } else {
+            // Regular catalog display (original functionality)
             $this->loadRegularCatalogs();
+
         }
-    } else {
-        // Regular catalog display (original functionality)
-        $this->loadRegularCatalogs();
-        
-        // Clear recommendation data
-        $this->data['member_no'] = null;
-        $this->data['recommendations'] = null;
-        $this->data['metrics'] = null;
-        $this->data['is_cold_start'] = false;
+    $endTime = microtime(true);
+        $this->data['execution_time'] = $endTime - $startTime;
+        return view('Opac\Views\index', $this->data);
     }
-    
-    return view('Opac\Views\index', $this->data);
-}
 
-private function loadRegularCatalogs()
-{
-    $perPage = 12;
-    $currentPage = $this->request->getVar('page') ?? 1;
+    private function loadRegularCatalogs()
+    {
+        $perPage = 12;
+        $currentPage = $this->request->getVar('page') ?? 1;
 
-    // Pencarian utama
-   $search = sanitizeSearch($this->request->getVar('search'));
-    $searchBy = sanitizeSearch($this->request->getVar('search_by') ?? 'Title');
+        // Pencarian utama
+        $search = sanitizeSearch($this->request->getVar('search'));
+        $searchBy = sanitizeSearch($this->request->getVar('search_by') ?? 'Title');
+
+
+
+        $builder = $this->katalogModel->select('catalogs.*')->orderBy("ID", "Desc");
+
+        if ($search) {
+            switch ($searchBy) {
+                case 'Title':
+                    $builder->like('Title', $search);
+                    break;
+                case 'Author':
+                    $builder->like('Author', $search);
+                    break;
+                case 'Subject':
+                    $builder->like('Subject', $search);
+                    break;
+                case 'ISBN':
+                    $builder->like('ISBN', $search);
+                    break;
+                case 'Publisher':
+                    $builder->like('Publisher', $search);
+                    break;
+                default:
+                    $builder->groupStart()
+                        ->like('Title', $search)
+                        ->orLike('Author', $search)
+                        ->orLike('Subject', $search)
+                        ->groupEnd();
+            }
+        }
+
+        // 🎯 Multiple search tambahan: cek jika ada di URL
+        $additionalFilters = ['Publisher', 'Author', 'PublishLocation', 'Subject', 'PublishYear'];
+        foreach ($additionalFilters as $filter) {
+            $value = sanitizeSearch($this->request->getVar($filter));
+            if (!empty($value)) {
+                $builder->like($filter, $value);
+            }
+        }
+
+        // --- Bagian yang sudah ada ---
+        $this->data['catalogs'] = $builder->paginate($perPage);
+        $catalogs = $this->data['catalogs'];
+
+        $publishers = array_column($catalogs, 'Publisher');
+        $cleaned_publishers = array_map(fn($p) => rtrim(trim($p), ','), $publishers);
+        $publisher_counts = array_count_values($cleaned_publishers);
+
+        $author = array_column($catalogs, 'Author');
+        $cleaned_author = array_map(fn($a) => rtrim(trim($a), ','), $author);
+        $author_counts = array_count_values($cleaned_author);
+
+        $publish_location = array_column($catalogs, 'PublishLocation');
+        $cleaned_publish_location = array_map(fn($l) => rtrim(trim($l), ','), $publish_location);
+        $publish_location_counts = array_count_values($cleaned_publish_location);
+
+        $subject = array_column($catalogs, 'Subject');
+        $cleaned_subject = array_map(fn($s) => rtrim(trim($s), ','), $subject);
+        $subject_counts = array_count_values($cleaned_subject);
+
+        $created_dates = array_column($catalogs, 'CreateDate');
+        $years = array_map(fn($d) => date('Y', strtotime($d)), $created_dates);
+        $year_counts = array_count_values($years);
+
+        $this->data['year_counts'] = $year_counts;
+        $this->data['publish_location_counts'] = $publish_location_counts;
+        $this->data['subject_counts'] = $subject_counts;
+        $this->data['author_counts'] = $author_counts;
+        $this->data['publisher_counts'] = $publisher_counts;
+
+        $this->data['pager'] = $this->katalogModel->pager;
+        $this->data['search'] = $search;
+        $this->data['search_by'] = $searchBy;
+        $this->data['total_records'] = $builder->countAllResults(false);
+    }
+
  
-
-
-    $builder = $this->katalogModel->select('catalogs.*')->orderBy("ID","Desc");
-
-    if ($search) {
-        switch ($searchBy) {
-            case 'Title':
-                $builder->like('Title', $search);
-                break;
-            case 'Author':
-                $builder->like('Author', $search);
-                break;
-            case 'Subject':
-                $builder->like('Subject', $search);
-                break;
-            case 'ISBN':
-                $builder->like('ISBN', $search);
-                break;
-            case 'Publisher':
-                $builder->like('Publisher', $search);
-                break;
-            default:
-                $builder->groupStart()
-                    ->like('Title', $search)
-                    ->orLike('Author', $search)
-                    ->orLike('Subject', $search)
-                    ->groupEnd();
-        }
-    }
-
-    // 🎯 Multiple search tambahan: cek jika ada di URL
-    $additionalFilters = ['Publisher', 'Author', 'PublishLocation', 'Subject', 'PublishYear'];
-    foreach ($additionalFilters as $filter) {
-    $value = sanitizeSearch($this->request->getVar($filter));
-    if (!empty($value)) {
-        $builder->like($filter, $value);
-    }
-}
-
-    // --- Bagian yang sudah ada ---
-    $this->data['catalogs'] = $builder->paginate($perPage);
-    $catalogs = $this->data['catalogs'];
-
-    $publishers = array_column($catalogs, 'Publisher');
-    $cleaned_publishers = array_map(fn($p) => rtrim(trim($p), ','), $publishers);
-    $publisher_counts = array_count_values($cleaned_publishers);
-
-    $author = array_column($catalogs, 'Author');
-    $cleaned_author = array_map(fn($a) => rtrim(trim($a), ','), $author);
-    $author_counts = array_count_values($cleaned_author);
-
-    $publish_location = array_column($catalogs, 'PublishLocation');
-    $cleaned_publish_location = array_map(fn($l) => rtrim(trim($l), ','), $publish_location);
-    $publish_location_counts = array_count_values($cleaned_publish_location);
-
-    $subject = array_column($catalogs, 'Subject');
-    $cleaned_subject = array_map(fn($s) => rtrim(trim($s), ','), $subject);
-    $subject_counts = array_count_values($cleaned_subject);
-
-    $created_dates = array_column($catalogs, 'CreateDate');
-    $years = array_map(fn($d) => date('Y', strtotime($d)), $created_dates);
-    $year_counts = array_count_values($years);
-
-    $this->data['year_counts'] = $year_counts;
-    $this->data['publish_location_counts'] = $publish_location_counts;
-    $this->data['subject_counts'] = $subject_counts;
-    $this->data['author_counts'] = $author_counts;
-    $this->data['publisher_counts'] = $publisher_counts;
-
-    $this->data['pager'] = $this->katalogModel->pager;
-    $this->data['search'] = $search;
-    $this->data['search_by'] = $searchBy;
-    $this->data['total_records'] = $builder->countAllResults(false);
-}
 
     public function detail($id)
     {
-        $file = $this->fileModel->where('Catalog_id', $id)->first();  
-        if($file!==null){
-             $ID=$file->ID;
-             $this->data['ID'] = $ID;
-             
-        }  
-      
-      
-        
+        $file = $this->fileModel->where('Catalog_id', $id)->first();
+        if ($file !== null) {
+            $ID = $file->ID;
+            $this->data['ID'] = $ID;
+        }
+
+
+
         $catalog = $this->katalogModel->asArray()->find($id);
-        
+
         if (!$catalog) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Katalog tidak ditemukan');
         }
-        
+
         // Get eksemplar data
         $EksemplarModel = new \Eksemplar\Models\EksemplarModel();
-        
+
         // Get physical books (non-DRM)
         $roweksemplar = $EksemplarModel
             ->select('collections.NomorBarcode, collections.CallNumber, collectionrules.Name as RuleName, locations.Name as LocationName, collectionstatus.Name as StatusName')
@@ -199,10 +196,10 @@ private function loadRegularCatalogs()
             ->join('locations', 'locations.id = collections.Location_id', 'left')
             ->join('collectionstatus', 'collectionstatus.id = collections.Status_id', 'left')
             ->where('collections.catalog_id', $id)
-           
+
             ->findAll();
-           
-        
+
+
         // Get digital books (DRM)
         $roweksemplar_drm = $EksemplarModel
             ->select('collections.NomorBarcode, collections.CallNumber, collectionrules.Name as RuleName, locations.Name as LocationName, collectionstatus.Name as StatusName')
@@ -211,30 +208,30 @@ private function loadRegularCatalogs()
             ->join('collectionstatus', 'collectionstatus.id = collections.Status_id', 'left')
             ->where('collections.catalog_id', $id)
             ->where('collections.ISDRM', 1)
-       
+
             ->findAll();
 
-            $marc = $this->katalogRuasModel
+        $marc = $this->katalogRuasModel
             ->select('*')
             ->where('CatalogId', $id)
             ->findAll();
-        
+
         $this->data['marc'] = $marc;
-        
-  
-       
+
+
+
         $this->data['title'] = 'Detail Katalog - ' . $catalog['Title'];
         $this->data['catalog'] = $catalog;
         $this->data['roweksemplar'] = $roweksemplar;
         $this->data['roweksemplar_drm'] = $roweksemplar_drm;
-        
+
         return view('Opac\Views\detail', $this->data);
     }
 
     public function search()
     {
         $this->data['title'] = 'Pencarian Katalog';
-        
+
         // Advanced search form
         $searchData = [
             'title' => $this->request->getVar('title'),
@@ -246,12 +243,12 @@ private function loadRegularCatalogs()
             'year_to' => $this->request->getVar('year_to'),
             'language' => $this->request->getVar('language')
         ];
-        
+
         $results = [];
-        
+
         if ($this->request->getMethod() === 'post' || $this->request->getVar('submit')) {
             $builder = $this->katalogModel->select('catalogs.*');
-            
+
             if ($searchData['title']) {
                 $builder->like('Title', $searchData['title']);
             }
@@ -276,26 +273,26 @@ private function loadRegularCatalogs()
             if ($searchData['language']) {
                 $builder->like('Languages', $searchData['language']);
             }
-            
+
             $results = $builder->findAll();
         }
-        
+
         $this->data['search_data'] = $searchData;
         $this->data['results'] = $results;
         $this->data['total_found'] = count($results);
-        
+
         return view('Opac\Views\search', $this->data);
     }
 
     public function browse()
     {
         $this->data['title'] = 'Browse Katalog';
-        
+
         $browseType = $this->request->getVar('type') ?? 'author';
         $letter = $this->request->getVar('letter') ?? 'A';
-        
+
         $builder = $this->katalogModel->select('catalogs.*');
-        
+
         switch ($browseType) {
             case 'author':
                 $builder->like('Author', $letter . '%', 'after');
@@ -310,12 +307,12 @@ private function loadRegularCatalogs()
                 $builder->orderBy('Subject', 'ASC');
                 break;
         }
-        
+
         $this->data['catalogs'] = $builder->findAll();
         $this->data['browse_type'] = $browseType;
         $this->data['letter'] = $letter;
         $this->data['alphabet'] = range('A', 'Z');
-        
+
         return view('Opac\Views\browse', $this->data);
     }
 
@@ -323,19 +320,19 @@ private function loadRegularCatalogs()
     {
         $format = $this->request->getVar('format') ?? 'excel';
         $search = $this->request->getVar('search');
-        
+
         $builder = $this->katalogModel->select('catalogs.*');
-        
+
         if ($search) {
             $builder->groupStart()
-                   ->like('Title', $search)
-                   ->orLike('Author', $search)
-                   ->orLike('Subject', $search)
-                   ->groupEnd();
+                ->like('Title', $search)
+                ->orLike('Author', $search)
+                ->orLike('Subject', $search)
+                ->groupEnd();
         }
-        
+
         $catalogs = $builder->findAll();
-        
+
         if ($format === 'excel') {
             return $this->exportToExcel($catalogs);
         } else {
@@ -347,7 +344,7 @@ private function loadRegularCatalogs()
     {
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
-        
+
         // Header
         $headers = [
             'A1' => 'ID',
@@ -365,11 +362,11 @@ private function loadRegularCatalogs()
             'M1' => 'Call Number',
             'N1' => 'Languages'
         ];
-        
+
         foreach ($headers as $cell => $value) {
             $sheet->setCellValue($cell, $value);
         }
-        
+
         // Data
         $row = 2;
         foreach ($catalogs as $catalog) {
@@ -389,15 +386,15 @@ private function loadRegularCatalogs()
             $sheet->setCellValue('N' . $row, $catalog['Languages']);
             $row++;
         }
-        
+
         $writer = new Xlsx($spreadsheet);
-        
+
         $filename = 'catalog_export_' . date('Y-m-d_H-i-s') . '.xlsx';
-        
+
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
         header('Cache-Control: max-age=0');
-        
+
         $writer->save('php://output');
         exit;
     }
@@ -405,19 +402,30 @@ private function loadRegularCatalogs()
     private function exportToCSV($catalogs)
     {
         $filename = 'catalog_export_' . date('Y-m-d_H-i-s') . '.csv';
-        
+
         header('Content-Type: text/csv');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
-        
+
         $output = fopen('php://output', 'w');
-        
+
         // Header
         fputcsv($output, [
-            'ID', 'Control Number', 'BIBID', 'Title', 'Author', 'Edition',
-            'Publisher', 'Publish Location', 'Publish Year', 'Subject',
-            'Physical Description', 'ISBN', 'Call Number', 'Languages'
+            'ID',
+            'Control Number',
+            'BIBID',
+            'Title',
+            'Author',
+            'Edition',
+            'Publisher',
+            'Publish Location',
+            'Publish Year',
+            'Subject',
+            'Physical Description',
+            'ISBN',
+            'Call Number',
+            'Languages'
         ]);
-        
+
         // Data
         foreach ($catalogs as $catalog) {
             fputcsv($output, [
@@ -437,7 +445,7 @@ private function loadRegularCatalogs()
                 $catalog['Languages']
             ]);
         }
-        
+
         fclose($output);
         exit;
     }
@@ -445,10 +453,10 @@ private function loadRegularCatalogs()
     public function statistics()
     {
         $this->data['title'] = 'Statistik Katalog';
-        
+
         // Total katalog
         $this->data['total_catalogs'] = $this->katalogModel->countAll();
-        
+
         // Katalog per tahun
         $this->data['by_year'] = $this->katalogModel
             ->select('PublishYear, COUNT(*) as total')
@@ -457,7 +465,7 @@ private function loadRegularCatalogs()
             ->groupBy('PublishYear')
             ->orderBy('PublishYear', 'DESC')
             ->findAll();
-        
+
         // Katalog per bahasa
         $this->data['by_language'] = $this->katalogModel
             ->select('Languages, COUNT(*) as total')
@@ -466,138 +474,26 @@ private function loadRegularCatalogs()
             ->groupBy('Languages')
             ->orderBy('total', 'DESC')
             ->findAll();
-        
+
         // Katalog per penerbit (top 10)
         $builder = $this->db->table('catalogs');
-$this->data['by_publisher'] = $builder
-    ->select('Publisher, COUNT(*) as total')
-    ->where('Publisher IS NOT NULL')
-    ->where('Publisher !=', '')
-    ->groupBy('Publisher')
-    ->orderBy('total', 'DESC')
-    ->limit(10)
-    ->get()
-    ->getResult(); // atau getResultArray();
+        $this->data['by_publisher'] = $builder
+            ->select('Publisher, COUNT(*) as total')
+            ->where('Publisher IS NOT NULL')
+            ->where('Publisher !=', '')
+            ->groupBy('Publisher')
+            ->orderBy('total', 'DESC')
+            ->limit(10)
+            ->get()
+            ->getResult(); // atau getResultArray();
 
-        
+
         return view('Opac\Views\statistics', $this->data);
     }
 
-    public function api($action = null)
-    {
-        $this->response->setContentType('application/json');
-        
-        switch ($action) {
-            case 'search':
-                return $this->apiSearch();
-            case 'detail':
-                return $this->apiDetail();
-            default:
-                return $this->response->setJSON([
-                    'status' => 'error',
-                    'message' => 'Invalid API endpoint'
-                ]);
-        }
-    }
 
-    private function apiSearch()
-    {
-        $query = $this->request->getVar('q');
-        $limit = $this->request->getVar('limit') ?? 10;
-        $offset = $this->request->getVar('offset') ?? 0;
-        
-        $builder = $this->katalogModel->select('ID, Title, Author, Publisher, PublishYear');
-        
-        if ($query) {
-            $builder->groupStart()
-                   ->like('Title', $query)
-                   ->orLike('Author', $query)
-                   ->orLike('Subject', $query)
-                   ->groupEnd();
-        }
-        
-        $results = $builder->limit($limit, $offset)->findAll();
-        $total = $builder->countAllResults(false);
-        
-        return $this->response->setJSON([
-            'status' => 'success',
-            'data' => $results,
-            'total' => $total,
-            'limit' => $limit,
-            'offset' => $offset
-        ]);
-    }
-
-    private function apiDetail()
-    {
-        $id = $this->request->getVar('id');
-        
-        if (!$id) {
-            return $this->response->setJSON([
-                'status' => 'error',
-                'message' => 'ID parameter required'
-            ]);
-        }
-        
-        $catalog = $this->katalogModel->find($id);
-        
-        if (!$catalog) {
-            return $this->response->setJSON([
-                'status' => 'error',
-                'message' => 'Catalog not found'
-            ]);
-        }
-        
-        return $this->response->setJSON([
-            'status' => 'success',
-            'data' => $catalog
-        ]);
-    }
-
-        /**
-     * Get book recommendations for a member
-     */
-    public function getRecommendations($memberNo = null)
-    {
-        if (!$memberNo) {
-            $memberNo = $this->request->getVar('member_no');
-        }
-
-        if (!$memberNo) {
-            return $this->response->setJSON([
-                'status' => 'error',
-                'message' => 'Member number is required'
-            ]);
-        }
-
-        try {
-            $result = $this->calculateRecommendations($memberNo);
-            
-            return $this->response->setJSON([
-                'status' => 'success',
-                'data' => [
-                    'recommendations' => $result['recommendations'],
-                    'metrics' => [
-                        'precision' => $result['precision'],
-                        'recall' => $result['recall'],
-                        'ndcg' => $result['ndcg'],
-                        'accuracy' => $result['accuracy']
-                    ],
-                    'is_cold_start' => $result['is_cold_start']
-                ]
-            ]);
-        } catch (\Exception $e) {
-            return $this->response->setJSON([
-                'status' => 'error',
-                'message' => 'Failed to generate recommendations: ' . $e->getMessage()
-            ]);
-        }
-    }
-
-    /**
-     * Calculate recommendations using collaborative filtering
-     */
-    private function calculateRecommendations($memberNo)
+  
+   private function calculateRecommendations($memberNo)
     {
         // Get loan data with catalog information
         $loanQuery = "
@@ -614,10 +510,6 @@ $this->data['by_publisher'] = $builder
         if (!$member) {
             return [
                 'recommendations' => [],
-                'precision' => 0.0,
-                'recall' => 0.0,
-                'ndcg' => 0.0,
-                'accuracy' => 0.0,
                 'is_cold_start' => true
             ];
         }
@@ -634,10 +526,6 @@ $this->data['by_publisher'] = $builder
             $popularBooks = $this->getPopularBooks();
             return [
                 'recommendations' => $popularBooks,
-                'precision' => 0.0,
-                'recall' => 0.0,
-                'ndcg' => 0.0,
-                'accuracy' => 0.0,
                 'is_cold_start' => true
             ];
         }
@@ -662,10 +550,6 @@ $this->data['by_publisher'] = $builder
 
         return [
             'recommendations' => $recommendations,
-            'precision' => $metrics['precision'],
-            'recall' => $metrics['recall'],
-            'ndcg' => $metrics['ndcg'],
-            'accuracy' => $metrics['accuracy'],
             'is_cold_start' => false
         ];
     }
@@ -918,61 +802,34 @@ $this->data['by_publisher'] = $builder
         
         return $idcg > 0 ? $dcg / $idcg : 0.0;
     }
-
-    /**
-     * View recommendations page
-     */
-    public function recommendations($memberNo = null)
-    {
-        $this->data['title'] = 'Rekomendasi Buku';
-        
-        if ($memberNo) {
-            $result = $this->calculateRecommendations($memberNo);
-            $this->data['recommendations'] = $result['recommendations'];
-            $this->data['metrics'] = [
-                'precision' => $result['precision'],
-                'recall' => $result['recall'],
-                'ndcg' => $result['ndcg'],
-                'accuracy' => $result['accuracy']
-            ];
-            $this->data['is_cold_start'] = $result['is_cold_start'];
-            $this->data['member_no'] = $memberNo;
-        } else {
-            $this->data['recommendations'] = [];
-            $this->data['metrics'] = null;
-            $this->data['is_cold_start'] = false;
-            $this->data['member_no'] = '';
-        }
-        
-        return view('Opac\Views\recommendations', $this->data);
-    }
+ 
 
     public function downloadMarcUtf8($id)
     {
         $catalog = $this->katalogModel->asArray()->find($id);
-        
+
         if (!$catalog) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Katalog tidak ditemukan');
         }
-        
+
         $marc = $this->katalogRuasModel
             ->select('*')
             ->where('CatalogId', $id)
             ->orderBy('Sequence', 'ASC')
             ->findAll();
-        
+
         if (empty($marc)) {
             return redirect()->back()->with('error', 'Data MARC tidak tersedia');
         }
-        
+
         $content = "=LDR  00000nam  2200000   4500\n";
-        
+
         foreach ($marc as $field) {
             $tag = str_pad($field->Tag, 3, '0', STR_PAD_LEFT);
             $ind1 = $field->Indicator1 ?: ' ';
             $ind2 = $field->Indicator2 ?: ' ';
             $value = $field->Value;
-            
+
             if (intval($tag) < 10) {
                 // Control fields
                 $content .= "={$tag}  {$value}\n";
@@ -981,55 +838,55 @@ $this->data['by_publisher'] = $builder
                 $content .= "={$tag}  {$ind1}{$ind2}\${$value}\n";
             }
         }
-        
+
         $filename = 'MARC_' . $catalog['ID'] . '_UTF8.txt';
-        
+
         return $this->response
             ->setContentType('text/plain; charset=utf-8')
             ->setHeader('Content-Disposition', "attachment; filename=\"{$filename}\"")
             ->setBody($content);
     }
-    
+
     /**
      * Download MARC in XML format
      */
     public function downloadMarcXml($id)
     {
         $catalog = $this->katalogModel->asArray()->find($id);
-        
+
         if (!$catalog) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Katalog tidak ditemukan');
         }
-        
+
         $marc = $this->katalogRuasModel
             ->select('*')
             ->where('CatalogId', $id)
             ->orderBy('Sequence', 'ASC')
             ->findAll();
-        
+
         if (empty($marc)) {
             return redirect()->back()->with('error', 'Data MARC tidak tersedia');
         }
-        
+
         $xml = new \DOMDocument('1.0', 'UTF-8');
         $xml->formatOutput = true;
-        
+
         // Root element
         $collection = $xml->createElement('collection');
         $collection->setAttribute('xmlns', 'http://www.loc.gov/MARC21/slim');
         $xml->appendChild($collection);
-        
+
         // Record element
         $record = $xml->createElement('record');
         $collection->appendChild($record);
-        
+
         // Leader
         $leader = $xml->createElement('leader', '00000nam  2200000   4500');
         $record->appendChild($leader);
-        
+
         foreach ($marc as $field) {
             $tag = str_pad($field->Tag, 3, '0', STR_PAD_LEFT);
-            
+
             if (intval($tag) < 10) {
                 // Control field
                 $controlfield = $xml->createElement('controlfield', htmlspecialchars($field->Value));
@@ -1041,7 +898,7 @@ $this->data['by_publisher'] = $builder
                 $datafield->setAttribute('tag', $tag);
                 $datafield->setAttribute('ind1', $field->Indicator1 ?: ' ');
                 $datafield->setAttribute('ind2', $field->Indicator2 ?: ' ');
-                
+
                 // Parse subfields
                 $subfields = $this->parseSubfields($field->Value);
                 foreach ($subfields as $code => $value) {
@@ -1049,53 +906,53 @@ $this->data['by_publisher'] = $builder
                     $subfield->setAttribute('code', $code);
                     $datafield->appendChild($subfield);
                 }
-                
+
                 $record->appendChild($datafield);
             }
         }
-        
+
         $filename = 'MARC_' . $catalog['ID'] . '_XML.xml';
-        
+
         return $this->response
             ->setContentType('application/xml; charset=utf-8')
             ->setHeader('Content-Disposition', "attachment; filename=\"{$filename}\"")
             ->setBody($xml->saveXML());
     }
-    
+
     /**
      * Download in MODS format
      */
     public function downloadMarcMods($id)
     {
         $catalog = $this->katalogModel->asArray()->find($id);
-        
+
         if (!$catalog) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Katalog tidak ditemukan');
         }
-        
+
         $marc = $this->katalogRuasModel
             ->select('*')
             ->where('CatalogId', $id)
             ->orderBy('Sequence', 'ASC')
             ->findAll();
-        
+
         if (empty($marc)) {
             return redirect()->back()->with('error', 'Data MARC tidak tersedia');
         }
-        
+
         $xml = new \DOMDocument('1.0', 'UTF-8');
         $xml->formatOutput = true;
-        
+
         $mods = $xml->createElement('mods');
         $mods->setAttribute('xmlns', 'http://www.loc.gov/mods/v3');
         $mods->setAttribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance');
         $mods->setAttribute('xsi:schemaLocation', 'http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-7.xsd');
         $xml->appendChild($mods);
-        
+
         foreach ($marc as $field) {
             $tag = $field->Tag;
             $value = $field->Value;
-            
+
             switch ($tag) {
                 case '245': // Title
                     $titleInfo = $xml->createElement('titleInfo');
@@ -1108,7 +965,7 @@ $this->data['by_publisher'] = $builder
                     }
                     $mods->appendChild($titleInfo);
                     break;
-                    
+
                 case '100': // Author
                     $name = $xml->createElement('name');
                     $name->setAttribute('type', 'personal');
@@ -1121,7 +978,7 @@ $this->data['by_publisher'] = $builder
                     $name->appendChild($role);
                     $mods->appendChild($name);
                     break;
-                    
+
                 case '260': // Publication info
                     $originInfo = $xml->createElement('originInfo');
                     $publisher = $this->extractSubfield($value, 'b');
@@ -1144,7 +1001,7 @@ $this->data['by_publisher'] = $builder
                     }
                     $mods->appendChild($originInfo);
                     break;
-                    
+
                 case '650': // Subject
                     $subject = $xml->createElement('subject');
                     $topic = $xml->createElement('topic', htmlspecialchars($this->extractSubfield($value, 'a')));
@@ -1153,63 +1010,63 @@ $this->data['by_publisher'] = $builder
                     break;
             }
         }
-        
+
         $filename = 'MARC_' . $catalog['ID'] . '_MODS.xml';
-        
+
         return $this->response
             ->setContentType('application/xml; charset=utf-8')
             ->setHeader('Content-Disposition', "attachment; filename=\"{$filename}\"")
             ->setBody($xml->saveXML());
     }
-    
+
     /**
      * Download Dublin Core RDF format
      */
     public function downloadMarcRdf($id)
     {
         $catalog = $this->katalogModel->asArray()->find($id);
-        
+
         if (!$catalog) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Katalog tidak ditemukan');
         }
-        
+
         $marc = $this->katalogRuasModel
             ->select('*')
             ->where('CatalogId', $id)
             ->orderBy('Sequence', 'ASC')
             ->findAll();
-        
+
         if (empty($marc)) {
             return redirect()->back()->with('error', 'Data MARC tidak tersedia');
         }
-        
+
         $xml = new \DOMDocument('1.0', 'UTF-8');
         $xml->formatOutput = true;
-        
+
         $rdf = $xml->createElement('rdf:RDF');
         $rdf->setAttribute('xmlns:rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
         $rdf->setAttribute('xmlns:dc', 'http://purl.org/dc/elements/1.1/');
         $xml->appendChild($rdf);
-        
+
         $description = $xml->createElement('rdf:Description');
         $description->setAttribute('rdf:about', 'http://example.com/catalog/' . $catalog['ID']);
         $rdf->appendChild($description);
-        
+
         foreach ($marc as $field) {
             $tag = $field->Tag;
             $value = $field->Value;
-            
+
             switch ($tag) {
                 case '245': // Title
                     $title = $xml->createElement('dc:title', htmlspecialchars($this->extractSubfield($value, 'a')));
                     $description->appendChild($title);
                     break;
-                    
+
                 case '100': // Creator
                     $creator = $xml->createElement('dc:creator', htmlspecialchars($this->extractSubfield($value, 'a')));
                     $description->appendChild($creator);
                     break;
-                    
+
                 case '260': // Publisher
                     $publisher = $this->extractSubfield($value, 'b');
                     if ($publisher) {
@@ -1222,68 +1079,68 @@ $this->data['by_publisher'] = $builder
                         $description->appendChild($dateEl);
                     }
                     break;
-                    
+
                 case '650': // Subject
                     $subject = $xml->createElement('dc:subject', htmlspecialchars($this->extractSubfield($value, 'a')));
                     $description->appendChild($subject);
                     break;
             }
         }
-        
+
         $filename = 'MARC_' . $catalog['ID'] . '_DC_RDF.xml';
-        
+
         return $this->response
             ->setContentType('application/rdf+xml; charset=utf-8')
             ->setHeader('Content-Disposition', "attachment; filename=\"{$filename}\"")
             ->setBody($xml->saveXML());
     }
-    
+
     /**
      * Download Dublin Core OAI format
      */
     public function downloadMarcOai($id)
     {
         $catalog = $this->katalogModel->asArray()->find($id);
-        
+
         if (!$catalog) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Katalog tidak ditemukan');
         }
-        
+
         $marc = $this->katalogRuasModel
             ->select('*')
             ->where('CatalogId', $id)
             ->orderBy('Sequence', 'ASC')
             ->findAll();
-        
+
         if (empty($marc)) {
             return redirect()->back()->with('error', 'Data MARC tidak tersedia');
         }
-        
+
         $xml = new \DOMDocument('1.0', 'UTF-8');
         $xml->formatOutput = true;
-        
+
         $oai_dc = $xml->createElement('oai_dc:dc');
         $oai_dc->setAttribute('xmlns:oai_dc', 'http://www.openarchives.org/OAI/2.0/oai_dc/');
         $oai_dc->setAttribute('xmlns:dc', 'http://purl.org/dc/elements/1.1/');
         $oai_dc->setAttribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance');
         $oai_dc->setAttribute('xsi:schemaLocation', 'http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd');
         $xml->appendChild($oai_dc);
-        
+
         foreach ($marc as $field) {
             $tag = $field->Tag;
             $value = $field->Value;
-            
+
             switch ($tag) {
                 case '245': // Title
                     $title = $xml->createElement('dc:title', htmlspecialchars($this->extractSubfield($value, 'a')));
                     $oai_dc->appendChild($title);
                     break;
-                    
+
                 case '100': // Creator
                     $creator = $xml->createElement('dc:creator', htmlspecialchars($this->extractSubfield($value, 'a')));
                     $oai_dc->appendChild($creator);
                     break;
-                    
+
                 case '260': // Publisher and Date
                     $publisher = $this->extractSubfield($value, 'b');
                     if ($publisher) {
@@ -1296,66 +1153,66 @@ $this->data['by_publisher'] = $builder
                         $oai_dc->appendChild($dateEl);
                     }
                     break;
-                    
+
                 case '650': // Subject
                     $subject = $xml->createElement('dc:subject', htmlspecialchars($this->extractSubfield($value, 'a')));
                     $oai_dc->appendChild($subject);
                     break;
             }
         }
-        
+
         $filename = 'MARC_' . $catalog['ID'] . '_DC_OAI.xml';
-        
+
         return $this->response
             ->setContentType('application/xml; charset=utf-8')
             ->setHeader('Content-Disposition', "attachment; filename=\"{$filename}\"")
             ->setBody($xml->saveXML());
     }
-    
+
     /**
      * Download Dublin Core SRW format
      */
     public function downloadMarcSrw($id)
     {
         $catalog = $this->katalogModel->asArray()->find($id);
-        
+
         if (!$catalog) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Katalog tidak ditemukan');
         }
-        
+
         $marc = $this->katalogRuasModel
             ->select('*')
             ->where('CatalogId', $id)
             ->orderBy('Sequence', 'ASC')
             ->findAll();
-        
+
         if (empty($marc)) {
             return redirect()->back()->with('error', 'Data MARC tidak tersedia');
         }
-        
+
         $xml = new \DOMDocument('1.0', 'UTF-8');
         $xml->formatOutput = true;
-        
+
         $srw_dc = $xml->createElement('srw_dc:dc');
         $srw_dc->setAttribute('xmlns:srw_dc', 'info:srw/schema/1/dc-schema');
         $srw_dc->setAttribute('xmlns:dc', 'http://purl.org/dc/elements/1.1/');
         $xml->appendChild($srw_dc);
-        
+
         foreach ($marc as $field) {
             $tag = $field->Tag;
             $value = $field->Value;
-            
+
             switch ($tag) {
                 case '245': // Title
                     $title = $xml->createElement('dc:title', htmlspecialchars($this->extractSubfield($value, 'a')));
                     $srw_dc->appendChild($title);
                     break;
-                    
+
                 case '100': // Creator
                     $creator = $xml->createElement('dc:creator', htmlspecialchars($this->extractSubfield($value, 'a')));
                     $srw_dc->appendChild($creator);
                     break;
-                    
+
                 case '260': // Publisher and Date
                     $publisher = $this->extractSubfield($value, 'b');
                     if ($publisher) {
@@ -1368,22 +1225,22 @@ $this->data['by_publisher'] = $builder
                         $srw_dc->appendChild($dateEl);
                     }
                     break;
-                    
+
                 case '650': // Subject
                     $subject = $xml->createElement('dc:subject', htmlspecialchars($this->extractSubfield($value, 'a')));
                     $srw_dc->appendChild($subject);
                     break;
             }
         }
-        
+
         $filename = 'MARC_' . $catalog['ID'] . '_DC_SRW.xml';
-        
+
         return $this->response
             ->setContentType('application/xml; charset=utf-8')
             ->setHeader('Content-Disposition', "attachment; filename=\"{$filename}\"")
             ->setBody($xml->saveXML());
     }
-    
+
     /**
      * Helper method to parse subfields
      */
@@ -1391,7 +1248,7 @@ $this->data['by_publisher'] = $builder
     {
         $subfields = [];
         $parts = explode('$', $value);
-        
+
         foreach ($parts as $part) {
             if (strlen($part) >= 2) {
                 $code = substr($part, 0, 1);
@@ -1399,10 +1256,10 @@ $this->data['by_publisher'] = $builder
                 $subfields[$code] = trim($text);
             }
         }
-        
+
         return $subfields;
     }
-    
+
     /**
      * Helper method to extract specific subfield
      */
@@ -1411,5 +1268,4 @@ $this->data['by_publisher'] = $builder
         $subfields = $this->parseSubfields($value);
         return isset($subfields[$subfieldCode]) ? $subfields[$subfieldCode] : '';
     }
-
 }
