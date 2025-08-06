@@ -37,18 +37,18 @@ class TujuanKunjungan extends \Base\Controllers\BaseController
         if (!$id) {
             set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
             set_message('toastr_type', 'error');
-            return redirect()->to('tujuan-kunjungan');
+            return redirect()->to('master-tujuan-kunjungan');
         }
         $tujuankunjunganDelete = $this->tujuankunjunganModel->delete($id);
         if ($tujuankunjunganDelete) {
             set_message('toastr_msg', 'Tujuan Kunjungan berhasil dihapus');
             set_message('toastr_type', 'success');
-            return redirect()->to('tujuan-kunjungan');
+            return redirect()->to('master-tujuan-kunjungan');
         } else {
             set_message('toastr_msg', 'Tujuan Kunjungan gagal dihapus');
             set_message('toastr_type', 'warning');
             set_message('message', 'Tujuan Kunjungan gagal dihapus');
-            return redirect()->to('tujuan-kunjungan');
+            return redirect()->to('master-tujuan-kunjungan');
         }
     }
 
@@ -66,6 +66,6 @@ class TujuanKunjungan extends \Base\Controllers\BaseController
             set_message('toastr_msg', 'Tujuan Kunjungan gagal diubah');
             set_message('toastr_type', 'warning');
         }
-        return redirect()->to('/tujuan-kunjungan');
+        return redirect()->to('master-tujuan-kunjungan');
     }
 }

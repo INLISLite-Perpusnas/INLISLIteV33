@@ -114,7 +114,7 @@
 						showConfirmButton: false,
 						timer: 5000,
 					}).then(() => {
-						window.location.href = `<?= base_url('tujuan-kunjungan') ?>`;
+						window.location.href = `<?= base_url('master-tujuan-kunjungan') ?>`;
 					});
 				} else {
 					Swal.fire({
