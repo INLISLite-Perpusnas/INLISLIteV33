@@ -20,12 +20,11 @@
                     <div class="form-group">
                         <label>Logo Saat Ini:</label>
                         <div id="current_logo_preview" class="text-center mb-3">
-                            <img id="current_logo_img" src="" alt="Current Logo" 
-                                 class="img-thumbnail" style="max-width: 200px; max-height: 150px; display: none;">
-                            <div id="no_logo_message" class="text-muted">
-                                <i class="fas fa-image fa-3x"></i>
-                                <p>Belum ada logo</p>
-                            </div>
+                        <?php
+					        $default = base_url('perpusnas.png');
+					        $file_image = (!empty($logo)) ? base_url('uploads/branch/' . $logo) : $default;
+					    ?>									
+                         <img width="150px" src="<?= $file_image ?>" alt="Image" class="img">
                         </div>
                     </div>
 
