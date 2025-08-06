@@ -36,11 +36,10 @@ class Katalog extends \Base\Controllers\BaseResourceController
 	{
 		$db = db_connect('data');
 		$builder = $db->table('catalogs as a')
-			->select('a.ID, a.BIBID, a.Title,  a.Edition, a. Publisher, a.PhysicalDescription, a.ControlNumber, a.IsOPAC, a.IsRDA')
-			->select('a.ID as action, 0 as Eksemplar')
-			->where('a.IsQUARANTINE', $IsQUARANTINE)
-			->orderBy('a.ID', 'DESC');
-
+			->select('a.ID, a.BIBID, a.Title,  a.Edition, a.Publisher, a.PhysicalDescription, a.ControlNumber, a.IsOPAC, a.IsRDA,a.ID as action, 0 as Eksemplar')
+			->where('a.IsQUARANTINE', $IsQUARANTINE);
+//			->orderBy('a.ID', 'DESC');
+			
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
 			->edit('ID', function ($row) {
@@ -60,35 +59,31 @@ class Katalog extends \Base\Controllers\BaseResourceController
 
 				return $html;
 			})
-			->edit('Eksemplar', function ($row) {
-				$eksemplar = count_all('collections', 'Catalog_id = ' . $row->ID, 'data');
-				$html = $eksemplar ?? 0;
+			->edit('Title', function ($row) {
+				$html  = $row->Title . '<br>';
+				return $html;
+			})
+			->edit('Edition', function ($row) {
+				$html  = $row->Edition . '<br>';
+				return $html;
+			})
+			->edit('Publisher', function ($row) {
+				$html  = $row->Publisher . '<br>';
+				return $html;
+			})
+			->edit('PhysicalDescription', function ($row) {
+				$html  = $row->PhysicalDescription . '<br>';
+				return $html;
+			})
+			->edit('ControlNumber', function ($row) {
+				$html  = $row->ControlNumber . '<br>';
+				return $html;
+			})
 
-				return $html;
-			})
-			->edit('IsRDA', function ($row) {
-				$color = $row->IsRDA == 1 ? 'info' : 'secondary';
-				$label = $row->IsRDA == 1 ? 'RDA' : 'AACR';
-				$html = '<span class="badge badge-' . $color . '" style="min-width: 40px">' . $label . '</span>';
-				return $html;
-			})
-			->edit('IsOPAC', function ($row) {
-				$color = $row->IsOPAC == 1 ? 'success' : 'warning';
-				$label = $row->IsOPAC == 1 ? 'Ya' : 'Tdk';
-				$html = '<span class="badge badge-' . $color . '" style="min-width: 40px">' . $label . '</span>';
-				return $html;
-			})
-			->edit('action', function ($row) {
-				$eksemplar = count_all('collections', 'Catalog_id = ' . $row->ID, 'data');
-			    $edit = '<a href="' . base_url('katalog/edit/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-				$delete = '<a href="javascript:void(0);" data-href="' . base_url('katalog/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
-				
-
-				return $edit . ' ' . $delete;
-			})
 			// ->getFromAPI(getenv('API_CATALOG'), session()->get('token'));
 			->toJson(true);
 		return $dataTable;
+		
 	}
 
 	public function katalog($IsQUARANTINE = 0)
