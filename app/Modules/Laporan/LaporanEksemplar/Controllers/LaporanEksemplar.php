@@ -17,6 +17,7 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
 	function __construct()
 	{
 		$this->eksemplarModel = new \Eksemplar\Models\EksemplarModel();
+		helper('reference');
 	}
 
 	public function index()
@@ -58,6 +59,7 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
         $data = [
             'columns' => $columns
         ];
+
 
         return view('LaporanEksemplar\Views\index', $data);
     }
@@ -108,6 +110,44 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
                 $year = $this->request->getPost('year');
                 if ($year) {
                     $query->where('YEAR(collections.CreateDate)', $year);
+                }
+                break;
+            case 'location':
+            $location = $this->request->getPost('location');
+            if ($location) {
+                $query->where('collections.Location_Library_id', $location);
+            }
+                break;
+            case 'tanggalpengadaan':
+                $startDate = $this->request->getPost('tp_start_date');
+                $endDate = $this->request->getPost('tp_end_date');
+                if ($startDate && $endDate) {
+                    $query->where('collections.TanggalPengadaan >=', $startDate)
+                          ->where('collections.TanggalPengadaan <=', $endDate);
+                }
+                break;
+            case 'author':
+                $author = $this->request->getPost('author');
+                if ($author) {
+                    $query->like('catalogs.Author', $author);
+                }
+                break;
+            case 'subject':
+                $subject = $this->request->getPost('subject');
+                if ($subject) {
+                    $query->like('catalogs.Subject', $subject);
+                }
+                break;
+            case 'publisher':
+                $publisher = $this->request->getPost('publisher'); 
+                if ($publisher) {
+                    $query->like('catalogs.Publisher', $publisher);
+                }
+                break;
+            case 'publishlocation':
+                $publishLocation = $this->request->getPost('publishlocation'); 
+                if ($publishLocation) {
+                    $query->like('catalogs.PublishLocation', $publishLocation);
                 }
                 break;
         }
@@ -239,6 +279,32 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
                     $query->where('YEAR(collections.CreateDate)', $year);
                 }
                 break;
+            case 'location':
+                $location = $this->request->getPost('location');
+                if ($location) {
+                    $query->where('collections.Location_Library_id', $location);
+                }
+                break;
+            case 'tanggalpengadaan':
+                $startDate = $this->request->getPost('tp_start_date');
+                $endDate = $this->request->getPost('tp_end_date');
+                if ($startDate && $endDate) {
+                    $query->where('collections.TanggalPengadaan >=', $startDate)
+                          ->where('collections.TanggalPengadaan <=', $endDate);
+                }
+                break;
+            // case 'author':
+            // $location = $this->request->getPost('location');
+            // if ($location) {
+            //     $query->where('collections.Perpustakaan', $location);
+            // }
+            //     break;
+            // case 'publishlocation':
+            // $location = $this->request->getPost('location');
+            // if ($location) {
+            //     $query->where('collections.Perpustakaan', $location);
+            // }
+            //     break;
         }
 
         $eksemplars = $query->findAll();
