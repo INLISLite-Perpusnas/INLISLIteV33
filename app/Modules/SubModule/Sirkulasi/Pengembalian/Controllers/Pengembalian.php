@@ -151,56 +151,93 @@ class Pengembalian extends \Base\Controllers\BaseController
 	}
 
 	public function do_return($id = null)
-	{
-		$carts = get_cart_return();
-		$cli_update_data = array();
-		if (!empty($id)) {
-			$cli_update_data[] = array(
-				'ID' => $id,
-				'LoanStatus' => 'Return',
-				'ActualReturn' => date('Y-m-d'),
-				'UpdateBy' => user_id(),
-				'UpdateTerminal' => $this->request->getIPAddress(),
-			);
-		} else {
-			if (!empty($carts)) {
-				foreach ($carts as $row) {
-					$cli_update_data[] = array(
-						'ID' => str_replace('R', '', $row->id),
-						'LoanStatus' => 'Return',
-						'ActualReturn' => date('Y-m-d'),
-						'UpdateBy' => user_id(),
-						'UpdateTerminal' => $this->request->getIPAddress(),
-					);
-				}
-			}
-		}
+{
+    $carts = get_cart_return();
+    $cli_update_data = [];
+    $collection_ids_to_update = []; // Array to hold collection IDs for status update
 
-		$cli_update = $this->collectionLoanItemModel->updateBatch($cli_update_data, 'ID');
-		if ($cli_update) {
-			if (!empty($carts)) {
-				foreach ($carts as $row) {
-					$this->cart->remove($row->id);
-				}
-			}
+    if (!empty($id)) {
+        // Handle single item return
+        $cli_update_data[] = [
+            'ID' => $id,
+            'LoanStatus' => 'Return',
+            'ActualReturn' => date('Y-m-d'),
+            'UpdateBy' => user_id(),
+            'UpdateTerminal' => $this->request->getIPAddress(),
+        ];
 
-			$this->session->setFlashdata('toastr_msg', 'Pengembalian berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
-			$response = [
-				'error' => false,
-				'message' => 'Pengembalian berhasil disimpan',
-			];
-		} else {
-			$this->session->setFlashdata('toastr_msg', 'Pengembalian gagal disimpan. Silakan coba lagi');
-			$this->session->setFlashdata('toastr_type', 'error');
-			$response = [
-				'error' => true,
-				'message' => 'Pengembalian gagal disimpan. Silakan coba lagi',
-			];
-		}
+        // Fetch the loan item to get its Collection_id
+        $loanItem = $this->collectionLoanItemModel->find($id);
+        if ($loanItem) {
+            $collection_ids_to_update[] = $loanItem->Collection_id;
+        }
+    } else {
+        // Handle multiple returns from cart
+        if (!empty($carts)) {
+            $item_ids_to_fetch = [];
+            foreach ($carts as $row) {
+                $item_ids_to_fetch[] = str_replace('R', '', $row->id);
+            }
 
-		return redirect()->back();
-	}
+            // Fetch all loan items from the cart at once to get their collection IDs
+            if (!empty($item_ids_to_fetch)) {
+                $loanItems = $this->collectionLoanItemModel->whereIn('ID', $item_ids_to_fetch)->findAll();
+                foreach ($loanItems as $item) {
+                    $collection_ids_to_update[] = $item->Collection_id;
+                    $cli_update_data[] = [
+                        'ID' => $item->ID,
+                        'LoanStatus' => 'Return',
+                        'ActualReturn' => date('Y-m-d'),
+                        'UpdateBy' => user_id(),
+                        'UpdateTerminal' => $this->request->getIPAddress(),
+                    ];
+                }
+            }
+        }
+    }
+
+    // Proceed only if there's something to update
+    if (empty($cli_update_data)) {
+        $this->session->setFlashdata('toastr_msg', 'Tidak ada item untuk dikembalikan.');
+        $this->session->setFlashdata('toastr_type', 'warning');
+        return redirect()->back();
+    }
+
+    $cli_update = $this->collectionLoanItemModel->updateBatch($cli_update_data, 'ID');
+
+    if ($cli_update) {
+        // --- START: Update collection status to 'Tersedia' (Available) ---
+        if (!empty($collection_ids_to_update)) {
+            $this->collectionModel->whereIn('ID', $collection_ids_to_update)
+                                  ->set(['Status_id' => 1]) // 1 represents 'Tersedia'
+                                  ->update();
+        }
+        // --- END: Update collection status ---
+
+        if (!empty($carts)) {
+            $this->cart->destroy(); // Destroy the cart after processing
+        }
+
+        $this->session->setFlashdata('toastr_msg', 'Pengembalian berhasil disimpan');
+        $this->session->setFlashdata('toastr_type', 'success');
+        
+        $response = [
+            'error' => false,
+            'message' => 'Pengembalian berhasil disimpan',
+        ];
+    } else {
+        $this->session->setFlashdata('toastr_msg', 'Pengembalian gagal disimpan. Silakan coba lagi');
+        $this->session->setFlashdata('toastr_type', 'error');
+        
+        $response = [
+            'error' => true,
+            'message' => 'Pengembalian gagal disimpan. Silakan coba lagi',
+        ];
+    }
+
+    return redirect()->back();
+}
+
 
 	public function delete(int $id = 0)
 	{

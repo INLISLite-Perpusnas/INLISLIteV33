@@ -65,108 +65,122 @@ class Peminjaman extends \Base\Controllers\BaseController
 	}
 
 	public function create()
-	{
-		$member_no = $this->request->getGet('member_no') ?? '';
-		$carts = get_cart_loan($member_no);
-	
-		$loan_cart = count($carts);
+{
+    $member_no = $this->request->getGet('member_no') ?? '';
+    $carts = get_cart_loan($member_no);
 
-		$this->data['member_no'] = $member_no;
-		$this->data['carts'] = $carts;
-		$this->data['loan_cart'] = $loan_cart;
+    $loan_cart = count($carts);
 
-		if (!empty($member_no)) {
-			$member = get_ref_single('members', 'MemberNo="' . $member_no . '"', 'data');
-		
-			$jenis_anggota = get_ref_single('jenis_anggota', 'id="' . $member->JenisAnggota_id . '"', 'data');
-		
-			$max_loan_days = $jenis_anggota->MaxLoanDays ?? 3;
-			$loan_count = get_loan_count($member->ID);
-			$loan_limit = $jenis_anggota->MaxPinjamKoleksi;
+    $this->data['member_no'] = $member_no;
+    $this->data['carts'] = $carts;
+    $this->data['loan_cart'] = $loan_cart;
 
-			$collection_loan_id = $this->request->getPost('collection_loan_id');
-			$loan = $this->request->getPost('loan_date');
-			$loan_date = new \DateTime($loan);
-			$due = new \DateTime($loan);
-			$due_date = $due->add(new \DateInterval('P' . $max_loan_days . 'D'));
+    if (!empty($member_no)) {
+        $member = get_ref_single('members', 'MemberNo="' . $member_no . '"', 'data');
+    
+        $jenis_anggota = get_ref_single('jenis_anggota', 'id="' . $member->JenisAnggota_id . '"', 'data');
+    
+        $max_loan_days = $jenis_anggota->MaxLoanDays ?? 3;
+        $loan_count = get_loan_count($member->ID);
+        $loan_limit = $jenis_anggota->MaxPinjamKoleksi;
 
-			$this->data['member'] = $member;
-			$this->data['jenis_anggota'] = $jenis_anggota;
-			$this->data['collection_loan_id'] = $collection_loan_id;
-			$this->data['loan_count'] = $loan_count;
-			$this->data['loan_limit'] = $loan_limit;
-		}
+        $collection_loan_id = $this->request->getPost('collection_loan_id');
+        $loan = $this->request->getPost('loan_date');
+        $loan_date = new \DateTime($loan);
+        $due = new \DateTime($loan);
+        $due_date = $due->add(new \DateInterval('P' . $max_loan_days . 'D'));
 
-		$this->validation->setRule('member_no', 'Nomor Anggota', 'required');
-		if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
-			if (($loan_cart + $loan_count) > $loan_limit) {
-				set_message('toastr_msg', 'Koleksi gagal disimpan, melebihi Limit Jumlah Peminjaman');
-				set_message('toastr_type', 'error');
-				return redirect()->back();
-			}
+        $this->data['member'] = $member;
+        $this->data['jenis_anggota'] = $jenis_anggota;
+        $this->data['collection_loan_id'] = $collection_loan_id;
+        $this->data['loan_count'] = $loan_count;
+        $this->data['loan_limit'] = $loan_limit;
+    }
 
-			$i = 0;
-			$save_collection_loans = array();
-			$save_collection_loan_items = array();
-			foreach ($carts as $row) {
-				if ($i == 0) {
-					$save_collection_loans = array(
-						'ID' => $collection_loan_id,
-						'Member_id' => $row->options->member->ID,
-						'LocationLibrary_id' => $row->options->collection->Location_Library_id,
-						'CreateBy' => user_id(),
-						'CreateTerminal' => $this->request->getIPAddress(),
-					);
-				}
+    $this->validation->setRule('member_no', 'Nomor Anggota', 'required');
+    if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
+        if (($loan_cart + $loan_count) > $loan_limit) {
+            set_message('toastr_msg', 'Koleksi gagal disimpan, melebihi Limit Jumlah Peminjaman');
+            set_message('toastr_type', 'error');
+            return redirect()->back();
+        }
 
-				$save_collection_loan_items[] = array(
-					'CollectionLoan_id' => $collection_loan_id,
-					'LoanDate' => date_format($loan_date, "Y/m/d H:i:s"),
-					'DueDate' => date_format($due_date, "Y/m/d H:i:s"),
-					'LoanStatus' => 'Loan',
-					'Collection_id' => $row->options->collection->ID,
-					'member_id' => $row->options->member->ID,
-					'CreateBy' => user_id(),
-					'CreateTerminal' => $this->request->getIPAddress(),
-				);
-				$i++;
-			}
+        $i = 0;
+        $save_collection_loans = array();
+        $save_collection_loan_items = array();
+        $collection_ids_to_update = array(); // Array to hold collection IDs for status update
 
-			if (!empty($save_collection_loans)) {
-				$save_collection_loans['CollectionCount'] = $this->cart->totalItems();
-				try {
-					$cl = $this->collectionLoanModel->find($collection_loan_id);
-					if (!empty($cl)) {
-						$this->collectionLoanModel->update($collection_loan_id, [
-							'CollectionCount' => $cl->CollectionCount + $loan_cart,
-							'UpdateBy' => user_id(),
-							'UpdateTerminal' => $this->request->getIPAddress(),
-						]);
-					} else {
-						$this->collectionLoanModel->insert($save_collection_loans);
-					}
+        foreach ($carts as $row) {
+            if ($i == 0) {
+                $save_collection_loans = array(
+                    'ID' => $collection_loan_id,
+                    'Member_id' => $row->options->member->ID,
+                    'LocationLibrary_id' => $row->options->collection->Location_Library_id,
+                    'CreateBy' => user_id(),
+                    'CreateTerminal' => $this->request->getIPAddress(),
+                );
+            }
 
-					if (!empty($save_collection_loan_items)) {
-						$this->collectionLoanItemModel->insertBatch($save_collection_loan_items);
-					}
+            $save_collection_loan_items[] = array(
+                'CollectionLoan_id' => $collection_loan_id,
+                'LoanDate' => date_format($loan_date, "Y/m/d H:i:s"),
+                'DueDate' => date_format($due_date, "Y/m/d H:i:s"),
+                'LoanStatus' => 'Loan',
+                'Collection_id' => $row->options->collection->ID,
+                'member_id' => $row->options->member->ID,
+                'CreateBy' => user_id(),
+                'CreateTerminal' => $this->request->getIPAddress(),
+            );
+            
+            // Collect the collection ID for the status update
+            $collection_ids_to_update[] = $row->options->collection->ID;
+            $i++;
+        }
 
-					$this->cart->destroy();
+        if (!empty($save_collection_loans)) {
+            $save_collection_loans['CollectionCount'] = $this->cart->totalItems();
+            try {
+                $cl = $this->collectionLoanModel->find($collection_loan_id);
+                if (!empty($cl)) {
+                    $this->collectionLoanModel->update($collection_loan_id, [
+                        'CollectionCount' => $cl->CollectionCount + $loan_cart,
+                        'UpdateBy' => user_id(),
+                        'UpdateTerminal' => $this->request->getIPAddress(),
+                    ]);
+                } else {
+                    $this->collectionLoanModel->insert($save_collection_loans);
+                }
 
-					set_message('toastr_msg', 'Koleksi berhasil disimpan ke Daftar Peminjaman');
-					set_message('toastr_type', 'success');
-				} catch (\Exception $e) {
-					exit($e->getMessage());
-					set_message('toastr_msg', 'Koleksi gagal disimpan ke Daftar Peminjaman');
-					set_message('toastr_type', 'error');
-				}
-			}
+                if (!empty($save_collection_loan_items)) {
+                    $this->collectionLoanItemModel->insertBatch($save_collection_loan_items);
 
-			return redirect()->to('sirkulasi-peminjaman/create?member_no=' . $member_no);
-		}
+                    // --- START: Update collection status ---
+                    if (!empty($collection_ids_to_update)) {
+                        $this->collectionModel->whereIn('ID', $collection_ids_to_update)
+                                              ->set(['Status_id' => 5]) // 5 represents 'Dipinjam'
+                                              ->update();
+                    }
+                    // --- END: Update collection status ---
+                }
 
-		$this->data['title'] = 'Tambah Peminjaman';
-		echo view('Peminjaman\Views\add', $this->data);
-	}
+                $this->cart->destroy();
+
+                set_message('toastr_msg', 'Koleksi berhasil disimpan ke Daftar Peminjaman');
+                set_message('toastr_type', 'success');
+            } catch (\Exception $e) {
+                exit($e->getMessage());
+                set_message('toastr_msg', 'Koleksi gagal disimpan ke Daftar Peminjaman');
+                set_message('toastr_type', 'error');
+            }
+        }
+
+        return redirect()->to('sirkulasi-peminjaman/create?member_no=' . $member_no);
+    }
+
+    $this->data['title'] = 'Tambah Peminjaman';
+    echo view('Peminjaman\Views\add', $this->data);
+}
+
 
 	public function delete(int $id = 0)
 	{
