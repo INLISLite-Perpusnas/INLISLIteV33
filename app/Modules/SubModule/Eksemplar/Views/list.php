@@ -119,9 +119,9 @@ $actions = array(
 						Tambah Eksemplar
 					</a>
 				<?php endif; ?>
-				<a href="<?= base_url('report/eksemplar') ?>" class="btn btn-secondary" title=""><i class="fa fa-file-excel"></i>
+				<!-- <a href="<?= base_url('report/eksemplar') ?>" class="btn btn-secondary" title=""><i class="fa fa-file-excel"></i>
 					Ekspor Laporan
-				</a>
+				</a> -->
 			</div>
 		</div>
 		<div class="card-footer">
