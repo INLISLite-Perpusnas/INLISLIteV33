@@ -79,6 +79,10 @@ $request = service('request');
                         <option value="date">Tanggal</option>
                         <option value="month">Bulan</option>
                         <option value="year">Tahun</option>
+                        <option value="author">Pengarang</option>
+                        <option value="publishlocation">Tempat Terbit</option>
+                        <option value="subject">Subjek</option>
+                        <option value="publisher">Penerbit</option>
                     </select>
                 </div>
 
@@ -125,6 +129,26 @@ $request = service('request');
                     </select>
                 </div>
 
+                <div id="publishlocation_filter" class="filter-section mb-3" style="display: none;">
+                    <label>Tempat Terbit</label>
+                    <input type="text" name="publishlocation" class="form-control">
+                </div>
+
+                <div id="author_filter" class="filter-section mb-3" style="display: none;">
+                    <label>Pengarang</label>
+                    <input type="text" name="author" class="form-control">
+                </div>
+
+                <div id="subject_filter" class="filter-section mb-3" style="display: none;">
+                    <label>Subjek</label>
+                    <input type="text" name="subject" class="form-control">
+                </div>
+
+                <div id="publisher_filter" class="filter-section mb-3" style="display: none;">
+                    <label>Penerbit</label>
+                    <input type="text" name="publisher" class="form-control">
+                </div>
+
                 <button type="submit" class="btn btn-primary">Export to Excel</button>
             </form>
 
@@ -166,6 +190,14 @@ $(document).ready(function() {
             formData.append('year', $('#month_filter select[name="year"]').val());
         } else if (filterType === 'year') {
             formData.append('year', $('#year_filter select[name="year"]').val());
+        } else if (filterType === 'author') {
+            formData.append('author', $('#author_filter input[name="author"]').val());
+        } else if (filterType === 'subject') {
+            formData.append('subject', $('#subject_filter input[name="subject"]').val());
+        } else if (filterType === 'publisher') {
+            formData.append('publisher', $('#publisher_filter input[name="publisher"]').val());
+        } else if (filterType === 'publishlocation') {
+            formData.append('publishlocation', $('#publishlocation_filter input[name="publishlocation"]').val());
         }
 
         // Make AJAX call to get preview data
@@ -188,6 +220,10 @@ $(document).ready(function() {
     $('input[name="columns[]"], #filter_type').change(updatePreview);
     $('input[name="start_date"], input[name="end_date"]').change(updatePreview);
     $('select[name="month"], select[name="year"]').change(updatePreview);
+    $('input[name="author"]').change(updatePreview);
+    $('input[name="subject"]').change(updatePreview);
+    $('input[name="publisher"]').change(updatePreview); 
+    $('input[name="publishlocation"]').change(updatePreview);
 
     // Initial preview load
     updatePreview();
