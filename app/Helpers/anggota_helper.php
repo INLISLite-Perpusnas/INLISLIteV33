@@ -1,10 +1,17 @@
 <?php
 if (!function_exists('get_member')) {
-    function get_member($member_no = null)
+    function get_member($member_id = null)
     {        
 		$model = new \Anggota\Models\AnggotaModel();
 
-		$data = $model->where('MemberNo',$member_no)->get()->getRow();
+		$data = $model->where('MemberNo',$member_id)->get()->getRow();
+        return $data;
+    }
+}
+if(!function_exists('get_member_type')){
+    function get_member_type($jenisanggota_id = null){
+        $jenisanggotaModel = new \JenisAnggota\Models\JenisAnggotaModel();
+        $data = $jenisanggotaModel->where('id', $jenisanggota_id)->first();
         return $data;
     }
 }

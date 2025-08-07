@@ -10,7 +10,6 @@
             </a>
         <?php endif; ?>
     </div>
-
     <!-- info personal -->
     <?= $this->include("Anggota\Views\section\component_update\info_personal"); ?>
 
@@ -19,7 +18,8 @@
 
     <!-- info alamat -->
     <?= $this->include("Anggota\Views\section\component_update\info_alamat"); ?>
-
+    
+    
     <!-- info tambahan -->
     <?= $this->include("Anggota\Views\section\component_update\info_tambahan"); ?>
 
