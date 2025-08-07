@@ -232,7 +232,7 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
         // Validate request
         if (!$this->validate([
             'columns' => 'required',
-            'filter_type' => 'required|in_list[date,month,year]',
+            'filter_type' => 'required|in_list[date,month,year,author,subject,publisher,publishlocation]',
         ])) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
@@ -293,18 +293,30 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
                           ->where('collections.TanggalPengadaan <=', $endDate);
                 }
                 break;
-            // case 'author':
-            // $location = $this->request->getPost('location');
-            // if ($location) {
-            //     $query->where('collections.Perpustakaan', $location);
-            // }
-            //     break;
-            // case 'publishlocation':
-            // $location = $this->request->getPost('location');
-            // if ($location) {
-            //     $query->where('collections.Perpustakaan', $location);
-            // }
-            //     break;
+            case 'author':
+                $author = $this->request->getPost('author');
+                if ($author) {
+                    $query->like('catalogs.Author', $author);
+                }
+                break;
+            case 'subject':
+                $subject = $this->request->getPost('subject');
+                if ($subject) {
+                    $query->like('catalogs.Subject', $subject);
+                }
+                break;
+            case 'publisher':
+                $publisher = $this->request->getPost('publisher'); 
+                if ($publisher) {
+                    $query->like('catalogs.Publisher', $publisher);
+                }
+                break;
+            case 'publishlocation':
+                $publishLocation = $this->request->getPost('publishlocation'); 
+                if ($publishLocation) {
+                    $query->like('catalogs.PublishLocation', $publishLocation);
+                }
+                break;
         }
 
         $eksemplars = $query->findAll();
