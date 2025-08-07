@@ -17,7 +17,7 @@
 							<div class="form-group">
 								<label for="Nama">Tanggal Libur</label>
 								<div>
-									<input required type="text" class="form-control" id="frm_update_Dates" name="Dates" placeholder="Tanggal Libur" value="" />
+									<input required type="date" class="form-control" id="frm_update_Dates" name="Dates" placeholder="Tanggal Libur" value="2025-08-16" />
 								</div>
 							</div>
 						</div>
@@ -54,8 +54,10 @@
 			type: 'get',
 			dataType: 'json',
 			success: function(response) {
-				$('#frm_update').attr("data-id", response.id);
-				$('#frm_update_Dates').val(response.Dates);
+				let rawDate = response.Dates; // contoh: "2023-11-28 00:00:00"
+				let dateOnly = rawDate.split(' ')[0]; // hasil: "2023-11-28"
+				$('#frm_update').attr("data-id", response.ID);
+				$('#frm_update_Dates').val(dateOnly);
 				$('#frm_update_Names').val(response.Names);
 				$('#frm_update_name').val(response.name);
 				$('#frm_update_address').val(response.address);
@@ -88,7 +90,7 @@
 				if (res.error == false) {
 					Swal.fire({
 						title: 'Berhasil',
-						html: 'Jenis Pekerjaab berhasil disimpan.',
+						html: 'Hari Libur berhasil disimpan.',
 						type: 'success',
 						showConfirmButton: false,
 						timer: 5000,

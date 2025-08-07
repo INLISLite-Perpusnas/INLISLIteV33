@@ -166,7 +166,6 @@ class HariLibur extends \Base\Controllers\BaseResourceController
 			'Branch_id' => user()->branch_id ?? 0,
 			'UpdateBy' => user()->id
 		);
-
 		$update_data_ID = $this->hariliburModel->update($ID, $update_data);
 		if ($update_data_ID) {
 			$this->session->setFlashdata('toastr_msg', 'Hari Libur berhasil disimpan');
