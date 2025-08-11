@@ -3,7 +3,7 @@
 		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title">
-					<i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Tambah Jenis Identitas
+					<i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Tambah Hari Libur
 				</h5>
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span>

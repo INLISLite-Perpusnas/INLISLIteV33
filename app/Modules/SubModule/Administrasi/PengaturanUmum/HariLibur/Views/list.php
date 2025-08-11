@@ -73,6 +73,7 @@ $slug = $request->getGet('slug');
             "serverSide": true,
             "ajax": {
                 "url": '<?php echo site_url('api/hari-libur/datatable/' . $slug) ?>',
+                "type": "POST"
             },
             "dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
                 "<'row'<'col-md-12'tr>>" +

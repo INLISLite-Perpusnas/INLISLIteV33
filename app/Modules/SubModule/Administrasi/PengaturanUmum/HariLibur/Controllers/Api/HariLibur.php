@@ -42,6 +42,16 @@ class HariLibur extends \Base\Controllers\BaseResourceController
 		if (is_profiling()) {
 			$builder->orWhere('a.Branch_ID', user()->branch_id);
 		}
+    $search = $this->request->getPost('search')['value'] ?? null;
+
+if (!empty($search)) {
+    $builder->groupStart()
+        ->like('a.Names', $search)
+        ->orLike('a.Dates', $search) // harus pastikan format 'Y-m-d'
+        ->groupEnd();
+}
+// ✅ Tambahkan ini untuk melihat query di log:
+//log_message('debug', 'QUERY: ' . $builder->getCompiledSelect());
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
