@@ -374,6 +374,19 @@
 
 <body>
     <div class="container py-4">
+        <!-- Breadcrumb -->
+        <div class="col-12 mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="<?= base_url() ?>">
+                            <i class="fas fa-home me-1"></i>Beranda
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active">News</li>
+                </ol>
+            </nav>
+        </div>
         <h2><?= esc($title) ?></h2>
         <div class="row mb-4">
             <div class="col-md-4">
