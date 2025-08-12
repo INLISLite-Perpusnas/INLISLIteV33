@@ -318,10 +318,10 @@ $logo = $db->table('settingparameters')->where('Name', 'Logo')->get()->getRow()-
                     <div class="footer-section">
                         <h4>Layanan</h4>
                         <ul>
-                            <li><a href="#">Keanggotaan Online</a></li>
-                            <li><a href="#">Peminjaman Mandiri</a></li>
-                            <li><a href="#">Pengembalian Mandiri</a></li>
-                            <li><a href="#">OPAC</a></li>
+                            <li><a href="<?= base_url('home/pendaftaran_online') ?>">Keanggotaan Online</a></li>
+                            <li><a href="<?= base_url('peminjaman-mandiri') ?>">Peminjaman Mandiri</a></li>
+                            <li><a href="<?= base_url('pengembalian-mandiri') ?>">Pengembalian Mandiri</a></li>
+                            <li><a href="<?= base_url('opac') ?>">OPAC</a></li>
                         </ul>
                     </div>
                 </div>

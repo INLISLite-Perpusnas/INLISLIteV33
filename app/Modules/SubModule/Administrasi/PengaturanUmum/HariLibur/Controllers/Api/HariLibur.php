@@ -42,6 +42,16 @@ class HariLibur extends \Base\Controllers\BaseResourceController
 		if (is_profiling()) {
 			$builder->orWhere('a.Branch_ID', user()->branch_id);
 		}
+    $search = $this->request->getPost('search')['value'] ?? null;
+
+if (!empty($search)) {
+    $builder->groupStart()
+        ->like('a.Names', $search)
+        ->orLike('a.Dates', $search) // harus pastikan format 'Y-m-d'
+        ->groupEnd();
+}
+// ✅ Tambahkan ini untuk melihat query di log:
+//log_message('debug', 'QUERY: ' . $builder->getCompiledSelect());
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
@@ -166,7 +176,6 @@ class HariLibur extends \Base\Controllers\BaseResourceController
 			'Branch_id' => user()->branch_id ?? 0,
 			'UpdateBy' => user()->id
 		);
-
 		$update_data_ID = $this->hariliburModel->update($ID, $update_data);
 		if ($update_data_ID) {
 			$this->session->setFlashdata('toastr_msg', 'Hari Libur berhasil disimpan');

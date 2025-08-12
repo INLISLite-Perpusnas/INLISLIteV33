@@ -42,13 +42,13 @@ class HariLibur extends \Base\Controllers\BaseController
         }
         $hariliburDelete = $this->hariliburModel->delete($id);
         if ($hariliburDelete) {
-            set_message('toastr_msg', 'Jenis Identitas berhasil dihapus');
+            set_message('toastr_msg', 'Hari Libur berhasil dihapus');
             set_message('toastr_type', 'success');
             return redirect()->to('master-hari-libur');
         } else {
-            set_message('toastr_msg', 'Jenis Identitas gagal dihapus');
+            set_message('toastr_msg', 'Hari Libur gagal dihapus');
             set_message('toastr_type', 'warning');
-            set_message('message', 'Jenis Identitas gagal dihapus');
+            set_message('message', 'Hari Libur gagal dihapus');
             return redirect()->to('master-hari-libur');
         }
     }
@@ -61,10 +61,10 @@ class HariLibur extends \Base\Controllers\BaseController
         $hariliburUpdate = $this->hariliburModel->update($id, array($field => $value));
 
         if ($hariliburUpdate) {
-            set_message('toastr_msg', 'Jenis Identitas berhasil diubah');
+            set_message('toastr_msg', 'Hari Libur berhasil diubah');
             set_message('toastr_type', 'success');
         } else {
-            set_message('toastr_msg', 'Jenis Identitas gagal diubah');
+            set_message('toastr_msg', 'Hari Libur gagal diubah');
             set_message('toastr_type', 'warning');
         }
         return redirect()->to('/master-hari-libur');

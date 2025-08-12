@@ -33,7 +33,7 @@ class LokasiRuang extends \Base\Controllers\BaseResourceController
     $db = db_connect('data');
     $branch_id = user()->branch_id ?? $this->request->getGet('branch_id');
     $builder = $db->table('locations as a')
-        ->select('a.ID, a.ID as action, a.Code, a.Name');
+        ->select('a.ID, a.ID as action, a.Code, a.Name, a.active');
 
     $builder->select('b.Name as location_library_name, b.Code as location_library_code')
         ->join('location_library as b', 'b.ID = a.LocationLibrary_id', 'left');
@@ -55,11 +55,17 @@ class LokasiRuang extends \Base\Controllers\BaseResourceController
         ->edit('exemplar', function ($row) {
             return $row->exemplar ?? 0;
         })
+		->edit('active', function ($row) {
+				$status = $row->active == 1 ? 'Aktif' : 'Non Aktif';
+				$class = $row->active == 1 ? 'success' : 'danger';
+				$html = '<span class="badge badge-' . $class . '  badge-pill">' . $status . '</span>';
+				return $html;
+			})
         ->edit('action', function ($row) {
             $edit = '<a href="javascript:void(0);" data-href="' . base_url('api-lokasi-ruang/detail/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-            $active = '<a href="' . base_url('lokasi-ruang/apply_status/' . $row->ID . '?field=active&value=1') . '"  data-id="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Active" class="btn btn-success active-data"><i class="pe-7s-check font-weight-bold"> </i> </a>';
-            $inactive = '<a href="' . base_url('lokasi-ruang/apply_status/' . $row->ID . '?field=active&value=0') . '" data-id="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Inactive" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"> </i> </a>';
-            $delete = '<a href="javascript:void(0);" data-href="' . base_url('lokasi-ruang/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+            $active = '<a href="' . base_url('master-lokasi-ruang/apply_status/' . $row->ID . '?field=active&value=1') . '"  data-id="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Active" class="btn btn-success active-data"><i class="pe-7s-check font-weight-bold"> </i> </a>';
+            $inactive = '<a href="' . base_url('master-lokasi-ruang/apply_status/' . $row->ID . '?field=active&value=0') . '" data-id="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Inactive" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"> </i> </a>';
+            $delete = '<a href="javascript:void(0);" data-href="' . base_url('master-lokasi-ruang/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
             return $edit . ' ' . $active . ' ' . $inactive . ' ' . $delete;
         })
         ->toJson();

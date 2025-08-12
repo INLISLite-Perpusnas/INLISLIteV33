@@ -42,18 +42,18 @@ class LokasiRuang extends \Base\Controllers\BaseController
         if (!$id) {
             set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
             set_message('toastr_type', 'error');
-            return redirect()->to('lokasi-ruang');
+            return redirect()->to('master-lokasi-ruang');
         }
         $lokasiruangDelete = $this->lokasiruangModel->delete($id);
         if ($lokasiruangDelete) {
             set_message('toastr_msg', 'Lokasi Ruang berhasil dihapus');
             set_message('toastr_type', 'success');
-            return redirect()->to('lokasi-ruang');
+            return redirect()->to('master-lokasi-ruang');
         } else {
             set_message('toastr_msg', 'Lokasi Ruang gagal dihapus');
             set_message('toastr_type', 'warning');
             set_message('message', 'Lokasi Ruang gagal dihapus');
-            return redirect()->to('lokasi-ruang');
+            return redirect()->to('master-lokasi-ruang');
         }
     }
 
@@ -71,6 +71,6 @@ class LokasiRuang extends \Base\Controllers\BaseController
             set_message('toastr_msg', 'Lokasi Ruang gagal diubah');
             set_message('toastr_type', 'warning');
         }
-        return redirect()->to('/lokasi-ruang');
+        return redirect()->to('master-lokasi-ruang');
     }
 }

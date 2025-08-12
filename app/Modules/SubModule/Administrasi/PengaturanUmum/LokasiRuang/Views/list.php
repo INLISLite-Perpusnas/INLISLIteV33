@@ -133,6 +133,7 @@ if (is_member('sa_kabkot')) {
 						<th class="text-center" width="200">Nama Lokasi Ruang</th>
 						<th class="text-center">Lokasi Perpustakaan</th>
 						<th class="text-center" width="80">Eksemplar</th>
+						<th class="text-center" width="80">Status</th>
 						<th class="text-center" width="180">Aksi</th>
 					</tr>
 				</thead>
@@ -190,6 +191,10 @@ $(document).ready(function() {
                 className: 'text-center'
             },
             {
+                data: 'active', 
+                className: 'text-center'
+            },
+            {
                 data: 'action',
                 className: 'text-center'
             }
@@ -230,6 +235,25 @@ $(document).ready(function() {
         }
     });
 });
+$("body").on("click", ".remove-data", function() {
+        var url = $(this).attr('data-href');
+        console.log(url);
+        Swal.fire({
+            title: '<?= lang('App.swal.are_you_sure') ?>',
+            text: "<?= lang('App.swal.can_not_be_restored') ?>",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#dd6b55',
+            confirmButtonText: '<?= lang('App.btn.yes') ?>',
+            cancelButtonText: '<?= lang('App.btn.no') ?>'
+        }).then((result) => {
+            if (result.value) {
+                window.location.href = url;
+            }
+        });
+        return false;
+    });
 </script>
 
 <?= $this->endSection('script'); ?>
