@@ -395,12 +395,21 @@ class Katalog extends \Base\Controllers\BaseResourceController
         $upload_field = $this->request->getPost('upload_field');
 
         $files = (array) $this->request->getPost('upload_file');
+
         if (count($files)) {
             $insertData = [];
             $updateData = [];
             foreach ($files as $uuid => $name) {
                 if (file_exists($this->uploadPath . $name)) {
                     $file = new File($this->uploadPath . $name);
+
+					 // === Tambahan cek ukuran file ===
+					$maxSize = 2 * 1024 * 1024; // 2MB
+					if ($file->getSize() > $maxSize) {
+						throw new \RuntimeException("Ukuran file '{$name}' melebihi batas 2MB.");
+					}
+					// === Akhir tambahan ===
+
                     $newFileName = $file->getRandomName();
 
                     // Move the file to the module path
