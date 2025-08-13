@@ -333,13 +333,13 @@
                                         <i class="fas fa-download me-1"></i>Unduh Katalog MARC
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="downloadMarcDropdown">
-    <li><a class="dropdown-item" href="<?= base_url("opac/downloadMarcUtf8/{$catalog['ID']}") ?>" target="_blank">Format MARC Unicode/UTF-8</a></li>
-    <li><a class="dropdown-item" href="<?= base_url("opac/downloadMarcXml/{$catalog['ID']}") ?>" target="_blank">Format MARC XML</a></li>
-    <li><a class="dropdown-item" href="<?= base_url("opac/downloadMarcMods/{$catalog['ID']}") ?>" target="_blank">Format MODS</a></li>
-    <li><a class="dropdown-item" href="<?= base_url("opac/downloadMarcRdf/{$catalog['ID']}") ?>" target="_blank">Format Dublin Core (RDF)</a></li>
-    <li><a class="dropdown-item" href="<?= base_url("opac/downloadMarcOai/{$catalog['ID']}") ?>" target="_blank">Format Dublin Core (OAI)</a></li>
-    <li><a class="dropdown-item" href="<?= base_url("opac/downloadMarcSrw/{$catalog['ID']}") ?>" target="_blank">Format Dublin Core (SRW)</a></li>
-</ul>
+                                        <li><a class="dropdown-item" href="<?= base_url("opac/downloadMarcUtf8/{$catalog['ID']}") ?>" target="_blank">Format MARC Unicode/UTF-8</a></li>
+                                        <li><a class="dropdown-item" href="<?= base_url("opac/downloadMarcXml/{$catalog['ID']}") ?>" target="_blank">Format MARC XML</a></li>
+                                        <li><a class="dropdown-item" href="<?= base_url("opac/downloadMarcMods/{$catalog['ID']}") ?>" target="_blank">Format MODS</a></li>
+                                        <li><a class="dropdown-item" href="<?= base_url("opac/downloadMarcRdf/{$catalog['ID']}") ?>" target="_blank">Format Dublin Core (RDF)</a></li>
+                                        <li><a class="dropdown-item" href="<?= base_url("opac/downloadMarcOai/{$catalog['ID']}") ?>" target="_blank">Format Dublin Core (OAI)</a></li>
+                                        <li><a class="dropdown-item" href="<?= base_url("opac/downloadMarcSrw/{$catalog['ID']}") ?>" target="_blank">Format Dublin Core (SRW)</a></li>
+                                    </ul>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -510,7 +510,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                 
+
 
                     <hr>
 

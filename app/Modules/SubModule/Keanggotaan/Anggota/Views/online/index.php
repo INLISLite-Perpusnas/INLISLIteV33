@@ -1,6 +1,6 @@
 <?php
 $request = service('request');
-$slug = $request->getGet('slug') ?? 'profile';
+// $slug = $request->getGet('slug') ?? 'profile';
 $slug_title = ucwords(strtolower($slug));
 $label = $slug_title;
 
@@ -30,10 +30,6 @@ if ($slug == 'extend') {
 	$label = 'Perpanjangan';
 	$label_title = 'Daftar Perpanjangan';
 }
-
-$member_no = user()->username;
-$member = get_member($member_no);
-$anggota = get_member($member_no);
 ?>
 
 <?= $this->extend('App\Views\layout\main'); ?>
@@ -66,7 +62,7 @@ $anggota = get_member($member_no);
 			<?= view('Anggota\Views\online\member_profile', array('member' => $member)) ?>
 		</div>
 		<div class="col-lg-9">
-			<?= view('Anggota\Views\online\section\\' . $slug, array('anggota' => $anggota, 'is_anggota' => true, 'member' => $member, 'member_no' => $member_no, 'slug' => $slug, 'slug_title' => $slug_title, 'label' => $label, 'label_title' => $label_title)) ?>
+			<?= view('Anggota\Views\online\section\\' . $slug, array('anggota' => $member, 'is_anggota' => true, 'member' => $member, 'member_no' => $member_no, 'slug' => $slug, 'slug_title' => $slug_title, 'label' => $label, 'label_title' => $label_title, 'jenis_perpustakaan_id' => $jenis_perpustakaan_id)) ?>
 		</div>
 	</div>
 </div>
@@ -74,5 +70,5 @@ $anggota = get_member($member_no);
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
-<?= view('Anggota\Views\online\section\\' . $slug . '_script', array('member' => $member, 'slug' => $slug, 'slug_title' => $slug_title, 'label' => $label, 'label_title' => $label_title)) ?>
+<?= view('Anggota\Views\online\section\\' . $slug . '_script', array('member' => $member, 'slug' => $slug, 'slug_title' => $slug_title, 'label' => $label, 'label_title' => $label_title, 'arr_hak_akses_koleksi' => $arr_hak_akses_koleksi, 'arr_hak_akses_lokasi' => $arr_hak_akses_lokasi, 'peminjaman' => $peminjaman)) ?>
 <?= $this->endSection('script'); ?>
