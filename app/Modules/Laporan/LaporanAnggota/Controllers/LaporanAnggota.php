@@ -10,16 +10,16 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class LaporanAnggota extends \Base\Controllers\BaseController
 {
-	public $auth;
-	public $authorize;
-	public $anggotaModel;
+    public $auth;
+    public $authorize;
+    public $anggotaModel;
 
-	function __construct()
-	{
-		$this->anggotaModel = new \Anggota\Models\AnggotaModel();
-	}
+    function __construct()
+    {
+        $this->anggotaModel = new \Anggota\Models\AnggotaModel();
+    }
 
-	public function index()
+    public function index()
     {
         // Get all available columns
         $columns = [
@@ -33,14 +33,34 @@ class LaporanAnggota extends \Base\Controllers\BaseController
             'InstitutionName' => 'Nama Institusi',
             'IdentityNo' => 'Nomor Identitas',
             'RegisterDate' => 'Tanggal Registrasi',
-            'EndDate' => 'Tanggal Berakhir'
+            'EndDate' => 'Tanggal Berakhir',
+            'jenis_kelamin.Name' => 'Jenis Kelamin',
+            'jenis_anggota.jenisanggota' => 'Jenis Anggota'
             // Add more columns as needed
         ];
 
+        // Get gender options for filter
+        $genderOptions = $this->anggotaModel
+            ->select('jenis_kelamin.id, jenis_kelamin.Name')
+            ->join('jenis_kelamin', 'jenis_kelamin.ID = members.Sex_id', 'left')
+            ->groupBy('jenis_kelamin.ID')
+            ->orderBy('jenis_kelamin.Name')
+            ->findAll();
+
+        // Get member type options for filter
+        $memberTypeOptions = $this->anggotaModel
+            ->select('jenis_anggota.id, jenis_anggota.jenisanggota')
+            ->join('jenis_anggota', 'jenis_anggota.id = members.JenisAnggota_id', 'left')
+            ->groupBy('jenis_anggota.id')
+            ->orderBy('jenis_anggota.jenisanggota')
+            ->findAll();
+
         $data = [
-            'columns' => $columns
+            'columns' => $columns,
+            'genderOptions' => $genderOptions,
+            'memberTypeOptions' => $memberTypeOptions
         ];
-		
+
         return view('LaporanAnggota\Views\index', $data);
     }
 
@@ -60,11 +80,24 @@ class LaporanAnggota extends \Base\Controllers\BaseController
         $endDate = $this->request->getPost('end_date');
         $month = $this->request->getPost('month');
         $year = $this->request->getPost('year');
-	
+        $genderId = $this->request->getPost('gender_id'); // Gender filter
+        $memberTypeId = $this->request->getPost('member_type_id'); // New member type filter
 
         // Build query based on filter
-        $query = $this->anggotaModel->select($selectedColumns);
-		
+        $query = $this->anggotaModel
+            ->select(implode(', ', $selectedColumns))
+            ->join('jenis_kelamin', 'jenis_kelamin.ID = members.Sex_id', 'left')
+            ->join('jenis_anggota', 'jenis_anggota.id = members.JenisAnggota_id', 'left');
+
+        // Apply gender filter if selected
+        if ($genderId && $genderId != '') {
+            $query->where('members.Sex_id', $genderId);
+        }
+
+        // Apply member type filter if selected
+        if ($memberTypeId && $memberTypeId != '') {
+            $query->where('members.JenisAnggota_id', $memberTypeId);
+        }
 
         switch ($filterType) {
             case 'date':
@@ -92,10 +125,28 @@ class LaporanAnggota extends \Base\Controllers\BaseController
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
+        // Get column headers for display
+        $columnHeaders = [
+            'MemberNo' => 'Nomor Anggota',
+            'Fullname' => 'Nama Lengkap',
+            'PlaceOfBirth' => 'Tempat Lahir',
+            'DateOfBirth' => 'Tanggal Lahir',
+            'Address' => 'Alamat',
+            'Phone' => 'Telepon',
+            'Email' => 'Email',
+            'InstitutionName' => 'Nama Institusi',
+            'IdentityNo' => 'Nomor Identitas',
+            'RegisterDate' => 'Tanggal Registrasi',
+            'EndDate' => 'Tanggal Berakhir',
+            'jenis_kelamin.Name' => 'Jenis Kelamin',
+            'jenis_anggota.jenisanggota' => 'Jenis Anggota'
+        ];
+
         // Add header row
         $col = 'A';
         foreach ($selectedColumns as $column) {
-            $sheet->setCellValue($col . '1', $column);
+            $headerName = isset($columnHeaders[$column]) ? $columnHeaders[$column] : $column;
+            $sheet->setCellValue($col . '1', $headerName);
             $col++;
         }
 
@@ -104,10 +155,22 @@ class LaporanAnggota extends \Base\Controllers\BaseController
         foreach ($members as $member) {
             $col = 'A';
             foreach ($selectedColumns as $column) {
-                $value = $member->$column;
+                $value = '';
+                
+                // Handle joined columns
+                if ($column == 'jenis_kelamin.Name') {
+                    $value = isset($member->Name) ? $member->Name : '';
+                } elseif ($column == 'jenis_anggota.jenisanggota') {
+                    $value = isset($member->jenisanggota) ? $member->jenisanggota : '';
+                } else {
+                    $value = isset($member->$column) ? $member->$column : '';
+                }
+                
+                // Format date columns
                 if (in_array($column, ['DateOfBirth', 'RegisterDate', 'EndDate']) && $value) {
                     $value = date('Y-m-d', strtotime($value));
                 }
+                
                 $sheet->setCellValue($col . $row, $value);
                 $col++;
             }
@@ -124,23 +187,37 @@ class LaporanAnggota extends \Base\Controllers\BaseController
         header('Cache-Control: max-age=0');
 
         $writer->save('php://output');
-       
-		redirect()->back();
+        
+        redirect()->back();
     }
-	public function preview()
+
+    public function preview()
     {
         $columns = json_decode($this->request->getPost('columns'), true);
         $filterType = $this->request->getPost('filter_type');
-		$branch_id = branch_id();
-        
+        $genderId = $this->request->getPost('gender_id'); // Gender filter
+        $memberTypeId = $this->request->getPost('member_type_id'); // Member type filter
+        $branch_id = branch_id();
+
         if (empty($columns)) {
             return '<div class="alert alert-warning">Pilih minimal satu kolom untuk preview data</div>';
         }
 
         // Build query based on filter
-        $query = $this->anggotaModel->select($columns);
-		
-		
+        $query = $this->anggotaModel
+            ->select(implode(', ', $columns))
+            ->join('jenis_kelamin', 'jenis_kelamin.id = members.Sex_id', 'left')
+            ->join('jenis_anggota', 'jenis_anggota.id = members.JenisAnggota_id', 'left');
+
+        // Apply gender filter if selected
+        if ($genderId && $genderId != '') {
+            $query->where('members.Sex_id', $genderId);
+        }
+
+        // Apply member type filter if selected
+        if ($memberTypeId && $memberTypeId != '') {
+            $query->where('members.JenisAnggota_id', $memberTypeId);
+        }
 
         switch ($filterType) {
             case 'date':
@@ -174,25 +251,55 @@ class LaporanAnggota extends \Base\Controllers\BaseController
             return '<div class="alert alert-info">Tidak ada data yang ditemukan dengan filter yang dipilih</div>';
         }
 
+        // Get column headers for display
+        $columnHeaders = [
+            'MemberNo' => 'Nomor Anggota',
+            'Fullname' => 'Nama Lengkap',
+            'PlaceOfBirth' => 'Tempat Lahir',
+            'DateOfBirth' => 'Tanggal Lahir',
+            'Address' => 'Alamat',
+            'Phone' => 'Telepon',
+            'Email' => 'Email',
+            'InstitutionName' => 'Nama Institusi',
+            'IdentityNo' => 'Nomor Identitas',
+            'RegisterDate' => 'Tanggal Registrasi',
+            'EndDate' => 'Tanggal Berakhir',
+            'jenis_kelamin.Name' => 'Jenis Kelamin',
+            'jenis_anggota.jenisanggota' => 'Jenis Anggota'
+        ];
+
         // Build preview table
         $html = '<div class="table-responsive">
-                    <table class="table table-bordered table-striped">
-                        <thead>
-                            <tr>';
-        
+        <table class="table table-bordered table-striped">
+        <thead>
+        <tr>';
+
         foreach ($columns as $column) {
-            $html .= '<th>' . esc($column) . '</th>';
+            $headerName = isset($columnHeaders[$column]) ? $columnHeaders[$column] : $column;
+            $html .= '<th>' . esc($headerName) . '</th>';
         }
-        
+
         $html .= '</tr></thead><tbody>';
 
         foreach ($members as $member) {
             $html .= '<tr>';
             foreach ($columns as $column) {
-                $value = $member->$column;
+                $value = '';
+                
+                // Handle joined columns
+                if ($column == 'jenis_kelamin.Name') {
+                    $value = isset($member->Name) ? $member->Name : '';
+                } elseif ($column == 'jenis_anggota.jenisanggota') {
+                    $value = isset($member->jenisanggota) ? $member->jenisanggota : '';
+                } else {
+                    $value = isset($member->$column) ? $member->$column : '';
+                }
+                
+                // Format date columns
                 if (in_array($column, ['DateOfBirth', 'RegisterDate', 'EndDate']) && $value) {
                     $value = date('Y-m-d', strtotime($value));
                 }
+                
                 $html .= '<td>' . esc($value) . '</td>';
             }
             $html .= '</tr>';
@@ -203,64 +310,9 @@ class LaporanAnggota extends \Base\Controllers\BaseController
         return $html;
     }
 
-	public function visitor_export()
-	{
-
-
-		$from_date = $this->request->getGet('from_date');
-		$to_date = $this->request->getGet('to_date');
-
-		$query = $this->visitorModel;
-		if (!empty($from_date)) {
-			$query->where('timestamp >=', $from_date);
-		}
-
-		if (!empty($to_date)) {
-			$query->where('timestamp <=', $to_date);
-		}
-
-		$visitors = $query->orderBy('timestamp', 'desc')->findAll();
-
-		$spreadsheet = new Spreadsheet();
-		$spreadsheet->setActiveSheetIndex(0)
-			->setCellValue('A1', 'No')
-			->setCellValue('B1', 'Tanggal Kunjungan')
-			->setCellValue('C1', 'Jumlah Kunjungan')
-			->setCellValue('D1', 'Alamat IP')
-			->setCellValue('E1', 'Kota')
-			->setCellValue('F1', 'Negara');
-
-		$col = 2;
-		$no = 1;
-		foreach ($visitors as $row) {
-			$spreadsheet->setActiveSheetIndex(0)
-				->setCellValue('A' . $col, $no)
-				->setCellValue('B' . $col, $row->timestamp)
-				->setCellValue('C' . $col, $row->hits)
-				->setCellValue('D' . $col, $row->ip_address)
-				->setCellValue('E' . $col, $row->ip_city)
-				->setCellValue('F' . $col, $row->ip_country);
-			$col++;
-			$no++;
-		}
-
-		$writer = new Xlsx($spreadsheet);
-		$subject = 'Laporan Kujungan';
-		$filename = ucwords($subject) . '-' . date('Y-m-d');
-
-		header('Content-Type: application/vnd.ms-excel');
-		header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
-		header('Cache-Control: max-age=0');
-
-		ob_end_clean();
-		$writer->save('php://output');
-	}
-
-	public function member()
-	{
-
-
-		$this->data['title'] = 'Laporan - Anggota';
-		echo view('Report\Views\member_list', $this->data);
-	}
+    public function member()
+    {
+        $this->data['title'] = 'Laporan - Anggota';
+        echo view('Report\Views\member_list', $this->data);
+    }
 }

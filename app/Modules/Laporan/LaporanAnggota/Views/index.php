@@ -16,6 +16,13 @@ $date_to = $request->getGet('date_to') ?? '';
     max-height: 500px;
     overflow-y: auto;
 }
+.filter-section {
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #f8f9fa;
+}
 </style>
 <?= $this->endSection('style'); ?>
 
@@ -58,9 +65,9 @@ $date_to = $request->getGet('date_to') ?? '';
 
             <form action="<?= base_url('laporan-anggota/export') ?>" method="post">
                 <?= csrf_field() ?>
-                
+
                 <div class="form-group mb-3">
-                    <label>Pilih Kolom yang akan diekspor</label>
+                    <label><strong>Pilih Kolom yang akan diekspor</strong></label>
                     <div class="row">
                         <?php foreach ($columns as $key => $label) : ?>
                             <div class="col-md-4">
@@ -75,8 +82,34 @@ $date_to = $request->getGet('date_to') ?? '';
                     </div>
                 </div>
 
+                <!-- Gender Filter Section -->
                 <div class="form-group mb-3">
-                    <label>Filter Berdasarkan</label>
+                    <label><strong>Filter Berdasarkan Jenis Kelamin</strong></label>
+                    <select class="form-control" name="gender_id" id="gender_id">
+                        <option value="">-- Semua Jenis Kelamin --</option>
+                        <?php if (isset($genderOptions)) : ?>
+                            <?php foreach ($genderOptions as $gender) : ?>
+                                <option value="<?= $gender->id ?>"><?= $gender->Name ?></option>
+                            <?php endforeach ?>
+                        <?php endif ?>
+                    </select>
+                </div>
+
+                <!-- Member Type Filter Section -->
+                <div class="form-group mb-3">
+                    <label><strong>Filter Berdasarkan Jenis Anggota</strong></label>
+                    <select class="form-control" name="member_type_id" id="member_type_id">
+                        <option value="">-- Semua Jenis Anggota --</option>
+                        <?php if (isset($memberTypeOptions)) : ?>
+                            <?php foreach ($memberTypeOptions as $memberType) : ?>
+                                <option value="<?= $memberType->id ?>"><?= $memberType->jenisanggota ?></option>
+                            <?php endforeach ?>
+                        <?php endif ?>
+                    </select>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label><strong>Filter Berdasarkan Tanggal</strong></label>
                     <select class="form-control" name="filter_type" id="filter_type">
                         <option value="date">Tanggal</option>
                         <option value="month">Bulan</option>
@@ -85,6 +118,7 @@ $date_to = $request->getGet('date_to') ?? '';
                 </div>
 
                 <div id="date_filter" class="filter-section mb-3">
+                    <h6 class="mb-3"><i class="fas fa-calendar-alt"></i> Filter Berdasarkan Tanggal</h6>
                     <div class="row">
                         <div class="col-md-6">
                             <label>Tanggal Mulai</label>
@@ -98,6 +132,7 @@ $date_to = $request->getGet('date_to') ?? '';
                 </div>
 
                 <div id="month_filter" class="filter-section mb-3" style="display: none;">
+                    <h6 class="mb-3"><i class="fas fa-calendar"></i> Filter Berdasarkan Bulan</h6>
                     <div class="row">
                         <div class="col-md-6">
                             <label>Bulan</label>
@@ -119,6 +154,7 @@ $date_to = $request->getGet('date_to') ?? '';
                 </div>
 
                 <div id="year_filter" class="filter-section mb-3" style="display: none;">
+                    <h6 class="mb-3"><i class="fas fa-calendar-year"></i> Filter Berdasarkan Tahun</h6>
                     <label>Tahun</label>
                     <select name="year" class="form-control">
                         <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
@@ -127,14 +163,19 @@ $date_to = $request->getGet('date_to') ?? '';
                     </select>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Export to Excel</button>
+                <div class="text-center mb-3">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fas fa-download"></i> Export to Excel
+                    </button>
+                </div>
             </form>
 
             <!-- Preview Section -->
             <div class="preview-container">
-                <h5>Preview (20 Baris Pertama)</h5>
+                <h5><i class="fas fa-eye"></i> Preview Data (20 Baris Pertama)</h5>
                 <div class="preview-table" id="preview-table">
-                    <div class="text-center">
+                    <div class="text-center text-muted">
+                        <i class="fas fa-info-circle fa-2x mb-3"></i>
                         <p>Pilih kolom dan filter untuk melihat preview data</p>
                     </div>
                 </div>
@@ -145,7 +186,6 @@ $date_to = $request->getGet('date_to') ?? '';
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
-
 <script>
 $(document).ready(function() {
     // Function to update preview table
@@ -156,9 +196,14 @@ $(document).ready(function() {
         });
 
         const filterType = $('#filter_type').val();
+        const genderId = $('#gender_id').val(); // Get selected gender
+        const memberTypeId = $('#member_type_id').val(); // Get selected member type
+        
         const formData = new FormData();
         formData.append('columns', JSON.stringify(selectedColumns));
         formData.append('filter_type', filterType);
+        formData.append('gender_id', genderId); // Add gender filter to form data
+        formData.append('member_type_id', memberTypeId); // Add member type filter to form data
 
         // Add appropriate date filters based on filter type
         if (filterType === 'date') {
@@ -170,6 +215,9 @@ $(document).ready(function() {
         } else if (filterType === 'year') {
             formData.append('year', $('#year_filter select[name="year"]').val());
         }
+
+        // Show loading indicator
+        $('#preview-table').html('<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Memuat preview data...</p></div>');
 
         // Make AJAX call to get preview data
         $.ajax({
@@ -183,12 +231,13 @@ $(document).ready(function() {
             },
             error: function(xhr, status, error) {
                 console.error('Error fetching preview:', error);
+                $('#preview-table').html('<div class="alert alert-danger">Terjadi kesalahan saat memuat preview data</div>');
             }
         });
     }
 
     // Event listeners for form changes
-    $('input[name="columns[]"], #filter_type').change(updatePreview);
+    $('input[name="columns[]"], #filter_type, #gender_id, #member_type_id').change(updatePreview);
     $('input[name="start_date"], input[name="end_date"]').change(updatePreview);
     $('select[name="month"], select[name="year"]').change(updatePreview);
 
@@ -199,6 +248,17 @@ $(document).ready(function() {
     $('#filter_type').change(function() {
         $('.filter-section').hide();
         $('#' + $(this).val() + '_filter').show();
+        updatePreview();
+    });
+
+    // Add some visual feedback when checkboxes are changed
+    $('input[name="columns[]"]').change(function() {
+        const checkedCount = $('input[name="columns[]"]:checked').length;
+        if (checkedCount === 0) {
+            $(this).closest('.form-group').find('label').first().addClass('text-danger');
+        } else {
+            $(this).closest('.form-group').find('label').first().removeClass('text-danger');
+        }
     });
 });
 </script>

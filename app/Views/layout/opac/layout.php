@@ -2,8 +2,10 @@
 $db=db_connect('data');
 $nama_perpustakaan=$db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value?:"Perpustakaan Mitra";
 $alamat=$db->table('settingparameters')->where('Name', 'NamaLokasiPerpustakaan')->get()->getRow()->Value?:"Jl.Perpustakaan Mitra";
-
+$tentang_kami=$db->table('settingparameters')->where('Name', 'TentangKami')->get()->getRow()->Value?:"Perpustakaan Mitra";
 $logo = $db->table('settingparameters')->where('Name', 'Logo')->get()->getRow()->Value;
+$phone=$db->table('settingparameters')->where('Name', 'Phone')->get()->getRow()->Value;
+$email=$db->table('settingparameters')->where('Name', 'EmailPerpustakaan')->get()->getRow()->Value;
 
 
 ?>
@@ -37,7 +39,7 @@ $logo = $db->table('settingparameters')->where('Name', 'Logo')->get()->getRow()-
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-   .logo-section {
+        .logo-section {
             display: flex;
             align-items: center;
             gap: 20px; /* Menambahkan jarak antara logo dan teks */
@@ -311,7 +313,7 @@ $logo = $db->table('settingparameters')->where('Name', 'Logo')->get()->getRow()-
                 <div class="col-md-4 mb-4">
                     <div class="footer-section">
                         <h4>Tentang Kami</h4>
-                        <p>Dinas Perpustakaan dan Arsip Provinsi Sumatera Utara berkomitmen untuk menyediakan layanan perpustakaan berkualitas bagi masyarakat.</p>
+                        <p><?=$tentang_kami?></p>
                     </div>
                 </div>
                 <div class="col-md-4 mb-4">
@@ -328,9 +330,9 @@ $logo = $db->table('settingparameters')->where('Name', 'Logo')->get()->getRow()-
                 <div class="col-md-4 mb-4">
                     <div class="footer-section footer-contact">
                         <h4>Kontak</h4>
-                        <p><i class="fas fa-map-marker-alt"></i> Jl. Perpustakaan No.1, Medan, Sumatera Utara</p>
-                        <p><i class="fas fa-phone"></i> (061) 1234567</p>
-                        <p><i class="fas fa-envelope"></i> info@perpustakaan-sumut.go.id</p>
+                        <p><i class="fas fa-map-marker-alt"></i> <?=$alamat?></p>
+                        <p><i class="fas fa-phone"></i> <?=$phone ?></p>
+                        <p><i class="fas fa-envelope"></i> <?=$email?></p>
                     </div>
                 </div>
             </div>

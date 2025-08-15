@@ -70,13 +70,19 @@ class Opac extends \Base\Controllers\BaseController
                 $this->data['metrics'] = null;
                 $this->data['is_cold_start'] = true;
                 $this->data['recommendation_error'] = $e->getMessage();
-
+              
                 // Show regular catalogs as fallback
                 $this->loadRegularCatalogs();
             }
         } else {
             // Regular catalog display (original functionality)
-            $this->loadRegularCatalogs();
+        $is_opac_cache = env('is_opac_cache', 0);
+        if($is_opac_cache==1){
+            $this->loadRegularCatalogscache();
+        }else{
+              $this->loadRegularCatalogs();
+        }
+          
 
         }
     $endTime = microtime(true);
@@ -84,46 +90,115 @@ class Opac extends \Base\Controllers\BaseController
         return view('Opac\Views\index', $this->data);
     }
 
-    private function loadRegularCatalogs()
-    {
-        $perPage = 12;
-        $currentPage = $this->request->getVar('page') ?? 1;
+  private function loadRegularCatalogs()
+{
+    // 1. Define Pagination variables
+    $perPage = 12;
+    $currentPage = $this->request->getVar('page') ?? 1;
 
-        // Pencarian utama
-        $search = sanitizeSearch($this->request->getVar('search'));
+    // 2. Build the database query
+    $builder = $this->katalogModel->select('catalogs.*')->orderBy("ID", "Desc");
+
+    // --- (Query building logic based on search and filters) ---
+    $search = sanitizeSearch($this->request->getVar('search'));
+    if ($search) {
         $searchBy = sanitizeSearch($this->request->getVar('search_by') ?? 'Title');
+        switch ($searchBy) {
+            case 'Title':
+                $builder->like('Title', $search);
+                break;
+            case 'Author':
+                $builder->like('Author', $search);
+                break;
+            case 'Subject':
+                $builder->like('Subject', $search);
+                break;
+            case 'ISBN':
+                $builder->like('ISBN', $search);
+                break;
+            case 'Publisher':
+                $builder->like('Publisher', $search);
+                break;
+            default:
+                $builder->groupStart()
+                    ->like('Title', $search)->orLike('Author', $search)->orLike('Subject', 'search')
+                    ->groupEnd();
+        }
+    }
+
+    $additionalFilters = ['Publisher', 'Author', 'PublishLocation', 'Subject', 'PublishYear'];
+    foreach ($additionalFilters as $filter) {
+        $value = sanitizeSearch($this->request->getVar($filter));
+        if (!empty($value)) {
+            $builder->like($filter, $value);
+        }
+    }
+
+    // 3. Execute the query and paginate the results
+    $catalogs = $builder->paginate($perPage, 'default', $currentPage);
+
+    // 4. Prepare data for the view
+    $this->data['pager'] = $this->katalogModel->pager->links();
+    $this->data['catalogs'] = $catalogs;
+    
+    // --- (Calculate counts for filters/facets) ---
+    $this->data['publisher_counts'] = array_count_values(array_map(fn($p) => rtrim(trim($p), ','), array_column($catalogs, 'Publisher')));
+    $this->data['author_counts'] = array_count_values(array_map(fn($a) => rtrim(trim($a), ','), array_column($catalogs, 'Author')));
+    $this->data['publish_location_counts'] = array_count_values(array_map(fn($l) => rtrim(trim($l), ','), array_column($catalogs, 'PublishLocation')));
+    $this->data['subject_counts'] = array_count_values(array_map(fn($s) => rtrim(trim($s), ','), array_column($catalogs, 'Subject')));
+    $this->data['year_counts'] = array_count_values(array_map(fn($d) => date('Y', strtotime($d)), array_column($catalogs, 'CreateDate')));
+    
+    // 5. Set search variables for the view
+    $this->data['search'] = $this->request->getVar('search');
+    $this->data['search_by'] = $this->request->getVar('search_by') ?? 'Title';
+}
 
 
+   private function loadRegularCatalogscache()
+{
+    // 1. Define Cache TTL and Request variables
+    $cacheTTL = 3600; // 1 hour
+  
+    $perPage = 12;
+    $currentPage = $this->request->getVar('page') ?? 1;
 
+    // 2. Create a Unique Cache Key
+    $requestParams = $this->request->getGet();
+    ksort($requestParams);
+    $cacheKey = 'catalog_data_' . md5(http_build_query($requestParams));
+
+    // 3. Try to retrieve data from the cache
+    if ($cachedData = cache($cacheKey)) {
+        // ========== CACHE HIT ==========
+        // Load data hasil query dari cache
+        $this->data = array_merge($this->data, $cachedData);
+        $totalRecords = $cachedData['totalRecords']; // Ambil total records dari cache
+        
+        // Buat pager secara manual menggunakan data dari cache
+        $pager = service('pager');
+        $pager->setPath('/opac', 'default');
+        $this->data['pager'] = $pager->makeLinks($currentPage, $perPage, $totalRecords);
+
+    } else {
+        // ========== CACHE MISS ==========
         $builder = $this->katalogModel->select('catalogs.*')->orderBy("ID", "Desc");
 
+        // --- (Query building logic) ---
+        $search = sanitizeSearch($this->request->getVar('search'));
         if ($search) {
+            $searchBy = sanitizeSearch($this->request->getVar('search_by') ?? 'Title');
             switch ($searchBy) {
-                case 'Title':
-                    $builder->like('Title', $search);
-                    break;
-                case 'Author':
-                    $builder->like('Author', $search);
-                    break;
-                case 'Subject':
-                    $builder->like('Subject', $search);
-                    break;
-                case 'ISBN':
-                    $builder->like('ISBN', $search);
-                    break;
-                case 'Publisher':
-                    $builder->like('Publisher', $search);
-                    break;
+                case 'Title': $builder->like('Title', $search); break;
+                case 'Author': $builder->like('Author', $search); break;
+                case 'Subject': $builder->like('Subject', $search); break;
+                case 'ISBN': $builder->like('ISBN', $search); break;
+                case 'Publisher': $builder->like('Publisher', $search); break;
                 default:
                     $builder->groupStart()
-                        ->like('Title', $search)
-                        ->orLike('Author', $search)
-                        ->orLike('Subject', $search)
+                        ->like('Title', $search)->orLike('Author', $search)->orLike('Subject', $search)
                         ->groupEnd();
             }
         }
-
-        // 🎯 Multiple search tambahan: cek jika ada di URL
         $additionalFilters = ['Publisher', 'Author', 'PublishLocation', 'Subject', 'PublishYear'];
         foreach ($additionalFilters as $filter) {
             $value = sanitizeSearch($this->request->getVar($filter));
@@ -132,41 +207,34 @@ class Opac extends \Base\Controllers\BaseController
             }
         }
 
-        // --- Bagian yang sudah ada ---
-        $this->data['catalogs'] = $builder->paginate($perPage);
-        $catalogs = $this->data['catalogs'];
+        $totalRecords = $builder->countAllResults(false);
+        $catalogs = $builder->paginate($perPage, 'default', $currentPage);
+        
+        // Render Pager menjadi string HTML
+        $this->data['pager'] = $this->katalogModel->pager->links();
+        $this->data['catalogs'] = $catalogs;
 
-        $publishers = array_column($catalogs, 'Publisher');
-        $cleaned_publishers = array_map(fn($p) => rtrim(trim($p), ','), $publishers);
-        $publisher_counts = array_count_values($cleaned_publishers);
+        // --- (Data processing & preparing for cache) ---
+        $dataToCache = []; // Mulai dengan array kosong yang bersih
+        $dataToCache['totalRecords'] = $totalRecords;
+        $dataToCache['catalogs'] = $catalogs;
+        $dataToCache['publisher_counts'] = array_count_values(array_map(fn($p) => rtrim(trim($p), ','), array_column($catalogs, 'Publisher')));
+        $dataToCache['author_counts'] = array_count_values(array_map(fn($a) => rtrim(trim($a), ','), array_column($catalogs, 'Author')));
+        $dataToCache['publish_location_counts'] = array_count_values(array_map(fn($l) => rtrim(trim($l), ','), array_column($catalogs, 'PublishLocation')));
+        $dataToCache['subject_counts'] = array_count_values(array_map(fn($s) => rtrim(trim($s), ','), array_column($catalogs, 'Subject')));
+        $dataToCache['year_counts'] = array_count_values(array_map(fn($d) => date('Y', strtotime($d)), array_column($catalogs, 'CreateDate')));
+        
+        // Simpan data yang sudah bersih ke cache
+        cache()->save($cacheKey, $dataToCache, $cacheTTL);
 
-        $author = array_column($catalogs, 'Author');
-        $cleaned_author = array_map(fn($a) => rtrim(trim($a), ','), $author);
-        $author_counts = array_count_values($cleaned_author);
-
-        $publish_location = array_column($catalogs, 'PublishLocation');
-        $cleaned_publish_location = array_map(fn($l) => rtrim(trim($l), ','), $publish_location);
-        $publish_location_counts = array_count_values($cleaned_publish_location);
-
-        $subject = array_column($catalogs, 'Subject');
-        $cleaned_subject = array_map(fn($s) => rtrim(trim($s), ','), $subject);
-        $subject_counts = array_count_values($cleaned_subject);
-
-        $created_dates = array_column($catalogs, 'CreateDate');
-        $years = array_map(fn($d) => date('Y', strtotime($d)), $created_dates);
-        $year_counts = array_count_values($years);
-
-        $this->data['year_counts'] = $year_counts;
-        $this->data['publish_location_counts'] = $publish_location_counts;
-        $this->data['subject_counts'] = $subject_counts;
-        $this->data['author_counts'] = $author_counts;
-        $this->data['publisher_counts'] = $publisher_counts;
-
-        $this->data['pager'] = $this->katalogModel->pager;
-        $this->data['search'] = $search;
-        $this->data['search_by'] = $searchBy;
-        $this->data['total_records'] = $builder->countAllResults(false);
+        // Merge data yang di-cache ke data utama
+        $this->data = array_merge($this->data, $dataToCache);
     }
+    
+    // Variabel ini dibutuhkan di view dan di-set di luar blok cache
+    $this->data['search'] = $this->request->getVar('search');
+    $this->data['search_by'] = $this->request->getVar('search_by') ?? 'Title';
+}
 
  
 

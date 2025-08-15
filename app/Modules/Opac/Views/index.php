@@ -469,11 +469,11 @@
             </div>
              <section class="content-section">
         <div class="main-container">
-            <?php if (empty($member_no) && isset($pager) && $pager->getPageCount() > 1): ?>
+           <?php if (empty($member_no) && isset($pager) && !empty($pager)): ?>
                 <div class="row">
                     <div class="col-12">
                         <nav aria-label="Pagination">
-                            <?= $pager->links() ?>
+                           <?= $pager ?>
                         </nav>
                     </div>
                 </div>

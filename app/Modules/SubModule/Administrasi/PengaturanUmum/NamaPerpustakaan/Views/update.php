@@ -148,9 +148,9 @@ $slug = $request->getGet('slug') ?? '';
 									<div>
 										<?php
 										$LayananOperasionl_Str = '&lt;b&gt;Jam Operasional Layanan&lt;/b&gt;&lt;br&gt;
-&lt;i class=&quot;right-icon bx bx-chevrons-right&quot;&gt;&lt;/i&gt;Senin-Jumat 08.00 - 16.00 WIB&lt;br&gt;
-&lt;i class=&quot;right-icon bx bx-chevrons-right&quot;&gt;&lt;/i&gt;Sabtu-Minggu 08.00 - 15.00 WIB&lt;br&gt;
-&lt;i class=&quot;right-icon bx bx-chevrons-right&quot;&gt;&lt;/i&gt;Cuti Bersama dan Libur Nasional &lt;b&gt;Tutup&lt;/b&gt;&lt;br&gt;';
+										&lt;i class=&quot;right-icon bx bx-chevrons-right&quot;&gt;&lt;/i&gt;Senin-Jumat 08.00 - 16.00 WIB&lt;br&gt;
+										&lt;i class=&quot;right-icon bx bx-chevrons-right&quot;&gt;&lt;/i&gt;Sabtu-Minggu 08.00 - 15.00 WIB&lt;br&gt;
+										&lt;i class=&quot;right-icon bx bx-chevrons-right&quot;&gt;&lt;/i&gt;Cuti Bersama dan Libur Nasional &lt;b&gt;Tutup&lt;/b&gt;&lt;br&gt;';
 										$LayananOperasionl = $branch->LayananOperasionl ?? $LayananOperasionl_Str;
 
 										// Decode the HTML content to display it properly
@@ -161,6 +161,27 @@ $slug = $request->getGet('slug') ?? '';
 								</div>
 							</div>
 						</div>
+						<div class="form-row">
+							<div class="col-md-12">
+								<div class="position-relative form-group">
+									<label for="Alamat">Tulisan Banner</label>
+									<div>
+										<textarea class="form-control" name="tulisan_banner" id="tulisan_banner" placeholder="" rows="5"><?= set_value('tulisan_banner', $tulisan_banner) ?></textarea>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="form-row">
+							<div class="col-md-12">
+								<div class="position-relative form-group">
+									<label for="Alamat">Tentang Kami</label>
+									<div>
+										<textarea class="form-control" name="tentang_kami" id="tentang_kami" placeholder="" rows="5"><?= set_value('tentang_kami', $tentang_kami) ?></textarea>
+									</div>
+								</div>
+							</div>
+						</div>
+						
 						<div class="form-row">
 							<div class="col-md-12">
 								<div class="form-group" style="display: inline-block">

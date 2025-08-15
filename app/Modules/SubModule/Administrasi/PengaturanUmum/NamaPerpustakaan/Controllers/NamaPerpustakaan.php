@@ -59,6 +59,8 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 		$this->data['phone'] = $this->settingModel->where('Name', 'Phone')->first()->Value ?? '';
 		$this->data['is_use_kop'] = $this->settingModel->where('Name', 'IsUseKop')->first()->Value ?? 0;
 		$this->data['jenis_perpustakaan'] = $this->settingModel->where('Name', 'JenisPerpustakaan')->first()->Value ?? '';
+		$this->data['tulisan_banner'] = $this->settingModel->where('Name', 'TulisanBanner')->first()->Value ?? '';
+		$this->data['tentang_kami'] = $this->settingModel->where('Name', 'TentangKami')->first()->Value ?? '';
 		$this->data['title'] = 'Nama Perpustakaan';
 
 		echo view('NamaPerpustakaan\Views\update', $this->data);
@@ -88,6 +90,8 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 			'Facebook' => trim($this->request->getPost('facebook')),
 			'Youtube' => trim($this->request->getPost('youtube')),
 			'Phone' => trim($this->request->getPost('phone')),
+			'TulisanBanner' => trim($this->request->getPost('tulisan_banner')),
+			'TentangKami' => trim($this->request->getPost('tentang_kami')),
 			'IsUseKop' => $this->request->getPost('IsUseKop') ? 1 : 0,
 			'LayananOperasionl' => $LayananOperasionl_Str,
 		];

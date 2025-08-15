@@ -33,6 +33,11 @@ class Eksemplar extends \Base\Controllers\BaseController
 
     public function index()
     {
+         if (!is_allowed('eksemplar/index')) {
+            set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
+            set_message('toastr_type', 'error');
+            return redirect()->to('eksemplar');
+        }
         $this->data['title'] = 'Eksemplar';
         echo view('Eksemplar\Views\list', $this->data);
     }
