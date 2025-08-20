@@ -85,6 +85,7 @@ $actions = array(
 							<th class="text-center" width="100">No. Induk</th>
 							<th class="text-center" width="">Data Bibliografis</th>
 							<th class="text-center" width="">OPAC</th>
+                            <th class="text-center" width="">DRM</th>
 							<th class="text-center" width="">Karantina</th>
 							<th class="text-center" width="80">Aksi</th>
 						</tr>
@@ -148,6 +149,11 @@ $(document).ready(function() {
             },
             {
                 data: 'IsOPAC',
+                className: 'text-center',
+                orderable: false
+            },
+            {
+                data: 'ISDRM',
                 className: 'text-center',
                 orderable: false
             },

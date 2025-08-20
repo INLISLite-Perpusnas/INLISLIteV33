@@ -130,6 +130,12 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 				$html = '<span class="badge badge-' . $color . '" style="min-width: 40px">' . $label . '</span>';
 				return $html;
 			})
+				->edit('ISDRM', function ($row) {
+				$color = $row->ISDRM == 1 ? 'success' : 'warning';
+				$label = $row->ISDRM == 1 ? 'Ya' : 'Tdk';
+				$html = '<span class="badge badge-' . $color . '" style="min-width: 40px">' . $label . '</span>';
+				return $html;
+			})
 			->edit('IsQUARANTINE', function ($row) {
 				$color = $row->IsQUARANTINE == 1 ? 'success' : 'warning';
 				$label = $row->IsQUARANTINE == 1 ? 'Ya' : 'Tdk';

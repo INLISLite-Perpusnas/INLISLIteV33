@@ -34,56 +34,58 @@ class Katalog extends \Base\Controllers\BaseResourceController
 
 	public function datatable($IsQUARANTINE = 0)
 	{
+		$branch_id = $this->request->getGet('branch_id');
 		$db = db_connect('data');
+
 		$builder = $db->table('catalogs as a')
-			->select('a.ID, a.BIBID, a.Title,  a.Edition, a.Publisher, a.PhysicalDescription, a.ControlNumber, a.IsOPAC, a.IsRDA,a.ID as action, 0 as Eksemplar')
-			->where('a.IsQUARANTINE', $IsQUARANTINE);
-//			->orderBy('a.ID', 'DESC');
-			
+			->select('a.ID, a.ID as action')
+			->select('a.ControlNumber, a.BIBID, a.Title, a.Author, a.Edition, a.Publisher, a.PublishLocation, a.PublishYear, a.Publikasi, a.Subject, a.PhysicalDescription, a.ISBN, a.CallNumber, a.Note, a.Languages, a.DeweyNo, a.ApproveDateOPAC, a.IsOPAC, a.IsBNI, a.IsKIN, a.IsRDA, a.CoverURL, a.Worksheet_id, a.CreateBy, a.CreateDate, a.CreateTerminal, a.UpdateBy, a.UpdateDate, a.UpdateTerminal, a.MARC_LOC, a.PRESERVASI_ID, a.QUARANTINEDBY, a.QUARANTINEDDATE, a.QUARANTINEDTERMINAL, a.Member_id, a.KIILastUploadDate')
+			->select('a.Branch_id, a.Location_id')
+			->select('0 as Eksemplar')
+			->where('a.IsQUARANTINE', $IsQUARANTINE)
+			->orderBy('a.ID', 'DESC');
+
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
 			->edit('ID', function ($row) {
 				$html = '<input type="checkbox" class="check" name="ID[]" value="' . $row->ID . '">';
 				return $html;
 			})
-		
 			->edit('BIBID', function ($row) {
+				helper('reference');
 				$html  = $row->BIBID . '<br>';
 
 				if (!empty($branch_id)) {
-					$branch = get_single('branchs', 'Code', 'ID = ' . $row->Branch_id, 'data');
-					$location = get_single('locations', 'Name', 'ID = ' . $row->Location_id, 'data');
-					$html .= '<span class="badge badge-primary">' . ($branch->Code ?? '') . '</span><br>';
-					$html .= '<span class="badge badge-info">' . ($location->Name ?? '') . '</span> ';
+					$html .= '<span class="badge badge-primary">' . get_ref_single('branchs', 'ID=' . $row->Branch_id, 'data')->Code . '</span><br>';
+					$html .= '<span class="badge badge-info">' . get_ref_single('locations', 'ID=' . $row->Location_id, 'data')->Name . '</span> ';
 				}
 
 				return $html;
 			})
-			->edit('Title', function ($row) {
-				$html  = $row->Title . '<br>';
-				return $html;
-			})
-			->edit('Edition', function ($row) {
-				$html  = $row->Edition . '<br>';
-				return $html;
-			})
-			->edit('Publisher', function ($row) {
-				$html  = $row->Publisher . '<br>';
-				return $html;
-			})
-			->edit('PhysicalDescription', function ($row) {
-				$html  = $row->PhysicalDescription . '<br>';
-				return $html;
-			})
-			->edit('ControlNumber', function ($row) {
-				$html  = $row->ControlNumber . '<br>';
-				return $html;
-			})
+			->edit('Eksemplar', function ($row) {
+				helper('eksemplar');
 
-			// ->getFromAPI(getenv('API_CATALOG'), session()->get('token'));
-			->toJson(true);
+				$html  = count_collections($row->ID);
+
+				return $html;
+			})
+			->edit('IsRDA', function ($row) {
+				$checked = $row->IsRDA == 1 ? 'checked' : '';
+				$html = '<input type="checkbox" class="apply-status" data-href="' . base_url('api/katalog/switch/' . $row->ID) . '" data-checked="' . $checked . '" data-field="IsRDA" ' . $checked . ' data-toggle="toggle" data-onstyle="success" data-on="RDA" data-off="AACR" data-size="mini">';
+				return $html;
+			})
+			->edit('IsOPAC', function ($row) {
+				$checked = $row->IsOPAC == 1 ? 'checked' : '';
+				$html = '<input type="checkbox" class="apply-status" data-href="' . base_url('api/katalog/switch/' . $row->ID) . '" data-checked="' . $checked . '" data-field="IsOPAC" ' . $checked . ' data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="mini">';
+				return $html;
+			})
+			->edit('action', function ($row) {
+				$edit = '<a href=' . base_url('katalog/edit/' . $row->ID) . ' data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
+				$delete = '<a href=' . base_url('katalog/delete/' . $row->ID) . ' data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+				return $edit . ' ' . $delete;
+			})
+			->toJson();
 		return $dataTable;
-		
 	}
 
 	public function katalog($IsQUARANTINE = 0)
@@ -96,7 +98,8 @@ class Katalog extends \Base\Controllers\BaseResourceController
 			->select('a.ControlNumber, a.BIBID, a.Title, a.Author, a.Edition, a.Publisher, a.PublishLocation, a.PublishYear, a.Publikasi, a.Subject, a.PhysicalDescription, a.ISBN, a.CallNumber, a.Note, a.Languages, a.DeweyNo, a.ApproveDateOPAC, a.IsOPAC, a.IsBNI, a.IsKIN, a.IsRDA, a.CoverURL, a.Worksheet_id, a.CreateBy, a.CreateDate, a.CreateTerminal, a.UpdateBy, a.UpdateDate, a.UpdateTerminal, a.MARC_LOC, a.PRESERVASI_ID, a.QUARANTINEDBY, a.QUARANTINEDDATE, a.QUARANTINEDTERMINAL, a.Member_id, a.KIILastUploadDate')
 			->select('a.Branch_id, a.Location_id')
 			->select('0 as Eksemplar')
-			->where('a.IsQUARANTINE', $IsQUARANTINE);
+			->where('a.IsQUARANTINE', $IsQUARANTINE)
+			->orderBy('a.ID', 'DESC');
 
 		if (is_member('admin') || is_member('sa_prov') || is_member('sa_kabkot') || is_member('sa_psm')) {
 			if (!empty($branch_id)) {

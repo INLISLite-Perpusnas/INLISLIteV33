@@ -340,53 +340,6 @@ class Eksemplar extends \Base\Controllers\BaseController
         return $result . $no;
     }
 
-    /*
-Contoh 1: $FormatNomorInduk = "4|3|2|3|6|2|0|2|0"
-Array: ['4', '3', '2', '3', '6', '2', '0', '2', '0']
-
-Proses:
-Index 0: 4 (Format) → Kode Bentuk Fisik → 'PRINT'
-Index 1: 3 (Separator) → '/'
-Index 2: 2 (Format) → Kode Jenis Bahan → 'BK'  
-Index 3: 3 (Separator) → '/'
-Index 4: 6 (Format) → 99999 → '{99999}' (placeholder)
-Index 5: 2 (Separator) → '' (kosong, abaikan)
-Index 6: 0 (Format) → -Kosong- (abaikan)
-Index 7: 2 (Separator) → '' (kosong, abaikan)
-Index 8: 0 (Format) → -Kosong- (abaikan)
-
-Hasil: PRINT/BK/{99999} → PRINT/BK/ + auto_number
-Final: PRINT/BK/00001
-
-Contoh 2: $FormatNomorInduk = "{Dispusip}|3|{Nias}|3|7|3|6|2|0"
-Array: ['{Dispusip}', '3', '{Nias}', '3', '7', '3', '6', '2', '0']
-
-Proses:
-Index 0: {Dispusip} (Format) → Manual Input → 'Dispusip'
-Index 1: 3 (Separator) → '/'
-Index 2: {Nias} (Format) → Manual Input → 'Nias'
-Index 3: 3 (Separator) → '/'
-Index 4: 7 (Format) → YYYY → '2024'
-Index 5: 3 (Separator) → '/'
-Index 6: 6 (Format) → 99999 → '{99999}' (placeholder)
-Index 7: 2 (Separator) → '' (kosong, abaikan)
-Index 8: 0 (Format) → -Kosong- (abaikan)
-
-Hasil: Dispusip/Nias/2024/{99999} → Dispusip/Nias/2024/ + auto_number
-Final: Dispusip/Nias/2024/00001
-
-Logic Pattern:
-- Index genap = Format Options
-- Index ganjil = Separator Options  
-- Jika format = '0' → abaikan
-- Jika separator = '2' → abaikan (kosong)
-- Manual input dengan {} → ambil value di dalam kurung
-- Format 6 → placeholder {99999} untuk auto increment
-*/
-
-
-
-
     public function edit($id)
     {
         if (!is_allowed('eksemplar/edit')) {
@@ -396,8 +349,6 @@ Logic Pattern:
         }
 
         $this->data['title'] = 'Ubah Eksemplar';
-        $this->data['is_allowed'] = !is_member('admin') && !is_member('sa_prov') && !is_member('sa_kabkota');
-
         $slug = $this->request->getGet('slug');
         $eksemplar = $this->eksemplarModel->find($id);
         $this->data['eksemplar'] = $eksemplar;
@@ -507,6 +458,7 @@ Logic Pattern:
                 'Currency' => $post['Currency'],
                 'RFID' => 'RFID' . str_pad((int)$RFID + $i, 11, '0', STR_PAD_LEFT),
                 'Price' => $post['Price'],
+                'ISDRM' => $post['ISDRM'],
                 'PriceType' => $post['PriceType'],
                 'TanggalPengadaan' => $post['TANGGAL_PENGADAAN'],
                 'CallNumber' => $post['CallNumber'],

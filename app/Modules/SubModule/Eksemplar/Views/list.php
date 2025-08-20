@@ -42,74 +42,6 @@ $actions = array(
 		</div>
 	</div>
 
-	<?php if (is_member('admin') && false) : ?>
-		<div class="main-card mb-3 card">
-			<div class="card-header"><i class="header-icon lnr-search icon-gradient bg-plum-plate"> </i> Filter
-				<div class="btn-actions-pane-right actions-icon-btn">
-
-				</div>
-			</div>
-			<div class="card-body">
-				<form name="form_items" id="form_search" action="">
-					<div class="row">
-						<div class="col-md-6">
-							<div class="form-group">
-								<label>Provinsi*</label>
-								<div class="select-wrapper">
-									<select required data-error="Pilih Provinsi" class="form-control select2" id="Province" name="Province" style="width:100%"></select>
-								</div>
-								<small class="help-block with-errors"></small>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="form-group">
-								<label>Kota*</label>
-								<div class="select-wrapper">
-									<select class="form-control select2" id="City" name="City" style="width:100%">
-										<option value="">-Select-</option>
-									</select>
-								</div>
-								<small class="help-block with-errors"></small>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="form-group">
-								<label>Kecamatan*</label>
-								<div class="select-wrapper">
-									<select class="form-control select2" id="District" name="Kecamatan" style="width:100%">
-										<option value="">-Select-</option>
-									</select>
-								</div>
-								<small class="help-block with-errors"></small>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="form-group">
-								<label>Kelurahan*</label>
-								<div class="select-wrapper">
-									<select class="form-control select2" id="SubDistrict" name="Kelurahan" style="width:100%">
-										<option value="">-Select-</option>
-									</select>
-								</div>
-								<small class="help-block with-errors"></small>
-							</div>
-						</div>
-					</div>
-					<div class="position-relative form-group">
-						<label for="groups">Perpustakaan Mitra*</label>
-						<div class="select-wrapper">
-							<select class="form-control selectx" name="branch_id" id="Branch" tabindex="-1" aria-hidden="true" style="width:100%">
-								<option value="">-Select-</option>
-							</select>
-						</div>
-					</div>
-					<div class="form-group">
-						<button type="submit" class="btn btn-primary">Apply</button>
-					</div>
-				</form>
-			</div>
-		</div>
-	<?php endif; ?>
 
 	<div class="main-card mb-3 card">
 		<div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Daftar Eksemplar
@@ -159,6 +91,7 @@ $actions = array(
 							<th class="text-center" width="100">No. Induk</th>
 							<th class="text-center" width="">Data Bibliografis</th>
 							<th class="text-center" width="">OPAC</th>
+							<th class="text-center" width="">DRM</th>
 							<th class="text-center" width="">Karantina</th>
 							<th class="text-center" width="80">Aksi</th>
 						</tr>
@@ -174,53 +107,7 @@ $actions = array(
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
-<script>
-	let text = 'https://data.perpusnas.go.id/public/direktori/list?provinsi_id=&kabkota_id=&kecamatan_id=&kelurahan_id=';
-	$('#url').val(text);
 
-	getData(`<?= base_url('api/region/province') ?>`, `#Province`);
-	$('#Province').change(function(e) {
-		let text = 'https://data.perpusnas.go.id/public/direktori/list?provinsi_id=&kabkota_id=&kecamatan_id=&kelurahan_id=';
-		$('#url').val(text);
-
-		var code = $(this).val();
-		getData(`<?= base_url('api/region/city') ?>/${code}.`, `#City`);
-
-		code = code.replace(".", "");
-		code = code.replace(".", "");
-
-		getData(`<?= base_url('api-mitra-perpustakaan/branch') ?>/${code}`, `#Branch`);
-
-	});
-	$('#City').change(function(e) {
-		var code = $(this).val();
-		getData(`<?= base_url('api/region/district') ?>/${code}`, `#District`);
-
-		code = code.replace(".", "");
-		code = code.replace(".", "");
-
-		getData(`<?= base_url('api-mitra-perpustakaan/branch') ?>/${code}/NPP_KabKota_id`, `#Branch`);
-	});
-	$('#District').change(function(e) {
-		var code = $(this).val();
-		getData(`<?= base_url('api/region/sub_district') ?>/${code}`, `#SubDistrict`);
-
-		code = code.replace(".", "");
-		code = code.replace(".", "");
-
-		getData(`<?= base_url('api-mitra-perpustakaan/branch') ?>/${code}/NPP_Kecamatan_id`, `#Branch`);
-	});
-	$('#SubDistrict').change(function(e) {
-		var name = $("#SubDistrict option:selected").text();
-		var code = $(this).val();
-
-		code = code.replace(".", "");
-		code = code.replace(".", "");
-		code = code.replace(".", "");
-
-		getData(`<?= base_url('api-mitra-perpustakaan/branch') ?>/${code}/NPP_Kelurahan_id`, `#Branch`);
-	});
-</script>
 <script>
 	$('#branch_id').select2({
 		maximumInputLength: 3
@@ -267,6 +154,11 @@ $actions = array(
 				},
 				{
 					data: 'IsOPAC',
+					className: 'text-center',
+					orderable: false
+				},
+				{
+					data: 'ISDRM',
 					className: 'text-center',
 					orderable: false
 				},

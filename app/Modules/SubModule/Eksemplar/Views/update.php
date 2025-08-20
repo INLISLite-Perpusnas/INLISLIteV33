@@ -89,6 +89,27 @@ $tanggal_pengadaan = date('Y-m-d', strtotime($eksemplar->TanggalPengadaan));
 
 			<div class="card card-shadow mb-4">
 				<div class="card-body">
+					<div class="form-group">
+							<div class="row">
+                            <div class="col-lg-2 col-md-6">
+                                <label for="is_drm">Is Drm*</label>
+                                <div>
+                                    <div class="form-check">
+                                        <input type="radio" class="form-check-input" name="ISDRM" id="is_drm_1"
+                                            value="1"
+                                            <?= isset($eksemplar->ISDRM) && $eksemplar->ISDRM == 1 ? 'checked' : '' ?> />
+                                        <label class="form-check-label" for="is_drm_1">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="radio" class="form-check-input" name="ISDRM" id="is_drm_0"
+                                            value="0"
+                                            <?= isset($eksemplar->ISDRM) && $eksemplar->ISDRM == 0 ? 'checked' : '' ?> />
+                                        <label class="form-check-label" for="is_drm_0">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+				    </div>
 					<div class="form-group" id="eksemplar">
 						<label for="varchar">Eksemplar</label>
 						<div>
