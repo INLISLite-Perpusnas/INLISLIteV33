@@ -107,6 +107,7 @@ class Group extends \Base\Controllers\BaseController
 		$permissions = $permissionModel->orderby('name', 'asc')->findAll();
 		$this->data['permissions'] = $permissions;
 		$this->data['permissions_users'] = permissions_users(null, $group_id);
+		// dd($this->data['permissions_users']);
 		$this->data['group'] = $group;
 		$this->data['group_id'] = $group_id;
 

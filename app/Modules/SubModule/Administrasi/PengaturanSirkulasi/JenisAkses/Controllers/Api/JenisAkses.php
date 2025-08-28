@@ -32,13 +32,8 @@ class JenisAkses extends \Base\Controllers\BaseResourceController
 	{
 		$db = db_connect('data');
 		$builder = $db->table('collectionrules as a')
-			->select('a.ID, a.ID as action, a.Name as Nama, a.UpdateDate, a.active, a.Branch_id')
-			->select('0 as JumlahKoleksi')
-			->where('a.Branch_id', 0);
-
-		if (is_profiling()) {
-			$builder->orWhere('a.Branch_id', user()->branch_id);
-		}
+			->select('a.ID, a.ID as action, a.Name as Nama, a.UpdateDate, a.active')
+			->select('0 as JumlahKoleksi');
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
@@ -66,10 +61,8 @@ class JenisAkses extends \Base\Controllers\BaseResourceController
 				$active = '<a href="' . base_url('master-jenis-akses/apply_status/' . $row->ID . '?field=active&value=1') . '"  data-id="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Active" class="btn btn-success active-data"><i class="pe-7s-check font-weight-bold"> </i> </a>';
 				$inactive = '<a href="' . base_url('master-jenis-akses/apply_status/' . $row->ID . '?field=active&value=0') . '" data-id="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Inactive" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"> </i> </a>';
 				$delete = '<a href="javascript:void(0);" data-href="' . base_url('master-jenis-akses/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
-				$html = '';
-				if ($row->Branch_id == branch_id()) {
-					$html .= $edit . ' ' . $active . ' ' . $inactive . ' ' . $delete;
-				}
+			
+				$html = $edit . ' ' . $active . ' ' . $inactive . ' ' . $delete;
 				return $html;
 			})
 			->toJson();

@@ -424,7 +424,7 @@
                                                         <span class="badge <?= $is_cold_start ? 'bg-warning text-dark' : 'bg-success' ?>">
                                                             <i class="fas fa-magic me-1"></i><?= $is_cold_start ? 'Populer' : 'Rekomendasi' ?>
                                                         </span>
-                                                    <?php elseif (($catalog->IsOPAC ?? false)): ?>
+                                                    <?php elseif (($catalog->ISDRM ==1)): ?>
                                                         <span class="badge bg-success">
                                                             <i class="fas fa-check me-1"></i>Tersedia Online
                                                         </span>

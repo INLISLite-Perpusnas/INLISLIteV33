@@ -7,10 +7,12 @@ use Base\Models\BaseModel;
 class Permission extends \Base\Controllers\BaseController
 {
     protected $permissionModel;
+    protected $menuModel;
 
     function __construct()
     {
         $this->permissionModel = new \Permission\Models\PermissionModel();
+        $this->menuModel = new \Menu\Models\MenuModel();
     }
 
     public function index()

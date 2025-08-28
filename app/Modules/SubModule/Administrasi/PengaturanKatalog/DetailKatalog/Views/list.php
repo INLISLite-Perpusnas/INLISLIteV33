@@ -35,23 +35,21 @@ $slug = $request->getGet('slug') ?? '';
     <div class="row">
         <div class="col-md-12">
             <div class="main-card mb-3 card">
-                <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Detail Katalog
-                    <div class="btn-actions-pane-right actions-icon-btn">
-                        <?php if (is_allowed('master-detail-katalog/create')) : ?>
-                            <div class="form-row">
-                                <div class="col-md-12">
-                                    <div class="input-group select-wrapper">
-                                        <select class="form-control select2" name="field_id" id="field_id">
-                                        </select>
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary marc-btn-add" type="button" style="min-width:80px"><i class="fa fa-plus"></i> Tambah Tag </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endif; ?>
-                    </div>
+               <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Detail Katalog
+    <div class="btn-actions-pane-right actions-icon-btn">
+        <?php if (is_allowed('master-detail-katalog/create')) : ?>
+            <div class="input-group" style="width: 300px;">
+                <select class="form-control select2" name="field_id" id="field_id">
+                </select>
+                <div class="input-group-append">
+                    <button class="btn btn-primary marc-btn-add" type="button">
+                        <i class="fa fa-plus"></i> Tambah Tag 
+                    </button>
                 </div>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
                 <div class="card-body">
                     <?= get_message('message'); ?>
                     <table style="width: 100%;" id="tbl_data" class="table table-hover table-striped table-bordered">

@@ -83,77 +83,28 @@ $request = service('request');
 </div>
 
 <script>
-    $('#tbl_data').on('click', '.show-data', function() {
-        var url = $(this).attr('data-href');
-        $.ajax({
-            url: url,
-            type: 'get',
-            dataType: 'json',
-            success: function(response) {
-                $('#frm_edit').attr("data-id", response.ID);
-                $('#name').val(response.Name);
-                $('#width').val(response.Width);
-                $('#height').val(response.Height);
-                $('#font_name').val(response.FontName);
-                $('#font_size').val(response.FontSize);
-                $('#format_text').val(response.FormatTeks);
-                $('#format_text_no_author').val(response.FormatTeksNoAuthor);
+   $('#tbl_data').on('click', '.edit-data', function() {
+    var url = $(this).attr('data-href');
+    $.ajax({
+        url: url,
+        type: 'get',
+        dataType: 'json',
+        success: function(response) {
+            $('#frm_edit').attr("data-id", response.ID);
+            $('#name').val(response.Name);
+            $('#width').val(response.Width);
+            $('#height').val(response.Height);
+            $('#font_name').val(response.FontName);
+            $('#font_size').val(response.FontSize);
+            $('#format_text').val(response.FormatTeks);
+            $('#format_text_no_author').val(response.FormatTeksNoAuthor);
 
-                $('#modal_edit').modal('show');
-            }
-        });
+            $('#modal_edit').modal('show');
+        },
+        error: function(xhr, status, error) {
+            console.log('Error:', error);
+            console.log('Response:', xhr.responseText);
+        }
     });
-
-    $('#modal_edit').on('hidden.bs.modal', function(event) {
-        $('#frm_edit_message').html('');
-    });
-
-    $('#modal_edit').on('shown.bs.modal', function(event) {
-                // event.preventDefault();    });
-
-                $('#frm_edit').submit(function(event) {
-                    event.preventDefault();
-                    var data_post = $(this).serializeArray();
-                    var url = $(this).data('action') + '/' + $(this).data('id');
-
-                    $('.loading').show();
-
-                    $.ajax({
-                            url: url,
-                            type: 'POST',
-                            dataType: 'json',
-                            data: data_post,
-                        })
-                        .done(function(res) {
-                            if (!res.error) {
-                                Swal.fire({
-                                    title: 'Success',
-                                    text: 'Format Kartu berhasil disimpan',
-                                    type: 'success',
-                                    showConfirmButton: false,
-                                    timer: 3000
-                                });
-                            } else {
-                                Swal.fire({
-                                    title: 'Error',
-                                    text: 'FormatKartu gagal disimpan',
-                                    type: 'warning',
-                                    showConfirmButton: false,
-                                    timer: 3000
-                                });
-                            }
-
-                            setTimeout(function() {
-                                window.location.href = '<?= base_url('master-format-kartu') ?>';
-                            }, 2000);
-                        })
-                        .fail(function(res) {
-                            $('#frm_edit_message').html(res);
-                        })
-                        .always(function() {
-                            $('.loading').hide();
-                        });
-
-                    return false;
-                });
+});
 </script>

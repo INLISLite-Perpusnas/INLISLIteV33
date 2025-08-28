@@ -624,9 +624,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                    <button type="button" class="btn btn-primary">
-                        <i class="fas fa-download me-1"></i>Download
-                    </button>
+                  
                 </div>
             </div>
         </div>

@@ -81,20 +81,44 @@ if (!function_exists('get_catalog_ruas_tags')) {
 	}
 }
 
-if (!function_exists('get_array_tag')) {
-	function get_array_tag($catalog_id = null, $tag = null)
-	{
-		$data = [];
-		$catalog_ruas = get_catalog_ruas_tag($catalog_id, $tag);
-		$pattern = '/\$[a-zA-Z]+\s+(.*?)(?=\s+\$|$)/';
-		if (preg_match_all($pattern, $catalog_ruas[0]->Value ?? "", $matches)) {
-			$result = array_map('rtrim_chars', $matches[1]);
-			$data = $result;
-		}
 
-		return $data;
-	}
+
+if (!function_exists('get_array_tag')) {
+    /**
+     * Mengambil data dari get_catalog_ruas_tag dan mengubahnya 
+     * menjadi associative array berdasarkan tag ($a, $b, dll).
+     */
+    function get_array_tag($catalog_id = null, $tag = null)
+    {
+        // 1. Ambil data string asli Anda (baris ini TIDAK dibuang)
+        $catalog_ruas = get_catalog_ruas_tag($catalog_id, $tag);
+        
+        // Asumsi data string yang akan diproses ada di sini
+        $string_to_parse = $catalog_ruas[0]->Value ?? ""; 
+        
+        $result = [];
+        
+        // 2. Terapkan logika parsing pada string yang didapat dari fungsi Anda
+        $pattern = '/\/?\$([a-zA-Z])\s*(.*?)(?=\s*\/?\$|$)/s';
+
+        if (preg_match_all($pattern, $string_to_parse, $matches)) {
+            $keys = $matches[1];
+            $values = $matches[2];
+
+            for ($i = 0; $i < count($keys); $i++) {
+                $result[$keys[$i]] = trim($values[$i]);
+            }
+        }
+
+        return $result;
+    }
 }
+
+// Contoh cara memanggil fungsi Anda nanti:
+// $data_katalog = get_array_tag_assoc(12345, 'some_tag');
+// print_r($data_katalog);
+
+
 
 if (!function_exists('rtrim_chars')) {
 	function rtrim_chars($line)
@@ -618,4 +642,102 @@ function sort_array($post)
 	sort($sortedArray);
 
 	return $sortedArray;
+}
+
+/**
+ * Helper function untuk parsing nilai dari MARC subfield (e.g., $a, $b, $c)
+ * @param string $value String MARC lengkap, e.g., "$a Judul : $b Sub Judul"
+ * @param string|array $subfields Karakter subfield yang dicari, e.g., 'a' atau ['a', 'b']
+ * @param string $separator Pemisah jika mencari lebih dari satu subfield
+ * @return string Nilai dari subfield yang ditemukan
+ */
+/**
+ * Helper function to parse values from MARC subfields (e.g., $a, $b, $c).
+ * @param string|null $value The complete MARC string, e.g., "$a Title : $b Sub Title"
+ * @param string|array $subfields The subfield character(s) to search for, e.g., 'a' or ['a', 'b']
+ * @param string $separator The separator to use if multiple subfields are found and combined.
+ * @return string The value(s) from the requested subfield(s).
+ */
+function parse_marc_value($value, $subfields, $separator = ' ')
+{
+    if (is_null($value)) {
+        return '';
+    }
+
+    $subfields = is_array($subfields) ? $subfields : [$subfields];
+    $result = [];
+    $parts = explode('$', $value);
+    
+    foreach ($parts as $part) {
+        if (empty($part)) continue;
+        
+        $subfield_char = substr($part, 0, 1);
+        if (in_array($subfield_char, $subfields)) {
+            $result[] = trim(substr($part, 1));
+        }
+    }
+    
+    return implode($separator, $result);
+}
+
+/**
+ * Converts data from the catalog_ruas table into a flat array for the catalogs table.
+ * @param int $CatalogId The ID of the catalog to convert.
+ * @return array The data ready to be updated into the catalogs table.
+ */
+function convert_catalog_ruas($CatalogId)
+{
+    // Make sure you use the correct namespace for your DataModel
+    $katalogRuasModel = new DataModel('catalog_ruas', null, 'ID'); 
+    $ruas_data = $katalogRuasModel->where('CatalogId', $CatalogId)->findAll();
+
+    if (empty($ruas_data)) {
+        return [];
+    }
+
+    // Reorganize the data into an associative array with Tag as the key
+    $marc = [];
+    foreach ($ruas_data as $ruas) {
+        // PERBAIKAN: Menggunakan sintaks object ($ruas->Tag) bukan array ($ruas['Tag'])
+        $marc[$ruas->Tag] = $ruas->Value;
+    }
+
+    // Start mapping data to the 'catalogs' table columns
+    $update_data = [];
+    
+    $update_data['ControlNumber'] = $marc['001'] ?? null;
+    $update_data['BIBID'] = parse_marc_value($marc['035'] ?? null, 'a');
+    
+    // Combine subfields for the Title
+    $title_a = parse_marc_value($marc['245'] ?? null, 'a');
+    $title_b = parse_marc_value($marc['245'] ?? null, 'b');
+    $title_c = parse_marc_value($marc['245'] ?? null, 'c');
+    $update_data['Title'] = trim($title_a . ' ' . $title_b . ' ' . $title_c);
+
+    $update_data['Author'] = parse_marc_value($marc['100'] ?? null, 'a');
+    $update_data['Edition'] = parse_marc_value($marc['250'] ?? null, 'a');
+
+    // Split and combine subfields for publication data from Tag 260
+    $update_data['Publisher'] = parse_marc_value($marc['260'] ?? null, 'b');
+    $update_data['PublishLocation'] = parse_marc_value($marc['260'] ?? null, 'a');
+    $update_data['PublishYear'] = parse_marc_value($marc['260'] ?? null, 'c');
+    $update_data['Publikasi'] = parse_marc_value($marc['260'] ?? null, ['a', 'b', 'c'], ' ');
+
+    $update_data['Subject'] = parse_marc_value($marc['600'] ?? null, 'a');
+    $update_data['PhysicalDescription'] = parse_marc_value($marc['300'] ?? null, 'a');
+    $update_data['ISBN'] = parse_marc_value($marc['020'] ?? null, 'a');
+    $update_data['CallNumber'] = parse_marc_value($marc['084'] ?? null, 'a');
+    
+    // Extract language code from Tag 008 (position 35, length 3)
+    $tag_008_value = $marc['008'] ?? '';
+    $update_data['Languages'] = (strlen($tag_008_value) >= 38) ? substr($tag_008_value, 35, 3) : null;
+    
+    $update_data['DeweyNo'] = parse_marc_value($marc['082'] ?? null, 'a');
+    
+    // Add any other default values needed for the 'catalogs' table
+    $update_data['IsOPAC'] = 1;
+	$update_data['CreateDate'] = date('Y-m-d H:i:s');
+	$update_data['CreateBy'] =user_id();
+
+    return $update_data;
 }

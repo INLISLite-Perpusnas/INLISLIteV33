@@ -14,6 +14,21 @@
                     <div id="frm_create_message"></div>
                     <div class="form-row">
                         <div class="form-group col">
+                            <label for="menu">Nama Method</label>
+                            <div>
+                                <input type="text" class="form-control" id="name" name="name" placeholder="" value="<?= set_value('name'); ?>" />
+                            </div>
+                        </div>
+                        <div class="form-group col">
+                            <label for="route">Route</label>
+                            <div>
+                                <input type="text" class="form-control" id="route" name="route" placeholder="" value="<?= set_value('route'); ?>" />
+                                <small class="info help-block text-muted">Contoh: {route}/{permission}</small>
+                            </div>
+                        </div>
+                    </div>
+                       <div class="form-row">
+                        <div class="form-group col">
                             <label for="menu">Menu</label>
                             <div>
                                 <select class="form-control" name="menu" id="menu" tabindex="-1">
@@ -69,9 +84,9 @@
                         timer: 3000
                     });
 
-                    // setTimeout(function() {
-                    //     window.location.href = '<?= base_url('permission') ?>';
-                    // }, 2000);
+                    setTimeout(function() {
+                        window.location.href = '<?= base_url('permission') ?>';
+                    }, 2000);
                 } else {
                     $('#frm_create_message').html(res.messages.error);
                 }

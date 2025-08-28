@@ -133,7 +133,7 @@ class Referensi extends \Base\Controllers\BaseController
 			}
 		} else {
 			$ref = $this->refModel->find($id);
-			$refItems = get_table('refferenceitems', 'ID, Refference_id, Code, Name', 'Refference_id=' . $ref->ID, 'data');
+			$refItems = get_table('refferenceitems', 'RefferenceItemsID, Refference_id, Code, Name', 'Refference_id=' . $ref->ID, 'data');
 			$this->data['ref'] = $ref;
 			$this->data['refItems'] = $refItems;
 			set_message('message', $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message'));

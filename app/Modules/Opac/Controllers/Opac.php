@@ -264,7 +264,7 @@ class Opac extends \Base\Controllers\BaseController
             ->join('locations', 'locations.id = collections.Location_id', 'left')
             ->join('collectionstatus', 'collectionstatus.id = collections.Status_id', 'left')
             ->where('collections.catalog_id', $id)
-
+            ->where('collections.ISDRM', 0)
             ->findAll();
 
 

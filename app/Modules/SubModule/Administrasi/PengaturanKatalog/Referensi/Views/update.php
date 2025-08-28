@@ -81,7 +81,7 @@ $slug = $request->getGet('slug');
 							</thead>
 							<tbody id="subruas-tbody">
 								<?php foreach ($refItems as $row) : ?>
-									<?php $index = $row->ID; ?>
+									<?php $index = $row->RefferenceItemsID; ?>
 									<tr class="rm-row">
 										<td>
 											<input type="hidden" name="index0[]" value="<?= $index ?>">
@@ -91,7 +91,7 @@ $slug = $request->getGet('slug');
 											<input type="text" class="form-control" name="name0[<?= $index ?>]" placeholder="" value="<?= $row->Name ?>" required />
 										</td>
 										<td class="text-center">
-											<button type="button" class="btn btn-danger item-btn-remove" data-href="<?= base_url('api/master-referensi/item_data_delete/' . $row->ID) ?>"><i class="fa fa-times"></i></button>
+											<button type="button" class="btn btn-danger item-btn-remove" data-href="<?= base_url('api/master-referensi/item_data_delete/' . $row->RefferenceItemsID) ?>"><i class="fa fa-times"></i></button>
 										</td>
 									</tr>
 								<?php endforeach; ?>

@@ -10,11 +10,13 @@ class Permission extends \Base\Controllers\BaseResourceController
 	protected $permissionModel;
 	protected $validation;
 	protected $session;
+	protected $menuModel;
 	function __construct()
 	{
 		$this->permissionModel = new \Permission\Models\PermissionModel();
 		$this->validation = service('validation');
 		$this->session = service('session');
+		 $this->menuModel = new \Menu\Models\MenuModel();
 	}
 
 	public function detail($id = null)
@@ -29,105 +31,52 @@ class Permission extends \Base\Controllers\BaseResourceController
 
 	public function create()
 	{
-		$this->validation->setRule('name', 'Nama Permission', 'trim');
-		if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
-			$menu = $this->request->getPost('menu');
-			$route = $this->request->getPost('route');
-			$category = $this->request->getPost('category');
-			$description = $this->request->getPost('description');
+    $this->validation->setRules([
+        'name' => 'trim|required',
+    ]);
 
-			$access = (bool) $this->request->getPost('access');
-			$index = (bool) $this->request->getPost('index');
-			$create = (bool) $this->request->getPost('create');
-			$edit = (bool) $this->request->getPost('edit');
-			$delete = (bool) $this->request->getPost('delete');
+    if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
+		$menu=$this->menuModel->where('id', $this->request->getPost('menu'))->first()->name;
+        $data = [
+            'name'        => $this->request->getPost('name'),
+            'route'       => $this->request->getPost('name'),
+            'menu'        => $menu,
+            'category'    => $this->request->getPost('category'),
+            'description' => $this->request->getPost('description'),
+        ];
+        try {
+            $this->permissionModel->insert($data);
 
-			$permissions = [];
-			$permissions[] = $route;
-			if ($access) {
-				$permissions[] = 'access';
-			}
+            $this->session->setFlashdata('toastr_msg', 'Permission berhasil disimpan');
+            $this->session->setFlashdata('toastr_type', 'success');
 
-			if ($index) {
-				$permissions[] = 'index';
-			}
+            $response = [
+                'status'   => 200,
+                'error'    => null,
+                'messages' => [
+                    'success' => 'Permission berhasil disimpan'
+                ]
+            ];
 
-			if ($create) {
-				$permissions[] = 'create';
-			}
+            reloadPermission();
+            return $this->respondCreated($response);
 
-			if ($edit) {
-				$permissions[] = 'edit';
-			}
-
-			if ($delete) {
-				$permissions[] = 'delete';
-			}
-
-			$save_data = [];
-			$update_data = [];
-			$permissions = array_unique($permissions);
-			foreach ($permissions as $index => $permissionKey) {
-				$permissionName = $route . "/" . $permissionKey;
-				$permission = $this->permissionModel->where('name', $permissionName)->first();
-				if (empty($permission)) {
-					$save_data[] = [
-						'name' => $permissionName,
-						'route' => $route,
-						'menu' => $menu,
-						'category' => $category,
-						'description' => $description
-					];
-				} else {
-					$update_data[] = [
-						'id' => $permission->id,
-						'name' => $permissionName,
-						'route' => $route,
-						'menu' => $menu,
-						'category' => $category,
-						'description' => $description
-					];
-				}
-			}
-
-			try {
-				if (!empty($save_data) || !empty($update_data)) {
-
-					if (!empty($save_data)) {
-						$this->permissionModel->insertBatch($save_data);
-					}
-
-					if (!empty($update_data)) {
-						$this->permissionModel->updateBatch($update_data, 'id');
-					}
-
-					$this->session->setFlashdata('toastr_msg', 'Permission berhasil disimpan');
-					$this->session->setFlashdata('toastr_type', 'success');
-					$response = [
-						'status'   => 200,
-						'error'    => null,
-						'messages' => [
-							'success' => 'Permission berhasil disimpan'
-						]
-					];
-					reloadPermission();
-					return $this->respondCreated($response);
-				}
-			} catch (\Exception $e) {
-				$response = [
-					'status'   => 400,
-					'error'    => $e->getMessage(),
-					'messages' => [
-						'error' => 'Permission gagal disimpan'
-					]
-				];
-				return $this->fail($response);
-			}
-		} else {
-			$message = $this->validation->listErrors();
-			return $this->fail($message, 400);
-		}
+        } catch (\Exception $e) {
+            $response = [
+                'status'   => 400,
+                'error'    => $e->getMessage(),
+                'messages' => [
+                    'error' => 'Permission gagal disimpan'
+                ]
+            ];
+            return $this->fail($response);
+        }
+    } else {
+        $message = $this->validation->listErrors();
+        return $this->fail($message, 400);
+    }
 	}
+
 
 	public function edit($id = null)
 	{

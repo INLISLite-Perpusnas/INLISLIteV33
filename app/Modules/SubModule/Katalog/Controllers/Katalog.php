@@ -374,9 +374,31 @@ class Katalog extends \Base\Controllers\BaseController
 						array_push($catalog_ruas_data, $item);
 					}
 				}
+				// ... Kode Anda untuk mem-filter data yang Value-nya hanya '$a'
+				$catalog_ruas_data = array_filter($catalog_ruas_data, function($item) {
+					return trim($item['Value']) !== '$a';
+				});
+				$catalog_ruas_data = array_values($catalog_ruas_data);
+
+
+				// --- TAMBAHKAN KODE BARU DI SINI ---
+
+				// 1. Siapkan data untuk Tag 001
+				$tag_001 = [
+					'CatalogId'  => $CatalogId,
+					'Tag'        => '001',
+					'Value'      => $save_data['ControlNumber'], // Mengambil dari ControlNumber yang sudah dibuat
+					'Indicator1' => '',
+					'Indicator2' => '',
+				];
+
+				// 2. Tambahkan Tag 001 ke bagian paling AWAL dari array
+				array_unshift($catalog_ruas_data, $tag_001);
+				
 				$katalogRuasModel->insertBatch($catalog_ruas_data);
 
 				$update_data = convert_catalog_ruas($CatalogId);
+				
 				$catalogsModel->update($CatalogId, $update_data);
 			}
 
@@ -406,6 +428,158 @@ class Katalog extends \Base\Controllers\BaseController
 			return view('Katalog\Views\add_marc', $data);
 		}
 	}
+
+	// Tambahkan method ini di dalam class controller Katalog Anda
+
+public function edit_marc($id = null)
+{
+	
+
+	if (!$id) {
+		set_message('toastr_msg', 'ID Katalog tidak ditemukan');
+		set_message('toastr_type', 'error');
+		return redirect()->to('katalog');
+	}
+
+	$catalogsModel = new DataModel('catalogs', null, 'ID');
+	$catalog = $catalogsModel->find($id);
+
+	if (!$catalog) {
+		set_message('toastr_msg', 'Data katalog tidak ditemukan');
+		set_message('toastr_type', 'error');
+		return redirect()->to('katalog');
+	}
+
+	$data['title'] = 'Edit Katalog Form MARC';
+	$data['catalog'] = $catalog;
+
+	$this->validation->setRule('Worksheet_id', 'Jenis Bahan', 'required');
+	
+	if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
+		$post = $this->request->getPost();
+
+		// Update catalog basic info
+		$update_catalog = array(
+			'Worksheet_id' => $this->request->getPost('Worksheet_id'),
+		);
+		$catalogsModel->update($id, $update_catalog);
+
+		// Delete existing catalog_ruas data
+		$katalogRuasModel = new DataModel('catalog_ruas', null, 'ID');
+		$katalogRuasModel->where('CatalogId', $id)->delete();
+
+		$Indexes = $this->request->getPost('Index');
+		$Indicator1s = $this->request->getPost('Indicator1');
+		$Indicator2s = $this->request->getPost('Indicator2');
+		$Values = $this->request->getPost('Value');
+
+		$catalogRuasData = [];
+		foreach ($Values as $key => $value) {
+			$items = [];
+			if (array_key_exists($key, $Values)) {
+				$items['Value'] = is_array($Values[$key]) ? $Values[$key] : [$Values[$key]];
+			}
+			if (array_key_exists($key, $Indicator1s)) {
+				$items['Indicator1'] = is_array($Indicator1s[$key]) ? $Indicator1s[$key] : [$Indicator1s[$key]];
+			}
+			if (array_key_exists($key, $Indicator2s)) {
+				$items['Indicator2'] = is_array($Indicator2s[$key]) ? $Indicator2s[$key] : [$Indicator2s[$key]];
+			}
+			$catalogRuasData[$key] = $items;
+		}
+
+		if (!empty($catalogRuasData)) {
+			$catalog_ruas_data = [];
+			foreach ($catalogRuasData as $key => $items) {
+				foreach ($items['Value'] as $index => $row) {
+					$Value = isset($items['Value'][$index]) ? $items['Value'][$index] : '';
+					$Indicator1 = isset($items['Indicator1'][$index]) ? $items['Indicator1'][$index] : '';
+					$Indicator2 = isset($items['Indicator2'][$index]) ? $items['Indicator2'][$index] : '';
+					$item = array(
+						'CatalogId' => $id,
+						'Tag' => $key,
+						'Value' => $Value,
+						'Indicator1' => $Indicator1,
+						'Indicator2' => $Indicator2,
+					);
+					array_push($catalog_ruas_data, $item);
+				}
+			}
+			
+			// Filter data yang Value-nya hanya '$a'
+			$catalog_ruas_data = array_filter($catalog_ruas_data, function($item) {
+				return trim($item['Value']) !== '$a';
+			});
+			$catalog_ruas_data = array_values($catalog_ruas_data);
+
+			// Tambahkan Tag 001 jika belum ada
+			$has_001 = false;
+			foreach ($catalog_ruas_data as $item) {
+				if ($item['Tag'] === '001') {
+					$has_001 = true;
+					break;
+				}
+			}
+
+			if (!$has_001) {
+				$tag_001 = [
+					'CatalogId'  => $id,
+					'Tag'        => '001',
+					'Value'      => $catalog->ControlNumber,
+					'Indicator1' => '',
+					'Indicator2' => '',
+				];
+				array_unshift($catalog_ruas_data, $tag_001);
+			}
+			
+			$katalogRuasModel->insertBatch($catalog_ruas_data);
+
+			$update_data = convert_catalog_ruas($id);
+			$catalogsModel->update($id, $update_data);
+		}
+
+		set_message('toastr_msg', 'Data katalog berhasil diupdate');
+		set_message('toastr_type', 'success');
+		return redirect()->to('katalog');
+	} else {
+		$session = service('session');
+		$worksheetModel = new DataModel('worksheets', null, 'ID');
+		$worksheets = $worksheetModel->orderBy('NoUrut')->findAll();
+		$data['worksheets'] = $worksheets;
+
+		$worksheet_id = $this->request->getvar('worksheet_id') ?? $catalog->Worksheet_id;
+		
+		// Clear session untuk edit
+		$session->remove('worksheet_id');
+		$session->remove('worksheet_fields');
+		$session->set('worksheet_id', $worksheet_id);
+
+		// Get existing catalog_ruas data
+		$katalogRuasModel = new DataModel('catalog_ruas', null, 'ID');
+		$existing_ruas = $katalogRuasModel->where('CatalogId', $id)->findAll();
+		
+		$all_tags = get_all_tags($worksheet_id);
+	
+		// Prepare existing data untuk ditampilkan di form
+		$existing_data = [];
+		foreach ($existing_ruas as $ruas) {
+			$existing_data[$ruas->Tag][] = [
+				'Value' => $ruas->Value,
+				'Indicator1' => $ruas->Indicator1,
+				'Indicator2' => $ruas->Indicator2
+			];
+		}
+		
+		$data['existing_data'] = $existing_data;
+		$data['session_tags'] = $all_tags->session_tags;
+		$data['filtered_tags'] = $all_tags->filtered_tags;
+
+		return view('Katalog\Views\edit_marc', $data);
+	}
+}
+
+
+	
 
 	public function hapus_permanen()
 	{
@@ -1424,7 +1598,7 @@ class Katalog extends \Base\Controllers\BaseController
 			$catalogData['CreateDate'] = date('Y-m-d H:i:s');
 			$catalogData['CreateTerminal'] = $this->request->getIPAddress();
 			$catalogData['active'] = 1;
-			dd($catalogData);
+			
 			// Filter data sesuai field tabel
 			$tableFields = $this->db->getFieldNames('catalogs');
 			$filteredData = [];

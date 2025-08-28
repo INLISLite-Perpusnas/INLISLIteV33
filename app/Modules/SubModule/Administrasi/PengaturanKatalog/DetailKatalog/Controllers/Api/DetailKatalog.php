@@ -35,12 +35,9 @@ class DetailKatalog extends \Base\Controllers\BaseResourceController
 		$builder = $db->table('settingcatalogdetail as a')
 			->select('a.ID, a.ID as action, a.active, a.Branch_id')
 			->select('b.Tag, b.Name as Name')
-			->join('fields as b', 'b.ID = a.Field_id')
-			->where('a.Branch_id', 0);
+			->join('fields as b', 'b.ID = a.Field_id');
 
-		if (is_profiling()) {
-			$builder->orWhere('a.Branch_id', user()->branch_id);
-		}
+		
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
@@ -65,10 +62,7 @@ class DetailKatalog extends \Base\Controllers\BaseResourceController
 			})
 			->edit('action', function ($row) {
 				$delete = '<a href="javascript:void(0);" data-href="' . base_url('master-detail-katalog/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
-				$html = '';
-				if ($row->Branch_id == branch_id()) {
-					$html .= $delete;
-				}
+				$html = '' . $delete . '';
 				return $html;
 			})
 			->toJson();

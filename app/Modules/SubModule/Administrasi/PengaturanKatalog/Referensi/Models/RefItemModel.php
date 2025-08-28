@@ -5,7 +5,7 @@ namespace Referensi\Models;
 class RefItemModel extends \Base\Models\DataModel
 {
     protected $table      			= 'refferenceitems';
-    protected $primaryKey 			= 'ID';
+    protected $primaryKey 			= 'RefferenceItemsID';
     protected $returnType     		= 'object';
     protected $useSoftDeletes 		= false;
     protected $protectFields 		= false;

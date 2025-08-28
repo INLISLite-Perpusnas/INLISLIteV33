@@ -41,19 +41,19 @@ $rda = $request->getGet('rda') ?? 1;
 				<div class="col-md-12">
 					<div class="form-group">
 						<label for="judul">Judul Utama</label>
-						<input type="text" class="form-control" name="judul[a]" id="judul" placeholder="" value="<?= ltrim_words($str_245[0] ?? '') ?>" />
+						<input type="text" class="form-control" name="judul[a]" id="judul" placeholder="" value="<?= ltrim_words($str_245['a'] ?? '') ?>" />
 					</div>
 				</div>
 				<div class="col-md-12">
 					<div class="form-group">
 						<label for="anakJudul">Anak Judul</label>
-						<input type="text" class="form-control" name="judul[b]" id="anakJudul" placeholder="" value="<?= ltrim_words($str_245[1] ?? '') ?>" />
+						<input type="text" class="form-control" name="judul[b]" id="anakJudul" placeholder="" value="<?= ltrim_words($str_245['b'] ?? '') ?>" />
 					</div>
 				</div>
 				<div class="col-md-12">
 					<div class="form-group">
 						<label for="penanggungJawab">Penanggung Jawab</label>
-						<input type="text" class="form-control" name="judul[c]" id="penanggungJawab" placeholder="" value="<?= ltrim_words($str_245[2] ?? '') ?>" />
+						<input type="text" class="form-control" name="judul[c]" id="penanggungJawab" placeholder="" value="<?= ltrim_words($str_245['c'] ?? '') ?>" />
 					</div>
 				</div>
 				<?php if ($rda == 1) : ?>
@@ -345,19 +345,19 @@ $rda = $request->getGet('rda') ?? 1;
 				<div class="col-md-6">
 					<div class="form-group">
 						<label for="varchar">Tempat Terbit</label>
-						<input type="text" class="form-control" name="penerbit[a]" id="PublishLocation" placeholder="" value="<?= trim($str_260[0] ?? '') ?>" />
+						<input type="text" class="form-control" name="penerbit[a]" id="PublishLocation" placeholder="" value="<?= trim($str_260['a'] ?? '') ?>" />
 					</div>
 				</div>
 				<div class=" col-md-6">
 					<div class="form-group">
 						<label for="varchar">Penerbit</label>
-						<input type="text" class="form-control" name="penerbit[b]" id="Publisher" placeholder="" value="<?= trim($str_260[1] ?? '') ?>" />
+						<input type="text" class="form-control" name="penerbit[b]" id="Publisher" placeholder="" value="<?= trim($str_260['b'] ?? '') ?>" />
 					</div>
 				</div>
 				<div class=" col-md-6">
 					<div class="form-group">
 						<label for="varchar">Tahun Terbit</label>
-						<input type="text" class="form-control" name="penerbit[c]" id="PublishYear" placeholder="" value="<?= trim($str_260[2] ?? '') ?>" />
+						<input type="text" class="form-control" name="penerbit[c]" id="PublishYear" placeholder="" value="<?= trim($str_260['c'] ?? '') ?>" />
 					</div>
 				</div>
 				<?php if ($catalog->Worksheet_id == 4) : ?>
@@ -409,25 +409,25 @@ $rda = $request->getGet('rda') ?? 1;
 				<div class="col-md-6">
 					<div class="form-group">
 						<label for="varchar">Jumlah Halaman</label>
-						<input type="text" class="form-control" name="PhysicalDescription[a]" id="jumlahHalaman" placeholder="" value="<?= trim($str_300[0] ?? '') ?>" />
+						<input type="text" class="form-control" name="PhysicalDescription[a]" id="jumlahHalaman" placeholder="" value="<?= trim($str_300['a'] ?? '') ?>" />
 					</div>
 				</div>
 				<div class=" col-md-6">
 					<div class="form-group">
 						<label for="varchar">Ket. Ilustrasi</label>
-						<input type="text" class="form-control" name="PhysicalDescription[b]" id="ketIllus" placeholder="" value="<?= trim($str_300[1] ?? '') ?>" />
+						<input type="text" class="form-control" name="PhysicalDescription[b]" id="ketIllus" placeholder="" value="<?= trim($str_300['b'] ?? '') ?>" />
 					</div>
 				</div>
 				<div class=" col-md-6">
 					<div class="form-group">
 						<label for="varchar">Dimensi</label>
-						<input type="text" class="form-control" name="PhysicalDescription[c]" id="dimensi" placeholder="" value="<?= trim($str_300[2] ?? '') ?>" />
+						<input type="text" class="form-control" name="PhysicalDescription[c]" id="dimensi" placeholder="" value="<?= trim($str_300['c'] ?? '') ?>" />
 					</div>
 				</div>
 				<div class=" col-md-6">
 					<div class="form-group">
 						<label for="varchar">Bahan Sertaan</label>
-						<input type="text" class="form-control" name="PhysicalDescription[e]" id="bahanSertaan" placeholder="" value="<?= trim($str_300[3] ?? '') ?>" />
+						<input type="text" class="form-control" name="PhysicalDescription[e]" id="bahanSertaan" placeholder="" value="<?= trim($str_300['d'] ?? '') ?>" />
 					</div>
 				</div>
 			</div>
@@ -535,16 +535,16 @@ $rda = $request->getGet('rda') ?? 1;
 			<div class="form-group">
 				<label for="ISBN">ISBN</label>
 				<div id="ISBN">
-					<?php if (get_catalog_ruas_tag($catalog->ID, '022')) : ?>
-						<?php $idx_022 = 0; ?>
-						<?php foreach (get_catalog_ruas_tag($catalog->ID, '022') as $row) : ?>
+					<?php if (get_catalog_ruas_tag($catalog->ID, '020')) : ?>
+						<?php $idx_020 = 0; ?>
+						<?php foreach (get_catalog_ruas_tag($catalog->ID, '020') as $row) : ?>
 							<div id="ISBN<?= $row->ID ?>" class="form input-group mb-2" title="">
 								<input type="text" class="form-control" name="ISBN[]" placeholder="" value="<?= trim(preg_replace('/\$a /', '', $row->Value)) ?>" />
 								<div class="input-group-append">
-									<span data-id="<?= $row->ID ?>" class="<?= ($idx_022 == 0) ? 'add-ISBN' : 'remove-ISBN' ?> btn btn-outline-secondary"><i class="fa fa-<?= ($idx_022 == 0) ? 'plus' : 'minus' ?>"></i></span>
+									<span data-id="<?= $row->ID ?>" class="<?= ($idx_020 == 0) ? 'add-ISBN' : 'remove-ISBN' ?> btn btn-outline-secondary"><i class="fa fa-<?= ($idx_020 == 0) ? 'plus' : 'minus' ?>"></i></span>
 								</div>
 							</div>
-							<?php $idx_022++; ?>
+							<?php $idx_020++; ?>
 						<?php endforeach; ?>
 					<?php else : ?>
 						<div class="form input-group mb-2" title="">
