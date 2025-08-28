@@ -16,7 +16,7 @@ $slug = $request->getGet('slug') ?? '';
                     <i class="pe-7s-server icon-gradient bg-strong-bliss"></i>
                 </div>
                 <div>Master Kelompok Umur
-                    <div class="page-title-subheading">Daftar semua Master Fakultas</div>
+                    <div class="page-title-subheading">Daftar Semua Master Kelompok Umur</div>
                 </div>
             </div>
             <div class="page-title-actions">

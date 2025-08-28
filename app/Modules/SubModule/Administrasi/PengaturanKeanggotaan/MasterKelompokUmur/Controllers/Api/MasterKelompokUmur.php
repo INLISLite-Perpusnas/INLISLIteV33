@@ -86,16 +86,16 @@ class MasterKelompokUmur extends \Base\Controllers\BaseResourceController
 
 		$save_data_id = $this->masterKelompokUmurModel->insert($save_data);
 		if ($save_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Master Kelas berhasil disimpan');
+			$this->session->setFlashdata('toastr_msg', 'Master Kelompok Umur berhasil disimpan');
 			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
-				'message' => 'Master Kelas berhasil disimpan',
+				'message' => 'Master Kelompok Umur berhasil disimpan',
 			];
 		} else {
 			$response = [
 				'error' => true,
-				'message' => 'Jenis Pendidikan gagal disimpan. Silakan coba lagi',
+				'message' => 'Master Kelompok Umur gagal disimpan. Silakan coba lagi',
 			];
 		}
 
@@ -112,16 +112,16 @@ class MasterKelompokUmur extends \Base\Controllers\BaseResourceController
 
 		$update_data_id = $this->masterKelompokUmurModel->update($id, $update_data);
 		if ($update_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Jenis Pendidikan berhasil disimpan');
+			$this->session->setFlashdata('toastr_msg', 'Master Kelompok Umur disimpan');
 			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
-				'message' => 'Jenis Master kelompok umur berhasil disimpan',
+				'message' => 'Master Kelompok Umur berhasil disimpan',
 			];
 		} else {
 			$response = [
 				'error' => true,
-				'message' => 'Jenis Master kelompok umur gagal disimpan. Silakan coba lagi',
+				'message' => 'Master Kelompok Umur gagal disimpan. Silakan coba lagi',
 			];
 		}
 
