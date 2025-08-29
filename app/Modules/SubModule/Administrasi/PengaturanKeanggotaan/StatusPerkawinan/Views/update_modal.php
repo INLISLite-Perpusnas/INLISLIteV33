@@ -79,7 +79,7 @@
 					showConfirmButton: false,
 					timer: 5000,
 				}).then(() => {
-					window.location.href = `<?=base_url('status-perkawinan')?>`;
+					window.location.href = `<?=base_url('master-status-perkawinan')?>`;
 				});
 			} else {				
 				Swal.fire({

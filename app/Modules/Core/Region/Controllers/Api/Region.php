@@ -18,14 +18,12 @@ class Region extends \Base\Controllers\BaseResourceController
 
 	public function get_provinces()
 	{
-		$npp_provinsi_id = user()->npp_provinsi_id;
+		
 		$builder = $this->regionModel
 			->select('npp,code,name')
 			->where('level', 1);
 
-		if (!empty($npp_provinsi_id)) {
-			$builder->where('npp', $npp_provinsi_id);
-		}
+		
 
 		$response = $builder->findAll();
 		return $this->simpleResponse($response);

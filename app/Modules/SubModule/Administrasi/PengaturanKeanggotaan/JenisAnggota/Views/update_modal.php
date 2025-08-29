@@ -49,6 +49,14 @@
 							<div class="form-group">
 								<label for="MaxLoanDays">Maksimal Pinjam Koleksi</label>
 								<div>
+									<input required type="text" class="form-control" id="frm_update_MaxPinjamKoleksi" name="MaxPinjamKoleksi" placeholder="Maksimal Pinjam Koleksi" value="" />
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-6">
+							<div class="form-group">
+								<label for="MaxLoanDays">Maksimal Lama Pinjam Koleksi</label>
+								<div>
 									<input required type="text" class="form-control" id="frm_update_MaxLoanDays" name="MaxLoanDays" placeholder="Maksimal Pinjam Koleksi" value="" />
 								</div>
 							</div>
@@ -89,6 +97,7 @@
                 $('#frm_update_MasaBerlakuAnggota').val(response.MasaBerlakuAnggota);
                 $('#frm_update_BiayaPendaftaran').val(response.BiayaPendaftaran);
                 $('#frm_update_BiayaPerpanjangan').val(response.BiayaPerpanjangan);
+                $('#frm_update_MaxPinjamKoleksi').val(response.MaxPinjamKoleksi);
                 $('#frm_update_MaxLoanDays').val(response.MaxLoanDays);
                 $('#frm_update_UploadDokumenKeanggotaanOnline').val(response.UploadDokumenKeanggotaanOnline);
                 $('#modal_update').modal('show');
@@ -125,7 +134,7 @@
 					showConfirmButton: false,
 					timer: 5000,
 				}).then(() => {
-					window.location.href = `<?=base_url('jenis-anggota')?>`;
+					window.location.href = `<?=base_url('master-jenis-anggota')?>`;
 				});
 			} else {				
 				Swal.fire({

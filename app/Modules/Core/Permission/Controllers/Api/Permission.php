@@ -39,7 +39,7 @@ class Permission extends \Base\Controllers\BaseResourceController
 		$menu=$this->menuModel->where('id', $this->request->getPost('menu'))->first()->name;
         $data = [
             'name'        => $this->request->getPost('name'),
-            'route'       => $this->request->getPost('name'),
+            'route'       => $this->request->getPost('route'),
             'menu'        => $menu,
             'category'    => $this->request->getPost('category'),
             'description' => $this->request->getPost('description'),

@@ -33,7 +33,7 @@ class JenisAnggota extends \Base\Controllers\BaseResourceController
 		$db = db_connect('data');
 		$builder = $db->table('jenis_anggota as a')
 			->select('a.id, a.id as action, a.jenisanggota')
-			->select('a.MasaBerlakuAnggota, a.BiayaPendaftaran, a.MaxLoanDays, a.DayPerpanjang, a.BiayaPerpanjangan, a.UploadDokumenKeanggotaanOnline, a.UpdateDate')
+			->select('a.MasaBerlakuAnggota, a.BiayaPendaftaran, a.MaxLoanDays,a.MaxPinjamKoleksi, a.DayPerpanjang, a.BiayaPerpanjangan, a.UploadDokumenKeanggotaanOnline, a.UpdateDate')
 			->select('a.description,a.sort, a.active');
 
 		$dataTable = DataTable::of($builder)
@@ -64,13 +64,13 @@ class JenisAnggota extends \Base\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('DefaultLokasi', function ($row) {
-				$editlokasi = '<a href="' . base_url('master-jenis-anggota/DefaultLokasi/' . $row->id) . '"  data-placement="top" title="Ubah" class="btn btn-primary show-data">Default Lokasi</a><br>';
+				$editlokasi = '<a href="' . base_url('master-jenis-anggota/defaultlokasi/' . $row->id) . '"  data-placement="top" title="Ubah" class="btn btn-primary show-data">Default Lokasi</a><br>';
 
 				return $editlokasi;
 			})
 			->edit('DefaultBahan', function ($row) {
 
-				$editbahan = '<a href="' . base_url('master-jenis-anggota/DefaultBahan/' . $row->id) . '"  data-placement="top" title="Ubah" class="btn btn-primary show-data">Default Bahan</a>';
+				$editbahan = '<a href="' . base_url('master-jenis-anggota/defaultbahan/' . $row->id) . '"  data-placement="top" title="Ubah" class="btn btn-primary show-data">Default Bahan</a>';
 				return $editbahan;
 			})
 			->edit('active', function ($row) {
@@ -115,6 +115,7 @@ class JenisAnggota extends \Base\Controllers\BaseResourceController
 			'DayPerpanjang' => $this->request->getPost('DayPerpanjang'),
 			'BiayaPerpanjangan' => $this->request->getPost('BiayaPerpanjangan'),
 			'MaxLoanDays' => $this->request->getPost('MaxLoanDays'),
+			'MaxPinjamKoleksi' => $this->request->getPost('MaxPinjamKoleksi'),
 			'UploadDokumenKeanggotaanOnline' => $this->request->getPost('UploadDokumenKeanggotaanOnline'),
 		);
 
@@ -144,6 +145,7 @@ class JenisAnggota extends \Base\Controllers\BaseResourceController
 			'BiayaPendaftaran' => $this->request->getPost('BiayaPendaftaran'),
 			'DayPerpanjang' => $this->request->getPost('DayPerpanjang'),
 			'BiayaPerpanjangan' => $this->request->getPost('BiayaPerpanjangan'),
+			'MaxPinjamKoleksi' => $this->request->getPost('MaxPinjamKoleksi'),
 			'MaxLoanDays' => $this->request->getPost('MaxLoanDays'),
 			'UploadDokumenKeanggotaanOnline' => $this->request->getPost('UploadDokumenKeanggotaanOnline'),
 		);

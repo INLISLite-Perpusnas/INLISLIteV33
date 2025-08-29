@@ -60,6 +60,7 @@ class User extends \Base\Controllers\BaseResourceController
 		$builder = $db->table('users as a')
 			->select('a.id, a.id as action, a.username,a.email, concat(a.first_name, " ", a.last_name) as full_name, a.first_name, a.last_name, a.active, a.updated_at, a.id as group_id')
 			->like('a.category', $slug);
+			// dd($builder->get()->getResult());
 
 		if (empty($slug)) {
 			$builder->where('id <', 0);

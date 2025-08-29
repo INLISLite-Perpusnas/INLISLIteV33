@@ -33,9 +33,7 @@ $slug = $request->getGet('slug') ?? '';
     <div class="main-card mb-3 card col-md-8">
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Status Perkawinan
             <div class="btn-actions-pane-right actions-icon-btn">
-                <?php if (is_allowed('statusperkawinan/create')) : ?>
                     <a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Status Perkawinan</a>
-                <?php endif; ?>
             </div>
         </div>
         <div class="card-body">
@@ -68,7 +66,7 @@ $slug = $request->getGet('slug') ?? '';
             "processing": true,
             "serverSide": true,
             "ajax": {
-                "url": '<?php echo site_url('api-status-perkawinan/datatable/' . $slug) ?>',
+                "url": '<?php echo site_url('api/master-status-perkawinan/datatable/' . $slug) ?>',
             },
             "dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
                 "<'row'<'col-md-12'tr>>" +

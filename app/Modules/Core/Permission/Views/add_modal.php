@@ -23,7 +23,6 @@
                             <label for="route">Route</label>
                             <div>
                                 <input type="text" class="form-control" id="route" name="route" placeholder="" value="<?= set_value('route'); ?>" />
-                                <small class="info help-block text-muted">Contoh: {route}/{permission}</small>
                             </div>
                         </div>
                     </div>
@@ -34,13 +33,6 @@
                                 <select class="form-control" name="menu" id="menu" tabindex="-1">
                                     <?= $parent_menus ?>
                                 </select>
-                            </div>
-                        </div>
-                        <div class="form-group col">
-                            <label for="route">Permission</label>
-                            <div>
-                                <input type="text" class="form-control" id="route" name="route" placeholder="access|index|create|edit|delete" value="<?= set_value('route'); ?>" />
-                                <small class="info help-block text-muted">Contoh: {route}/{permission}</small>
                             </div>
                         </div>
                     </div>
