@@ -30,7 +30,7 @@ $slug = $request->getGet('slug') ?? '';
         </div>
     </div>
 
-    <div class="main-card mb-3 card col-md-8">
+    <div class="main-card mb-3 card col-md-12">
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Master Kelompok Umur
             <div class="btn-actions-pane-right actions-icon-btn">
                 <?php if (is_allowed('fakultas/create')) : ?>
