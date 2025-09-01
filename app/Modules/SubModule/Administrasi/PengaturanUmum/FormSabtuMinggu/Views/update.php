@@ -93,8 +93,8 @@ $slug = $request->getGet('slug') ?? '';
 							</div>
 						</div>
 						<div class="form-group">
-					<button type="submit" class="btn btn-primary" name="submit">Simpan</button>
-				</div>
+							<button type="submit" class="btn btn-primary" name="submit">Simpan</button>
+						</div>
 				</div>
 
 				
@@ -102,7 +102,6 @@ $slug = $request->getGet('slug') ?? '';
 			</div>
 		</div>
 	</div>
-</div>
 </div>
 <?= $this->endSection('page') ?>
 
