@@ -90,7 +90,7 @@ $slug = $request->getGet('slug') ?? '';
 								<div class="position-relative form-group">
 									<label for="Email">Jenis Perpustakaan</label>
 									<div>
-										<input type="text" class="form-control" name="jenis_perpustakaan" id="jenis_perpustakaan" placeholder="" value="<?= set_value('jenis_perpustakaan', $jenis_perpustakaan) ?>">
+										<input type="text" class="form-control" name="jenis_perpustakaan" id="jenis_perpustakaan" placeholder="" value="<?= set_value('jenis_perpustakaan', $jenis_perpustakaan) ?>" readonly>
 									</div>
 								</div>
 							</div>
@@ -151,7 +151,7 @@ $slug = $request->getGet('slug') ?? '';
 										&lt;i class=&quot;right-icon bx bx-chevrons-right&quot;&gt;&lt;/i&gt;Senin-Jumat 08.00 - 16.00 WIB&lt;br&gt;
 										&lt;i class=&quot;right-icon bx bx-chevrons-right&quot;&gt;&lt;/i&gt;Sabtu-Minggu 08.00 - 15.00 WIB&lt;br&gt;
 										&lt;i class=&quot;right-icon bx bx-chevrons-right&quot;&gt;&lt;/i&gt;Cuti Bersama dan Libur Nasional &lt;b&gt;Tutup&lt;/b&gt;&lt;br&gt;';
-										$LayananOperasionl = $branch->LayananOperasionl ?? $LayananOperasionl_Str;
+										$LayananOperasionl = $jam_operasional ?: $LayananOperasionl_Str;
 
 										// Decode the HTML content to display it properly
 										$LayananOperasionl_Display = htmlspecialchars_decode($LayananOperasionl, ENT_QUOTES);
@@ -187,7 +187,7 @@ $slug = $request->getGet('slug') ?? '';
 								<div class="form-group" style="display: inline-block">
 									<div>
 										<label for="IsUseKop">Gunakan Kop di Laporan </label><br>
-										<input type="checkbox" class="apply-status" name="IsUseKop" data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="normal" value="<?= set_checkbox('IsUseKop', '1', $is_use_kop) ?>" <?= ($is_use_kop) ? 'checked' : '' ?>>
+										<input type="checkbox" class="apply-status" name="IsUseKop" value="1" data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="normal" <?= ($is_use_kop) ? 'checked' : '' ?>>
 									</div>
 								</div>
 							</div>
