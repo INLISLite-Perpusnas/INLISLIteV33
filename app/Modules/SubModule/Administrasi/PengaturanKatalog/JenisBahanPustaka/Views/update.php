@@ -97,32 +97,36 @@ $slug = $request->getGet('slug');
 					<div class="col-md-2">
 						<div class="form-group" style="display: inline-block">
 							<div>
-								<label for="serial">Serial </label><br>
-								<input type="checkbox" class="apply-status" name="serial" data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="normal" <?= $ws->ISSERIAL == 1 ? 'checked' : '' ?>>
+								<label for="serial">Serial</label><br>
+								<input type="hidden" name="serial" value="0">
+								<input type="checkbox" class="apply-status" name="serial" value="1" data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="normal" <?= $ws->ISSERIAL == 1 ? 'checked' : '' ?>>
 							</div>
 						</div>
 					</div>
 					<div class="col-md-2">
 						<div class="form-group" style="display: inline-block">
 							<div>
-								<label for="kartografi">Kartografi </label><br>
-								<input type="checkbox" class="apply-status" name="kartografi" data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="normal" <?= $ws->ISKARTOGRAFI == 1 ? 'checked' : '' ?>>
+								<label for="kartografi">Kartografi</label><br>
+								<input type="hidden" name="kartografi" value="0">
+								<input type="checkbox" class="apply-status" name="kartografi" value="1" data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="normal" <?= $ws->ISKARTOGRAFI == 1 ? 'checked' : '' ?>>
 							</div>
 						</div>
 					</div>
 					<div class="col-md-2">
 						<div class="form-group" style="display: inline-block">
 							<div>
-								<label for="musik">Musik </label><br>
-								<input type="checkbox" class="apply-status" name="musik" data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="normal" <?= $ws->ISMUSIK == 1 ? 'checked' : '' ?>>
+								<label for="musik">Musik</label><br>
+								<input type="hidden" name="musik" value="0">
+								<input type="checkbox" class="apply-status" name="musik" value="1" data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="normal" <?= $ws->ISMUSIK == 1 ? 'checked' : '' ?>>
 							</div>
 						</div>
 					</div>
 					<div class="col-md-2">
 						<div class="form-group" style="display: inline-block">
 							<div>
-								<label for="berisi_artikel">Berisi Artikel </label><br>
-								<input type="checkbox" class="apply-status" name="berisi_artikel" data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="normal">
+								<label for="berisi_artikel">Berisi Artikel</label><br>
+								<input type="hidden" name="berisi_artikel" value="0">
+								<input type="checkbox" class="apply-status" name="berisi_artikel" value="1" data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="normal">
 							</div>
 						</div>
 					</div>

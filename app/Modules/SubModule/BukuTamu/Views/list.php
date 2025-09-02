@@ -64,7 +64,6 @@ $slug = $request->getGet('slug') ?? '';
                         <th class="text-center" width="120">Tgl. Kunjungan</th>
                         <th class="text-center" width="120">Nama Anggota</th>
                         <th class="text-center" width="100">Nomor Anggota</th>
-                        <th class="text-center">Nama Perpustakaan</th>
                         <th class="text-center">Lokasi Perpustakaan</th>
                         <th class="text-center">Lokasi Ruang</th>
                         <th class="text-center" width="50">Aksi</th>
@@ -118,10 +117,6 @@ $slug = $request->getGet('slug') ?? '';
                     data: 'Member_no'
                 },
                 {
-                    data: 'Branch_name',
-                    className: 'text-center'
-                },
-                {
                     data: 'LocationLibrary_name',
                     className: 'text-center'
                 },
@@ -136,11 +131,11 @@ $slug = $request->getGet('slug') ?? '';
                 },
             ],
             "columnDefs": [{
-                    targets: [0, 7],
+                    targets: [0, 6],
                     searchable: false
                 },
                 {
-                    targets: [0, 7],
+                    targets: [0, 6],
                     orderable: false
                 },
             ],

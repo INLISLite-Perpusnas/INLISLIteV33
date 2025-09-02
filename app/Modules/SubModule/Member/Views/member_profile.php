@@ -107,10 +107,6 @@
 								$default = base_url('uploads/default/nophoto.jpg');
 								$image = (!empty($member->PhotoUrl)) ? base_url('uploads/anggota/' . $member->PhotoUrl) : $default;
 							?>
-
-							<a href="<?=$image?>" class="image-link">
-								<img class="rounded" src="<?=$image?>" id="lazy<?=$member->ID?>" class="lazy" data-src="<?=$image?>" onerror="this.onerror=null;this.src='<?=$default?>';" alt="Foto Profil">
-							</a>
 							</div>
 						</div>
 						<div>

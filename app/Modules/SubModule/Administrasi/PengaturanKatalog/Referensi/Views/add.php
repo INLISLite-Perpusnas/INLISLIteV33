@@ -39,7 +39,7 @@ $slug = $request->getGet('slug');
 		</div>
 		<div class="card-body">
 			<div id="infoMessage"><?= $message ?? '' ?></div> <?= get_message('message') ?>
-			<form id="frm_create" method="post" action="<?= base_url('master-referensi/create/') ?>" onsubmit="return validateForm()">
+			<form id="frm_create" method="post" action="<?= base_url('master-referensi/create') ?>" onsubmit="return validateForm()">
 				<div class="form-row">
 					<div class="col-md-6">
 						<div class="position-relative form-group">

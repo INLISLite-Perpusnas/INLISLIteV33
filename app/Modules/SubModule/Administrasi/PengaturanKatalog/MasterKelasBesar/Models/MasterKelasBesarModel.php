@@ -7,6 +7,7 @@ use CodeIgniter\Model;
 class MasterKelasBesarModel extends Model
 {
     protected $table = 'master_kelas_besar';
+    protected $DBGroup='data';
     protected $primaryKey = 'ID';
     protected $useAutoIncrement = true;
     protected $returnType = 'object';

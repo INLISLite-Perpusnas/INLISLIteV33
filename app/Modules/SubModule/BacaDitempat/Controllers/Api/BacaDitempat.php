@@ -45,15 +45,8 @@ class BacaDitempat extends \Base\Controllers\BaseResourceController
 			->select('a.collection_id as Collection_id, "" as Barcode_no')
 			->join('members', 'members.ID = a.Member_id', 'left')
 			->join('locations', 'locations.ID = a.Location_id', 'left')
-			->join('location_library', 'location_library.ID = locations.LocationLibrary_id', 'left')
-			->join('branchs', 'branchs.ID=location_library.branch_id', 'left');
-		if (is_member('admin') || is_member('sa_prov') || is_member('sa_kabkot')) {
-			if (!empty($branch_id)) {
-				$builder->where('a.Branch_id', $branch_id);
-			} else {
-				$builder->where('a.ID', 0);
-			}
-		}
+			->join('location_library', 'location_library.ID = locations.LocationLibrary_id', 'left');
+		
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
 			->edit('VisitDate', function ($row) {

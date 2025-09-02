@@ -40,7 +40,7 @@ class LokasiPerpustakaan extends \Base\Controllers\BaseController
         if (!$id) {
             set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
             set_message('toastr_type', 'error');
-            return redirect()->to('lokasi-perpustakaan');
+            return redirect()->to('master-lokasi-perpustakaan');
         }
         $lokasiperpustakaanDelete = $this->lokasiperpustakaanModel->delete($id);
         if ($lokasiperpustakaanDelete) {
@@ -51,7 +51,7 @@ class LokasiPerpustakaan extends \Base\Controllers\BaseController
             set_message('toastr_msg', 'Lokasi Perpustakaan gagal dihapus');
             set_message('toastr_type', 'warning');
             set_message('message', 'Lokasi Perpustakaan gagal dihapus');
-            return redirect()->to('lokasi-perpustakaan');
+            return redirect()->to('master-lokasi-perpustakaan');
         }
     }
 
@@ -69,6 +69,6 @@ class LokasiPerpustakaan extends \Base\Controllers\BaseController
             set_message('toastr_msg', 'Lokasi Perpustakaan gagal diubah');
             set_message('toastr_type', 'warning');
         }
-        return redirect()->to('/lokasi-perpustakaan');
+        return redirect()->to('master-lokasi-perpustakaan');
     }
 }
