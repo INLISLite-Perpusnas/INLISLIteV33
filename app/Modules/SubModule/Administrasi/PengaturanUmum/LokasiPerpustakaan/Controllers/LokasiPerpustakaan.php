@@ -46,7 +46,7 @@ class LokasiPerpustakaan extends \Base\Controllers\BaseController
         if ($lokasiperpustakaanDelete) {
             set_message('toastr_msg', 'Lokasi Perpustakaan berhasil dihapus');
             set_message('toastr_type', 'success');
-            return redirect()->to('lokasi-perpustakaan');
+            return redirect()->to('master-lokasi-perpustakaan');
         } else {
             set_message('toastr_msg', 'Lokasi Perpustakaan gagal dihapus');
             set_message('toastr_type', 'warning');
