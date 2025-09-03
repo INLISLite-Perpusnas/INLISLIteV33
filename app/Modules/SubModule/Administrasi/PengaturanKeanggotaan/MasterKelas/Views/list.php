@@ -16,7 +16,7 @@ $slug = $request->getGet('slug') ?? '';
                     <i class="pe-7s-server icon-gradient bg-strong-bliss"></i>
                 </div>
                 <div>Master Kelas
-                    <div class="page-title-subheading">Daftar semua Master Kelas</div>
+                    <div class="page-title-subheading">Daftar Semua Master Kelas</div>
                 </div>
             </div>
             <div class="page-title-actions">
@@ -31,7 +31,7 @@ $slug = $request->getGet('slug') ?? '';
     </div>
 
     <div class="main-card mb-3 card col-md-8">
-        <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Jenis Pendidikan
+        <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Master Kelas
             <div class="btn-actions-pane-right actions-icon-btn">
                
                     <a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i>Master Kelas</a>
