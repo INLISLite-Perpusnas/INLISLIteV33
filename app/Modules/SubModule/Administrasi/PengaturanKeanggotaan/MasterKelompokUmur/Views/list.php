@@ -23,6 +23,8 @@ $slug = $request->getGet('slug') ?? '';
                 <nav class="" aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('master-kelompok-umur') ?>"><i class="fa fa-home"></i> Home</a></li>
+                        <li class="breadcrumb-item">Administrasi</li>
+						<li class="breadcrumb-item">Pengaturan Keanggotaan</li>
                         <li class="active breadcrumb-item" aria-current="page">Master Kelompok Umur</li>
                     </ol>
                 </nav>
@@ -34,7 +36,7 @@ $slug = $request->getGet('slug') ?? '';
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Master Kelompok Umur
             <div class="btn-actions-pane-right actions-icon-btn">
                 <?php if (is_allowed('fakultas/create')) : ?>
-                    <a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i>Master Kelompok Umur</a>
+                    <a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Tambah</a>
                 <?php endif; ?>
             </div>
         </div>
