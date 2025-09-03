@@ -3,13 +3,13 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="header-icon lnr-pencil icon-gradient bg-plum-plate"> </i> Edit Master kelas
+                    <i class="header-icon lnr-pencil icon-gradient bg-plum-plate"> </i> Edit Master Kelas
                 </h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form id="frm_update" method="post" data-action="<?= base_url('api/kelas/edit') ?>" data-id="">
+            <form id="frm_update" method="post" data-action="<?= base_url('api/master-kelas/edit') ?>" data-id="">
 				<div class="modal-body">
                     <div id="frm_create_message"></div>
 					<div class="form-row">
@@ -79,7 +79,7 @@
 					showConfirmButton: false,
 					timer: 5000,
 				}).then(() => {
-					window.location.href = `<?=base_url('master/kelas')?>`;
+					window.location.href = `<?=base_url('master-kelas')?>`;
 				});
 			} else {				
 				Swal.fire({

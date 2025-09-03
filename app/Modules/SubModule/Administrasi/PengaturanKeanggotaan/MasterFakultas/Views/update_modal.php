@@ -3,7 +3,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="header-icon lnr-pencil icon-gradient bg-plum-plate"> </i> Edit Master fakultas
+                    <i class="header-icon lnr-pencil icon-gradient bg-plum-plate"> </i> Edit Master Fakultas
                 </h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -74,7 +74,7 @@
 			if (res.error == false) {
 				Swal.fire({
 					title: 'Berhasil',
-					html: 'Fakultas siswa berhasil disimpan.',
+					html: 'Master Fakultas berhasil disimpan.',
 					type: 'success',
 					showConfirmButton: false,
 					timer: 5000,
