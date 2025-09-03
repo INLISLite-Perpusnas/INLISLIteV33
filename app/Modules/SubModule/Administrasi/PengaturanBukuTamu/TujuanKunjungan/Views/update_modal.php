@@ -66,21 +66,22 @@
 				$('#frm_update_Code').val(response.Code); // Change frm_add_Code to frm_update_Code
 				$('#frm_update_TujuanKunjungan').val(response.TujuanKunjungan); // Change frm_add_TujuanKunjungan to frm_update_TujuanKunjungan
 				// Update the checkboxes based on the response
-				if (response.Member) {
+				if (response.Member == "1") {
 					$('#frm_update_Member').prop('checked', true);
 				} else {
 					$('#frm_update_Member').prop('checked', false);
 				}
-				if (response.NonMember) {
+				if (response.NonMember == "1") {
 					$('#frm_update_NonMember').prop('checked', true);
 				} else {
 					$('#frm_update_NonMember').prop('checked', false);
 				}
-				if (response.Rombongan) {
+				if (response.Rombongan == "1") {
 					$('#frm_update_Rombongan').prop('checked', true);
 				} else {
 					$('#frm_update_Rombongan').prop('checked', false);
 				}
+        $('#modal_update').modal('show');
 			}
 		});
 	});
