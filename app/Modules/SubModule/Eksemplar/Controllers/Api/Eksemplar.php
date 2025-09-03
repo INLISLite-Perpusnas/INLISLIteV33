@@ -144,7 +144,14 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 			})
 			->edit('action', function ($row) use ($catalog_id) {
 		// Tombol Edit selalu ditampilkan
-		$edit = '<a href="' . base_url('eksemplar/edit/' . $row->ID . '?catalog_id=' . $catalog_id) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
+		// Siapkan URL dasar terlebih dahulu
+		$baseUrl = base_url('eksemplar/edit/' . $row->ID);
+
+		// Gunakan ternary operator untuk menambahkan parameter HANYA jika $catalog_id tidak kosong
+		$finalUrl = !empty($catalog_id) ? $baseUrl . '?catalog_id=' . $catalog_id : $baseUrl;
+
+		// Gabungkan menjadi HTML akhir
+		$edit = '<a href="' . $finalUrl . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
 		
 		// Siapkan variabel delete sebagai string kosong
 		$delete = ""; 
