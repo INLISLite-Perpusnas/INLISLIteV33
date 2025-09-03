@@ -22,7 +22,7 @@ $slug = $request->getGet('slug') ?? '';
             <div class="page-title-actions">
                 <nav class="" aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="<?= base_url('jenisdenda') ?>"><i class="fa fa-home"></i> Home</a></li>
+                        <li class="breadcrumb-item"><a href="<?= base_url('/master-jenis-denda') ?>"><i class="fa fa-home"></i> Home</a></li>
                         <li class="active breadcrumb-item" aria-current="page">Jenis Denda</li>
                     </ol>
                 </nav>

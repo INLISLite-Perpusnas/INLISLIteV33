@@ -37,18 +37,18 @@ class JenisPelanggaran extends \Base\Controllers\BaseController
         if (!$id) {
             set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
             set_message('toastr_type', 'error');
-            return redirect()->to('jenis-pelanggaran');
+            return redirect()->to('/master-jenis-pelanggaran');
         }
         $jenispelanggaranDelete = $this->jenispelanggaranModel->delete($id);
         if ($jenispelanggaranDelete) {
             set_message('toastr_msg', 'Jenis Pelanggaran berhasil dihapus');
             set_message('toastr_type', 'success');
-            return redirect()->to('jenis-pelanggaran');
+            return redirect()->to('/master-jenis-pelanggaran');
         } else {
             set_message('toastr_msg', 'Jenis Pelanggaran gagal dihapus');
             set_message('toastr_type', 'warning');
             set_message('message', 'Jenis Pelanggaran gagal dihapus');
-            return redirect()->to('jenis-pelanggaran');
+            return redirect()->to('/master-jenis-pelanggaran');
         }
     }
 
@@ -66,6 +66,6 @@ class JenisPelanggaran extends \Base\Controllers\BaseController
             set_message('toastr_msg', 'Jenis Pelanggaran gagal diubah');
             set_message('toastr_type', 'warning');
         }
-        return redirect()->to('/jenis-pelanggaran');
+        return redirect()->to('/master-jenis-pelanggaran');
     }
 }
