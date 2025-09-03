@@ -43,7 +43,7 @@ class MasterKelompokUmur extends \Base\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('UpdateDate', function ($row) {
-				$html  =  '<badge class="badge badge-info">' . $row->UpdateDate . '</badge>';
+				 $html = \Carbon\Carbon::parse($row->UpdateDate)->format('m-d-Y');
 				return $html;
 			})
 			->edit('action', function ($row) use ($branchId) {
