@@ -100,11 +100,15 @@ class TujuanKunjungan extends \Base\Controllers\BaseResourceController
 	{
 		$save_data = array(
 			'Code' => $this->request->getPost('Code'),
+			'TujuanKunjungan' => $this->request->getPost('TujuanKunjungan'),
+			'Member' => $this->request->getPost('Member'),
+			'NonMember' => $this->request->getPost('NonMember'),
+			'Rombongan' => $this->request->getPost('Rombongan'),
 		);
 
 		$save_data_id = $this->tujuankunjunganModel->insert($save_data);
 		if ($save_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Jenis Kelamin berhasil disimpan');
+			$this->session->setFlashdata('toastr_msg', 'Tujuan Kunjungan berhasil disimpan');
 			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
@@ -123,7 +127,11 @@ class TujuanKunjungan extends \Base\Controllers\BaseResourceController
 	public function edit($id = null)
 	{
 		$update_data = array(
-			'Name' => $this->request->getPost('Name'),
+			'Code' => $this->request->getPost('Code'),
+			'TujuanKunjungan' => $this->request->getPost('TujuanKunjungan'),
+			'Member' => $this->request->getPost('Member'),
+			'NonMember' => $this->request->getPost('NonMember'),
+			'Rombongan' => $this->request->getPost('Rombongan'),
 		);
 
 		$update_data_id = $this->tujuankunjunganModel->update($id, $update_data);

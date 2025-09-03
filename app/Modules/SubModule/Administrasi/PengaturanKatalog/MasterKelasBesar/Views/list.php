@@ -50,7 +50,6 @@ $slug = $request->getGet('slug') ?? '';
             </div>
         </div>
         <div class="card-body">
-            <?= get_message('message'); ?>
             <table style="width: 100%;" id="tbl_data" class="table table-hover table-striped table-bordered">
                 <thead>
                     <tr>
@@ -175,6 +174,135 @@ $slug = $request->getGet('slug') ?? '';
         });
         return false;
     });
+</script>
+
+<script>
+    // Tambahkan script ini di bagian script view Anda
+$("body").on("click", ".toggle-status", function(e) {
+    e.preventDefault();
+    
+    var button = $(this);
+    var url = button.attr('data-href');
+    var currentStatus = button.attr('data-status');
+    var newStatus = currentStatus == '1' ? '0' : '1';
+    var statusText = newStatus == '1' ? 'mengaktifkan' : 'menonaktifkan';
+    var statusAction = newStatus == '1' ? 'diaktifkan' : 'dinonaktifkan';
+    
+    Swal.fire({
+        title: 'Konfirmasi Perubahan Status',
+        text: `Apakah Anda yakin ingin ${statusText} data ini?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Lanjutkan!',
+        cancelButtonText: 'Batal',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Show loading
+            Swal.fire({
+                title: 'Memproses...',
+                text: 'Mohon tunggu sebentar',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // AJAX request
+            $.ajax({
+                url: url,
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: response.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            // Reload DataTable
+                            t.ajax.reload(null, false);
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: 'Terjadi kesalahan saat memproses data.'
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Terjadi kesalahan sistem: ' + error
+                    });
+                }
+            });
+        }
+    });
+});
+
+// Untuk tombol hapus yang sudah ada, update juga
+$("body").on("click", ".remove-data", function(e) {
+    e.preventDefault();
+    var url = $(this).attr('data-href');
+    
+    Swal.fire({
+        title: 'Apakah Anda yakin?',
+        text: "Data yang dihapus tidak dapat dikembalikan!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Show loading
+            Swal.fire({
+                title: 'Menghapus data...',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Redirect ke URL hapus
+            window.location.href = url;
+        }
+    });
+});
+
+// Flash message handling (jika menggunakan session flashdata)
+<?php if (session()->getFlashdata('success')) : ?>
+Swal.fire({
+    icon: 'success',
+    title: 'Berhasil!',
+    text: '<?= session()->getFlashdata('success') ?>',
+    timer: 3000,
+    showConfirmButton: false
+});
+<?php endif; ?>
+
+<?php if (session()->getFlashdata('error')) : ?>
+Swal.fire({
+    icon: 'error',
+    title: 'Error!',
+    text: '<?= session()->getFlashdata('error') ?>',
+    timer: 3000,
+    showConfirmButton: false
+});
+<?php endif; ?>
 </script>
 
 <?= $this->endSection('script'); ?>

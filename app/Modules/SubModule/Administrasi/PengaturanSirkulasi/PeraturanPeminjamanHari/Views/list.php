@@ -23,6 +23,7 @@ $slug = $request->getGet('slug') ?? '';
                 <nav class="" aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('jenisbahan') ?>"><i class="fa fa-home"></i> Home</a></li>
+                        <li class="active breadcrumb-item" aria-current="page">Pengaturan Sirkulasi</li>
                         <li class="active breadcrumb-item" aria-current="page">Peraturan Peminjaman Hari</li>
                     </ol>
                 </nav>
@@ -33,9 +34,7 @@ $slug = $request->getGet('slug') ?? '';
     <div class="main-card mb-3 card">
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Peraturan Peminjaman Hari
             <div class="btn-actions-pane-right actions-icon-btn">
-                <?php if (is_allowed('master-peraturan-peminjaman-hari/create')) : ?>
                     <a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Peraturan Hari</a>
-                <?php endif; ?>
             </div>
         </div>
         <div class="card-body">

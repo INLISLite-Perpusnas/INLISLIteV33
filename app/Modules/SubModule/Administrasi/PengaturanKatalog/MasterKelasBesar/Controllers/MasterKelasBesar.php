@@ -32,7 +32,7 @@ class MasterKelasBesar extends \Base\Controllers\BaseController
             $validation = \Config\Services::validation();
             
             $validation->setRules([
-                'kdKelas' => 'required|max_length[3]|is_unique[master_kelas_besar.kdKelas]',
+                'kdKelas' => 'required|max_length[3]',
                 'namakelas' => 'required|max_length[255]',
                 'warna' => 'max_length[50]'
             ]);
@@ -85,7 +85,7 @@ class MasterKelasBesar extends \Base\Controllers\BaseController
             $validation = \Config\Services::validation();
             
             $validation->setRules([
-                'kdKelas' => "required|max_length[3]|is_unique[master_kelas_besar.kdKelas,ID,{$id}]",
+                'kdKelas' => "required|max_length[3]",
                 'namakelas' => 'required|max_length[255]',
                 'warna' => 'max_length[50]'
             ]);
@@ -127,29 +127,35 @@ class MasterKelasBesar extends \Base\Controllers\BaseController
         return redirect()->to(base_url('master-kelas-besar'));
     }
 
-    public function apply_status($id)
-    {
-        $field = $this->request->getGet('field');
-        $value = $this->request->getGet('value');
+  public function apply_status($id)
+{
+    $field = $this->request->getGet('field');
+    $value = $this->request->getGet('value');
 
-        if ($field && in_array($field, ['active'])) {
-            $data = [
-                $field => $value,
-                'UpdateBy' => user()->id,
-                'UpdateDate' => date('Y-m-d H:i:s'),
-                'UpdateTerminal' => $this->request->getIPAddress()
-            ];
+    if ($field === 'active') {
+        $this->masterkelasbesar->update($id, [
+            $field => $value,
+            'UpdateBy' => user()->id,
+            'UpdateDate' => date('Y-m-d H:i:s'),
+            'UpdateTerminal' => $this->request->getIPAddress()
+        ]);
 
-            if ($this->masterkelasbesar->update($id, $data)) {
-                $status = $value == 1 ? 'diaktifkan' : 'dinonaktifkan';
-                session()->setFlashdata('message', alert_success("Data berhasil {$status}"));
-            } else {
-                session()->setFlashdata('message', alert_error('Gagal mengubah status'));
-            }
+        $status = $value == 1 ? 'diaktifkan' : 'dinonaktifkan';
+        
+        // Return JSON response untuk AJAX
+        if ($this->request->isAJAX()) {
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => "Data berhasil {$status}.",
+                'status' => $status
+            ]);
         }
-
-        return redirect()->to(base_url('master-kelas-besar'));
+        
+        $this->session->setFlashdata('success', "Data berhasil {$status}.");
     }
+    
+    return redirect()->to(base_url('master-kelas-besar'));
+}
 
     public function datatable($slug = null)
     {

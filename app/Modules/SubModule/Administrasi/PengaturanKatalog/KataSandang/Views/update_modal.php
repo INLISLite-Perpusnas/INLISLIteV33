@@ -53,73 +53,127 @@ $request = service('request');
 </div>
 
 <script>
-    $('#tbl_data').on('click', '.show-data', function() {
+$(document).ready(function() {
+    // Pastikan event handler didaftarkan setelah DOM ready
+    $(document).on('click', '.show-data', function(e) {
+        e.preventDefault();
+        
         var url = $(this).attr('data-href');
+        console.log('URL being called:', url); // Debug log
+        
+        // Show loading indicator
+        $('.loading').show();
+        
         $.ajax({
             url: url,
-            type: 'get',
+            type: 'GET',
             dataType: 'json',
+            timeout: 10000, // 10 second timeout
             success: function(response) {
+                console.log('Response received:', response); // Debug log
+                
+                // Set form data-id
                 $('#frm_edit').attr("data-id", response.ID);
+                
+                // Populate form fields
                 $('#frm_edit_tag').val(response.Tag);
                 $('#frm_edit_name').val(response.Name);
                 $('#frm_edit_length').val(response.JumlahKarakter);
-
+                
+                // Show modal
                 $('#modal_edit').modal('show');
+            },
+            error: function(xhr, status, error) {
+                console.log('AJAX Error:', {
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText,
+                    statusCode: xhr.status
+                });
+                
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Gagal memuat data: ' + error,
+                    type: 'error',
+                    confirmButtonText: 'OK'
+                });
+            },
+            complete: function() {
+                $('.loading').hide();
             }
         });
     });
-
+    
+    // Modal event handlers
     $('#modal_edit').on('hidden.bs.modal', function(event) {
         $('#frm_edit_message').html('');
+        $('#frm_edit')[0].reset(); // Reset form
+        $('#frm_edit').removeAttr('data-id'); // Clear data-id
     });
 
-    $('#modal_edit').on('shown.bs.modal', function(event) {
-                // event.preventDefault();    });
+    // Form submit handler
+    $('#frm_edit').on('submit', function(event) {
+        event.preventDefault();
+        
+        var formId = $(this).data('id');
+        if (!formId) {
+            Swal.fire({
+                title: 'Error',
+                text: 'ID tidak ditemukan',
+                type: 'error'
+            });
+            return false;
+        }
+        
+        var data_post = $(this).serializeArray();
+        var url = $(this).data('action') + '/' + formId;
+        
+        console.log('Submitting to:', url); // Debug log
+        console.log('Data:', data_post); // Debug log
 
-                $('#frm_edit').submit(function(event) {
-                    event.preventDefault();
-                    var data_post = $(this).serializeArray();
-                    var url = $(this).data('action') + '/' + $(this).data('id');
+        $('.loading').show();
 
-                    $('.loading').show();
-
-                    $.ajax({
-                            url: url,
-                            type: 'POST',
-                            dataType: 'json',
-                            data: data_post,
-                        })
-                        .done(function(res) {
-                            if (!res.error) {
-                                Swal.fire({
-                                    title: 'Success',
-                                    text: 'Kata Sandang berhasil disimpan',
-                                    type: 'success',
-                                    showConfirmButton: false,
-                                    timer: 3000
-                                });
-                            } else {
-                                Swal.fire({
-                                    title: 'Error',
-                                    text: 'KataSandang gagal disimpan',
-                                    type: 'warning',
-                                    showConfirmButton: false,
-                                    timer: 3000
-                                });
-                            }
-
-                            setTimeout(function() {
-                                window.location.href = '<?= base_url('master-kata-sandang') ?>';
-                            }, 2000);
-                        })
-                        .fail(function(res) {
-                            $('#frm_edit_message').html(res);
-                        })
-                        .always(function() {
-                            $('.loading').hide();
-                        });
-
-                    return false;
+        $.ajax({
+            url: url,
+            type: 'POST',
+            dataType: 'json',
+            data: data_post,
+            success: function(res) {
+                if (!res.error) {
+                    Swal.fire({
+                        title: 'Success',
+                        text: 'Kata Sandang berhasil disimpan',
+                        type: 'success',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                    
+                    setTimeout(function() {
+                        $('#modal_edit').modal('hide');
+                        t.ajax.reload(); // Reload datatable instead of redirect
+                    }, 2000);
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: res.messages || 'Kata Sandang gagal disimpan',
+                        type: 'error'
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.log('Submit Error:', xhr.responseText);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Terjadi kesalahan: ' + error,
+                    type: 'error'
                 });
+            },
+            complete: function() {
+                $('.loading').hide();
+            }
+        });
+        
+        return false;
+    });
+});
 </script>

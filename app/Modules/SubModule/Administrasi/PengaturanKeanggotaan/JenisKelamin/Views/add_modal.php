@@ -58,7 +58,7 @@
 					showConfirmButton: false,
 					timer: 5000,
 				}).then(() => {
-					window.location.href = `<?=base_url('jenis-kelamin')?>`;
+					window.location.href = `<?=base_url('master-jenis-kelamin')?>`;
 				});
 			} else {				
 				Swal.fire({

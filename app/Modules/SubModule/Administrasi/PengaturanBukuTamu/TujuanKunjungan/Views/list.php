@@ -33,11 +33,10 @@ $slug = $request->getGet('slug') ?? '';
     </div>
 
     <div class="main-card mb-3 card">
-        <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Jenis Kelamin
+        <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Tujuan Kunjungan
             <div class="btn-actions-pane-right actions-icon-btn">
-                <?php if (is_allowed('tujuankunjungan/create')) : ?>
-                    <a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Jenis Kelamin</a>
-                <?php endif; ?>
+               
+                    <a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Tujuan Kunjungan</a>
             </div>
         </div>
         <div class="card-body">

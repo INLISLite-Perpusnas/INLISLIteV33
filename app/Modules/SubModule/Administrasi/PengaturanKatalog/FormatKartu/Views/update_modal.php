@@ -83,13 +83,14 @@ $request = service('request');
 </div>
 
 <script>
+   // Tampilkan data ke form saat klik tombol edit
    $('#tbl_data').on('click', '.edit-data', function() {
-    var url = $(this).attr('data-href');
-    $.ajax({
-        url: url,
-        type: 'get',
-        dataType: 'json',
-        success: function(response) {
+      var url = $(this).attr('data-href');
+      $.ajax({
+         url: url,
+         type: 'get',
+         dataType: 'json',
+         success: function(response) {
             $('#frm_edit').attr("data-id", response.ID);
             $('#name').val(response.Name);
             $('#width').val(response.Width);
@@ -100,11 +101,69 @@ $request = service('request');
             $('#format_text_no_author').val(response.FormatTeksNoAuthor);
 
             $('#modal_edit').modal('show');
-        },
-        error: function(xhr, status, error) {
+         },
+         error: function(xhr, status, error) {
             console.log('Error:', error);
             console.log('Response:', xhr.responseText);
-        }
-    });
-});
+         }
+      });
+   });
+
+   // Submit form edit via AJAX
+ $('#frm_edit').submit(function(event) {
+		event.preventDefault();
+		var url = $(this).data('action') + '/' + $(this).data('id');
+		var data_post = $(this).serializeArray();
+
+		$("#btnUpdate").html('<i class="fa fa-spinner fa-spin loading"></i> Mohon menunggu...');
+		$("#btnUpdate").attr('disabled', true);
+
+		$.ajax({
+				url: url,
+				type: 'POST',
+				data: data_post,
+			})
+			.done(function(res) {
+				console.log(res)
+
+				if (res.error == false) {
+					Swal.fire({
+						title: 'Berhasil',
+						html: 'Format Kartu Berhasil Diubah.',
+						type: 'success',
+						showConfirmButton: false,
+						timer: 5000,
+					}).then(() => {
+						window.location.href = `<?= base_url('master-format-kartu') ?>`;
+					});
+				} else {
+					Swal.fire({
+						title: 'Oups',
+						text: res.message,
+						type: 'error',
+						showConfirmButton: false,
+						timer: 5000
+					}).then(() => {
+						$("#btnUpdate").attr('disabled', false);
+						$("#btnUpdate").html('Simpan');
+					});
+				}
+			})
+			.fail(function(res) {
+				console.log(res);
+
+				Swal.fire({
+					title: 'Oups',
+					text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
+					type: 'error',
+					showConfirmButton: false,
+					timer: 5000
+				}).then(() => {
+					$("#btnUpdate").attr('disabled', false);
+					$("#btnUpdate").html('Simpan');
+				});
+			});
+
+		return false;
+	});
 </script>

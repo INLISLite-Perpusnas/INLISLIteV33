@@ -67,61 +67,51 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 	}
 
 	public function update()
-{
-	$this->validation->setRule('nama_perpustakaan', 'Nama Perpustakaan', 'required');
+	{
+		$this->validation->setRule('nama_perpustakaan', 'Nama Perpustakaan', 'required');
 
-	if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
-		
-		
+		if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {	
+			$LayananOperasionl_Str = htmlspecialchars($this->request->getPost('LayananOperasionl') ?? '', ENT_QUOTES, 'UTF-8');
+			
+			// Update settings
+			$dataToUpdate = [
+				'NamaPerpustakaan' => trim($this->request->getPost('nama_perpustakaan')),
+				'NamaLokasiPerpustakaan' => trim($this->request->getPost('nama_lokasi_perpustakaan')),
+				'NPPPerpustakaan' => trim($this->request->getPost('npp_perpustakaan')),
+				'EmailPerpustakaan' => trim($this->request->getPost('email_perpustakaan')),
+				'Instagram' => trim($this->request->getPost('instagram')),
+				'Facebook' => trim($this->request->getPost('facebook')),
+				'Youtube' => trim($this->request->getPost('youtube')),
+				'Phone' => trim($this->request->getPost('phone')),
+				'TulisanBanner' => trim($this->request->getPost('tulisan_banner')),
+				'TentangKami' => trim($this->request->getPost('tentang_kami')),
+				'IsUseKop' => $this->request->getPost('IsUseKop') ? 1 : 0,
+				'JamOperasional' => $LayananOperasionl_Str
+			];
 
-		$LayananOperasionl_Str = htmlspecialchars($this->request->getPost('LayananOperasionl') ?? '', ENT_QUOTES, 'UTF-8');
-
-		
-
-		
-		// Update settings
-		$dataToUpdate = [
-			'NamaPerpustakaan' => trim($this->request->getPost('nama_perpustakaan')),
-			'NamaLokasiPerpustakaan' => trim($this->request->getPost('nama_lokasi_perpustakaan')),
-			'NPPPerpustakaan' => trim($this->request->getPost('npp_perpustakaan')),
-			'EmailPerpustakaan' => trim($this->request->getPost('email_perpustakaan')),
-			'JamOperasional' => trim($this->request->getPost('jam_operasional')),
-			'Instagram' => trim($this->request->getPost('instagram')),
-			'Facebook' => trim($this->request->getPost('facebook')),
-			'Youtube' => trim($this->request->getPost('youtube')),
-			'Phone' => trim($this->request->getPost('phone')),
-			'TulisanBanner' => trim($this->request->getPost('tulisan_banner')),
-			'TentangKami' => trim($this->request->getPost('tentang_kami')),
-			'IsUseKop' => $this->request->getPost('IsUseKop') ? 1 : 0,
-			'LayananOperasionl' => $LayananOperasionl_Str,
-		];
-
-		$success = true;
-		foreach ($dataToUpdate as $name => $value) {
-			$row = $this->settingModel->where('Name', $name)->first();
-			if ($row) {
-				if (!$this->settingModel->update($row->ID, ['Value' => $value])) {
-					$success = false;
+			$success = true;
+			foreach ($dataToUpdate as $name => $value) {
+				$row = $this->settingModel->where('Name', $name)->first();
+				if ($row) {
+					if (!$this->settingModel->update($row->ID, ['Value' => $value])) {
+						$success = false;
+					}
 				}
 			}
-		}
 
-		if ($success) {
-			set_message('toastr_msg', 'Perubahan berhasil disimpan');
-			set_message('toastr_type', 'success');
+			if ($success) {
+				set_message('toastr_msg', 'Perubahan berhasil disimpan');
+				set_message('toastr_type', 'success');
+			} else {
+				set_message('toastr_msg', 'Gagal menyimpan perubahan');
+				set_message('toastr_type', 'error');
+			}
+			return redirect()->back();
 		} else {
-			set_message('toastr_msg', 'Gagal menyimpan perubahan');
+			$errors = implode(', ', $this->validation->getErrors());
+			set_message('toastr_msg', $errors);
 			set_message('toastr_type', 'error');
+			return redirect()->back();
 		}
-		return redirect()->back();
-	} else {
-		$errors = implode(', ', $this->validation->getErrors());
-		set_message('toastr_msg', $errors);
-		set_message('toastr_type', 'error');
-		return redirect()->back();
 	}
-}
-
-
-	
 }

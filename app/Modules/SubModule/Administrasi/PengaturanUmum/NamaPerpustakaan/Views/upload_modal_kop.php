@@ -19,14 +19,20 @@
                     <div class="form-group">
                         <label>Kop Laporan Saat Ini:</label>
                         <div id="current_kop_preview" class="text-center mb-3">
-                            <img id="current_kop_img" src="" alt="Current Kop" 
-                                 class="img-thumbnail" style="max-width: 100%; max-height: 150px; display: none;">
-                            <div id="no_kop_message" class="text-muted">
-                                <i class="fas fa-image fa-3x"></i>
-                                <p>Belum ada kop laporan</p>
-                            </div>
+                            <?php if (!empty($logo_kop)) : ?>
+                                <img width="150px" 
+                                    src="<?= base_url('uploads/branch/' . $logo_kop) ?>" 
+                                    alt="Kop Laporan" 
+                                    class="img img-thumbnail">
+                            <?php else : ?>
+                                <div id="no_kop_message" class="text-muted">
+                                    <i class="fas fa-image fa-3x"></i>
+                                    <p>Belum ada kop laporan</p>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
+
 
                     <div class="form-group">
                         <label for="kop_file">Pilih File Kop Laporan*</label>

@@ -13,6 +13,7 @@ class GuestBook extends \App\Controllers\BaseController
 	public $session;
 	public $validation;
 	public $db;
+	public $settingModel;
 
 	function __construct()
 	{
@@ -23,6 +24,7 @@ class GuestBook extends \App\Controllers\BaseController
 		 $this->validation = \Config\Services::validation();
 		$this->memberguestModel = new \BukuTamu\Models\MemberGuestModel();
 		$this->groupguestModel  =  new \BukuTamu\Models\GroupGuestModel();
+		$this->settingModel = new \PenomoranKoleksi\Models\PenomoranKoleksiModel();
 
 		helper('reference');
 		helper('peminjaman');
@@ -35,6 +37,9 @@ class GuestBook extends \App\Controllers\BaseController
 	
 	public function index()
 	{
+
+		$this->data['SettingBukuTamu'] = $this->settingModel->where('Name', 'SettingBukuTamu')->first()->Value ?? '0';
+		
 		// Get member number from request
 		$member_no = $this->request->getGet('member_no');
 
@@ -96,42 +101,59 @@ class GuestBook extends \App\Controllers\BaseController
 	}
 
 	public function store_anggota()
-	{
+{
+    $locationId = $this->request->getCookie('Location_id');
+    if (!$locationId) {
+        return redirect()->to('buku-tamu');
+    }
 
-		$locationId = $this->request->getCookie('Location_id');
-		if(!$locationId){
-			return redirect()->to('buku-tamu');
-		}
-		$this->validation->setRule('member_no', 'Nomor Anggota', 'trim');
-		if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
-			$member_no = $this->request->getPost('member_no') ?? '';
-			$member = get_ref_single('members', 'MemberNo="' . $member_no . '"', 'data');
-			if (!empty($member)) {
-				$save_data = [
-					'NoAnggota' => $member->MemberNo,
-					'Nama' => $member->Fullname,
-					'PendidikanTerakhir_id' => $member->EducationLevel_id,
-					'Profesi_id' => $member->Job_id,
-					'Alamat' => $member->Address,
-					'Location_id' => $locationId,
-					'Branch_id' => $member->Branch_id,
-				];
+    $this->validation->setRule('member_no', 'Nomor Anggota', 'trim|required');
 
-				$newBukuTamuId = $this->memberguestModel->insert($save_data);
-				if ($newBukuTamuId) {
-					$this->session->setFlashdata('success', 'Kunjungan berhasil dicatat.');
-					return redirect()->to(base_url('buku-tamu'));
+    if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
+        $member_no = $this->request->getPost('member_no');
+        $member = get_ref_single('members', 'MemberNo="' . $member_no . '"', 'data');
+        
+        if (!empty($member)) {
+            // 1. Buat array data dengan informasi yang pasti disimpan
+            $save_data = [
+                'NoAnggota'             => $member->MemberNo,
+                'Nama'                  => $member->Fullname,
+                'PendidikanTerakhir_id' => $member->EducationLevel_id,
+                'Profesi_id'            => $member->Job_id,
+                'Alamat'                => $member->Address,
+                'Location_id'           => $locationId,
+                'Branch_id'             => $member->Branch_id,
+            ];
 
-				} else {
-				$this->session->setFlashdata('message', 'Buku Tamu gagal disimpan');
-				}
+            // 2. Periksa setting dari database
+            $SettingBukuTamu = $this->settingModel->where('Name', 'SettingBukuTamu')->first()->Value ?? '0';
 
-				return redirect()->to('/buku-tamu');
-			}
-		}
+            // 3. HANYA JIKA setting = 1, tambahkan 'TujuanKunjungan_id' ke dalam array
+            if ($SettingBukuTamu == '1') {
+                $save_data['TujuanKunjungan_id'] = $this->request->getPost('TujuanKunjungan_id');
+            }
 
-		
-	}
+            // 4. Simpan array yang sudah final ke database
+            $newBukuTamuId = $this->memberguestModel->insert($save_data);
+
+            if ($newBukuTamuId) {
+                $this->session->setFlashdata('success', 'Kunjungan berhasil dicatat.');
+            } else {
+                $this->session->setFlashdata('message', 'Buku Tamu gagal disimpan');
+            }
+
+            return redirect()->to(base_url('buku-tamu'));
+        } else {
+            // Tambahkan pesan jika member tidak ditemukan
+            $this->session->setFlashdata('message', 'Nomor Anggota tidak ditemukan.');
+            return redirect()->to(base_url('buku-tamu'));
+        }
+    }
+
+    // Jika validasi gagal atau bukan request POST
+    $this->session->setFlashdata('message', 'Terjadi kesalahan validasi.');
+    return redirect()->to(base_url('buku-tamu'));
+}
 	public function non_anggota($prefix = '')
 	{
 		$locationId = $this->request->getCookie('Location_id');
@@ -139,6 +161,7 @@ class GuestBook extends \App\Controllers\BaseController
 		if (!$locationId) {
 			return redirect()->to('buku-tamu/lokasi');
 		}
+		$this->data['SettingBukuTamu'] = $this->settingModel->where('Name', 'SettingBukuTamu')->first()->Value ?? '0';
 		$builder = $this->db->table('locations as a')
 			->select('a.ID, a.Code, a.Name')
 			->select('b.Name as LocationLibrary_name, b.Code as LocationLibrary_code')
@@ -190,7 +213,14 @@ class GuestBook extends \App\Controllers\BaseController
 				'Branch_id' => $branch_id,
 				'CreateBy' => user_id(),
 			];
-          
+             // 2. Periksa setting dari database
+            $SettingBukuTamu = $this->settingModel->where('Name', 'SettingBukuTamu')->first()->Value ?? '0';
+
+            // 3. HANYA JIKA setting = 1, tambahkan 'TujuanKunjungan_id' ke dalam array
+            if ($SettingBukuTamu == '1') {
+                $save_data['TujuanKunjungan_id'] = $this->request->getPost('TujuanKunjungan_id');
+            }
+			
 			$newRombonganId = $this->memberguestModel->insert($save_data);
 			if ($newRombonganId) {
 				$this->session->setFlashdata('success', 'Kunjungan berhasil dicatat.');
@@ -445,7 +475,7 @@ public function rombongan()
 	public function getKnownFaces($prefix = '')
 {
 	$db = \Config\Database::connect();
-	dd(123);
+	
     $query = $db->query("SELECT id, name, PhotoUrl FROM members");
     $results = $query->getResult();
 

@@ -322,20 +322,32 @@
 			opacity: 0;
 			transform: translateY(30px);
 		}
+
 		to {
 			opacity: 1;
 			transform: translateY(0);
 		}
 	}
 
-	.content-wrapper > * {
+	.content-wrapper>* {
 		animation: fadeInUp 0.6s ease forwards;
 	}
 
-	.content-wrapper > *:nth-child(1) { animation-delay: 0.1s; }
-	.content-wrapper > *:nth-child(2) { animation-delay: 0.2s; }
-	.content-wrapper > *:nth-child(3) { animation-delay: 0.3s; }
-	.content-wrapper > *:nth-child(4) { animation-delay: 0.4s; }
+	.content-wrapper>*:nth-child(1) {
+		animation-delay: 0.1s;
+	}
+
+	.content-wrapper>*:nth-child(2) {
+		animation-delay: 0.2s;
+	}
+
+	.content-wrapper>*:nth-child(3) {
+		animation-delay: 0.3s;
+	}
+
+	.content-wrapper>*:nth-child(4) {
+		animation-delay: 0.4s;
+	}
 </style>
 
 <div class="page-container">
@@ -353,7 +365,7 @@
 					<span class="active">Anggota</span>
 				</nav>
 			</div><br>
-			<h2 style="background-color: #28a745; color: #fff; padding: 10px; border-radius: 5px;">Total Kunjungan Hari ini <?=$totalKunjungan ?? '0'?></h2>
+			<h2 style="background-color: #28a745; color: #fff; padding: 10px; border-radius: 5px;">Total Kunjungan Hari ini <?= $totalKunjungan ?? '0' ?></h2>
 		</div>
 
 		<!-- Navigation Tabs -->
@@ -370,25 +382,25 @@
 				<i class="fas fa-users"></i>
 				<span>Rombongan</span>
 			</a>
-			
+
 
 		</div>
-		
+
 		<?php if (empty($member)) : ?>
 			<!-- Search Section -->
 			<div class="search-section">
 				<h2 class="search-title">Cari Anggota Perpustakaan</h2>
 				<p class="search-subtitle">Masukkan nomor anggota untuk melanjutkan ke buku tamu</p>
-				
+
 				<form method="get" action="<?= base_url('buku-tamu') ?>" class="search-form">
-					<?=csrf_field()?>
+					<?= csrf_field() ?>
 					<div class="search-input-group">
-						<input type="text" 
-							   class="search-input" 
-							   name="member_no" 
-							   id="member_no" 
-							   placeholder="Masukkan nomor anggota..."
-							   required>
+						<input type="text"
+							class="search-input"
+							name="member_no"
+							id="member_no"
+							placeholder="Masukkan nomor anggota..."
+							required>
 						<button class="search-btn" type="submit">
 							<i class="fas fa-search"></i>
 							Cari Anggota
@@ -434,7 +446,29 @@
 			<!-- Action Section -->
 			<div class="action-section">
 				<form method="post" action="<?php echo base_url('buku-tamu/store_anggota'); ?>">
+					<?= csrf_field() ?>
 					<input type="hidden" name="member_no" value="<?= $member->MemberNo ?>">
+
+					<?php if ($SettingBukuTamu == 1) : ?>
+
+						<?php // PERBAIKAN: Menambahkan tanda kutip pembuka pada class 
+						?>
+						<div class="form-group">
+							<div class="col-md-6" style="padding-left: 0;">
+								<div class="position-relative form-group">
+									<label for="TujuanKunjungan_id">Tujuan Kunjungan</label>
+									<select class="form-control" name="TujuanKunjungan_id" id="TujuanKunjungan_id">
+										<?php foreach (get_table('tujuan_kunjungan', 'ID, TujuanKunjungan', null, 'data') as $row) : ?>
+											<?php // PERBAIKAN: Menyamakan ID dengan id 
+											?>
+											<option value="<?= $row->ID ?>" <?= set_select('TujuanKunjungan_id', $row->ID) ?>><?= $row->TujuanKunjungan ?></option>
+										<?php endforeach; ?>
+									</select>
+								</div>
+							</div>
+						</div><br></br>
+					<?php endif; ?>
+
 					<button class="save-btn" type="submit">
 						<i class="fas fa-save"></i>
 						Simpan Buku Tamu
@@ -449,55 +483,55 @@
 </div>
 
 <script>
-// Auto-focus pada input search
-document.addEventListener('DOMContentLoaded', function() {
-	const searchInput = document.getElementById('member_no');
-	if (searchInput) {
-		searchInput.focus();
-	}
-});
-
-// Enter key untuk submit form
-document.getElementById('member_no')?.addEventListener('keypress', function(e) {
-	if (e.key === 'Enter') {
-		e.preventDefault();
-		this.closest('form').submit();
-	}
-});
-
-// Animasi untuk alerts
-document.querySelectorAll('.alert-close').forEach(button => {
-	button.addEventListener('click', function() {
-		const alert = this.parentElement;
-		alert.style.animation = 'fadeOut 0.3s ease forwards';
-		setTimeout(() => {
-			alert.style.display = 'none';
-		}, 300);
+	// Auto-focus pada input search
+	document.addEventListener('DOMContentLoaded', function() {
+		const searchInput = document.getElementById('member_no');
+		if (searchInput) {
+			searchInput.focus();
+		}
 	});
-});
 
-// Add fadeOut animation
-const style = document.createElement('style');
-style.textContent = `
+	// Enter key untuk submit form
+	document.getElementById('member_no')?.addEventListener('keypress', function(e) {
+		if (e.key === 'Enter') {
+			e.preventDefault();
+			this.closest('form').submit();
+		}
+	});
+
+	// Animasi untuk alerts
+	document.querySelectorAll('.alert-close').forEach(button => {
+		button.addEventListener('click', function() {
+			const alert = this.parentElement;
+			alert.style.animation = 'fadeOut 0.3s ease forwards';
+			setTimeout(() => {
+				alert.style.display = 'none';
+			}, 300);
+		});
+	});
+
+	// Add fadeOut animation
+	const style = document.createElement('style');
+	style.textContent = `
 	@keyframes fadeOut {
 		from { opacity: 1; transform: translateY(0); }
 		to { opacity: 0; transform: translateY(-20px); }
 	}
 `;
-document.head.appendChild(style);
+	document.head.appendChild(style);
 </script>
 <?php if (session()->getFlashdata('success')) : ?>
-<script>
-	document.addEventListener('DOMContentLoaded', function () {
-		Swal.fire({
-			icon: 'success',
-			title: 'Berhasil!',
-			text: '<?= session()->getFlashdata('success') ?>',
-			showConfirmButton: false,
-			timer: 2000
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			Swal.fire({
+				icon: 'success',
+				title: 'Berhasil!',
+				text: '<?= session()->getFlashdata('success') ?>',
+				showConfirmButton: false,
+				timer: 2000
+			});
 		});
-	});
-</script>
+	</script>
 <?php endif; ?>
 
 

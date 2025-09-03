@@ -89,11 +89,10 @@ class JenisBahanPustaka extends \Base\Controllers\BaseController
 				'NoUrut' => $this->request->getPost('sort'),
 				'ISSERIAL' => $this->request->getPost('serial'),
 				'ISKARTOGRAFI' => $this->request->getPost('kartografi'),
-				'ISMUSIK' => $this->request->getPost('music'),
+				'ISMUSIK' => $this->request->getPost('musik'),
 				'UpdateBy' => user_id(),
 				'UpdateTerminal' => getClientIpAddress(),
 			];
-
 			$updateJenisBahanPustaka = $this->wsModel->update($id, $update_data);
 			$index_arr = $this->request->getPost('index0');
 			if (!empty($index_arr)) {

@@ -80,10 +80,14 @@ class Tag extends \Base\Controllers\BaseResourceController
 
 	public function switch($id = null)
 	{
-		$field = $this->request->getGet('field');
-		$value = $this->request->getGet('value');
+		
+		$field = $this->request->getPost('field');
+		$value = $this->request->getPost('value');
+		
+		
 
 		$update_data_id = $this->fieldModel->update($id, array($field => ($value == 'true') ? 1 : 0));
+	
 
 		if ($update_data_id) {
 			$response = [

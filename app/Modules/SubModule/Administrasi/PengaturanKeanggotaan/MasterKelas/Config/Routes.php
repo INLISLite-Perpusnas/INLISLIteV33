@@ -1,7 +1,7 @@
 <?php if (!isset($routes)) {
 	$routes = \Config\Services::routes(true);
 }
-$routes->group('master/kelas', ['namespace' => 'MasterKelas\Controllers'], function ($subroutes) {
+$routes->group('master-kelas', ['namespace' => 'MasterKelas\Controllers'], function ($subroutes) {
 	$subroutes->add('', 'MasterKelas::index');
 	$subroutes->add('index', 'MasterKelas::index');
 	$subroutes->add('detail/(:any)', 'MasterKelas::detail/$1');
@@ -15,7 +15,7 @@ $routes->group('master/kelas', ['namespace' => 'MasterKelas\Controllers'], funct
 	$subroutes->add('flip', 'MasterKelas::flip');
 });
 
-$routes->group('api/kelas', ['namespace' => 'MasterKelas\Controllers\Api'], function ($subroutes) {
+$routes->group('api/master-kelas', ['namespace' => 'MasterKelas\Controllers\Api'], function ($subroutes) {
 	$subroutes->get('', 'MasterKelas::index');
 	$subroutes->add('detail/(:any)', 'MasterKelas::detail/$1');
 	$subroutes->add('create', 'MasterKelas::create');

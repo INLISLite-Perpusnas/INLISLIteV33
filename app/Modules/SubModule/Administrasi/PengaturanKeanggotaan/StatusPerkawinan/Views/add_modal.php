@@ -36,7 +36,7 @@
     $('#frm_add').submit(function(event) {
 		event.preventDefault();
 
-		var url = "<?=base_url('api-status-perkawinan/create')?>";
+		var url = "<?=base_url('api/master-status-perkawinan/create')?>";
 		var data_post = $(this).serializeArray();
 
 		$("#btnAdd").html('<i class="fa fa-spinner fa-spin loading"></i> Mohon menunggu...');
