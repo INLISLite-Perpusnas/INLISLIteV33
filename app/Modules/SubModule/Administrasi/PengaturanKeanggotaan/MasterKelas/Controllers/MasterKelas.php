@@ -37,7 +37,7 @@ class MasterKelas extends \Base\Controllers\BaseController
         if (!$id) {
             set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
             set_message('toastr_type', 'error');
-            return redirect()->to('jenis-pendidikan');
+            return redirect()->to('master-kelas');
         }
         $kelasDelete = $this->kelasModel->delete($id);
         if ($kelasDelete) {
@@ -48,7 +48,7 @@ class MasterKelas extends \Base\Controllers\BaseController
             set_message('toastr_msg', 'Jenis Pendidikan gagal dihapus');
             set_message('toastr_type', 'warning');
             set_message('message', 'Jenis Pendidikan gagal dihapus');
-            return redirect()->to('jenis-pendidikan');
+            return redirect()->to('master-kelas');
         }
     }
 
@@ -60,12 +60,12 @@ class MasterKelas extends \Base\Controllers\BaseController
         $kelasUpdate = $this->kelasModel->update($id, array($field => $value));
 
         if ($kelasUpdate) {
-            set_message('toastr_msg', 'Jenis Pendidikan berhasil diubah');
+            set_message('toastr_msg', 'Status Master Kelas berhasil diubah');
             set_message('toastr_type', 'success');
         } else {
-            set_message('toastr_msg', 'Jenis Pendidikan gagal diubah');
+            set_message('toastr_msg', ' Status Master gagal diubah');
             set_message('toastr_type', 'warning');
         }
-        return redirect()->to('master/kelas');
+        return redirect()->to('master-kelas');
     }
 }
