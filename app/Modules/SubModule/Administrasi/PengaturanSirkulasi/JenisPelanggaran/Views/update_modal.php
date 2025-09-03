@@ -84,7 +84,7 @@
 					showConfirmButton: false,
 					timer: 5000,
 				}).then(() => {
-					window.location.href = `<?=base_url('jenis-pelanggaran')?>`;
+					window.location.href = `<?=base_url('master-jenis-pelanggaran')?>`;
 				});
 			} else {				
 				Swal.fire({

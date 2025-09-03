@@ -3,7 +3,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Tambah Jenis Bahan
+                    <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Tambah Peraturan Peminjaman Hari
                 </h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -38,8 +38,8 @@
                             <div class="form-group">
                                 <label for="code">Maks Koleksi Dapat Dipinjam</label>
                                 <div>
-                                    <input required type="text" class="form-control" id="frm_add_MaxPinjamKoleksi"
-                                        name="MaxPinjamKoleksi" placeholder="Kode Jenis Bahan" value="" />
+                                    <input required type="number" min="0" class="form-control" id="frm_add_MaxPinjamKoleksi"
+                                        name="MaxPinjamKoleksi" placeholder="Maks Koleksi Dapat Dipinjam" value="" />
                                 </div>
                             </div>
                         </div>
@@ -47,7 +47,7 @@
                             <div class="form-group">
                                 <label for="name">Maks Lama Pinjam</label>
                                 <div>
-                                    <input required type="text" class="form-control" id="frm_add_MaxLoanDays"
+                                    <input required type="number" min="0" class="form-control" id="frm_add_MaxLoanDays"
                                         name="MaxLoanDays" placeholder="Maks. Lama Pinjam" value="" />
                                 </div>
                             </div>
@@ -58,7 +58,7 @@
                             <div class="form-group">
                                 <label for="code">Jeda Peringatan peminjaman</label>
                                 <div>
-                                    <input required type="text" class="form-control" id="frm_add_WarningLoanDays"
+                                    <input required type="number" min="0" class="form-control" id="frm_add_WarningLoanDays"
                                         name="WarningLoanDays" placeholder="Jeda Peringatan Peminjaman" value="" />
                                 </div>
                             </div>
@@ -66,7 +66,7 @@
 
                         <div class="col-lg-6 col-md-6">
                             <div class="form-group">
-                                <label for="code">koleksi Yang Dapat Dipinjam</label>
+                                <label for="code">Koleksi Yang Dapat Dipinjam</label>
                                 <div>
 								<select class="form-control select2" name="Category_id[]" multiple="multiple" tabindex="-1" aria-hidden="true" style="width:100%">
 									<option value="">-Pilih-</option>
@@ -86,7 +86,7 @@
                             <div class="form-group">
                                 <label for="code">Maks Lama Perpanjangan</label>
                                 <div>
-                                    <input required type="text" class="form-control" id="frm_add_DayPerpanjang"
+                                    <input required type="number" min="0" class="form-control" id="frm_add_DayPerpanjang"
                                         name="DayPerpanjang" placeholder="Lama Perpanjangan" value="" />
                                 </div>
                             </div>
@@ -95,7 +95,7 @@
                             <div class="form-group">
                                 <label for="name">Maks Banyaknya perpanjang</label>
                                 <div>
-                                    <input required type="text" class="form-control" id="frm_add_CountPerpanjang"
+                                    <input required type="number" min="0" class="form-control" id="frm_add_CountPerpanjang"
                                         name="CountPerpanjang" placeholder="Maks. Lama Pinjam" value="" />
                                 </div>
                             </div>
@@ -107,7 +107,7 @@
                             <div class="form-group">
                                 <label for="code">Jumlah Denda</label>
                                 <div>
-                                    <input required type="text" class="form-control" id="frm_add_DendaPerTenor"
+                                    <input required type="number" min="0" class="form-control" id="frm_add_DendaPerTenor"
                                         name="DendaPerTenor" placeholder="Jumlah Denda" value="" />
                                 </div>
                             </div>
@@ -138,7 +138,7 @@
                             <div class="form-group">
                                 <label for="code">Satuan Tenor Denda</label>
                                 <div>
-                                    <input required type="text" class="form-control" id="frm_add_DendaTenorJumlah"
+                                    <input required type="number" min="0" class="form-control" id="frm_add_DendaTenorJumlah"
                                         name="DendaTenorJumlah" placeholder="Tenor Denda Denda" value="" />
                                 </div>
                             </div>
@@ -206,7 +206,7 @@
                             <div class="form-group">
                                 <label for="code">Satuan Tenor Skorsing</label>
                                 <div>
-                                    <input required type="text" class="form-control" id="frm_add_SuspendTenorJumlah"
+                                    <input required type="number" min="0" class="form-control" id="frm_add_SuspendTenorJumlah"
                                         name="SuspendTenorJumlah" placeholder="Tenor Skorsing" value="" />
                                 </div>
                             </div>
@@ -280,12 +280,12 @@ $('#frm_add').submit(function(event) {
             if (res.error == false) {
                 Swal.fire({
                     title: 'Berhasil',
-                    html: 'Jenis Bahan berhasil ditambah.',
+                    html: 'Peraturan Peminjaman Hari berhasil ditambah.',
                     type: 'success',
                     showConfirmButton: false,
                     timer: 5000,
                 }).then(() => {
-                    window.location.href = `<?=base_url('master-peraturan-peminjaman-hari')?>`;
+                    window.location.href = `<?=base_url('/master-peraturan-peminjaman-hari')?>`;
                 });
             } else {
                 Swal.fire({

@@ -46,10 +46,10 @@ class PeraturanPeminjamanHari extends \Base\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('action', function ($row) {
-				$edit = '<a href="javascript:void(0);" data-href="' . base_url('api/peraturan-peminjaman-hari/detail/' . $row->ID) . '" data-toggle="modal" data-target="#modal_update" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
+				$edit = '<a data-href="' . base_url('api/peraturan-peminjaman-hari/detail/' . $row->ID) . '" data-toggle="modal" data-target="#modal_update" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
 				$active = '<a href="' . base_url('master-peraturan-peminjaman-hari/apply_status/' . $row->ID . '?field=active&value=1') . '"  data-id="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Active" class="btn btn-success active-data"><i class="pe-7s-check font-weight-bold"> </i> </a>';
 				$inactive = '<a href="' . base_url('master-peraturan-peminjaman-hari/apply_status/' . $row->ID . '?field=active&value=0') . '" data-id="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Inactive" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"> </i> </a>';
-				$delete = '<a href="javascript:void(0);" data-href="' . base_url('peraturan-peminjaman-hari/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+				$delete = '<a data-href="' . base_url('master-peraturan-peminjaman-hari/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
 				return $edit . ' ' . $active . ' ' . $inactive . ' ' . $delete;
 			})
 			->toJson();
@@ -136,16 +136,16 @@ public function detail($id = null)
 			$db = db_connect('data');
 			// Insert the data as a batch
 			$db->table('collectioncategorysloanhari')->insertBatch($dataToInsert);
-			$this->session->setFlashdata('toastr_msg', 'Jenis Bahan berhasil disimpan');
+			$this->session->setFlashdata('toastr_msg', 'Peraturan Peminjaman Hari berhasil disimpan');
 			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
-				'message' => 'Jenis Bahan berhasil disimpan',
+				'message' => 'Peraturan Peminjaman Hari berhasil disimpan',
 			];
 		} else {
 			$response = [
 				'error' => true,
-				'message' => 'Jenis Bahan gagal disimpan. Silakan coba lagi',
+				'message' => 'Peraturan Peminjaman Hari gagal disimpan. Silakan coba lagi',
 			];
 		}
 
@@ -264,7 +264,7 @@ public function detail($id = null)
 				'status'   => 200,
 				'error'    => null,
 				'messages' => [
-					'success' => 'Jenis Bahan berhasil dihapus'
+					'success' => 'Peraturan Peminjaman Hari berhasil dihapus'
 				]
 			];
 			return $this->respondDeleted($response);

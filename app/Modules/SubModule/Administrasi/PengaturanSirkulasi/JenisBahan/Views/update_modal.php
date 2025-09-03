@@ -25,7 +25,7 @@
 							<div class="form-group">
 								<label for="code">Maks Koleksi Dapat Dipinjam</label>
 								<div>
-									<input required type="text" class="form-control" id="frm_update_MaxPinjamKoleksi" name="MaxPinjamKoleksi" placeholder="Kode Jenis Bahan" value="" />
+									<input required type="number" min="0" class="form-control" id="frm_update_MaxPinjamKoleksi" name="MaxPinjamKoleksi" placeholder="Kode Jenis Bahan" value="" />
 								</div>
 							</div>
 						</div>
@@ -33,7 +33,7 @@
 							<div class="form-group">
 								<label for="name">Maks Lama Pinjam</label>
 								<div>
-									<input required type="text" class="form-control" id="frm_update_MaxLoanDays" name="MaxLoanDays" placeholder="Maks. Lama Pinjam" value="" />
+									<input required type="number" min="0" class="form-control" id="frm_update_MaxLoanDays" name="MaxLoanDays" placeholder="Maks. Lama Pinjam" value="" />
 								</div>
 							</div>
 						</div>
@@ -43,7 +43,7 @@
 							<div class="form-group">
 								<label for="code">Maks Lama Perpanjangan</label>
 								<div>
-									<input required type="text" class="form-control" id="frm_update_DayPerpanjang" name="DayPerpanjang" placeholder="Kode Jenis Bahan" value="" />
+									<input required type="number" min="0" class="form-control" id="frm_update_DayPerpanjang" name="DayPerpanjang" placeholder="Kode Jenis Bahan" value="" />
 								</div>
 							</div>
 						</div>
@@ -51,7 +51,7 @@
 							<div class="form-group">
 								<label for="name">Maks Banyaknya perpanjang</label>
 								<div>
-									<input required type="text" class="form-control" id="frm_update_CountPerpanjang" name="CountPerpanjang" placeholder="Maks. Lama Pinjam" value="" />
+									<input required type="number" min="0" class="form-control" id="frm_update_CountPerpanjang" name="CountPerpanjang" placeholder="Maks. Lama Pinjam" value="" />
 								</div>
 							</div>
 						</div>
@@ -74,7 +74,7 @@
 							<div class="form-group">
 								<label for="name">Jumlah Denda</label>
 								<div>
-									<input required type="text" class="form-control" id="frm_update_DendaPerTenor" name="DendaPerTenor" placeholder="Jumlah Denda" value="" />
+									<input required type="number" min="0" class="form-control" id="frm_update_DendaPerTenor" name="DendaPerTenor" placeholder="Jumlah Denda" value="" />
 								</div>
 							</div>
 						</div>
@@ -97,7 +97,7 @@
 							<div class="form-group">
 								<label for="name">Lama Skorsing</label>
 								<div>
-									<input required type="text" class="form-control" id="frm_update_DaySuspend" name="DaySuspend" placeholder="Lama Skorsing" value="" />
+									<input required type="number" min="0" class="form-control" id="frm_update_DaySuspend" name="DaySuspend" placeholder="Lama Skorsing" value="" />
 								</div>
 							</div>
 						</div>

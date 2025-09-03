@@ -28,7 +28,7 @@ class PeraturanPeminjamanHari extends \Base\Controllers\BaseController
     }
     public function index()
     {
-        $this->data['title'] = 'Jenis Bahan';
+        $this->data['title'] = 'Peraturan Peminjaman Hari';
         echo view('PeraturanPeminjamanHari\Views\list', $this->data);
     }
 
@@ -37,18 +37,18 @@ class PeraturanPeminjamanHari extends \Base\Controllers\BaseController
         if (!$id) {
             set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
             set_message('toastr_type', 'error');
-            return redirect()->to('jenis-bahan');
+            return redirect()->to('/master-peraturan-peminjaman-hari');
         }
         $peraturanpeminjamanhariDelete = $this->peraturanpeminjamanhariModel->delete($id);
         if ($peraturanpeminjamanhariDelete) {
             set_message('toastr_msg', 'Jenis Bahan berhasil dihapus');
             set_message('toastr_type', 'success');
-            return redirect()->to('jenis-bahan');
+            return redirect()->to('/master-peraturan-peminjaman-hari');
         } else {
             set_message('toastr_msg', 'Jenis Bahan gagal dihapus');
             set_message('toastr_type', 'warning');
             set_message('message', 'Jenis Bahan gagal dihapus');
-            return redirect()->to('jenis-bahan');
+            return redirect()->to('/master-peraturan-peminjaman-hari');
         }
     }
 
@@ -66,6 +66,6 @@ class PeraturanPeminjamanHari extends \Base\Controllers\BaseController
             set_message('toastr_msg', 'Jenis Bahan gagal diubah');
             set_message('toastr_type', 'warning');
         }
-        return redirect()->to('/jenis-bahan');
+        return redirect()->to('/master-peraturan-peminjaman-hari');
     }
 }

@@ -23,50 +23,58 @@ class Banner extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('backend');
+		$db = db_connect('default');
 		$builder = $db->table('t_banner as a')
-			->select('a.id, a.id as action, a.title, a.slug, a.content, a.file_image, a.file_cover, a.viewers, a.description,a.sort,  a.active')
-			->select('a.category, a.category_sub');
+			->select('a.id, a.id as action, a.title, a.slug, a.file_cover, a.description,a.sort,  a.active')
+			->select('a.category');
 
-		if(!empty($slug)){
+		if (!empty($slug)) {
 			$builder = $builder->where('a.category', unslugify($slug));
 		}
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
-			->edit('title', function($row){
-				$html  =  '<b>'.$row->title.'</b>';
+			->edit('title', function ($row) {
+				$html  =  '<b>' . $row->title . '</b>';
 				return $html;
 			})
-			->edit('file_image', function($row){
+			->edit('file_cover', function ($row) {
 				$default = base_url('uploads/default/no_cover.jpg');
-				$image = (!empty($row->file_image)) ? base_url('uploads/banner/' . $row->file_image) : $default;
+				$image   = (!empty($row->file_cover))
+					? base_url('uploads/banner/' . $row->file_cover)
+					: $default;
 
-				$html = '<a href="'.$image.'" class="image-link"><img width="100" class="rounded" src="'.$default.'" id="lazy'.$row->id.'" class="lazy" data-src="'.$image.'" onerror="this.onerror=null;this.src='.$default.';" alt=""></a>';
+				$html = '<a href="' . $image . '" class="image-link">
+                <img width="100" class="rounded"
+                     src="' . $image . '"
+                     onerror="this.onerror=null;this.src=\'' . $default . '\';"
+                     alt="">
+             </a>';
 				return $html;
 			})
-			->edit('category', function($row){
-				$html = '<span class="badge badge-primary badge-pill">'.$row->category.'</span> ';
-				if(!empty($row->category_sub)){
-					$html .= '<br><span class="badge badge-secondary badge-pill">'.$row->category_sub.'</span>';
+
+			->edit('category', function ($row) {
+				$html = '<span class="badge badge-primary badge-pill">' . $row->category . '</span> ';
+				if (!empty($row->category_sub)) {
+					$html .= '<br><span class="badge badge-secondary badge-pill">' . $row->category_sub . '</span>';
 				}
 				return $html;
 			})
-			->edit('active', function($row){
+			->edit('active', function ($row) {
 				$status = $row->active == 1 ? 'Active' : 'Inactive';
 				$class = $row->active == 1 ? 'success' : 'danger';
-				$html = '<span class="badge badge-'.$class.'  badge-pill">'.$status.'</span>';
+				$html = '<span class="badge badge-' . $class . '  badge-pill">' . $status . '</span>';
 				return $html;
 			})
-			->edit('description', function($row){
-				return character_limiter($row->description,100);
+			->edit('description', function ($row) {
+				return character_limiter($row->description, 100);
 			})
-			->edit('action', function($row){
-				$edit = '<a href="'.base_url('cms/banner/edit/'.$row->id).'" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-				$active = '<a href="'.base_url('cms/banner/apply_status/'.$row->id.'?field=active&value=1').'"  data-id="'.$row->id.'" data-toggle="tooltip" data-placement="top" title="Active" class="btn btn-success active-data"><i class="pe-7s-check font-weight-bold"> </i> </a>';
-				$inactive = '<a href="'.base_url('cms/banner/apply_status/'.$row->id.'?field=active&value=0').'" data-id="'.$row->id.'" data-toggle="tooltip" data-placement="top" title="Inactive" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"> </i> </a>';
-				$delete = '<a href="javascript:void(0);" data-href="'.base_url('cms/banner/delete/'.$row->id).'" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
-				return $edit .' '. $active .' '. $inactive .' '. $delete;
+			->edit('action', function ($row) {
+				$edit = '<a href="' . base_url('cms/banner/edit/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
+				$active = '<a href="' . base_url('cms/banner/apply_status/' . $row->id . '?field=active&value=1') . '"  data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Active" class="btn btn-success active-data"><i class="pe-7s-check font-weight-bold"> </i> </a>';
+				$inactive = '<a href="' . base_url('cms/banner/apply_status/' . $row->id . '?field=active&value=0') . '" data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Inactive" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"> </i> </a>';
+				$delete = '<a href="javascript:void(0);" data-href="' . base_url('cms/banner/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+				return $edit . ' ' . $active . ' ' . $inactive . ' ' . $delete;
 			})
 			->toJson();
 		return $dataTable;
@@ -75,7 +83,7 @@ class Banner extends \Base\Controllers\BaseResourceController
 	public function detail($slug)
 	{
 		try {
-            $data = $this->bannerModel->where('slug', $slug)->first();
+			$data = $this->bannerModel->where('slug', $slug)->first();
 			if ($data) {
 				$response = array(
 					'error'    => false,
@@ -86,8 +94,8 @@ class Banner extends \Base\Controllers\BaseResourceController
 			} else {
 				return $this->failNotFound('No Data Found with slug ' . $slug);
 			}
-        } catch (Exception $e) {
+		} catch (Exception $e) {
 			return $this->failServerError($e->getMessage());
-        }
+		}
 	}
 }

@@ -95,7 +95,8 @@ $slug = $request->getGet('slug') ?? '';
 					orderable: false
 				},
 				{
-					data: 'file_image'
+					data: 'file_cover',
+					orderable: false
 				},
 				{
 					data: 'category',

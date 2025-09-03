@@ -230,8 +230,6 @@ class Berita extends \Base\Controllers\BaseController
                 }
             }
         }
-
-        $this->data['title'] = 'Ubah Berita';
         $this->data['berita'] = $berita;
         $this->data['old_file_cover_data'] = $old_file_cover_data;
         $this->data['old_file_image_data'] = $old_file_image_data;
