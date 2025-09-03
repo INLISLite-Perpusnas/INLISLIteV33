@@ -3,7 +3,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="header-icon lnr-pencil icon-gradient bg-plum-plate"> </i> Edit Master fakultas
+                    <i class="header-icon lnr-pencil icon-gradient bg-plum-plate"> </i> Edit Master Jurusan
                 </h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -32,7 +32,7 @@
 					<div class="form-row">
 						<div class="col-lg-12">
 							<div class="form-group">
-								<label for="Nama">Nama Jursan</label>
+								<label for="Nama">Nama Jurusan</label>
 								<div>
 									<input required type="text" class="form-control" id="frm_update_Nama" name="Nama" placeholder="Master fakultas" value="" />
 								</div>
@@ -91,12 +91,12 @@
 			if (res.error == false) {
 				Swal.fire({
 					title: 'Berhasil',
-					html: 'Fakultas siswa berhasil disimpan.',
+					html: 'Master Jurusan berhasil disimpan.',
 					type: 'success',
 					showConfirmButton: false,
 					timer: 5000,
 				}).then(() => {
-					window.location.href = `<?=base_url('master-fakultas')?>`;
+					window.location.href = `<?=base_url('master-jurusan')?>`;
 				});
 			} else {				
 				Swal.fire({

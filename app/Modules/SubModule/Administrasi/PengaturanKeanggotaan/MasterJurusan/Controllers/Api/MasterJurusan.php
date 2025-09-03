@@ -58,7 +58,7 @@ class MasterJurusan extends \Base\Controllers\BaseResourceController
 				$edit = '<a href="javascript:void(0);" data-href="' . base_url('api/jurusan/detail/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
 				$active = '<a href="' . base_url('master-jurusan/apply_status/' . $row->id . '?field=active&value=1') . '"  data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Active" class="btn btn-success active-data"><i class="pe-7s-check font-weight-bold"> </i> </a>';
 				$inactive = '<a href="' . base_url('master-jurusan/apply_status/' . $row->id . '?field=active&value=0') . '" data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Inactive" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"> </i> </a>';
-				$delete = '<a href="javascript:void(0);" data-href="' . base_url('jurusan/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+				$delete = '<a href="javascript:void(0);" data-href="' . base_url('master-jurusan/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
 				return $edit . ' ' . $active . ' ' . $inactive . ' ' . $delete;
 			})
 			->toJson();
@@ -91,16 +91,16 @@ class MasterJurusan extends \Base\Controllers\BaseResourceController
 
 		$save_data_id = $this->jurusanModel->insert($save_data);
 		if ($save_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Master Kelas berhasil disimpan');
+			$this->session->setFlashdata('toastr_msg', 'Master Jurusan berhasil disimpan');
 			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
-				'message' => 'Master Kelas berhasil disimpan',
+				'message' => 'Master Jurusan berhasil disimpan',
 			];
 		} else {
 			$response = [
 				'error' => true,
-				'message' => 'Jenis Pendidikan gagal disimpan. Silakan coba lagi',
+				'message' => 'Master Jurusan gagal disimpan. Silakan coba lagi',
 			];
 		}
 
@@ -150,7 +150,7 @@ class MasterJurusan extends \Base\Controllers\BaseResourceController
 		$update_data_id = $this->jurusanModel->update($id, $update_data);
 		$response = [
 			'error' => $update_data_id ? false : true,
-			'message' => $update_data_id ? 'Jenis Pendidikan berhasil disimpan' : 'Jenis Pendidikan gagal disimpan. Silakan coba lagi'
+			'message' => $update_data_id ? 'Master Jurusan berhasil disimpan' : 'Master Jurusan gagal disimpan. Silakan coba lagi'
 		];
 
 		$this->session->setFlashdata('toastr_msg', $response['message']);
@@ -168,7 +168,7 @@ class MasterJurusan extends \Base\Controllers\BaseResourceController
 				'status'   => 200,
 				'error'    => null,
 				'messages' => [
-					'success' => 'Jenis Pendidikan berhasil dihapus'
+					'success' => 'Master Jurusan berhasil dihapus'
 				]
 			];
 			return $this->respondDeleted($response);
