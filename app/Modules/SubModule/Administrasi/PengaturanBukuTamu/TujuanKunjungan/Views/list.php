@@ -63,8 +63,8 @@ $slug = $request->getGet('slug') ?? '';
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
-<?= $this->include('TujuanKunjungan\Views\add_modal'); ?>
 <?= $this->include('TujuanKunjungan\Views\update_modal'); ?>
+<?= $this->include('TujuanKunjungan\Views\add_modal'); ?>
 <script>
     var t;
     $(document).ready(function() {

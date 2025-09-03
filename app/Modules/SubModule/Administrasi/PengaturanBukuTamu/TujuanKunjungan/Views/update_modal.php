@@ -66,21 +66,22 @@
 				$('#frm_update_Code').val(response.Code); // Change frm_add_Code to frm_update_Code
 				$('#frm_update_TujuanKunjungan').val(response.TujuanKunjungan); // Change frm_add_TujuanKunjungan to frm_update_TujuanKunjungan
 				// Update the checkboxes based on the response
-				if (response.Member) {
+				if (response.Member == "1") {
 					$('#frm_update_Member').prop('checked', true);
 				} else {
 					$('#frm_update_Member').prop('checked', false);
 				}
-				if (response.NonMember) {
+				if (response.NonMember == "1") {
 					$('#frm_update_NonMember').prop('checked', true);
 				} else {
 					$('#frm_update_NonMember').prop('checked', false);
 				}
-				if (response.Rombongan) {
+				if (response.Rombongan == "1") {
 					$('#frm_update_Rombongan').prop('checked', true);
 				} else {
 					$('#frm_update_Rombongan').prop('checked', false);
 				}
+        $('#modal_update').modal('show');
 			}
 		});
 	});
@@ -129,19 +130,27 @@
 					});
 				}
 			})
-			.fail(function(res) {
-				console.log(res);
+			.fail(function(xhr) {
+	        let res = xhr.responseJSON;
+          let title = 'Oups';
+          let html = 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin';
 
-				Swal.fire({
-					title: 'Oups',
-					text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
-					type: 'error',
-					showConfirmButton: false,
-					timer: 5000
-				}).then(() => {
-					$("#btnUpdate").attr('disabled', false);
-					$("#btnUpdate").html('Simpan');
-				});
+          if (res && res.message) {
+              let errors = Object.values(res.message)
+                  .map(value => `<div>${value}</div>`)
+                  .join('');
+              html = `<p style="text-align:center">${errors}</p>`;
+          }
+
+          Swal.fire({
+              title: title,
+              html: html,
+              type: 'error',
+              showConfirmButton: false,
+              timer: 5000
+          }).then(() => {
+              $("#btnUpdate").attr('disabled', false).html('Simpan');
+          });
 			});
 
 		return false;
