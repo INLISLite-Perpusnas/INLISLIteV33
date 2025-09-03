@@ -50,12 +50,7 @@ $tanggal_pengadaan = date('Y-m-d', strtotime($eksemplar->TanggalPengadaan));
 
 	<form id="frm_edit" class="main-card mb-3 card" method="post" action="<?= base_url('eksemplar/edit/' . $eksemplar->ID); ?>">
 		<div class="card-header">
-			<i class="header-icon lnr-pencil icon-gradient bg-plum-plate"> </i> <?= ($is_allowed ? 'Edit' : 'Detail') ?> Eksemplar
-			<div class="btn-actions-pane-right actions-icon-btn">
-				<?php if (is_allowed('eksemplar/create')) : ?>
-					<a data-toggle="modal" data-target="#modal_katalog" href="javascript:void(0);" class="btn btn-success" title="Daftar Katalog"><i class="fa fa-check-square"></i> Pilih Judul Katalog</a>
-				<?php endif; ?>
-			</div>
+			
 		</div>
 		<div class="card-body">
 			<div id="infoMessage"><?= $message ?? ''; ?></div>
