@@ -348,6 +348,7 @@ if (!function_exists('member_check')) {
                 ->first();
 
 		if (!empty($existing)) {
+      // dd($existing);
 			$response = [
 				'error' => true,
 				'message' => 'Email atau Nomor Identitas sudah terdaftar',
