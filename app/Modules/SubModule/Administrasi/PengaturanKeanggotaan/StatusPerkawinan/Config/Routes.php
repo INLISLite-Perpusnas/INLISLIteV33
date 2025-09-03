@@ -15,7 +15,7 @@ $routes->group('master-status-perkawinan', ['namespace' => 'StatusPerkawinan\Con
 	$subroutes->add('flip', 'StatusPerkawinan::flip');
 });
 
-$routes->group('api-status-perkawinan', ['namespace' => 'StatusPerkawinan\Controllers\Api'], function ($subroutes) {
+$routes->group('api/master-status-perkawinan', ['namespace' => 'StatusPerkawinan\Controllers\Api'], function ($subroutes) {
 	$subroutes->add('detail/(:any)', 'StatusPerkawinan::detail/$1');
 	$subroutes->add('create', 'StatusPerkawinan::create');
 	$subroutes->add('edit/(:any)', 'StatusPerkawinan::edit/$1');

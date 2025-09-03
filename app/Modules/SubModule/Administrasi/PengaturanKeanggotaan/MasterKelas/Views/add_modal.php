@@ -36,7 +36,7 @@
     $('#frm_add').submit(function(event) {
 		event.preventDefault();
 
-		var url = "<?=base_url('api/kelas/create')?>";
+		var url = "<?=base_url('api/master-kelas/create')?>";
 		var data_post = $(this).serializeArray();
 
 		$("#btnAdd").html('<i class="fa fa-spinner fa-spin loading"></i> Mohon menunggu...');
@@ -53,12 +53,12 @@
 			if (res.error == false) {
 				Swal.fire({
 					title: 'Berhasil',
-					html: 'Jenis Pendidikan berhasil ditambah.',
+					html: 'Kelas siswa berhasil ditambah.',
 					type: 'success',
 					showConfirmButton: false,
 					timer: 5000,
 				}).then(() => {
-					window.location.href = `<?=base_url('master/kelas')?>`;
+					window.location.href = `<?=base_url('master-kelas')?>`;
 				});
 			} else {				
 				Swal.fire({

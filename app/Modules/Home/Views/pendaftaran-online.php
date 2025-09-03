@@ -603,7 +603,7 @@
         }
 
         // Load initial data - replace with your actual base_url
-        const baseUrl = 'http://localhost:8081'; // Replace with actual base URL
+        const baseUrl = '<?php echo base_url(); ?>'; // Replace with actual base URL
         getData(`${baseUrl}/api/region/province`, `#Province`);
         
         $('#Province').change(function(e) {

@@ -12,8 +12,8 @@ $routes->group('master-jenis-anggota', ['namespace' => 'JenisAnggota\Controllers
 	$subroutes->add('edit/(:any)', 'JenisAnggota::edit/$1');
 	$subroutes->delete('deletedefaultlokasi/(:num)', 'JenisAnggota::deletedefaultlokasi/$1');
 	$subroutes->delete('deletedefaultbahan/(:num)', 'JenisAnggota::deletedefaultbahan/$1');
-	$subroutes->add('DefaultLokasi/(:any)', 'JenisAnggota::DefaultLokasi/$1');
-	$subroutes->add('DefaultBahan/(:any)', 'JenisAnggota::DefaultBahan/$1');
+	$subroutes->add('defaultlokasi/(:any)', 'JenisAnggota::DefaultLokasi/$1');
+	$subroutes->add('defaultbahan/(:any)', 'JenisAnggota::DefaultBahan/$1');
 	$subroutes->add('delete/(:any)', 'JenisAnggota::delete/$1');
 	$subroutes->add('apply_status/(:any)', 'JenisAnggota::apply_status/$1');
 	$subroutes->add('do_init', 'JenisAnggota::do_init');

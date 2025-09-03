@@ -21,157 +21,346 @@ class LaporanAI extends \Base\Controllers\BaseController
     {
         $this->geminiApiKey = env('GEMINI_API_KEY'); // Set di .env file
         $this->db = db_connect('data');
+        
+        // Handle MySQL ONLY_FULL_GROUP_BY mode
+        $this->configureMySQLMode();
+    }
+
+    /**
+     * Configure MySQL mode to handle ONLY_FULL_GROUP_BY
+     */
+    private function configureMySQLMode()
+    {
+        try {
+            // Get current SQL mode
+            $result = $this->db->query("SELECT @@sql_mode as sql_mode");
+            $currentMode = $result->getRowArray()['sql_mode'];
+            
+            // Remove ONLY_FULL_GROUP_BY if present
+            $newMode = str_replace('ONLY_FULL_GROUP_BY,', '', $currentMode);
+            $newMode = str_replace(',ONLY_FULL_GROUP_BY', '', $newMode);
+            $newMode = str_replace('ONLY_FULL_GROUP_BY', '', $newMode);
+            
+            // Set new mode for this session
+            $this->db->query("SET sql_mode = '{$newMode}'");
+            
+        } catch (\Exception $e) {
+            // If we can't change the mode, we'll handle it in individual queries
+            log_message('warning', 'Could not modify SQL mode: ' . $e->getMessage());
+        }
     }
 
     public function index()
     {
-        $this->data['title'] = 'Laporan AI dengan Gemini';
+        $this->data['title'] = 'Database Explorer - AI SQL Assistant';
         return view('LaporanAI\Views\index', $this->data);
     }
 
     /**
-     * Process AI query using Gemini API
+     * Get all database tables
      */
-    public function processQuery()
+    public function getTables()
     {
-        $request = service('request');
-        $userQuery = $request->getPost('query');
-        
-        if (empty($userQuery)) {
-            return $this->response->setJSON([
-                'success' => false,
-                'message' => 'Query tidak boleh kosong'
-            ]);
-        }
-
         try {
-            // 1. Get database schema context
-            $schemaContext = $this->getDatabaseSchema();
+            $query = $this->db->query("SHOW TABLES");
+            $tables = [];
             
-            // 2. Create prompt for Gemini
-            $prompt = $this->createPrompt($userQuery, $schemaContext);
-            
-            // 3. Send to Gemini API
-            $geminiResponse = $this->callGeminiAPI($prompt);
-            
-            // Log response for debugging (optional)
-            log_message('debug', 'Gemini Response: ' . $geminiResponse);
-            
-            // 4. Parse SQL from Gemini response
-            $sqlQuery = $this->extractSQLFromResponse($geminiResponse);
-            
-            if (empty($sqlQuery)) {
-                return $this->response->setJSON([
-                    'success' => false,
-                    'message' => 'Tidak dapat menghasilkan query SQL yang valid'
-                ]);
+            foreach ($query->getResultArray() as $row) {
+                $tableName = array_values($row)[0];
+                
+                // Get table info - Fixed query for ONLY_FULL_GROUP_BY mode
+                try {
+                    // Get row count
+                    $countQuery = $this->db->query("SELECT COUNT(*) as row_count FROM `{$tableName}`");
+                    $rowCount = $countQuery->getRowArray()['row_count'] ?? 0;
+                    
+                    // Get table size
+                    $sizeQuery = $this->db->query("SELECT 
+                        ROUND(((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024), 2) AS size_mb
+                        FROM information_schema.tables 
+                        WHERE table_schema = DATABASE() 
+                        AND table_name = ?", [$tableName]);
+                    
+                    $sizeInfo = $sizeQuery->getRowArray();
+                    $sizeMb = $sizeInfo['size_mb'] ?? 0;
+                    
+                } catch (\Exception $e) {
+                    // Fallback if queries fail
+                    $rowCount = 0;
+                    $sizeMb = 0;
+                }
+                
+                $tables[] = [
+                    'name' => $tableName,
+                    'row_count' => $rowCount,
+                    'size_mb' => $sizeMb
+                ];
             }
-
-            // 5. Execute SQL query
-            $result = $this->executeQuery($sqlQuery);
-            
-            // 6. Generate chart configuration
-            $chartConfig = $this->generateChartConfig($result['data'], $userQuery);
             
             return $this->response->setJSON([
-                'success' => true,
-                'data' => $result['data'],
-                'columns' => $result['columns'],
-                'sql' => $sqlQuery,
-                'chart' => $chartConfig,
-                'summary' => $this->generateSummary($result['data'], $userQuery),
-                'gemini_response' => $geminiResponse // For debugging purposes
+                'status' => 'success',
+                'data' => $tables
             ]);
-
+            
         } catch (\Exception $e) {
-            log_message('error', 'LaporanAI Error: ' . $e->getMessage());
             return $this->response->setJSON([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'status' => 'error',
+                'message' => $e->getMessage()
             ]);
         }
     }
 
     /**
-     * Get database schema for context
+     * Get table structure
+     */
+    public function getTableStructure($tableName)
+    {
+        try {
+            $query = $this->db->query("DESCRIBE `{$tableName}`");
+            $structure = $query->getResultArray();
+            
+            return $this->response->setJSON([
+                'status' => 'success',
+                'data' => $structure
+            ]);
+            
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Get table data with pagination
+     */
+    public function getTableData($tableName)
+    {
+        try {
+            $page = $this->request->getGet('page') ?? 1;
+            $limit = $this->request->getGet('limit') ?? 50;
+            $offset = ($page - 1) * $limit;
+            
+            // Get total count
+            $countQuery = $this->db->query("SELECT COUNT(*) as total FROM `{$tableName}`");
+            $total = $countQuery->getRowArray()['total'];
+            
+            // Get data
+            $dataQuery = $this->db->query("SELECT * FROM `{$tableName}` LIMIT {$limit} OFFSET {$offset}");
+            $data = $dataQuery->getResultArray();
+            
+            return $this->response->setJSON([
+                'status' => 'success',
+                'data' => $data,
+                'pagination' => [
+                    'current_page' => $page,
+                    'total_pages' => ceil($total / $limit),
+                    'total_rows' => $total,
+                    'limit' => $limit
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Execute custom SQL query
+     */
+    public function executeQuery()
+    {
+        try {
+            $sql = $this->request->getJSON()->sql ?? '';
+            
+            if (empty($sql)) {
+                throw new \Exception('SQL query is required');
+            }
+            
+            // Basic security check - only allow SELECT statements
+            $sql = trim($sql);
+            if (!preg_match('/^SELECT\s+/i', $sql)) {
+                throw new \Exception('Only SELECT statements are allowed');
+            }
+            
+            $query = $this->db->query($sql);
+            $data = $query->getResultArray();
+            
+            return $this->response->setJSON([
+                'status' => 'success',
+                'data' => $data,
+                'affected_rows' => $query->getNumRows()
+            ]);
+            
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Convert natural language to SQL using Gemini AI
+     */
+    public function naturalToSQL()
+    {
+        try {
+            $naturalQuery = $this->request->getJSON()->query ?? '';
+            
+            if (empty($naturalQuery)) {
+                throw new \Exception('Natural language query is required');
+            }
+            
+            // Get database schema
+            $schema = $this->getDatabaseSchema();
+            
+            // Prepare prompt for Gemini
+            $prompt = $this->buildPrompt($naturalQuery, $schema);
+           
+            
+            // Call Gemini API
+            $sqlQuery = $this->callGeminiAPI($prompt);
+            
+            return $this->response->setJSON([
+                'status' => 'success',
+                'sql' => $sqlQuery,
+                'original_query' => $naturalQuery
+            ]);
+            
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Get all database tables - Alternative method
+     */
+    public function getTablesAlternative()
+    {
+        try {
+            $query = $this->db->query("SHOW TABLES");
+            $tables = [];
+            
+            foreach ($query->getResultArray() as $row) {
+                $tableName = array_values($row)[0];
+                
+                // Simple approach - just get row count
+                try {
+                    $countQuery = $this->db->query("SELECT COUNT(*) as row_count FROM `{$tableName}`");
+                    $rowCount = $countQuery->getRowArray()['row_count'] ?? 0;
+                } catch (\Exception $e) {
+                    $rowCount = 0;
+                }
+                
+                $tables[] = [
+                    'name' => $tableName,
+                    'row_count' => $rowCount,
+                    'size_mb' => 0 // We'll skip size calculation to avoid GROUP BY issues
+                ];
+            }
+            
+            return $this->response->setJSON([
+                'status' => 'success',
+                'data' => $tables
+            ]);
+            
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Get database schema for AI context - Improved version
      */
     private function getDatabaseSchema()
     {
-        $tables = [
-            'catalogs' => 'Tabel katalog buku/koleksi perpustakaan',
-            'collections' => 'Tabel eksemplar fisik koleksi',
-            'members' => 'Tabel anggota perpustakaan', 
-            'collectionloanitems' => 'Tabel detail peminjaman koleksi',
-            'collectionloans' => 'Tabel header peminjaman',
-            'collectioncategorys' => 'Tabel kategori koleksi',
-            'collectionmedias' => 'Tabel bentuk fisik media',
-            'collectionsources' => 'Tabel sumber pengadaan',
-            'collectionrules' => 'Tabel aturan peminjaman',
-            'collectionlocations' => 'Tabel lokasi koleksi',
-            'bacaditempat' => 'Tabel kunjungan baca di tempat',
-            'memberguesses' => 'Tabel pengunjung non-anggota',
-            'groupguesses' => 'Tabel kunjungan rombongan',
-            'jenis_anggota' => 'Tabel jenis keanggotaan'
-        ];
-
-        $schema = "DATABASE SCHEMA PERPUSTAKAAN:\n\n";
+        $schema = [];
         
-        foreach ($tables as $table => $description) {
-            $schema .= "Tabel: {$table} - {$description}\n";
+        try {
+            // Get all tables
+            $tablesQuery = $this->db->query("SHOW TABLES");
             
-            // Get column information with error handling
-            try {
-                $columns = $this->db->getFieldData($table);
-                foreach ($columns as $column) {
-                    $schema .= "  - {$column->name} ({$column->type})\n";
+            foreach ($tablesQuery->getResultArray() as $row) {
+                $tableName = array_values($row)[0];
+                
+                try {
+                    // Get columns for each table using SHOW COLUMNS (more reliable)
+                    $columnsQuery = $this->db->query("SHOW COLUMNS FROM `{$tableName}`");
+                    $columns = $columnsQuery->getResultArray();
+                    
+                    $schema[$tableName] = [];
+                    foreach ($columns as $column) {
+                        $schema[$tableName][] = [
+                            'name' => $column['Field'],
+                            'type' => $column['Type'],
+                            'null' => $column['Null'],
+                            'key' => $column['Key'],
+                            'default' => $column['Default']
+                        ];
+                    }
+                } catch (\Exception $e) {
+                    // Skip this table if there's an error
+                    continue;
                 }
-            } catch (\Exception $e) {
-                log_message('warning', "Cannot get field data for table {$table}: " . $e->getMessage());
-                $schema .= "  - (Unable to retrieve column information)\n";
             }
-            $schema .= "\n";
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Error getting database schema: ' . $e->getMessage());
         }
-
+        
         return $schema;
     }
 
     /**
-     * Create prompt for Gemini API
+     * Build prompt for Gemini AI
      */
-    private function createPrompt($userQuery, $schemaContext)
+    private function buildPrompt($naturalQuery, $schema)
     {
-        return "
-Anda adalah AI assistant untuk sistem perpustakaan. 
-Berdasarkan pertanyaan user dan schema database berikut, buatkan query SQL yang tepat.
+        $schemaText = "Database Schema:\n";
+        foreach ($schema as $tableName => $columns) {
+            $schemaText .= "\nTable: {$tableName}\n";
+            foreach ($columns as $column) {
+                $schemaText .= "  - {$column['name']} ({$column['type']})";
+                if ($column['key'] === 'PRI') $schemaText .= " [PRIMARY KEY]";
+                $schemaText .= "\n";
+            }
+        }
+        
+        $prompt = "You are a SQL expert. Convert the following natural language query to SQL based on the provided database schema.
 
-{$schemaContext}
+{$schemaText}
 
-ATURAN:
-1. Hanya gunakan tabel dan kolom yang ada di schema
-2. Gunakan JOIN yang tepat untuk menghubungkan tabel
-3. Berikan query SQL yang aman (hindari DROP, DELETE, UPDATE)
-4. Fokus pada SELECT statement
-5. Gunakan alias yang jelas untuk kolom
-6. Tambahkan GROUP BY dan aggregate functions jika diperlukan
-7. Jika diperlukan LIMIT, gunakan maksimal 100 rows
+Natural Language Query: {$naturalQuery}
 
-PERTANYAAN USER: {$userQuery}
+Rules:
+1. Only generate SELECT statements
+2. Use proper table and column names from the schema
+3. Include appropriate WHERE, JOIN, ORDER BY, and GROUP BY clauses as needed
+4. Return only the SQL query without explanation
+5. Use MySQL syntax
 
-Berikan response dalam format:
-```sql
-[SQL QUERY HERE]
-```
+SQL Query:";
 
-PENJELASAN: [Penjelasan singkat tentang query]
-";
+        return $prompt;
     }
 
     /**
-     * Call Gemini API
+     * Call Gemini AI API
      */
     private function callGeminiAPI($prompt)
     {
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=" . $this->geminiApiKey;
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . $this->geminiApiKey;
         
         $data = [
             'contents' => [
@@ -180,15 +369,9 @@ PENJELASAN: [Penjelasan singkat tentang query]
                         ['text' => $prompt]
                     ]
                 ]
-            ],
-            'generationConfig' => [
-                'temperature' => 0.1,
-                'topK' => 1,
-                'topP' => 1,
-                'maxOutputTokens' => 2048
             ]
         ];
-
+        
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, true);
@@ -197,288 +380,73 @@ PENJELASAN: [Penjelasan singkat tentang query]
             'Content-Type: application/json'
         ]);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-
+        
         $response = curl_exec($ch);
+    
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlError = curl_error($ch);
         curl_close($ch);
 
-        if ($curlError) {
-            throw new \Exception("cURL Error: " . $curlError);
-        }
-
+        
         if ($httpCode !== 200) {
-            throw new \Exception("Gemini API error: HTTP {$httpCode}. Response: " . substr($response, 0, 500));
+            throw new \Exception('Failed to call Gemini API');
         }
-
-        $result = json_decode($response, true);
         
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new \Exception("Invalid JSON response from Gemini API: " . json_last_error_msg());
+        $responseData = json_decode($response, true);
+        
+        if (!isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
+            throw new \Exception('Invalid response from Gemini API');
         }
-
-        if (!isset($result['candidates'][0]['content']['parts'][0]['text'])) {
-            throw new \Exception("Invalid response structure from Gemini API");
-        }
-
-        return $result['candidates'][0]['content']['parts'][0]['text'];
+        
+        $sqlQuery = $responseData['candidates'][0]['content']['parts'][0]['text'];
+        
+        // Clean up the response
+        $sqlQuery = trim($sqlQuery);
+        $sqlQuery = preg_replace('/^```sql\s*\n?/', '', $sqlQuery);
+        $sqlQuery = preg_replace('/\n?```$/', '', $sqlQuery);
+        
+        return $sqlQuery;
     }
 
     /**
-     * Extract SQL query from Gemini response
+     * Export query results to Excel
      */
-    private function extractSQLFromResponse($response)
+    public function exportToExcel()
     {
-        // Extract SQL from ```sql code blocks
-        if (preg_match('/```sql\s*(.*?)\s*```/s', $response, $matches)) {
-            return trim($matches[1]);
-        }
-        
-        // Fallback: look for SELECT statements
-        if (preg_match('/SELECT\s+.*?(?=\n\n|\nPENJELASAN|$)/si', $response, $matches)) {
-            return trim($matches[0]);
-        }
-
-        return '';
-    }
-
-    /**
-     * Execute SQL query safely
-     */
-    private function executeQuery($sql)
-    {
-        // Security check: only allow SELECT statements
-        if (!preg_match('/^\s*SELECT\s+/i', $sql)) {
-            throw new \Exception("Hanya SELECT query yang diizinkan");
-        }
-
-        // Additional security checks - use word boundaries to avoid false positives
-        $dangerousKeywords = ['DROP', 'DELETE', 'UPDATE', 'INSERT', 'ALTER', 'CREATE', 'TRUNCATE', 'EXEC', 'EXECUTE'];
-        foreach ($dangerousKeywords as $keyword) {
-            // Use word boundaries (\b) to match whole words only
-            if (preg_match('/\b' . preg_quote($keyword, '/') . '\b/i', $sql)) {
-                throw new \Exception("Query mengandung keyword berbahaya: {$keyword}");
-            }
-        }
-
         try {
-            $query = $this->db->query($sql);
-            $result = $query->getResultArray();
+            $sql = $this->request->getJSON()->sql ?? '';
             
-            $columns = [];
-            if (!empty($result)) {
-                $columns = array_keys($result[0]);
+            if (empty($sql)) {
+                throw new \Exception('SQL query is required');
             }
-
-            return [
-                'data' => $result,
-                'columns' => $columns
-            ];
-
+            
+            $query = $this->db->query($sql);
+            $data = $query->getResultArray();
+            
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            
+            // Add headers
+            if (!empty($data)) {
+                $headers = array_keys($data[0]);
+                $sheet->fromArray($headers, null, 'A1');
+                
+                // Add data
+                $sheet->fromArray($data, null, 'A2');
+            }
+            
+            $writer = new Xlsx($spreadsheet);
+            $filename = 'query_results_' . date('Y-m-d_H-i-s') . '.xlsx';
+            $filepath = WRITEPATH . 'uploads/' . $filename;
+            
+            $writer->save($filepath);
+            
+            return $this->response->download($filepath, null)->setFileName($filename);
+            
         } catch (\Exception $e) {
-            throw new \Exception("Error executing query: " . $e->getMessage());
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ]);
         }
-    }
-
-    /**
-     * Generate chart configuration based on data
-     */
-    private function generateChartConfig($data, $userQuery)
-    {
-        if (empty($data)) {
-            return null;
-        }
-
-        $columns = array_keys($data[0]);
-        
-        // Detect if suitable for chart
-        if (count($columns) < 2) {
-            return null;
-        }
-
-        // Find label column (first text column)
-        $labelColumn = $columns[0];
-        
-        // Find value columns (numeric columns)
-        $valueColumns = [];
-        foreach ($columns as $col) {
-            if ($col !== $labelColumn && is_numeric($data[0][$col])) {
-                $valueColumns[] = $col;
-            }
-        }
-
-        if (empty($valueColumns)) {
-            return null;
-        }
-
-        // Determine chart type based on query
-        $chartType = 'bar';
-        if (stripos($userQuery, 'trend') !== false || stripos($userQuery, 'waktu') !== false) {
-            $chartType = 'line';
-        } elseif (stripos($userQuery, 'distribusi') !== false || stripos($userQuery, 'proporsi') !== false) {
-            $chartType = 'pie';
-        }
-
-        return [
-            'type' => $chartType,
-            'labels' => array_column($data, $labelColumn),
-            'datasets' => array_map(function($col) use ($data) {
-                return [
-                    'label' => $col,
-                    'data' => array_column($data, $col),
-                    'backgroundColor' => $this->generateColors(count($data))
-                ];
-            }, $valueColumns)
-        ];
-    }
-
-    /**
-     * Generate colors for chart
-     */
-    private function generateColors($count)
-    {
-        $colors = [
-            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
-            '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
-        ];
-        
-        return array_slice($colors, 0, $count);
-    }
-
-    /**
-     * Generate summary text
-     */
-    private function generateSummary($data, $userQuery)
-    {
-        if (empty($data)) {
-            return "Tidak ada data ditemukan untuk query: " . $userQuery;
-        }
-
-        $totalRows = count($data);
-        $columns = array_keys($data[0]);
-        
-        return "Ditemukan {$totalRows} baris data dengan kolom: " . implode(', ', $columns);
-    }
-
-    /**
-     * Export to Excel
-     */
-    public function exportExcel()
-    {
-        $request = service('request');
-        $data = json_decode($request->getPost('data'), true);
-        $columns = json_decode($request->getPost('columns'), true);
-        
-        if (empty($data) || empty($columns)) {
-            return redirect()->back()->with('error', 'Tidak ada data untuk diekspor');
-        }
-
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-
-        // Set headers
-        $col = 1;
-        foreach ($columns as $column) {
-            $sheet->setCellValueByColumnAndRow($col, 1, $column);
-            $col++;
-        }
-
-        // Set data
-        $row = 2;
-        foreach ($data as $rowData) {
-            $col = 1;
-            foreach ($columns as $column) {
-                $sheet->setCellValueByColumnAndRow($col, $row, $rowData[$column] ?? '');
-                $col++;
-            }
-            $row++;
-        }
-
-        // Style headers
-        $sheet->getStyle('1:1')->getFont()->setBold(true);
-        $sheet->getStyle('1:1')->getFill()
-              ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-              ->getStartColor()->setARGB('FFCCCCCC');
-
-        $writer = new Xlsx($spreadsheet);
-        
-        $filename = 'laporan_ai_' . date('Y-m-d_H-i-s') . '.xlsx';
-        
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="' . $filename . '"');
-        header('Cache-Control: max-age=0');
-
-        $writer->save('php://output');
-        exit;
-    }
-
-    /**
-     * Export to PDF
-     */
-    public function exportPDF()
-    {
-        $request = service('request');
-        $data = json_decode($request->getPost('data'), true);
-        $columns = json_decode($request->getPost('columns'), true);
-        $query = $request->getPost('query') ?? 'Laporan Data';
-        
-        if (empty($data) || empty($columns)) {
-            return redirect()->back()->with('error', 'Tidak ada data untuk diekspor');
-        }
-
-        // Create HTML table
-        $html = "
-        <html>
-        <head>
-            <style>
-                table { width: 100%; border-collapse: collapse; font-size: 12px; }
-                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                th { background-color: #f2f2f2; font-weight: bold; }
-                h1 { text-align: center; color: #333; }
-                .summary { margin-bottom: 20px; }
-            </style>
-        </head>
-        <body>
-            <h1>Laporan AI - Perpustakaan</h1>
-            <div class='summary'>
-                <strong>Query:</strong> {$query}<br>
-                <strong>Tanggal:</strong> " . date('d/m/Y H:i:s') . "<br>
-                <strong>Total Data:</strong> " . count($data) . " baris
-            </div>
-            <table>
-                <thead>
-                    <tr>";
-        
-        foreach ($columns as $column) {
-            $html .= "<th>{$column}</th>";
-        }
-        
-        $html .= "</tr></thead><tbody>";
-        
-        foreach ($data as $row) {
-            $html .= "<tr>";
-            foreach ($columns as $column) {
-                $html .= "<td>" . htmlspecialchars($row[$column] ?? '') . "</td>";
-            }
-            $html .= "</tr>";
-        }
-        
-        $html .= "</tbody></table></body></html>";
-
-        // Generate PDF
-        $options = new Options();
-        $options->set('defaultFont', 'Arial');
-        $options->set('isHtml5ParserEnabled', true);
-        $options->set('isPhpEnabled', true);
-
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper('A4', 'landscape');
-        $dompdf->render();
-
-        $filename = 'laporan_ai_' . date('Y-m-d_H-i-s') . '.pdf';
-        $dompdf->stream($filename, array('Attachment' => true));
     }
 }

@@ -173,7 +173,7 @@ $slug = $request->getGet('slug');
 					orderable: false
 				},
 				{
-					data: 'full_name',
+					data: 'username',
 				},
 				{
 					data: 'branch_id'

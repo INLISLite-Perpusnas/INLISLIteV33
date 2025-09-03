@@ -36,7 +36,7 @@ class DetailKatalog extends \Base\Controllers\BaseController
     }
     public function index()
     {
-        $this->data['title'] = 'Jenis Akses';
+        $this->data['title'] = 'Master Detail Katalog';
         echo view('DetailKatalog\Views\list', $this->data);
     }
 

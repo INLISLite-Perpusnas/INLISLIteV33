@@ -9,7 +9,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form id="frm_update" method="post" data-action="<?= base_url('api-status-perkawinan/edit') ?>" data-id="">
+            <form id="frm_update" method="post" data-action="<?= base_url('api/master-status-perkawinan/edit') ?>" data-id="">
 				<div class="modal-body">
                     <div id="frm_create_message"></div>
 					<div class="form-row">
@@ -79,7 +79,7 @@
 					showConfirmButton: false,
 					timer: 5000,
 				}).then(() => {
-					window.location.href = `<?=base_url('status-perkawinan')?>`;
+					window.location.href = `<?=base_url('master-status-perkawinan')?>`;
 				});
 			} else {				
 				Swal.fire({

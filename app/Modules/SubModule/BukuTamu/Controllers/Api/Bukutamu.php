@@ -42,17 +42,11 @@ class BukuTamu extends \Base\Controllers\BaseResourceController
 			->select('a.id, a.id as action')
 			->select('a.CreateDate as VisitDate')
 			->select('a.Nama as Member_name, a.NoAnggota as Member_no')
-			->select('branchs.Name as Branch_name')
 			->select('a.Location_id, locations.Name as Location_name')
 			->select('location_library.Name as LocationLibrary_name')
 			->join('locations', 'locations.ID = a.Location_id', 'left')
 			->join('location_library', 'location_library.ID = locations.LocationLibrary_id', 'left')
-			->join('branchs', 'branchs.ID=location_library.branch_id', 'left')
-			->where('LENGTH(NoAnggota) > 0');
-
-		if (is_profiling()) {
-			$builder->where('a.Branch_id', $branch_id);
-		}
+			->where('a.NoAnggota IS NOT NULL');
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
@@ -86,60 +80,43 @@ class BukuTamu extends \Base\Controllers\BaseResourceController
 		return $dataTable;
 	}
 
-	public function non_anggota_datatable()
-	{
-		$db = db_connect('data');
-		$builder = $db->table('memberguesses as a')
-			->select('a.id, a.id as action')
-			->select('a.CreateDate as VisitDate')
-			->select('a.Nama as Visitor_name')
-			->select('a.Profesi_id, a.PendidikanTerakhir_id, a.Jeniskelamin_id')
-			->select('branchs.Name as Branch_name')
-			->select('a.Location_id, locations.Name as Location_name')
-			->select('location_library.Name as LocationLibrary_name')
-			->join('locations', 'locations.ID = a.Location_id', 'left')
-			->join('location_library', 'location_library.ID = locations.LocationLibrary_id', 'left')
-			->join('branchs', 'branchs.ID=location_library.branch_id', 'left')
-			->where('LENGTH(NoAnggota) = 0');
-
-		$dataTable = DataTable::of($builder)
-			->addNumbering('no')
-			->edit('VisitDate', function ($row) {
-				$html   = '<b>' . $row->VisitDate . '</b>';
-				return $html;
-			})
-			->edit('Visitor_name', function ($row) {
-				$html   = '<b>' . $row->Visitor_name . '</b>';
-				return $html;
-			})
-			->edit('Profesi_id', function ($row) {
-				$html   = '';
-				if (!empty($row->Profesi_id)) {
-					$data = get_pekerjaan($row->Profesi_id);
-					if (!empty($data)) {
-						$html = $data->Pekerjaan;
-					}
-				}
-				return $html;
-			})
-			->edit('PendidikanTerakhir_id', function ($row) {
-				$html   = '';
-				if (!empty($row->PendidikanTerakhir_id)) {
-					$data = get_pendidikan($row->PendidikanTerakhir_id);
-					if (!empty($data)) {
-						$html = $data->Nama;
-					}
-				}
-				return $html;
-			})
-			->edit('action', function ($row) {
-				$html   = '<a href="javascript:void(0);" data-href="' . base_url('bukutamu/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a> ';
-				return $html;
-			})
-			->toJson();
-		return $dataTable;
-	}
-
+public function non_anggota_datatable()
+{
+    $db = db_connect('data');
+    $builder = $db->table('memberguesses as a')
+        ->select('a.id, a.id as action')
+        ->select('a.CreateDate as VisitDate')
+        ->select('a.Nama as Visitor_name')
+        ->select('a.Profesi_id, a.PendidikanTerakhir_id, a.Jeniskelamin_id')
+        ->select('l.Name as Location_name')
+        ->select('ll.Name as LocationLibrary_name')
+        ->select('mp.Pekerjaan as Profesi_name')
+        ->select('mpd.Nama as PendidikanTerakhir_name')
+        ->select('jk.Name as JenisKelamin_name')
+        ->join('locations l', 'l.ID = a.Location_id', 'left')
+        ->join('location_library ll', 'll.ID = l.LocationLibrary_id', 'left')
+        ->join('master_pekerjaan mp', 'mp.ID = a.Profesi_id', 'left')
+        ->join('master_pendidikan mpd', 'mpd.ID = a.PendidikanTerakhir_id', 'left')
+        ->join('jenis_kelamin jk', 'jk.ID = a.Jeniskelamin_id', 'left')
+        ->where('a.NoAnggota IS NULL');
+    
+    $dataTable = DataTable::of($builder)
+        ->addNumbering('no')
+        ->edit('VisitDate', function ($row) {
+            $html   = '<b>' . $row->VisitDate . '</b>';
+            return $html;
+        })
+        ->edit('Visitor_name', function ($row) {
+            $html   = '<b>' . $row->Visitor_name . '</b>';
+            return $html;
+        })
+        ->edit('action', function ($row) {
+            $html   = '<a href="javascript:void(0);" data-href="' . base_url('bukutamu/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a> ';
+            return $html;
+        })
+        ->toJson();
+    return $dataTable;
+}
 	public function rombongan_datatable()
 	{
 		$db = db_connect('data');
@@ -147,12 +124,10 @@ class BukuTamu extends \Base\Controllers\BaseResourceController
 			->select('a.ID, a.ID as id, a.ID as action')
 			->select('a.CreateDate as VisitDate')
 			->select('a.NamaKetua as Group_chief, a.AsalInstansi as Group_name, a.CountPersonel')
-			->select('branchs.Name as Branch_name')
 			->select('a.Location_id, locations.Name as Location_name')
 			->select('location_library.Name as LocationLibrary_name')
 			->join('locations', 'locations.ID = a.Location_id', 'left')
-			->join('location_library', 'location_library.ID = locations.LocationLibrary_id', 'left')
-			->join('branchs', 'branchs.ID=location_library.branch_id', 'left');
+			->join('location_library', 'location_library.ID = locations.LocationLibrary_id', 'left');
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')

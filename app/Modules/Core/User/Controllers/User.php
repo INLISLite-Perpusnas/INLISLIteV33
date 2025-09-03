@@ -38,7 +38,7 @@ class User extends \Base\Controllers\BaseController
         $this->data['title'] = 'User';
         $this->data['groups'] = $groups;
         $this->data['slug'] = $slug;
-        $this->data['branch_id'] = $branch_id;
+        // $this->data['branch_id'] = $branch_id;
 
       
             // $branchModel = new \MitraPerpustakaan\Models\MitraPerpustakaanModel();

@@ -31,10 +31,23 @@ class KataSandang extends \Base\Controllers\BaseResourceController
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
 			->edit('action', function ($row) {
-				$edit = '<a href="javascript:void(0);" data-href="' . base_url('api/master-kata-sandang/show/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Ubah KataSandang" class="btn btn-warning show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-				$delete = '<a href="javascript:void(0);" data-href="' . base_url('katasandang/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus  Profil" class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
-				return $edit . " " . $delete;
-			})
+			$edit = '<a data-toggle="modal" 
+						data-target="#modal_edit" 
+						href="javascript:void(0);"  
+						data-href="' . base_url('api/master-kata-sandang/show/' . $row->id) . '"  
+						data-id="' . $row->id . '" 
+						class="btn btn-warning show-data" 
+						title="Ubah Kata Sandang">
+						<i class="pe-7s-note font-weight-bold"></i>
+					</a>';
+			$delete = '<a href="javascript:void(0);" 
+						data-href="' . base_url('master-kata-sandang/delete/' . $row->id) . '" 
+						class="btn btn-danger remove-data" 
+						title="Hapus Profil">
+						<i class="pe-7s-trash font-weight-bold"></i>
+					</a>';
+			return $edit . " " . $delete;
+		})
 			->toJson();
 
 		return $dataTable;

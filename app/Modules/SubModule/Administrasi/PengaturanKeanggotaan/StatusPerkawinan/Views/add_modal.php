@@ -36,7 +36,7 @@
     $('#frm_add').submit(function(event) {
 		event.preventDefault();
 
-		var url = "<?=base_url('api-status-perkawinan/create')?>";
+		var url = "<?=base_url('api/master-status-perkawinan/create')?>";
 		var data_post = $(this).serializeArray();
 
 		$("#btnAdd").html('<i class="fa fa-spinner fa-spin loading"></i> Mohon menunggu...');
@@ -58,7 +58,7 @@
 					showConfirmButton: false,
 					timer: 5000,
 				}).then(() => {
-					window.location.href = `<?=base_url('status-perkawinan')?>`;
+					window.location.href = `<?=base_url('master-status-perkawinan')?>`;
 				});
 			} else {				
 				Swal.fire({
