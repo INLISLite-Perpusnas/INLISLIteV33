@@ -117,7 +117,7 @@ $slug = $request->getGet('slug') ?? '';
             e.preventDefault(); // Mencegah reload default <a href="#">
 
             var locationID = $(this).data('location-id');
-            var jenisAnggota = $('#jenis-anggota').val();
+            var jenisAnggota = $('#master-jenis-anggota').val();
 
             $.ajax({
                 type: 'POST',

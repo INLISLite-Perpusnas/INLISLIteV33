@@ -60,7 +60,7 @@ class JenisAnggota extends \Base\Controllers\BaseResourceController
 			})
 			->edit('UploadDokumenKeanggotaanOnline', function ($row) {
 				$checked = $row->UploadDokumenKeanggotaanOnline == 1 ? 'checked' : '';
-				$html = '<input type="checkbox" class="apply-status" data-href="' . base_url('api/jenis-anggota/switch/' . $row->id) . '" data-checked="' . $checked . '" data-field="UploadDokumenKeanggotaanOnline" ' . $checked . ' data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="mini">';
+				$html = '<input type="checkbox" class="apply-status" data-href="' . base_url('api/master-jenis-anggota/switch/' . $row->id) . '" data-checked="' . $checked . '" data-field="UploadDokumenKeanggotaanOnline" ' . $checked . ' data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="mini">';
 				return $html;
 			})
 			->edit('DefaultLokasi', function ($row) {
@@ -80,7 +80,7 @@ class JenisAnggota extends \Base\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('action', function ($row) {
-				$edit = '<a href="javascript:void(0);" data-href="' . base_url('api/jenis-anggota/detail/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
+				$edit = '<a href="javascript:void(0);" data-href="' . base_url('api/master-jenis-anggota/detail/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
 				$active = '<a href="' . base_url('master-jenis-anggota/apply_status/' . $row->id . '?field=active&value=1') . '"  data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Active" class="btn btn-success active-data"><i class="pe-7s-check font-weight-bold"> </i> </a>';
 				$inactive = '<a href="' . base_url('master-jenis-anggota/apply_status/' . $row->id . '?field=active&value=0') . '" data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Inactive" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"> </i> </a>';
 				$delete = '<a href="javascript:void(0);" data-href="' . base_url('master-jenis-anggota/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
@@ -188,8 +188,8 @@ class JenisAnggota extends \Base\Controllers\BaseResourceController
 
 	public function switch($id = null)
 	{
-		$field = $this->request->getGet('field');
-		$value = $this->request->getGet('value');
+		$field = $this->request->getPost('field');
+		$value = $this->request->getPost('value');
 
 		$update_data_id = $this->jenisanggotaModel->update($id, array($field => ($value == 'true') ? 1 : 0));
 

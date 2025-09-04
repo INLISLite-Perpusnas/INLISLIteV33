@@ -79,7 +79,7 @@
     $('#frm_add').submit(function(event) {
 		event.preventDefault();
 
-		var url = "<?=base_url('api/jenis-anggota/create')?>";
+		var url = "<?=base_url('api/master-jenis-anggota/create')?>";
 		var data_post = $(this).serializeArray();
 
 		$("#btnAdd").html('<i class="fa fa-spinner fa-spin loading"></i> Mohon menunggu...');
@@ -101,7 +101,7 @@
 					showConfirmButton: false,
 					timer: 5000,
 				}).then(() => {
-					window.location.href = `<?=base_url('jenis-anggota')?>`;
+					window.location.href = `<?=base_url('master-jenis-anggota')?>`;
 				});
 			} else {				
 				Swal.fire({

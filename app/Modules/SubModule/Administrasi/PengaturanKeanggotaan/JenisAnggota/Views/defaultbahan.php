@@ -75,7 +75,7 @@ $slug = $request->getGet('slug') ?? '';
                         <a class="dropdown-item" href="#" data-jenisbahan-id="<?= $jenisbahan->ID ?>"><?= $jenisbahan->Name ?></a>
                     <?php endforeach; ?>
                 </div>
-                <input type="hidden" id="jenis-anggota" value="<?= $JenisAnggota_id ?>">
+                <input type="hidden" id="master-jenis-anggota" value="<?= $JenisAnggota_id ?>">
             </div><br>
             <table style="width: 100%;" id="tbl_data" class="table table-hover table-striped table-bordered">
                 <thead>
@@ -117,7 +117,7 @@ $slug = $request->getGet('slug') ?? '';
             e.preventDefault(); // Mencegah reload default <a href="#">
 
             var jenisbahanID = $(this).data('jenisbahan-id');
-            var jenisAnggota = $('#jenis-anggota').val();
+            var jenisAnggota = $('#master-jenis-anggota').val();
 
             $.ajax({
                 type: 'POST',

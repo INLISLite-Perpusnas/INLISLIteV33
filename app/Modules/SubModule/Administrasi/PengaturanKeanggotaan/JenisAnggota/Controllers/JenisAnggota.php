@@ -45,7 +45,7 @@ class JenisAnggota extends \Base\Controllers\BaseController
         if (!$id) {
             set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
             set_message('toastr_type', 'error');
-            return redirect()->to('master-jenis-anggota');
+            return redirect()->to('master-jenis-anggotaa');
         }
         $jenisanggotaDelete = $this->jenisanggotaModel->delete($id);
         if ($jenisanggotaDelete) {
@@ -74,7 +74,7 @@ class JenisAnggota extends \Base\Controllers\BaseController
             set_message('toastr_msg', 'Jenis Anggota gagal diubah');
             set_message('toastr_type', 'warning');
         }
-        return redirect()->to('/jenis-anggota');
+        return redirect()->to('/master-jenis-anggota');
     }
 
     public function DefaultLokasi($id)

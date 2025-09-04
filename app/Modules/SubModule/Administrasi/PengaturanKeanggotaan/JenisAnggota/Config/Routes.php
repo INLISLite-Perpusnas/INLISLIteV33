@@ -22,9 +22,9 @@ $routes->group('master-jenis-anggota', ['namespace' => 'JenisAnggota\Controllers
 	$subroutes->add('flip', 'JenisAnggota::flip');
 });
 
-$routes->group('api/jenis-anggota', ['namespace' => 'JenisAnggota\Controllers\Api'], function ($subroutes) {
+$routes->group('api/master-jenis-anggota', ['namespace' => 'JenisAnggota\Controllers\Api'], function ($subroutes) {
 	$subroutes->add('detail/(:any)', 'JenisAnggota::detail/$1');
-	$subroutes->add('save', 'JenisAnggota::create');
+	$subroutes->add('create', 'JenisAnggota::create');
 	$subroutes->add('edit/(:any)', 'JenisAnggota::edit/$1');
 	$subroutes->add('delete/(:any)', 'JenisAnggota::delete/$1');
 

@@ -9,7 +9,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form id="frm_update" method="post" data-action="<?= base_url('api/jenis-anggota/edit') ?>" data-id="">
+            <form id="frm_update" method="post" data-action="<?= base_url('api/master-jenis-anggota/edit') ?>" data-id="">
 				<div class="modal-body">
                     <div id="frm_update_message"></div>
 					<div class="form-row">
