@@ -34,8 +34,8 @@ class MasterFakultas extends \Base\Controllers\BaseResourceController
 		$branchId=user()->branch_id;
 		$builder = $db->table('master_fakultas as a')
 			->select('a.id, a.id as action,a.Nama,a.Branch_id, a.UpdateDate')
-			->select('a.active')
-			->whereIn('a.Branch_id', [$branchId, 0]);
+			->select('a.active');
+			
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
@@ -59,7 +59,7 @@ class MasterFakultas extends \Base\Controllers\BaseResourceController
 				$edit = '<a href="javascript:void(0);" data-href="' . base_url('api/fakultas/detail/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
 				$active = '<a href="' . base_url('master-fakultas/apply_status/' . $row->id . '?field=active&value=1') . '"  data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Active" class="btn btn-success active-data"><i class="pe-7s-check font-weight-bold"> </i> </a>';
 				$inactive = '<a href="' . base_url('master-fakultas/apply_status/' . $row->id . '?field=active&value=0') . '" data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Inactive" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"> </i> </a>';
-				$delete = '<a href="javascript:void(0);" data-href="' . base_url('fakultas/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+				$delete = '<a href="javascript:void(0);" data-href="' . base_url('master-fakultas/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
 				return $edit . ' ' . $active . ' ' . $inactive . ' ' . $delete;
 			}
 		})
@@ -96,12 +96,12 @@ class MasterFakultas extends \Base\Controllers\BaseResourceController
 			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
-				'message' => 'Master Kelas berhasil disimpan',
+				'message' => 'Master Fakultas berhasil disimpan',
 			];
 		} else {
 			$response = [
 				'error' => true,
-				'message' => 'Jenis Pendidikan gagal disimpan. Silakan coba lagi',
+				'message' => 'Master Fakultas gagal disimpan. Silakan coba lagi',
 			];
 		}
 
@@ -116,16 +116,16 @@ class MasterFakultas extends \Base\Controllers\BaseResourceController
 
 		$update_data_id = $this->fakultasModel->update($id, $update_data);
 		if ($update_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Jenis Pendidikan berhasil disimpan');
+			$this->session->setFlashdata('toastr_msg', 'Master Fakultas berhasil disimpan');
 			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
-				'message' => 'Jenis Pendidikan berhasil disimpan',
+				'message' => 'Master Fakultas berhasil disimpan',
 			];
 		} else {
 			$response = [
 				'error' => true,
-				'message' => 'Jenis Pendidikan gagal disimpan. Silakan coba lagi',
+				'message' => 'Master Fakultas gagal disimpan. Silakan coba lagi',
 			];
 		}
 
@@ -141,7 +141,7 @@ class MasterFakultas extends \Base\Controllers\BaseResourceController
 				'status'   => 200,
 				'error'    => null,
 				'messages' => [
-					'success' => 'Jenis Pendidikan berhasil dihapus'
+					'success' => 'Master Fakultas berhasil dihapus'
 				]
 			];
 			return $this->respondDeleted($response);

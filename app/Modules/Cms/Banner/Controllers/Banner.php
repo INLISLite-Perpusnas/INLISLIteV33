@@ -62,48 +62,54 @@ class Banner extends \Base\Controllers\BaseController
 		$slug = $this->request->getGet('slug');
 
 		$this->validation->setRule('title', 'Judul Banner', 'required');
-		if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
-			$title_slug = url_title($this->request->getPost('title'), '-', TRUE);
+		if (
+			$this->request->getPost() &&
+			$this->validation->withRequest($this->request)->run()
+		) {
+			$db = \Config\Database::connect();
+			$db->transStart();
+
+			// Geser semua sort lama ke bawah
+			$this->bannerModel
+				->where('sort >=', 1)
+				->set('sort', 'sort + 1', false)
+				->update();
+
+			$title_slug = url_title(
+				$this->request->getPost('title'),
+				'-',
+				true
+			);
 			$save_data = [
 				'title' => $this->request->getPost('title'),
 				'slug' => $title_slug,
 				'category' => $this->request->getPost('category'),
-				'category_sub' => $this->request->getPost('category_sub') ?? '',
-				'sort' => $this->request->getPost('sort'),
+				'sort' => 1,
 				'description' => $this->request->getPost('description'),
-				'content' => $this->request->getPost('content'),
 				'created_by' => user_id(),
 			];
 
 			// Logic Upload
 			$files = (array) $this->request->getPost('file_cover');
 			if (count($files)) {
-				$listed_file = array();
+				$listed_file = [];
 				foreach ($files as $uuid => $name) {
 					if (file_exists($this->uploadPath . $name)) {
 						$file = new File($this->uploadPath . $name);
-						$newFileName = date('Ymd') . '_' . $file->getRandomName();
+						$newFileName =
+							date('Ymd') . '_' . $file->getRandomName();
 						$file->move($this->modulePath, $newFileName);
 						$listed_file[] = $newFileName;
 
-						create_thumbnail($this->modulePath, $newFileName, 'thumb_', 250);
+						create_thumbnail(
+							$this->modulePath,
+							$newFileName,
+							'thumb_',
+							250
+						);
 					}
 				}
 				$save_data['file_cover'] = implode(',', $listed_file);
-			}
-
-			$files = (array) $this->request->getPost('file_image');
-			if (count($files)) {
-				$listed_file = array();
-				foreach ($files as $uuid => $name) {
-					if (file_exists($this->uploadPath . $name)) {
-						$file = new File($this->uploadPath . $name);
-						$newFileName = date('Ymd') . '_' . $file->getRandomName();
-						$file->move($this->modulePath, $newFileName);
-						$listed_file[] = $newFileName;
-					}
-				}
-				$save_data['file_image'] = implode(',', $listed_file);
 			}
 
 			if (is_member('admin')) {
@@ -123,13 +129,20 @@ class Banner extends \Base\Controllers\BaseController
 			}
 
 			$newPageId = $this->bannerModel->insert($save_data);
-			if ($newPageId) {
+			$db->transComplete();
+
+			if ($db->transStatus() === false) {
+				$dbError = $db->error(); // Check database error
+				if (!empty($error['message'])) {
+					log_message('error', 'DB Error: ' . $dbError['message']);
+					set_message('message', $dbError['message']);
+				}
+				set_message('toastr_type', 'warning');
+				echo view('Banner\Views\add', $this->data);
+			} else {
 				set_message('toastr_msg', 'Banner berhasil ditambah');
 				set_message('toastr_type', 'success');
 				return redirect()->to('/cms/banner');
-			} else {
-				set_message('message', $this->validation->getErrors() ? $this->validation->listErrors() : lang('Page.info.failed_saved'));
-				echo view('Banner\Views\add', $this->data);
 			}
 		} else {
 			$this->data['redirect'] = base_url('banner/create');
@@ -142,9 +155,27 @@ class Banner extends \Base\Controllers\BaseController
 	{
 		$this->data['title'] = 'Ubah Banner';
 		$banner = $this->bannerModel->find($id);
+		// Dapatkan data file image yang lama, termasuk ukuran file
+		$old_file_cover_data = [];
+		if ($banner->file_cover) {
+			$file_names = explode(',', $banner->file_cover);
+			foreach ($file_names as $file_name) {
+				$file_path = $this->modulePath . $file_name;
+				if (file_exists($file_path)) {
+					$old_file_cover_data[] = [
+						'name' => $file_name,
+						'size' => filesize($file_path),
+					];
+				}
+			}
+		}
+
 		$this->data['banner'] = $banner;
+		$this->data['old_file_cover_data'] = $old_file_cover_data;
 
 		$this->validation->setRule('title', 'Judul Banner', 'required');
+		$this->validation->setRule('sort', 'Urutan', 'required|is_natural_no_zero');
+
 		if ($this->request->getPost()) {
 			if ($this->validation->withRequest($this->request)->run()) {
 				$title_slug = url_title($this->request->getPost('title'), '-', TRUE);
@@ -152,42 +183,47 @@ class Banner extends \Base\Controllers\BaseController
 					'title' => $this->request->getPost('title'),
 					'slug' => $this->request->getPost('slug') ?? $title_slug,
 					'category' => $this->request->getPost('category'),
-					'category_sub' => $this->request->getPost('category_sub') ?? '',
 					'sort' => $this->request->getPost('sort'),
 					'description' => $this->request->getPost('description'),
-					'content' => $this->request->getPost('content'),
 					'updated_by' => user_id(),
 				];
-
-				// Logic Upload
-				$files = (array) $this->request->getPost('file_cover');
-				if (count($files)) {
-					$listed_file = array();
-					foreach ($files as $uuid => $name) {
-						if (file_exists($this->uploadPath . $name)) {
-							$file = new File($this->uploadPath . $name);
-							$newFileName = date('Ymd') . '_' . $file->getRandomName();
-							$file->move($this->modulePath, $newFileName);
-							$listed_file[] = $newFileName;
-
-							create_thumbnail($this->modulePath, $newFileName, 'thumb_', 250);
-						}
+				$oldSort = $banner->sort;
+				$newSort = (int)$this->request->getPost('sort');
+				if ($newSort != $oldSort) {
+					if ($newSort < $oldSort) {
+						// Geser ke atas: berita di range [newSort, oldSort-1] naik 1
+						$this->bannerModel
+							->where('sort >=', $newSort)
+							->where('sort <', $oldSort)
+							->set('sort', 'sort + 1', false)
+							->update();
+					} elseif ($newSort > $oldSort) {
+						// Geser ke bawah: berita di range [oldSort+1, newSort] turun 1
+						$this->bannerModel
+							->where('sort <=', $newSort)
+							->where('sort >', $oldSort)
+							->set('sort', 'sort - 1', false)
+							->update();
 					}
-					$update_data['file_cover'] = implode(',', $listed_file);
 				}
-
-				$files = (array) $this->request->getPost('file_image');
-				if (count($files)) {
-					$listed_file = array();
-					foreach ($files as $uuid => $name) {
-						if (file_exists($this->uploadPath . $name)) {
+				// Logic Upload untuk file_cover
+				$files_image = (array) $this->request->getPost('file_cover');
+				if (count($files_image)) {
+					$listed_image = [];
+					foreach ($files_image as $name) {
+						if (file_exists($this->modulePath . $name)) {
+							$listed_image[] = $name;
+						} else if (file_exists($this->uploadPath . $name)) {
 							$file = new File($this->uploadPath . $name);
 							$newFileName = date('Ymd') . '_' . $file->getRandomName();
 							$file->move($this->modulePath, $newFileName);
-							$listed_file[] = $newFileName;
+							$listed_image[] = $newFileName;
 						}
 					}
-					$update_data['file_image'] = implode(',', $listed_file);
+					$update_data['file_cover'] = implode(',', $listed_image);
+				} else {
+					// Jika tidak ada file baru di-upload, pertahankan file cover yang lama
+					$update_data['file_cover'] = $banner->file_cover;
 				}
 
 				if (is_member('admin')) {
@@ -225,6 +261,24 @@ class Banner extends \Base\Controllers\BaseController
 		$this->data['redirect'] = base_url('cms/banner/edit/' . $id);
 		echo view('Banner\Views\update', $this->data);
 	}
+	public function do_upload()
+	{
+		// Pastikan request adalah AJAX dan ada file yang diunggah
+		if ($this->request->isAJAX() && $this->request->getFile('file')) {
+			$file = $this->request->getFile('file');
+
+			if ($file->isValid() && !$file->hasMoved()) {
+				$newName = $file->getRandomName();
+				$file->move($this->uploadPath, $newName);
+
+				// Mengembalikan nama file sebagai respons JSON
+				return $this->response->setJSON(['filename' => $newName, 'size' => $file->getSize()]);
+			}
+		}
+
+		// Mengembalikan respons error jika ada masalah
+		return $this->response->setStatusCode(400)->setJSON(['error' => 'File upload failed.']);
+	}
 
 	public function delete(int $id = 0)
 	{
@@ -236,8 +290,8 @@ class Banner extends \Base\Controllers\BaseController
 		$banner = $this->bannerModel->find($id);
 		$bannerDelete = $this->bannerModel->delete($id);
 		if ($bannerDelete) {
-			unlink_file($this->modulePath, $banner->file_image);
-			unlink_file($this->modulePath, 'thumb_' . $banner->file_image);
+			unlink_file($this->modulePath, $banner->file_cover);
+			unlink_file($this->modulePath, 'thumb_' . $banner->file_cover);
 			unlink_file($this->modulePath, $banner->file_pdf);
 
 			set_message('toastr_msg', ' Banner berhasil dihapus');
@@ -317,7 +371,7 @@ class Banner extends \Base\Controllers\BaseController
 			$sheet->setCellValue("D" . $col, $row->active);
 			$sheet->setCellValue("E" . $col, $row->created_at . ' | ' . strtoupper($row->created_name));
 			$sheet->setCellValue("F" . $col, $row->updated_at . ' | ' . strtoupper($row->updated_name));
-			$sheet->setCellValue("G" . $col, base_url('uploads/banner/' . $row->file_image));
+			$sheet->setCellValue("G" . $col, base_url('uploads/banner/' . $row->file_cover));
 			$sheet->setCellValue("H" . $col, base_url('uploads/banner/' . $row->file_pdf));
 
 			$col++;
@@ -343,7 +397,7 @@ class Banner extends \Base\Controllers\BaseController
 
 		for ($i = $from; $i <= $to; $i++) {
 			$banner = $this->bannerModel->find($i);
-			$newFileName = $banner->file_image;
+			$newFileName = $banner->file_cover;
 			if (!file_exists($this->modulePath . '/thumb_' . $newFileName)) {
 				create_thumbnail($this->modulePath, $newFileName, 'thumb_', 250);
 				echo "success generate thumbnail for ID: " . $i . " <br>";

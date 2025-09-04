@@ -165,7 +165,7 @@ class Home extends \Base\Controllers\BaseController
             'description' => 'Akses ribuan buku, jurnal, dan sumber daya digital untuk mendukung pembelajaran dan penelitian Anda.',
             'image' => 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1200&h=600&fit=crop',
             'cta_text' => 'Mulai Jelajahi',
-            'cta_link' => base_url('opac/search')
+            'cta_link' => base_url('opac')
         ];
     }
 

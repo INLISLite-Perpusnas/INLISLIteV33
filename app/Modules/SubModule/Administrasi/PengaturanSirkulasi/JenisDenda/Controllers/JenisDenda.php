@@ -37,18 +37,18 @@ class JenisDenda extends \Base\Controllers\BaseController
         if (!$id) {
             set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
             set_message('toastr_type', 'error');
-            return redirect()->to('jenis-denda');
+            return redirect()->to('/master-jenis-denda');
         }
         $jenisdendaDelete = $this->jenisdendaModel->delete($id);
         if ($jenisdendaDelete) {
             set_message('toastr_msg', 'Jenis Denda berhasil dihapus');
             set_message('toastr_type', 'success');
-            return redirect()->to('jenis-denda');
+            return redirect()->to('/master-jenis-denda');
         } else {
             set_message('toastr_msg', 'Jenis Denda gagal dihapus');
             set_message('toastr_type', 'warning');
             set_message('message', 'Jenis Denda gagal dihapus');
-            return redirect()->to('jenis-denda');
+            return redirect()->to('/master-jenis-denda');
         }
     }
 
@@ -66,6 +66,6 @@ class JenisDenda extends \Base\Controllers\BaseController
             set_message('toastr_msg', 'Jenis Denda gagal diubah');
             set_message('toastr_type', 'warning');
         }
-        return redirect()->to('/jenis-denda');
+        return redirect()->to('/master-jenis-denda');
     }
 }

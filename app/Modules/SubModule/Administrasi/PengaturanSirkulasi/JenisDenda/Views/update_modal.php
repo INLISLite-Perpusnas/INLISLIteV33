@@ -89,7 +89,7 @@
 					showConfirmButton: false,
 					timer: 5000,
 				}).then(() => {
-					window.location.href = `<?=base_url('master-jenis-denda')?>`;
+					window.location.href = `<?=base_url('/master-jenis-denda')?>`;
 				});
 			} else {				
 				Swal.fire({

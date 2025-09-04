@@ -33,7 +33,9 @@ $slug = $request->getGet('slug');
 				<nav class="" aria-label="breadcrumb">
 					<ol class="breadcrumb">
 						<li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
-						<li class="breadcrumb-item"><a href="<?= base_url('page') ?>"><?= lang('Page.module') ?></a></li>
+						<li class="breadcrumb-item"><a href="<?= base_url(
+																	'cms/banner'
+																) ?>"><?= lang('Banner') ?></a></li>
 						<li class="active breadcrumb-item" aria-current="page">Tambah Banner</li>
 					</ol>
 				</nav>
@@ -68,14 +70,6 @@ $slug = $request->getGet('slug');
 							</select>
 						</div>
 					</div>
-					<div class="col-md-4">
-						<div class="position-relative form-group">
-							<label for="sort">Urutan</label>
-							<div>
-								<input type="number" class="form-control" name="sort" id="sort" placeholder="Urutan " value="<?= set_value('sort'); ?>" />
-							</div>
-						</div>
-					</div>
 				</div>
 
 				<div class="form-group">
@@ -88,9 +82,9 @@ $slug = $request->getGet('slug');
 				<div class="row">
 					<div class="col-md-12">
 						<div class="position-relative form-group">
-							<label for="file_image" class="">Upload Banner</label>
-							<div id="file_image" class="dropzone"></div>
-							<div id="file_image_listed"></div>
+							<label for="file_cover" class="">Upload Banner</label>
+							<div id="file_cover" class="dropzone"></div>
+							<div id="file_cover_listed"></div>
 							<div>
 								<small class="info help-block text-muted">Format (JPG|PNG). Max 1 Files @2MB</small>
 							</div>
@@ -111,6 +105,55 @@ $slug = $request->getGet('slug');
 
 <?= $this->section('script'); ?>
 <script>
-	var file_image = setDropzone('file_image', 'cms/banner', '.png,.jpg,.jpeg', 1, 2);
+	function setDropzone(id, module, acceptedFiles, maxFiles, maxFileSize) {
+        let dropzone = new Dropzone("div#" + id, {
+            url: "<?= base_url('cms/banner/do_upload') ?>",
+            paramName: "file",
+            maxFiles: maxFiles,
+            maxFileSize: maxFileSize, // in MB
+            addRemoveLinks: true,
+            acceptedFiles: acceptedFiles,
+            init: function() {
+                // Event ketika file baru ditambahkan
+                this.on("addedfile", function(file) {
+                    // Jika maxFiles = 1, hapus file lama saat ada file baru
+                    if (maxFiles === 1 && this.files.length > 1) {
+                        this.removeFile(this.files[0]);
+                    }
+                });
+
+                // Event ketika file berhasil diunggah
+                this.on("success", function(file, response) {
+                    $('#' + id + '_listed').append('<input type="hidden" name="' + id + '[]" value="' + response.filename + '">');
+                });
+
+                // Event ketika file dihapus
+                this.on("removedfile", function(file) {
+                    // Cari dan hapus input tersembunyi yang sesuai
+                    $('#' + id + '_listed').find('input[value="' + file.name + '"]').remove();
+
+                    // Pastikan Dropzone dapat menerima file baru
+                    if (this.files.length < maxFiles) {
+                        this.options.maxFiles = maxFiles;
+                    }
+                });
+
+                // Handle ketika jumlah file melebihi batas
+                this.on("maxfilesexceeded", function(file) {
+                    if (maxFiles === 1) {
+                        this.removeAllFiles(); // Hapus file lama
+                        this.addFile(file); // Tambahkan file yang baru
+                    } else {
+                        alert("Jumlah file melebihi batas: " + maxFiles);
+                        this.removeFile(file);
+                    }
+                });
+            }
+        });
+        return dropzone;
+    }
+	$(document).ready(function() {
+		var file_cover = setDropzone('file_cover', 'page', '.png,.jpg,.jpeg', 1, 2);
+	});
 </script>
 <?= $this->endSection('script'); ?>

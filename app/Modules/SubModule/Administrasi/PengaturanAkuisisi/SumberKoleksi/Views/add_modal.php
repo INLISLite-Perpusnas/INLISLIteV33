@@ -83,19 +83,27 @@
 					});
 				}
 			})
-			.fail(function(res) {
-				console.log(res);
+			.fail(function(xhr) {
+          let res = xhr.responseJSON;
+          let title = 'Oups';
+          let html = 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin';
 
-				Swal.fire({
-					title: 'Oups',
-					text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
-					type: 'error',
-					showConfirmButton: false,
-					timer: 5000
-				}).then(() => {
-					$("#btnAdd").attr('disabled', false);
-					$("#btnAdd").html('Simpan');
-				});
+          if (res && res.message) {
+              let errors = Object.values(res.message)
+                  .map(value => `<div>${value}</div>`)
+                  .join('');
+              html = `<p style="text-align:center">${errors}</p>`;
+          }
+
+          Swal.fire({
+              title: title,
+              html: html,
+              type: 'error',
+              showConfirmButton: false,
+              timer: 5000
+          }).then(() => {
+              $("#btnAdd").attr('disabled', false).html('Simpan');
+          });
 			});
 
 		return false;

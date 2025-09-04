@@ -39,18 +39,18 @@ class MasterJurusan extends \Base\Controllers\BaseController
         if (!$id) {
             set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
             set_message('toastr_type', 'error');
-            return redirect()->to('jenis-pendidikan');
+            return redirect()->to('master-jurusan');
         }
         $jurusanDelete = $this->jurusanModel->delete($id);
         if ($jurusanDelete) {
-            set_message('toastr_msg', 'Jenis Pendidikan berhasil dihapus');
+            set_message('toastr_msg', 'Master Jurusan berhasil dihapus');
             set_message('toastr_type', 'success');
-            return redirect()->to('jenis-pendidikan');
+            return redirect()->to('master-jurusan');
         } else {
-            set_message('toastr_msg', 'Jenis Pendidikan gagal dihapus');
+            set_message('toastr_msg', 'Master Jurusan gagal dihapus');
             set_message('toastr_type', 'warning');
-            set_message('message', 'Jenis Pendidikan gagal dihapus');
-            return redirect()->to('jenis-pendidikan');
+            set_message('message', 'Master Jurusan gagal dihapus');
+            return redirect()->to('jmaster-jurusan');
         }
     }
 
@@ -62,10 +62,10 @@ class MasterJurusan extends \Base\Controllers\BaseController
         $jurusanUpdate = $this->jurusanModel->update($id, array($field => $value));
 
         if ($jurusanUpdate) {
-            set_message('toastr_msg', 'Jenis Pendidikan berhasil diubah');
+            set_message('toastr_msg', 'Master Jurusan berhasil diubah');
             set_message('toastr_type', 'success');
         } else {
-            set_message('toastr_msg', 'Jenis Pendidikan gagal diubah');
+            set_message('toastr_msg', 'Master Jurusan gagal diubah');
             set_message('toastr_type', 'warning');
         }
         return redirect()->to('master-jurusan');

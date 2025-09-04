@@ -38,7 +38,21 @@ class JenisBahan extends \Base\Controllers\BaseResourceController
 		if (is_profiling()) {
 			$builder->orWhere('a.Branch_id', user()->branch_id);
 		}
+		// ✅ Tangkap parameter pencarian
+		$request = service('request');
+		$search = $request->getPost('search')['value'] ?? '';
 
+		if (!empty($search)) {
+			$builder->groupStart()
+				->like('a.Name', $search)
+				->orLike('a.MaxPinjamKoleksi', $search)
+				->orLike('a.MaxLoanDays', $search)
+				->orLike('a.DendaTenorJumlah', $search)
+				->orLike('a.DaySuspend', $search)
+				->orLike('a.DayPerpanjang', $search)
+				->orLike('a.CountPerpanjang', $search)
+				->groupEnd();
+		}
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
 			->edit('active', function ($row) {

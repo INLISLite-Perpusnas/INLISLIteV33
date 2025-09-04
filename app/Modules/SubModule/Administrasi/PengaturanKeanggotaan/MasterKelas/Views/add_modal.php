@@ -3,7 +3,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Tambah Master kelas
+                    <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Tambah Master Kelas
                 </h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -36,7 +36,7 @@
     $('#frm_add').submit(function(event) {
 		event.preventDefault();
 
-		var url = "<?=base_url('api/kelas/create')?>";
+		var url = "<?=base_url('api/master-kelas/create')?>";
 		var data_post = $(this).serializeArray();
 
 		$("#btnAdd").html('<i class="fa fa-spinner fa-spin loading"></i> Mohon menunggu...');
@@ -53,12 +53,12 @@
 			if (res.error == false) {
 				Swal.fire({
 					title: 'Berhasil',
-					html: 'Jenis Pendidikan berhasil ditambah.',
+					html: 'Kelas siswa berhasil ditambah.',
 					type: 'success',
 					showConfirmButton: false,
 					timer: 5000,
 				}).then(() => {
-					window.location.href = `<?=base_url('master/kelas')?>`;
+					window.location.href = `<?=base_url('master-kelas')?>`;
 				});
 			} else {				
 				Swal.fire({

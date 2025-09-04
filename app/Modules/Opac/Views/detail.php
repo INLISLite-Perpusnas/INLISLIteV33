@@ -544,7 +544,7 @@
                         <?php endif; ?>
 
                         <?php if (!empty($catalog['Publisher'])): ?>
-                            <a href="<?= base_url('opac?search=' . urlencode($catalog['Publisher']) . '&search_by=Publisher') ?>"
+                                <a href="<?= base_url('opac?search=' . urlencode($catalog['Publisher']) . '&search_by=Publisher') ?>"
                                 class="btn btn-outline-success btn-sm">
                                 <i class="fas fa-building me-1"></i>
                                 Dari <?= esc($catalog['Publisher']) ?>
@@ -565,7 +565,7 @@
                         <?php endif; ?>
 
                         <?php if (!empty($catalog['PublishYear'])): ?>
-                            <a href="<?= base_url('opac?search=' . $catalog['PublishYear']) ?>"
+                            <a href="<?= base_url('opac?PublishYear=' . $catalog['PublishYear'] . '&search_by=') ?>"
                                 class="btn btn-outline-warning btn-sm">
                                 <i class="fas fa-calendar me-1"></i>
                                 Tahun <?= esc($catalog['PublishYear']) ?>

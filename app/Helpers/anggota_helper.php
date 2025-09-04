@@ -327,25 +327,22 @@ if (!function_exists('generateAutoNumber')) {
     function generateAutoNumber() {
         // Auto increment number
         $db = db_connect('data');
-        
         $lastMember = $db->table('members')
                         ->select('MemberNo')
-                        ->where('MemberNo REGEXP', '^[0-9]+$') // Hanya angka
+                        // PERBAIKAN: Gabungkan kondisi REGEXP menjadi satu string
+                        ->where("MemberNo REGEXP '^[0-9]+$'") 
                         ->orderBy('CAST(MemberNo AS UNSIGNED)', 'DESC')
                         ->limit(1)
                         ->get()
                         ->getRow();
-        
         if ($lastMember) {
             $newNumber = (int)$lastMember->MemberNo + 1;
         } else {
             $newNumber = 1;
         }
-        
         return str_pad($newNumber, 6, '0', STR_PAD_LEFT);
     }
 }
-
 
 
 
