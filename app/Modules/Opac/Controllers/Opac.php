@@ -101,14 +101,27 @@ class Opac extends \Base\Controllers\BaseController
 
     // --- (Query building logic based on search and filters) ---
     $search = sanitizeSearch($this->request->getVar('search'));
+    
     if ($search) {
+        $rawSearch = $this->request->getVar('search');
+        // dd($rawSearch);
         $searchBy = sanitizeSearch($this->request->getVar('search_by') ?? 'Title');
         switch ($searchBy) {
             case 'Title':
                 $builder->like('Title', $search);
                 break;
             case 'Author':
-                $builder->like('Author', $search);
+                $authors = preg_split('/[;,]+/', $rawSearch);
+                $authors = array_map('trim', $authors);
+                $authors = array_filter($authors);
+
+                if (!empty($authors)) {
+                    $builder->groupStart();
+                    foreach ($authors as $author) {
+                        $builder->orLike('Author', $author);
+                    }
+                    $builder->groupEnd();
+                }
                 break;
             case 'Subject':
                 $builder->like('Subject', $search);
@@ -121,18 +134,35 @@ class Opac extends \Base\Controllers\BaseController
                 break;
             default:
                 $builder->groupStart()
-                    ->like('Title', $search)->orLike('Author', $search)->orLike('Subject', 'search')
+                    ->like('Title', $search)->orLike('Author', $rawSearch)->orLike('Subject', $search)->orLike('ISBN', $search)->orLike('Publisher', $search)
                     ->groupEnd();
         }
     }
 
     $additionalFilters = ['Publisher', 'Author', 'PublishLocation', 'Subject', 'PublishYear'];
-    foreach ($additionalFilters as $filter) {
-        $value = sanitizeSearch($this->request->getVar($filter));
-        if (!empty($value)) {
-            $builder->like($filter, $value);
+foreach ($additionalFilters as $filter) {
+    $value = $this->request->getVar($filter);
+
+    if (!empty($value)) {
+        if ($filter === 'Author') {
+            $authors = preg_split('/[;,]+/', $value);
+            $authors = array_map('trim', $authors);
+            $authors = array_filter($authors);
+
+            if (!empty($authors)) {
+                $builder->groupStart();
+                foreach ($authors as $author) {
+                    $builder->orLike('Author', sanitizeSearch($author));
+                }
+                $builder->groupEnd();
+            }
+        } else {
+            $cleanValue = sanitizeSearch($value);
+            $builder->like($filter, $cleanValue);
         }
     }
+}
+
 
     // 3. Execute the query and paginate the results
     $catalogs = $builder->paginate($perPage, 'default', $currentPage);
