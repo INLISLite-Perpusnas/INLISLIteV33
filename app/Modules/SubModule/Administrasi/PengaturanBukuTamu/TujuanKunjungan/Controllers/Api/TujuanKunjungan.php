@@ -98,13 +98,29 @@ class TujuanKunjungan extends \Base\Controllers\BaseResourceController
 
 	public function create()
 	{
-		$save_data = array(
+    $this->validation->setRules([
+        'Code' => [
+            'rules'  => "is_unique[tujuan_kunjungan.Code]",
+            'errors' => [
+                'is_unique' => 'Code sudah digunakan'
+            ]
+        ],
+    ]);
+
+    $save_data = array(
 			'Code' => $this->request->getPost('Code'),
 			'TujuanKunjungan' => $this->request->getPost('TujuanKunjungan'),
-			'Member' => $this->request->getPost('Member'),
-			'NonMember' => $this->request->getPost('NonMember'),
-			'Rombongan' => $this->request->getPost('Rombongan'),
+			'Member' => $this->request->getPost('Member') == 'on',
+			'NonMember' => $this->request->getPost('NonMember') == 'on',
+			'Rombongan' => $this->request->getPost('Rombongan') == 'on',
 		);
+
+    if (!$this->validation->withRequest($this->request)->run($save_data, '', 'data')) {
+        return $this->respond([
+            'success' => false,
+            'message' => $this->validation->getErrors()
+        ], 400);
+    }
 
 		$save_data_id = $this->tujuankunjunganModel->insert($save_data);
 		if ($save_data_id) {
@@ -126,13 +142,29 @@ class TujuanKunjungan extends \Base\Controllers\BaseResourceController
 
 	public function edit($id = null)
 	{
+    $this->validation->setRules([
+        'Code' => [
+            'rules'  => "is_unique[tujuan_kunjungan.Code,id,{$id}]",
+            'errors' => [
+                'is_unique' => 'Code sudah digunakan'
+            ]
+        ],
+    ]);
+
 		$update_data = array(
 			'Code' => $this->request->getPost('Code'),
 			'TujuanKunjungan' => $this->request->getPost('TujuanKunjungan'),
-			'Member' => $this->request->getPost('Member'),
-			'NonMember' => $this->request->getPost('NonMember'),
-			'Rombongan' => $this->request->getPost('Rombongan'),
+			'Member' => $this->request->getPost('Member') == 'on',
+			'NonMember' => $this->request->getPost('NonMember') == 'on',
+			'Rombongan' => $this->request->getPost('Rombongan') == 'on',
 		);
+
+    if (!$this->validation->withRequest($this->request)->run($update_data, '', 'data')) {
+        return $this->respond([
+            'success' => false,
+            'message' => $this->validation->getErrors()
+        ], 400);
+    }
 
 		$update_data_id = $this->tujuankunjunganModel->update($id, $update_data);
 		if ($update_data_id) {

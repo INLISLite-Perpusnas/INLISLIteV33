@@ -27,7 +27,7 @@
 							<div class="form-group">
 								<label for="Nama">Jenis Denda</label>
 								<div>
-									<input required type="text" class="form-control" id="frm_add_Nama" name="Nama" placeholder="Jenis Denda" value="" />
+									<input required type="text" class="form-control" id="frm_add_Nama" name="Name" placeholder="Jenis Denda" value="" />
 								</div>
 							</div>
 						</div>
@@ -46,7 +46,7 @@
     $('#frm_add').submit(function(event) {
 		event.preventDefault();
 
-		var url = "<?=base_url('api/jenis-identitas/create')?>";
+		var url = "<?=base_url('api/jenis-denda/create')?>";
 		var data_post = $(this).serializeArray();
 
 		$("#btnAdd").html('<i class="fa fa-spinner fa-spin loading"></i> Mohon menunggu...');
@@ -68,7 +68,7 @@
 					showConfirmButton: false,
 					timer: 5000,
 				}).then(() => {
-					window.location.href = `<?=base_url('master-jenis-identitas')?>`;
+					window.location.href = `<?=base_url('master-jenis-denda')?>`;
 				});
 			} else {				
 				Swal.fire({

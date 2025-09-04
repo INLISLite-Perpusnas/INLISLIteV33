@@ -203,7 +203,7 @@ $slug = $request->getGet('slug') ?? '';
 		<div class="col-md-4">
 			<div class="main-card mb-3 card">
 				<div class="card-header">
-					<i class="header-icon lnr-pencil icon-gradient bg-plum-plate"> </i> Pengaturan Logo
+					<i class="lnr-cog icon-gradient bg-plum-plate"> </i>&nbsp;Pengaturan Logo
 					<!-- GANTI button Anda dengan ini -->
 					<div class="btn-actions-pane-right actions-icon-btn">
 						<div class="menu-header-btn-pane">
@@ -211,7 +211,7 @@ $slug = $request->getGet('slug') ?? '';
 								data-toggle="modal"
 								data-target="#modal_upload_logo"
 								class="mb-2 mr-2 btn btn-warning">
-								<i class="fa fa-edit"></i> Update Logo
+								<i class="fa fa-edit"></i> Update
 							</a>
 						</div>
 					</div>
@@ -235,14 +235,14 @@ $slug = $request->getGet('slug') ?? '';
 			</div>
 			<div class="main-card mb-3 card">
 				<div class="card-header">
-					<i class="header-icon lnr-pencil icon-gradient bg-plum-plate"> </i> Pengaturan Kop
+					<i class="lnr-cog icon-gradient bg-plum-plate"> </i>&nbsp;Pengaturan Kop
 					<div class="btn-actions-pane-right actions-icon-btn">
 						<div class="menu-header-btn-pane">
 							<a href="javascript:void(0);"
 								data-toggle="modal"
 								data-target="#modal_upload_logokop"
 								class="mb-2 mr-2 btn btn-warning">
-								<i class="fa fa-edit"></i> Update Kop Laporan
+								<i class="fa fa-edit"></i> Update
 							</a>
 						</div>
 					</div>

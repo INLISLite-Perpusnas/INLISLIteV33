@@ -71,6 +71,7 @@ $slug = $request->getGet('slug') ?? '';
 
     $(document).ready(function() {
         t = $('#tbl_data').DataTable({
+            "searching": false,
             "processing": true,
             "serverSide": true,
             "ajax": {

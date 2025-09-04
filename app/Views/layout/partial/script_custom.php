@@ -33,7 +33,7 @@
 	});
 
 	function toggleUserProfile() {
-		var closeBtn = 'app-container';
+		var closeBtn = $('.app-container');
 
 		if (closeBtn.hasClass('closed-sidebar')) {
 			closeBtn.removeClass('closed-sidebar');
@@ -44,9 +44,9 @@
 		}
 	}
 
-	$(document).ready(function() {
-		toggleUserProfile();
-	});
+	// $(document).ready(function() {
+	// 	toggleUserProfile();
+	// });
 
 	/* Toastr */
 	var toastr_msg = '<?= get_message('toastr_msg'); ?>';
