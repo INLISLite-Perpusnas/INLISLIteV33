@@ -50,11 +50,24 @@ public function index()
 
         $dataToUpdate = [
             'TipeNomorAnggota' => $this->request->getPost('TipeNomorAnggota'),
-            'TipePenomoranAnggota' => $this->request->getPost('TipePenomoranAnggota'),
-            'IsCetakSlipPerpanjangan' => $this->request->getPost('IsCetakSlipPerpanjangan'),
-            'IsCetakSlipPelanggaran' => $this->request->getPost('IsCetakSlipPelanggaran'),
-            'IsCetakSlipPendaftaran' => $this->request->getPost('IsCetakSlipPendaftaran'),
         ];
+
+        if ($this->request->getPost('TipeNomorAnggota') == 'Otomatis') {
+            $dataForOtomatis = [
+                'TipePenomoranAnggota' => $this->request->getPost('TipePenomoranAnggota'),
+                'IsCetakSlipPerpanjangan' => $this->request->getPost('IsCetakSlipPerpanjangan'),
+                'IsCetakSlipPelanggaran' => $this->request->getPost('IsCetakSlipPelanggaran'),
+                'IsCetakSlipPendaftaran' => $this->request->getPost('IsCetakSlipPendaftaran'),
+            ];
+        } else {
+            $dataForOtomatis = [
+                'TipePenomoranAnggota' => NULL,
+                'IsCetakSlipPerpanjangan' => NULL,
+                'IsCetakSlipPelanggaran' => NULL,
+                'IsCetakSlipPendaftaran' => NULL,
+            ];
+        }
+        $dataToUpdate = array_merge($dataToUpdate, $dataForOtomatis);
 
         $success = true;
 

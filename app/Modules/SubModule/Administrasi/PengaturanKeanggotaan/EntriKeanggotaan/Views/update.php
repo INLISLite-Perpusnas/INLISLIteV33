@@ -70,7 +70,7 @@ $slug = $request->getGet('slug');
 							</div>
 						</div>
 
-						<div class="form-row">
+						<div class="form-row form-for-otomatis" style="<?=  $TipeNomorAnggota == 'Manual' ? 'display:none;' : '' ?>">
 							<label>Tipe Penomoran Anggota</label>
 							<?php $parameter = $TipePenomoranAnggota; ?>
 							<select class="form-control" name="TipePenomoranAnggota" id="TipePenomoranAnggota">
@@ -82,7 +82,7 @@ $slug = $request->getGet('slug');
 							</select>
 						</div>
 
-						<div class="form-row">
+						<div class="form-row form-for-otomatis" style="<?= $TipeNomorAnggota == 'Manual' ? 'display:none;' : '' ?>">
 							<div class="col-md-12">
 								<div class="position-relative form-group">
 									<label for="alias">Cetak Slip Perpanjangan</label>
@@ -105,7 +105,7 @@ $slug = $request->getGet('slug');
 							</div>
 						</div>
 
-						<div class="form-row">
+						<div class="form-row form-for-otomatis" style="<?= $TipeNomorAnggota == 'Manual' ? 'display:none;' : '' ?>">
 							<div class="col-md-12">
 								<div class="position-relative form-group">
 									<label for="alias">Cetak Slip Pelanggaran</label>
@@ -128,7 +128,7 @@ $slug = $request->getGet('slug');
 							</div>
 						</div>
 
-						<div class="form-row">
+						<div class="form-row form-for-otomatis" style="<?= $TipeNomorAnggota == 'Manual' ? 'display:none;' : '' ?>">
 							<div class="col-md-12">
 								<div class="position-relative form-group">
 									<label for="alias">Cetak Slip Pendaftaran</label>
@@ -164,4 +164,16 @@ $slug = $request->getGet('slug');
 <?= $this->endSection('page') ?>
 
 <?= $this->section('script') ?>
+<script>
+$(document).ready(function() {
+    $('input[name="TipeNomorAnggota"]').change(function() {
+        const selectedValue = $('input[name="TipeNomorAnggota"]:checked').val();
+        if (selectedValue == 'Manual') {
+          $('.form-for-otomatis').hide()
+        } else {
+          $('.form-for-otomatis').show()
+        }
+    });
+});
+</script>
 <?= $this->endSection('script') ?>
