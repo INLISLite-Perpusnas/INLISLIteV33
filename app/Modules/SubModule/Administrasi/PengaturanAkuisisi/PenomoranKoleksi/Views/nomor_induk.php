@@ -353,9 +353,34 @@ $slug = $request->getGet('slug') ?? 'katalog_add';
         document.getElementById('frm_create').addEventListener('submit', function() {
             if (select.value === 'Manual') {
                 const allInputs = inputSection.querySelectorAll('input, select, textarea');
-                allInputs.forEach(el => el.value = '');
+                allInputs.forEach(el => {
+                    el.value = '';
+                });
+                const form = this;
+
+                // FormatNomorInduk[] null
+                const hiddenFormatNomorInduk = document.createElement('input');
+                hiddenFormatNomorInduk.type = 'hidden';
+                hiddenFormatNomorInduk.name = 'FormatNomorInduk[]';
+                hiddenFormatNomorInduk.value = '';
+                form.appendChild(hiddenFormatNomorInduk);
+
+                // FormatNomorBarcode null
+                const hiddenFormatNomorBarcode = document.createElement('input');
+                hiddenFormatNomorBarcode.type = 'hidden';
+                hiddenFormatNomorBarcode.name = 'FormatNomorBarcode';
+                hiddenFormatNomorBarcode.value = '';
+                form.appendChild(hiddenFormatNomorBarcode);
+
+                // FormatNomorRFID null
+                const hiddenFormatNomorRFID = document.createElement('input');
+                hiddenFormatNomorRFID.type = 'hidden';
+                hiddenFormatNomorRFID.name = 'FormatNomorRFID';
+                hiddenFormatNomorRFID.value = '';
+                form.appendChild(hiddenFormatNomorRFID);
             }
         });
+
     });
 </script>
 

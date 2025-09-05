@@ -59,8 +59,10 @@ public function create()
     $rules = [
         'NomorInduk' => 'required|in_list[Manual,Otomatis]',
         'FormatNomorInduk' => 'required',
-        'FormatNomorBarcode' => 'required|in_list[No. Induk,Item ID]',
-        'FormatNomorRFID' => 'required|in_list[No. Induk,Item ID]'
+        // 'FormatNomorBarcode' => 'required|in_list[No. Induk,Item ID]',
+        // 'FormatNomorRFID' => 'required|in_list[No. Induk,Item ID]'
+        'FormatNomorBarcode' => 'permit_empty|in_list[No. Induk,Item ID]',
+        'FormatNomorRFID' => 'permit_empty|in_list[No. Induk,Item ID]'
     ];
     
     if (!$this->validate($rules)) {
