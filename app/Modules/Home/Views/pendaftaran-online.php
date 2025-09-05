@@ -550,6 +550,7 @@
                 </div>
 
                 <div id="msgSubmit" class="text-center mt-3 d-none"></div>
+                <input type="hidden" value="0" name="IsKeranjang" id="IsKeranjang" class="form-control">
             </form>
         </div>
 
@@ -602,6 +603,12 @@
             });
         }
 
+        $("#check_agree").change((e) => {
+          if (!e.target.checked) {
+            $(e.target).removeClass("is-valid");
+          }
+        });
+
         // Load initial data - replace with your actual base_url
         const baseUrl = '<?php echo base_url(); ?>'; // Replace with actual base URL
         getData(`${baseUrl}/api/region/province`, `#Province`);
@@ -621,10 +628,10 @@
             getData(`${baseUrl}/api/region/sub_district/${code}`, `#SubDistrict`);
         });
         
-        $('#SubDistrict').change(function(e) {
-            var name = $("#SubDistrict option:selected").text();
-            $(this).val(name);
-        });
+        // $('#SubDistrict').change(function(e) {
+        //     var name = $("#SubDistrict option:selected").text();
+        //     $(this).val(name);
+        // });
 
         getData(`${baseUrl}/api/region/province`, `#ProvinceNow`);
         
@@ -653,14 +660,15 @@
                 var SubDistrict = $('#SubDistrict').val();
 
                 $('#AddressNow').val(Address);
-                $('#ProvinceNow').val(Province);
-
+                // $('#ProvinceNow').val(Province);
+                getData(`${baseUrl}/api/region/province`, `#ProvinceNow`, Province);
                 getData(`${baseUrl}/api/region/city/${Province}`, `#CityNow`, City);
                 getData(`${baseUrl}/api/region/district/${City}`, `#DistrictNow`, District);
                 getData(`${baseUrl}/api/region/sub_district/${District}`, `#SubDistrictNow`, SubDistrict);
             } else {
                 $('#AddressNow').val('');
-                $('#ProvinceNow').val('');
+                // $('#ProvinceNow').val('');
+                $('#ProvinceNow').empty();
                 $('#CityNow').empty();
                 $('#DistrictNow').empty();
                 $('#SubDistrictNow').empty();

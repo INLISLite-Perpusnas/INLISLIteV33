@@ -45,7 +45,7 @@ $slug = $request->getGet('slug') ?? '';
 				</div>
 				<div class="card-body">
 					<div id="infoMessage"><?= $message ?? '' ?></div> <?= get_message('message') ?>
-					<form id="frm_create" method="post" action="<?= base_url('master-setting-buku-tamu/index') ?>" onsubmit="return validateForm()">
+					<form id="frm_create" method="post" action="<?= base_url('master-setting-buku-tamu/index') ?>">
 						<div class="form-row">
 							<div class="col-md-12">
 								<div class="position-relative form-group">
