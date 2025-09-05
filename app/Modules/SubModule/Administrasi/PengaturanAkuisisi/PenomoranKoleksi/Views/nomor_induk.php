@@ -350,6 +350,12 @@ $slug = $request->getGet('slug') ?? 'katalog_add';
 
         // Initial setup
         updateManualInputFields();
+        document.getElementById('frm_create').addEventListener('submit', function() {
+            if (select.value === 'Manual') {
+                const allInputs = inputSection.querySelectorAll('input, select, textarea');
+                allInputs.forEach(el => el.value = '');
+            }
+        });
     });
 </script>
 
