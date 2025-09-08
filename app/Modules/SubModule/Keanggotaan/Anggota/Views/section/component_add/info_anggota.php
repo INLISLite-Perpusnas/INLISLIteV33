@@ -17,7 +17,7 @@
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
                                     <div>
-                                        <label>Jenis Anggota*</label>
+                                        <label>Jenis Anggota <span class="text-danger">*</span></label>
                                         <select class="form-control" id="package" onchange="myFunction();" name="JenisAnggota_id" id="JenisAnggota_id" required>
                                             <option value="" disabled selected>
                                                 Jenis Anggota
@@ -42,31 +42,31 @@
                                 <div class="position-relative form-group">
                                     <label for="name">Masa Berlaku</label>
                                     <div>
-                                        <input type="datetime" class="form-control" id="EndDate" name="EndDate" placeholder="Masa Berlaku" value="" readonly />
+                                        <input type="datetime" class="form-control" id="EndDate" name="EndDate" placeholder="Masa Berlaku" value="<?= set_value('EndDate'); ?>" readonly />
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
-                                    <label>Status Anggota</label>
-                                    <select class="form-control" name="StatusAnggota_id" id="StatusAnggota_id">
+                                    <label>Status Anggota <span class="text-danger">*</span></label>
+                                    <select class="form-control" name="StatusAnggota_id" id="StatusAnggota_id" required>
                                         <option value="" disabled selected>
                                             Status Anggota
                                         </option>
                                         <?php foreach (get_ref_table('status_anggota', 'id, Nama', null, 'data') as $row) : ?>
-                                            <option value="<?= $row->id ?>"><?= $row->Nama ?></option>
+                                            <option value="<?= $row->id ?>" <?= set_select('StatusAnggota_id', $row->id) ?>><?= $row->Nama ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="position-relative form-group">
-                                    <label>Koleksi yang dapat dipinjam*</label>
+                                    <label>Koleksi yang dapat dipinjam <span class="text-danger">*</span></label>
                                     <div class="select-wrapper">
                                         <select class="form-control select2" name="CategoryLoan_id[]" multiple="multiple" style="width:100%" required>
                                             <option value="">-Pilih-</option>
                                             <?php foreach (get_ref_table('collectioncategorys', 'id, Name', null, 'data') as $row) : ?>
-                                                <option value="<?= $row->id ?>"><?= $row->Name ?></option>
+                                                <option value="<?= $row->id ?>" <?= set_select('CategoryLoan_id[]', $row->id) ?>><?= $row->Name ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
@@ -74,12 +74,12 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="position-relative form-group">
-                                    <label>Lokasi Perpustakaan*</label>
+                                    <label>Lokasi Perpustakaan <span class="text-danger">*</span></label>
                                     <div class="select-wrapper">
                                         <select class="form-control select2" name="LocationLoan_id[]" multiple="multiple" style="width:100%" required>
                                             <option value="">-Pilih-</option>
                                             <?php foreach (get_ref_table('location_library', 'ID, Name', 'Branch_id = ' . user()->branch_id ?? '', 'data') as $row) : ?>
-                                                <option value="<?= $row->ID ?>"><?= $row->Name ?></option>
+                                                <option value="<?= $row->ID ?>" <?= set_select('LocationLoan_id[]', $row->ID) ?>><?= $row->Name ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>

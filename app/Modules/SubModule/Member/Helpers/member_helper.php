@@ -80,7 +80,7 @@ if (!function_exists('member_register')) {
 				$users->save($user);
 				$form_data['MemberNo'] = $username;
 				$form_data['RegisterDate'] = date('Y-m-d');
-				$form_data['StatusAnggota_id'] = 3;
+				$form_data['StatusAnggota_id'] = 1;
 
 				$member_id = $memberModel->insert($form_data);
 				$response = member_notify($email,$username, $password, $activate_hash, $form_data);

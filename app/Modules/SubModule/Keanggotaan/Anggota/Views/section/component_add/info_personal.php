@@ -17,7 +17,7 @@
                          <div class="form-row">
                             <div class="col-md-6">
                                 <div class="position-relative form-group">
-                                    <label for="name">Nomor Anggota*</label>
+                                    <label for="name">Nomor Anggota <span class="text-danger">*</span></label>
                                     <div>
                                         <input type="text" class="form-control" id="frm_create_ID" name="MemberNo" placeholder="Nomor Anggota" value="<?= set_value('MemberNo'); ?>"/>
                                     </div>
@@ -28,7 +28,7 @@
                         <div class="form-row">
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
-                                    <label for="name">Nama Anggota*</label>
+                                    <label for="name">Nama Anggota <span class="text-danger">*</span></label>
                                     <div>
                                         <input type="text" class="form-control" id="Fullname" name="Fullname" placeholder="Nama Anggota" value="<?= set_value('Fullname'); ?>" required />
                                     </div>
@@ -131,7 +131,7 @@
                              <?php if (is_form_field_active('29', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
-                                    <label for="name">Alamat Email*</label>
+                                    <label for="name">Alamat Email <span class="text-danger">*</span></label>
                                     <div>
                                         <input type="email" class="form-control" id="Email" name="Email" placeholder="Alamat Email" value="<?= set_value('Email'); ?>" required />
                                     </div>

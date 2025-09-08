@@ -111,7 +111,7 @@
                                 <div class="col-md-4">
                                     <div class="position-relative form-group">
                                         <label>Jurusan</label>
-                                        <select class="form-control" name="Jurusan_id" id="Jurusan_id">
+                                        <select class="form-control" name="Jurusan_id" id="Jurusan_id" data-value="<?= set_value('Jurusan_id', 'Jurusan_id') ?>">
                                             <option value="">Pilih Jurusan</option>
                                             <!-- Options akan diisi via JavaScript berdasarkan Fakultas yang dipilih -->
                                         </select>
