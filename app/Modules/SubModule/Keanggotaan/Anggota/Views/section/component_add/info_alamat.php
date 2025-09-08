@@ -30,9 +30,9 @@
                             <?php if (is_form_field_active('7', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
-                                    <label for="name">Provinsi*</label>
+                                    <label for="name">Provinsi <span class="text-danger">*</span></label>
                                     <div>
-                                        <select required data-error="Pilih Provinsi" class="form-control select2" id="Province" name="Province" style="width:100%"></select>
+                                        <select required data-error="Pilih Provinsi" class="form-control select2" id="Province" name="Province" style="width:100%" data-value="<?= set_value('Province', 'Province') ?>"></select>
                                     </div>
                                 </div>
                             </div>
@@ -40,9 +40,9 @@
                               <?php if (is_form_field_active('6', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
-                                    <label for="name">Kota*</label>
+                                    <label for="name">Kota <span class="text-danger">*</span></label>
                                     <div>
-                                        <select required data-error="Pilih Kota" class="form-control select2" id="City" name="City" style="width:100%">
+                                        <select required data-error="Pilih Kota" class="form-control select2" id="City" name="City" style="width:100%" data-value="<?= set_value('City', 'City') ?>">
                                             <option value="">-Select-</option>
                                         </select>
                                     </div>
@@ -52,9 +52,9 @@
                               <?php if (is_form_field_active('39', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
-                                    <label for="name">Kecamatan*</label>
+                                    <label for="name">Kecamatan <span class="text-danger">*</span></label>
                                     <div>
-                                        <select required data-error="Pilih Kecamatan" class="form-control select2" id="District" name="Kecamatan" style="width:100%">
+                                        <select required data-error="Pilih Kecamatan" class="form-control select2" id="District" name="Kecamatan" style="width:100%" data-value="<?= set_value('Kecamatan', 'Kecamatan') ?>">
                                             <option value="">-Select-</option>
                                         </select>
                                     </div>
@@ -64,9 +64,9 @@
                               <?php if (is_form_field_active('40', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
-                                    <label for="name">Kelurahan*</label>
+                                    <label for="name">Kelurahan <span class="text-danger">*</span></label>
                                     <div>
-                                        <select required data-error="Pilih Kelurahan" class="form-control select2" id="SubDistrict" name="Kelurahan" style="width:100%">
+                                        <select required data-error="Pilih Kelurahan" class="form-control select2" id="SubDistrict" name="Kelurahan" style="width:100%" data-value="<?= set_value('Kelurahan', 'Kelurahan') ?>">
                                             <option value="">-Select-</option>
                                         </select>
                                     </div>
@@ -128,9 +128,9 @@
                               <?php if (is_form_field_active('10', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
-                                    <label for="name">Provinsi*</label>
+                                    <label for="name">Provinsi <span class="text-danger">*</span></label>
                                     <div>
-                                        <select required data-error="Pilih Provinsi" class="form-control select2" id="ProvinceNow" name="ProvinceNow" style="width:100%"></select>
+                                        <select required data-error="Pilih Provinsi" class="form-control select2" id="ProvinceNow" name="ProvinceNow" style="width:100%" data-value="<?= set_value('ProvinceNow', 'ProvinceNow') ?>"></select>
                                     </div>
                                 </div>
                             </div>
@@ -138,9 +138,9 @@
                               <?php if (is_form_field_active('9', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
-                                    <label for="name">Kota*</label>
+                                    <label for="name">Kota <span class="text-danger">*</span></label>
                                     <div>
-                                        <select required data-error="Pilih Kota" class="form-control select2" id="CityNow" name="CityNow" style="width:100%">
+                                        <select required data-error="Pilih Kota" class="form-control select2" id="CityNow" name="CityNow" style="width:100%" data-value="<?= set_value('CityNow', 'CityNow') ?>">
                                             <option value="">-Select-</option>
                                         </select>
                                     </div>
@@ -150,9 +150,9 @@
                             <?php if (is_form_field_active('43', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
-                                    <label for="name">Kecamatan*</label>
+                                    <label for="name">Kecamatan <span class="text-danger">*</span></label>
                                     <div>
-                                        <select required data-error="Pilih Kecamatan" class="form-control select2" id="DistrictNow" name="KecamatanNow" style="width:100%">
+                                        <select required data-error="Pilih Kecamatan" class="form-control select2" id="DistrictNow" name="KecamatanNow" style="width:100%" data-value="<?= set_value('KecamatanNow', 'KecamatanNow') ?>">
                                             <option value="">-Select-</option>
                                         </select>
                                     </div>
@@ -163,9 +163,9 @@
                              <?php if (is_form_field_active('44', $jenis_perpustakaan_id)) : ?>
                             <div class="col-md-3">
                                 <div class="position-relative form-group">
-                                    <label for="name">Kelurahan*</label>
+                                    <label for="name">Kelurahan <span class="text-danger">*</span></label>
                                     <div>
-                                        <select required data-error="Pilih Kelurahan" class="form-control select2" id="SubDistrictNow" name="KelurahanNow" style="width:100%">
+                                        <select required data-error="Pilih Kelurahan" class="form-control select2" id="SubDistrictNow" name="KelurahanNow" style="width:100%" data-value="<?= set_value('KelurahanNow', 'KelurahanNow') ?>">
                                             <option value="">-Select-</option>
                                         </select>
                                     </div>
