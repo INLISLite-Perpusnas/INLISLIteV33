@@ -176,8 +176,7 @@ $slug = $request->getGet('slug') ?? '';
 				},
 			],
 			"order": [
-				[1, "asc"],
-				[2, "asc"]
+				[1, "desc"]
 			],
 			"drawCallback": function(data, type, full, meta) {
 				$('[data-toggle="tooltip"]').tooltip();

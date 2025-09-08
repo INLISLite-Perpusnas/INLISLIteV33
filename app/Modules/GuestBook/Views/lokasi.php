@@ -28,15 +28,6 @@
 								</div>
 							</div>
 							<div class="row">
-								<div class="col-md-12">
-									<div class="form-group">
-										<label>Mitra Perpustakaan</label>
-										<input type="text" name="Branch" id="Branch" class="form-control">
-										<input type="hidden" name="Branch_id" id="Branch_id" value="<?= $branch->ID ?? '' ?>" class="form-control">
-									</div>
-								</div>
-							</div>
-							<div class="row">
 								<div class="col-md-6">
 									<div class="form-group">
 										<label>Lokasi Perpustakaan</label>

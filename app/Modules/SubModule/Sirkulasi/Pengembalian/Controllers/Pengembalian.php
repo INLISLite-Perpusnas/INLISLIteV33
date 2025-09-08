@@ -14,6 +14,7 @@ class Pengembalian extends \Base\Controllers\BaseController
 	public $modulePath;
 	public $collectionLoanModel;
 	public $collectionLoanItemModel;
+	public $cart;
 
 	function __construct()
 	{
@@ -21,6 +22,7 @@ class Pengembalian extends \Base\Controllers\BaseController
 		$this->collectionModel = new \Peminjaman\Models\CollectionModel();
 		$this->collectionLoanModel = new \Peminjaman\Models\CollectionLoanModel();
 		$this->collectionLoanItemModel = new \Peminjaman\Models\CollectionLoanItemModel();
+		$this->cart = new \App\Libraries\Cart();
 
 		$this->uploadPath = ROOTPATH . 'public/uploads/';
 		$this->modulePath = ROOTPATH . 'public/uploads/pengembalian/';

@@ -14,55 +14,40 @@
                     <div id="frm_edit_message"></div>
                     <div class="form-row">
                         <div class="form-group col">
-                            <label for="menu">Menu</label>
+                            <label for="name">Nama Method</label>
                             <div>
-                                <select class="form-control" name="menu" id="menu" tabindex="-1">
-                                    <?= $parent_menus ?>
-                                </select>
+                                <input type="text" class="form-control" id="frm_edit_name" name="name" placeholder="" value="<?= set_value('name'); ?>" />
                             </div>
                         </div>
                         <div class="form-group col">
-                            <label for="route">Permission</label>
+                            <label for="route">Route</label>
                             <div>
-                                <input type="text" class="form-control" id="route" name="route" placeholder="access|index|create|edit|delete" value="<?= set_value('route'); ?>" />
-                                <small class="info help-block text-muted">Contoh: {route}/{permission}</small>
+                                <input type="text" class="form-control" id="frm_edit_route" name="route" placeholder="" value="<?= set_value('route'); ?>" />
                             </div>
                         </div>
                     </div>
                     <div class="form-row">
-                        <div class="col">
-                            <div class="position-relative form-group">
-                                <label for="name">Permission</label>
-                                <div>
-                                    <input type="text" class="form-control" id="frm_edit_name" name="name" placeholder="" value="<?= set_value('name'); ?>" />
-                                </div>
-                            </div>
-                        </div>
                         <div class="form-group col">
-                            <label for="category">Kategori</label>
+                            <label for="menu">Menu</label>
                             <div>
-                                <select class="form-control" name="category" id="frm_edit_category" tabindex="-1" aria-hidden="true">
-                                    <option value="Default">Default</option>
-                                    <option value="Custom">Custom</option>
+                                <select class="form-control" name="menu" id="frm_edit_menu" tabindex="-1">
+                                    <?= $parent_menus ?>
                                 </select>
                             </div>
                         </div>
                     </div>
-
                     <div class="form-group">
                         <label for="description">Keterangan</label>
                         <div>
-                            <textarea id="frm_edit_description" name="description" placeholder="Keterangan" rows="2" class="form-control autosize-input" style="min-height: 38px;"><?= set_value('description') ?></textarea>
+                            <textarea id="frm_edit_description" name="description" placeholder="Keterangan" rows="2" class="form-control autosize-input" style="min-height: 38px;"><?= set_value('description'); ?></textarea>
                         </div>
                     </div>
-
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
                     <button type="submit" class="btn btn-primary" name="submit">Simpan</button>
                 </div>
             </form>
-
         </div>
     </div>
 </div>
@@ -78,7 +63,7 @@
                 $('#frm_edit').attr("data-id", response.id);
                 $('#frm_edit_name').val(response.name);
                 $('#frm_edit_route').val(response.route);
-                $('#frm_edit_category').val(response.category);
+                $('#frm_edit_menu').val(response.menu);
                 $('#frm_edit_description').val(response.description);
 
                 $('#modal_edit').modal('show');

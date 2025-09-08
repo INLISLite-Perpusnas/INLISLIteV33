@@ -82,10 +82,12 @@ class Permission extends \Base\Controllers\BaseResourceController
 	{
 		$this->validation->setRule('name', 'Nama Permission', 'trim');
 		if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
+			$menu=$this->menuModel->where('id', $this->request->getPost('menu'))->first()->name;
 			$update_data = array(
-				'name' => $this->request->getPost('name'),
-				'route' => $this->request->getPost('route'),
-				'category' => $this->request->getPost('category'),
+				 'name'        => $this->request->getPost('name'),
+				'route'       => $this->request->getPost('route'),
+				'menu'        => $menu,
+				'category'    => $this->request->getPost('category'),
 				'description' => $this->request->getPost('description'),
 			);
 			$updatePermission = $this->permissionModel->update($id, $update_data);
