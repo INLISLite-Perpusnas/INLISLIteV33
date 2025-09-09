@@ -224,6 +224,28 @@ $tanggal_pengadaan = date('Y-m-d', strtotime($eksemplar->TanggalPengadaan));
 					<input type="checkbox" class="apply-status" name="ISOPAC" data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="normal" <?= $eksemplar->ISOPAC == 1 ? 'checked' : '' ?>>
 				</div>
 			</div>
+      <div class="table-responsive">
+          <table class="table table-bordered table-striped mb-0">
+              <tbody>
+                  <tr>
+                      <th scope="row">Dibuat Oleh</th>
+                      <td><?= $CreateBy ?></td>
+                  </tr>
+                  <tr>
+                      <th scope="row">Diperbarui Oleh</th>
+                      <td><?= $UpdateBy ?></td>
+                  </tr>
+                  <tr>
+                      <th scope="row">Dibuat Pada</th>
+                      <td><?= $eksemplar->CreateDate ?></td>
+                  </tr>
+                  <tr>
+                      <th scope="row">Diperbarui Pada</th>
+                      <td><?= $eksemplar->UpdateDate ?></td>
+                  </tr>
+              </tbody>
+          </table>
+      </div>
 
 			<div class="card-footer p-0 pt-3">
 				<div class="form-group">

@@ -358,6 +358,10 @@ class Eksemplar extends \Base\Controllers\BaseController
         } else {
             return redirect()->to('/eksemplar');
         }
+		    $CreateBy = get_username($eksemplar->CreateBy ?? 0);
+		    $UpdateBy = get_username($eksemplar->UpdateBy ?? 0);
+		    $this->data['CreateBy'] = $CreateBy;
+		    $this->data['UpdateBy'] = $UpdateBy;
 
         $this->validation->setRule('Catalog_id', 'Judul Katalog', 'required');
         if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
