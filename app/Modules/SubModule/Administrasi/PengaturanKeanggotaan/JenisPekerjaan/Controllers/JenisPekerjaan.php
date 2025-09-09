@@ -37,18 +37,18 @@ class JenisPekerjaan extends \Base\Controllers\BaseController
         if (!$id) {
             set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
             set_message('toastr_type', 'error');
-            return redirect()->to('jenis-pekerjaan');
+            return redirect()->to('master-jenis-pekerjaan');
         }
         $jenispekerjaanDelete = $this->jenispekerjaanModel->delete($id);
         if ($jenispekerjaanDelete) {
             set_message('toastr_msg', 'Jenis Pekerjaan berhasil dihapus');
             set_message('toastr_type', 'success');
-            return redirect()->to('jenis-pekerjaan');
+            return redirect()->to('master-jenis-pekerjaan');
         } else {
             set_message('toastr_msg', 'Jenis Pekerjaan gagal dihapus');
             set_message('toastr_type', 'warning');
             set_message('message', 'Jenis Pekerjaan gagal dihapus');
-            return redirect()->to('jenis-pekerjaan');
+            return redirect()->to('master-jenis-pekerjaan');
         }
     }
 
