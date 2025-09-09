@@ -123,9 +123,9 @@ $anggotas = $builder->where('Branch_id',branch_id())->get()->getResult();
                         </div>
 
                         <div class="form-group">
-                            <label for="description"><?= lang('PerpanjanganAnggota.field.description') ?> </label>
+                            <label for="description">Keterangan </label>
                             <div>
-                                <textarea id="frm_create_description" name="Keterangan" placeholder="<?= lang('PerpanjanganAnggota.field.description') ?> " rows="2" class="form-control autosize-input" style="min-height: 38px;"><?= set_value('Keterangan') ?></textarea>
+                                <textarea id="frm_create_description" name="Keterangan"  rows="2" class="form-control autosize-input" style="min-height: 38px;"><?= set_value('Keterangan') ?></textarea>
                             </div>
                         </div>
                     </div>
@@ -141,7 +141,7 @@ $anggotas = $builder->where('Branch_id',branch_id())->get()->getResult();
 
 
                 <div class="form-group">
-                    <button type="submit" class="btn btn-primary" name="submit"><?= lang('PerpanjanganAnggota.action.save') ?></button>
+                    <button type="submit" class="btn btn-primary" name="submit">Simpan</button>
                 </div>
             </form>
         </div>

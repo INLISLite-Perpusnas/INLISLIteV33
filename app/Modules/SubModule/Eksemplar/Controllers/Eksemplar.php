@@ -1676,8 +1676,13 @@ class Eksemplar extends \Base\Controllers\BaseController
         }
     }
 
-    public function downloadTemplate()
-    {
+   public function downloadTemplate()
+{
+    // Clear any previous output and increase memory limit
+    ob_clean();
+    ini_set('memory_limit', '1024M');
+    
+    try {
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
@@ -1971,7 +1976,8 @@ class Eksemplar extends \Base\Controllers\BaseController
         $sheet->fromArray($sampleData, null, 'A2');
 
         // Auto-size columns
-        foreach (range('A', \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($headers))) as $columnID) {
+        for ($col = 1; $col <= count($headers); $col++) {
+            $columnID = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 
@@ -1991,11 +1997,22 @@ class Eksemplar extends \Base\Controllers\BaseController
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
         header('Cache-Control: max-age=0');
+        header('Cache-Control: max-age=1'); //IE
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always modified
+        header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+        header('Pragma: public'); // HTTP/1.0
 
         $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
         $writer->save('php://output');
-        exit;
+        
+    } catch (\Exception $e) {
+        log_message('error', 'Download template error: ' . $e->getMessage());
+        echo 'Error: ' . $e->getMessage();
     }
+    
+    exit;
+}
 
     // generate controlnumber
     private function generateControlNumber()
