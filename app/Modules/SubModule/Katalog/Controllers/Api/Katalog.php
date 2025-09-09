@@ -32,9 +32,8 @@ class Katalog extends \Base\Controllers\BaseResourceController
 		}
 	}
 
-	public function datatable($IsQUARANTINE = 0)
+public function datatable($IsQUARANTINE = 0)
 {
-    $branch_id = $this->request->getGet('branch_id');
     $db = db_connect('data');
 
     $builder = $db->table('catalogs as a')
@@ -50,14 +49,10 @@ class Katalog extends \Base\Controllers\BaseResourceController
         ->edit('ID', function ($row) {
             return '<input type="checkbox" class="check" name="ID[]" value="' . $row->ID . '">';
         })
-        ->edit('BIBID', function ($row) use ($branch_id) {
+        ->edit('BIBID', function ($row)  {
             helper('reference');
             $html  = $row->BIBID . '<br>';
 
-            if (!empty($branch_id)) {
-                $html .= '<span class="badge badge-primary">' . get_ref_single('branchs', 'ID=' . $row->Branch_id, 'data')->Code . '</span><br>';
-                $html .= '<span class="badge badge-info">' . get_ref_single('locations', 'ID=' . $row->Location_id, 'data')->Name . '</span> ';
-            }
 
             return $html;
         })
@@ -73,21 +68,25 @@ class Katalog extends \Base\Controllers\BaseResourceController
             $checked = $row->IsOPAC == 1 ? 'checked' : '';
             return '<input type="checkbox" class="apply-status" data-href="' . base_url('api/katalog/switch/' . $row->ID) . '" data-checked="' . $checked . '" data-field="IsOPAC" ' . $checked . ' data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="mini">';
         })
-        ->edit('action', function ($row) {
+        ->edit('action', function ($row) use ($IsQUARANTINE) {
             if ($row->IsRDA == 0) {
                 $edit = '<a href="' . base_url('katalog/edit/' . $row->ID . '?rda=0') . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
             } else {
                 $edit = '<a href="' . base_url('katalog/edit/' . $row->ID . '?rda=1') . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
             }
 
-            $delete = '<a href="' . base_url('katalog/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
-            return $edit . ' ' . $delete;
+            $delete = '';
+            // Only show delete button if IsQUARANTINE = 1
+            if ($IsQUARANTINE == 1) {
+                $delete = '<a href="' . base_url('katalog/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+            }
+
+            return $edit . ($delete ? ' ' . $delete : '');
         })
         ->toJson();
 
     return $dataTable;
 }
-
 
 	public function katalog($IsQUARANTINE = 0)
 	{
@@ -156,6 +155,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 			})
 			->edit('action', function ($row) {
 				$edit = '<a href="javascript:void(0);" data-href="' . base_url('katalog/edit/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Ubah1" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
+
 				$delete = '<a href="javascript:void(0);" data-href="' . base_url('katalog/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
 				return $edit . ' ' . $delete;
 			})
@@ -497,80 +497,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
     }
 }
 
-	public function upload_fileold()
-	{
-		helper('auth');
-		try {
-			$upload_id = $this->request->getPost('upload_id');
-			$upload_ref_id = $this->request->getPost('upload_ref_id');
-			$upload_field = $this->request->getPost('upload_field');
-
-			$files = (array) $this->request->getPost('upload_file');
-			if (count($files)) {
-				$insertData = [];
-				$updateData = [];
-				foreach ($files as $uuid => $name) {
-					if (file_exists($this->uploadPath . $name)) {
-						$file = new File($this->uploadPath . $name);
-						$newFileName = $file->getRandomName();
-
-						$file->move($this->modulePath, $newFileName);
-						if (!empty($upload_id)) {
-							$updateData = [
-								$upload_field => $newFileName,
-								'Catalog_id' => $upload_ref_id,
-								'UpdateDate' => date('Y-m-d H:i:s'),
-							];
-						} else {
-							$data = [
-								$upload_field => $newFileName,
-								'Catalog_id' => $upload_ref_id,
-								'UpdateDate' => date('Y-m-d H:i:s'),
-							];
-							$insertData[] = $data;
-						}
-					}
-				}
-
-				if (!empty($updateData)) {
-					$upsertData = $this->fileModel->update($upload_id, $updateData);
-				}
-
-				if (!empty($insertData)) {
-					$upsertData = $this->fileModel->insertBatch($insertData);
-				}
-
-				if ($upsertData) {
-					set_message('toastr_msg', 'File Konten Digital berhasil diupload');
-					set_message('toastr_type', 'success');
-
-					return $this->respondCreated([
-						'status'   => 201,
-						'error'    => false,
-						'messages' => ['success' => 'File Konten Digital berhasil diupload']
-					]);
-				} else {
-					set_message('toastr_msg', 'File Konten Digital gagal diupload');
-					set_message('toastr_type', 'warning');
-
-					return $this->respond([
-						'status'   => 400,
-						'error'    => true,
-						'messages' => ['error' => 'File Konten Digital gagal diupload']
-					]);
-				}
-			}
-		} catch (\Exception $e) {
-			set_message('toastr_msg', 'Terjadi kesalahan: ' . $e->getMessage());
-			set_message('toastr_type', 'error');
-
-			return $this->respond([
-				'status'   => 500,
-				'error'    => true,
-				'messages' => ['error' => 'Terjadi kesalahan: ' . $e->getMessage()]
-			]);
-		}
-	}
+	
 
 	public function view_decrypted($ID)
     {

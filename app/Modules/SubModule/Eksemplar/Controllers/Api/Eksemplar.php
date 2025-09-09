@@ -91,87 +91,115 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 		return $dataTable;
 	}
 
-	public function datatable($IsQUARANTINE = 0, $catalog_id = '',$Iskeranjang=0)
-	{
-		$flag = 1;
-		$db = db_connect('data');
-		$builder = $db->table('collections as a')
-			->select('a.ID, a.ID as action, a.ID as Collection_id')
-			->select('a.NomorBarcode, a.TanggalPengadaan, a.NoInduk, a.Catalog_id, a.IsOPAC,a.ISDRM,a.IsQUARANTINE')
-			->where('a.IsQUARANTINE', $IsQUARANTINE);
+	public function datatable($IsQUARANTINE = 0, $catalog_id = '', $Iskeranjang = 0)
+{
+    $flag = 1;
+    $db = db_connect('data');
+    $builder = $db->table('collections as a')
+        ->select('a.ID, a.ID as action, a.ID as Collection_id')
+        ->select('a.NomorBarcode, a.TanggalPengadaan, a.NoInduk, a.Catalog_id, a.IsOPAC, a.ISDRM, a.IsQUARANTINE, a.Status_id')
+        ->select('cs.Name as StatusName')
+        ->join('collectionstatus as cs', 'a.Status_id = cs.ID', 'left')
+        ->where('a.IsQUARANTINE', $IsQUARANTINE);
 
+    if (!empty($catalog_id)) {
+        $builder->where('a.Catalog_id', $catalog_id);
+    }
 
-		if (!empty($catalog_id)) {
-			$builder->where('a.Catalog_id', $catalog_id);
-		}
+    $dataTable = DataTable::of($builder)
+        ->addNumbering('no')
+        ->edit('ID', function ($row) {
+            $html = '<input type="checkbox" class="check" name="ID[]" value="' . $row->ID . '">';
+            return $html;
+        })
+        ->edit('NomorBarcode', function ($row) {
+            $html = '<b>' . $row->NomorBarcode . '</b>';
+            return $html;
+        })
+        ->edit('Catalog_id', function ($row) {
+            helper('reference');
+            $catalog = get_ref_single('catalogs', 'ID=' . $row->Catalog_id, 'data');
+            $html = ($catalog->Title ?? "") . '<br>';
+            $html .= '<b class="text-primary">' . ($catalog->Publikasi ?? "") . '</b><br>';
+            return $html;
+        })
+        ->edit('IsOPAC', function ($row) {
+            $color = $row->IsOPAC == 1 ? 'success' : 'warning';
+            $label = $row->IsOPAC == 1 ? 'Ya' : 'Tdk';
+            $html = '<span class="badge badge-' . $color . '" style="min-width: 40px">' . $label . '</span>';
+            return $html;
+        })
+        ->edit('ISDRM', function ($row) {
+            $color = $row->ISDRM == 1 ? 'success' : 'warning';
+            $label = $row->ISDRM == 1 ? 'Ya' : 'Tdk';
+            $html = '<span class="badge badge-' . $color . '" style="min-width: 40px">' . $label . '</span>';
+            return $html;
+        })
+        ->edit('IsQUARANTINE', function ($row) {
+            $color = $row->IsQUARANTINE == 1 ? 'success' : 'warning';
+            $label = $row->IsQUARANTINE == 1 ? 'Ya' : 'Tdk';
+            $html = '<span class="badge badge-' . $color . '" style="min-width: 40px">' . $label . '</span>';
+            return $html;
+        })
+        ->edit('StatusName', function ($row) {
+            // Tampilkan nama status dengan styling yang menarik
+            $statusName = $row->StatusName ?? 'Tidak Diketahui';
+            
+            // Anda bisa menambahkan warna berbeda berdasarkan status
+            $badgeClass = 'badge-info'; // default
+            
+            // Contoh: customize warna berdasarkan status tertentu
+            switch (strtolower($statusName)) {
+                case 'tersedia':
+                case 'available':
+                    $badgeClass = 'badge-success';
+                    break;
+                case 'dipinjam':
+                case 'borrowed':
+                    $badgeClass = 'badge-danger';
+                    break;
+                case 'rusak':
+                case 'damaged':
+                    $badgeClass = 'badge-warning';
+                    break;
+                case 'hilang':
+                case 'lost':
+                    $badgeClass = 'badge-dark';
+                    break;
+                default:
+                    $badgeClass = 'badge-info';
+                    break;
+            }
+            
+            $html = '<span class="badge ' . $badgeClass . '" style="min-width: 60px">' . $statusName . '</span>';
+            return $html;
+        })
+        ->edit('action', function ($row) use ($catalog_id) {
+            // Tombol Edit selalu ditampilkan
+            // Siapkan URL dasar terlebih dahulu
+            $baseUrl = base_url('eksemplar/edit/' . $row->ID);
 
-		$dataTable = DataTable::of($builder)
-			->addNumbering('no')
-			->edit('ID', function ($row) {
-				$html = '<input type="checkbox" class="check" name="ID[]" value="' . $row->ID . '">';
-				return $html;
-			})
-			->edit('NomorBarcode', function ($row) {
-				$html  = '<b>' . $row->NomorBarcode . '</b>';
-				return $html;
-			})
-			->edit('Catalog_id', function ($row) {
-				helper('reference');
-				$catalog = get_ref_single('catalogs', 'ID=' . $row->Catalog_id, 'data');
-				$html  = ($catalog->Title ?? "") . '<br>';
-				$html .= '<b class="text-primary">' . ($catalog->Publikasi ?? "") . '</b><br>';
-			
+            // Gunakan ternary operator untuk menambahkan parameter HANYA jika $catalog_id tidak kosong
+            $finalUrl = !empty($catalog_id) ? $baseUrl . '?catalog_id=' . $catalog_id : $baseUrl;
 
-				return $html;
-			})
-			->edit('IsOPAC', function ($row) {
-				$color = $row->IsOPAC == 1 ? 'success' : 'warning';
-				$label = $row->IsOPAC == 1 ? 'Ya' : 'Tdk';
-				$html = '<span class="badge badge-' . $color . '" style="min-width: 40px">' . $label . '</span>';
-				return $html;
-			})
-				->edit('ISDRM', function ($row) {
-				$color = $row->ISDRM == 1 ? 'success' : 'warning';
-				$label = $row->ISDRM == 1 ? 'Ya' : 'Tdk';
-				$html = '<span class="badge badge-' . $color . '" style="min-width: 40px">' . $label . '</span>';
-				return $html;
-			})
-			->edit('IsQUARANTINE', function ($row) {
-				$color = $row->IsQUARANTINE == 1 ? 'success' : 'warning';
-				$label = $row->IsQUARANTINE == 1 ? 'Ya' : 'Tdk';
-				$html = '<span class="badge badge-' . $color . '" style="min-width: 40px">' . $label . '</span>';
-				return $html;
-			})
-			->edit('action', function ($row) use ($catalog_id) {
-		// Tombol Edit selalu ditampilkan
-		// Siapkan URL dasar terlebih dahulu
-		$baseUrl = base_url('eksemplar/edit/' . $row->ID);
+            // Gabungkan menjadi HTML akhir
+            $edit = '<a href="' . $finalUrl . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
+            
+            // Siapkan variabel delete sebagai string kosong
+            $delete = ""; 
 
-		// Gunakan ternary operator untuk menambahkan parameter HANYA jika $catalog_id tidak kosong
-		$finalUrl = !empty($catalog_id) ? $baseUrl . '?catalog_id=' . $catalog_id : $baseUrl;
+            // Hanya tampilkan tombol delete jika IsQUARANTINE TIDAK sama dengan 0.
+            // Asumsinya, nilai 1 berarti "di karantina" dan boleh dihapus.
+            if ($row->IsQUARANTINE != 0) {
+                $delete = '<a href="javascript:void(0);" data-href="' . base_url('eksemplar/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+            }
 
-		// Gabungkan menjadi HTML akhir
-		$edit = '<a href="' . $finalUrl . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-		
-		// Siapkan variabel delete sebagai string kosong
-		$delete = ""; 
-
-		// Hanya tampilkan tombol delete jika IsQUARANTINE TIDAK sama dengan 0.
-		// Asumsinya, nilai 1 berarti "di karantina" dan boleh dihapus.
-		if ($row->IsQUARANTINE != 0) {
-			$delete = '<a href="javascript:void(0);" data-href="' . base_url('eksemplar/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
-		}
-		
-		// ===================================================================
-		// Akhir Bagian yang Diubah
-		// ===================================================================
-
-		// Gabungkan tombol edit dan delete (jika ada)
-		return $edit . ' ' . $delete;
-	})
-			->toJson();
-		return $dataTable;
-	}
+            // Gabungkan tombol edit dan delete (jika ada)
+            return $edit . ' ' . $delete;
+        })
+        ->toJson();
+    return $dataTable;
+}
 
 	public function index($catalog_id = null)
 	{
