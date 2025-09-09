@@ -505,8 +505,12 @@ class Anggota extends \Base\Controllers\BaseController
 		}
 
 		$anggota = $this->anggotaModel->find($ID);
+    $CreateBy = get_username($anggota->CreateBy ?? 0);
+		$UpdateBy = get_username($anggota->UpdateBy ?? 0);
 		$this->data['title'] = 'Ubah Anggota';
 		$this->data['anggota'] = $anggota;
+		$this->data['CreateBy'] = $CreateBy;
+		$this->data['UpdateBy'] = $UpdateBy;
 		$this->data['hak_akses_koleksi'] = $hak_akses_koleksi;
 		$this->data['arr_hak_akses_koleksi'] = $arr_hak_akses_koleksi;
 		$this->data['hak_akses_lokasi'] = $hak_akses_lokasi;
