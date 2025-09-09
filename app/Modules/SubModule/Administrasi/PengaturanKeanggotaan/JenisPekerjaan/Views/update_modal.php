@@ -74,7 +74,7 @@
 			if (res.error == false) {
 				Swal.fire({
 					title: 'Berhasil',
-					html: 'Jenis Pekerjaab berhasil disimpan.',
+					html: 'Jenis Pekerjaan berhasil disimpan.',
 					type: 'success',
 					showConfirmButton: false,
 					timer: 5000,
