@@ -131,6 +131,10 @@ class Eksemplar extends \Base\Controllers\BaseController
                     'RFID' => $nomorBarcode,
                     'CallNumber' => $post['CallNumber'],
                     'IsQUARANTINE' => '0',
+                    'CreateBy' => user_id(),
+				            'CreateDate' => date("Y-m-d H:i:s"),
+				            'UpdateBy' => user_id(),
+				            'UpdateDate' => date("Y-m-d H:i:s")
                 ];
 
                 // ... rest of the save logic remains the same ...
@@ -375,6 +379,8 @@ class Eksemplar extends \Base\Controllers\BaseController
                 'NomorBarcode' => $post['NomorBarcode0'],
                 'NoInduk' => $post['NoInduk0'],
                 'RFID' => $post['RFID0'],
+                'UpdateBy' => user_id(),
+				        'UpdateDate' => date("Y-m-d H:i:s")
             ];
 
             if (!empty($post['TanggalPengadaan'])) {
