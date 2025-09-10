@@ -60,7 +60,7 @@ class RedaksiKeanggotaan extends \Base\Controllers\BaseController
 
 
             if ($newRedaksiKeanggotaanId) {
-                set_message('toastr_msg', 'RedaksiKeanggotaan berhasil ditambah');
+                set_message('toastr_msg', 'Redaksi Keanggotaan berhasil ditambah');
                 set_message('toastr_type', 'success');
                 return redirect()->to('/master-redaksi-keanggotaan');
             } else {
@@ -94,7 +94,7 @@ class RedaksiKeanggotaan extends \Base\Controllers\BaseController
             $updateRedaksiKeanggotaan = $this->RedaksiKeanggotaanModel->update($ID, $update_data);
 
             if ($updateRedaksiKeanggotaan) {
-                set_message('toastr_msg', 'RedaksiKeanggotaan berhasil diubah');
+                set_message('toastr_msg', 'Redaksi Keanggotaan berhasil diubah');
                 set_message('toastr_type', 'success');
                 return redirect()->to('/master-redaksi-keanggotaan');
             } else {
@@ -118,15 +118,15 @@ class RedaksiKeanggotaan extends \Base\Controllers\BaseController
             set_message('toastr_type', 'error');
             return redirect()->to('RedaksiKeanggotaan');
         }
-        $RedaksiKeanggotaanDelete = $this->fieldModel->delete($ID);
+        $RedaksiKeanggotaanDelete = $this->RedaksiKeanggotaanModel->delete($id);
         if ($RedaksiKeanggotaanDelete) {
-            set_message('toastr_msg', 'RedaksiKeanggotaan berhasil dihapus');
+            set_message('toastr_msg', 'Redaksi Keanggotaan berhasil dihapus');
             set_message('toastr_type', 'success');
             return redirect()->to('master-redaksi-keanggotaan');
         } else {
-            set_message('toastr_msg', 'RedaksiKeanggotaan gagal dihapus');
+            set_message('toastr_msg', 'Redaksi Keanggotaan gagal dihapus');
             set_message('toastr_type', 'warning');
-            set_message('message', 'RedaksiKeanggotaan gagal dihapus');
+            set_message('message', 'Redaksi Keanggotaan gagal dihapus');
             return redirect()->to('master-redaksi-keanggotaan');
         }
     }
@@ -139,10 +139,10 @@ class RedaksiKeanggotaan extends \Base\Controllers\BaseController
         $RedaksiKeanggotaanUpdate = $this->fieldModel->update($ID, array($field => $value));
 
         if ($RedaksiKeanggotaanUpdate) {
-            set_message('toastr_msg', 'RedaksiKeanggotaan berhasil diubah');
+            set_message('toastr_msg', 'Redaksi Keanggotaan berhasil diubah');
             set_message('toastr_type', 'success');
         } else {
-            set_message('toastr_msg', 'RedaksiKeanggotaan gagal diubah');
+            set_message('toastr_msg', 'Redaksi Keanggotaan gagal diubah');
             set_message('toastr_type', 'warning');
         }
         return redirect()->to('/RedaksiKeanggotaan');

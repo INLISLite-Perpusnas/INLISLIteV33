@@ -75,7 +75,7 @@ class RedaksiKeanggotaan extends \Base\Controllers\BaseResourceController
 				'status'   => 200,
 				'error'    => null,
 				'messages' => [
-					'success' => 'RedaksiKeanggotaan berhasil dihapus'
+					'success' => 'Redaksi Keanggotaan berhasil dihapus'
 				]
 			];
 			return $this->respondDeleted($response);

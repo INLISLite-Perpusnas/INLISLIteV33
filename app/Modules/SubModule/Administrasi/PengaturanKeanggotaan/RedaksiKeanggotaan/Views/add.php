@@ -35,7 +35,7 @@ $slug = $request->getGet('slug');
 	</div>
 	<div class="main-card mb-3 card">
 		<div class="card-header">
-			<i class="header-icon lnr-pencil icon-gradient bg-plum-plate"> </i> Form Ubah Redaksi Kenaggotaan
+			<i class="header-icon lnr-pencil icon-gradient bg-plum-plate"> </i> Form Ubah Redaksi Keanggotaan
 		</div>
 		<div class="card-body">
 			<div id="infoMessage"><?= $message ?? '' ?></div> <?= get_message('message') ?>
