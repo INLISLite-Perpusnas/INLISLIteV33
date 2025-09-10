@@ -54,6 +54,16 @@ $actions = array(
 				</a>
 			</li>
 		<?php endforeach; ?>
+    
+    <?php if ($catalog->Worksheet_id == 4): ?> 
+      <?php foreach (array('edisi_serial', 'artikel', 'konten_digital_artikel') as $group) : ?>
+		  	<li class="nav-item">
+		  		<a class="nav-link <?= ($slug == trim($group)) ? 'active' : '' ?>" href="<?= base_url('katalog/edit/' . $catalog->ID . '?slug=' . $group) ?>">
+		  			<span><?= strtoupper(unslugify($group)) ?></span>
+		  		</a>
+		  	</li>
+		  <?php endforeach; ?>
+    <?php endif; ?>
 	</ul>
 
 	<form id="frm_edit" class="main-card mb-3 card" method="post" action="">
