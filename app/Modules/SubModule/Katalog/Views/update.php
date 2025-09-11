@@ -41,19 +41,12 @@ $actions = array(
 		</div>
 	</div>
 
-	<ul class="body-tabs body-tabs-layout tabs-animated body-tabs-animated nav mb-3">
+	<ul class="body-tabs body-tabs-layout tabs-animated body-tabs-animated nav mb-3 flex-nowrap">
 		<li class="nav-item">
-			<?php if ($catalog->Worksheet_id == 4): ?> 
-				<a class="nav-link <?= ($slug == 'katalog_edit') ? 'active' : '' ?>" href="<?= base_url('katalog/edit/' . $catalog->ID . '?rda=0') ?>">
-					<span>KATALOG</span>
-				</a>
-			<?php else: ?>
-				<a class="nav-link <?= ($slug == 'katalog_edit') ? 'active' : '' ?>" href="<?= base_url('katalog/edit/' . $catalog->ID ) ?>">
-					<span>KATALOG</span>
-				</a>
-			<?php endif; ?>
+			<a class="nav-link <?= ($slug == 'katalog_edit') ? 'active' : '' ?>" href="<?= base_url('katalog/edit/' . $catalog->ID) ?>">
+				<span>KATALOG</span>
+			</a>
 		</li>
-
 		<?php foreach (array('eksemplar', 'cover', 'konten_digital') as $group) : ?>
 			<li class="nav-item">
 				<a class="nav-link <?= ($slug == trim($group)) ? 'active' : '' ?>" href="<?= base_url('katalog/edit/' . $catalog->ID . '?slug=' . $group) ?>">
@@ -73,16 +66,20 @@ $actions = array(
     <?php endif; ?>
 	</ul>
 
-	<form id="frm_edit" class="main-card mb-3 card" method="post" action="">
-		<?= $this->include("Katalog\Views\slug\\$slug"); ?>
-	</form>
-	
+  <?php if ($slug !== 'edisi_serial'): ?>
+    <form id="frm_edit" class="main-card mb-3 card" method="post" action="">
+      <?= $this->include("Katalog\Views\slug\\$slug"); ?>
+    </form>
+    <a href="<?= base_url('katalog') ?>" class="btn btn-secondary btn-lg mb-3"><i class="fa fa-list mr-2"></i> Kembali ke Daftar Katalog</a>
+  <?php endif; ?>
 
-	<a href="<?= base_url('katalog') ?>" class="btn btn-secondary btn-lg mb-3"><i class="fa fa-list mr-2"></i> Kembali ke Daftar Katalog</a>
+  <div id="frm_edit">
+    <?= $this->include("Katalog\Views\slug\\$slug"); ?>
+  </div>
+	
+  <?= $this->endSection('page'); ?>
 </div>
 
-
-<?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
 <?= $this->include('Katalog\Views\add_script'); ?>
