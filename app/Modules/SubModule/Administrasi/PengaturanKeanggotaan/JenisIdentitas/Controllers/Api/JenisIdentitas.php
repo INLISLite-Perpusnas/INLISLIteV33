@@ -35,8 +35,8 @@ class JenisIdentitas extends \Base\Controllers\BaseResourceController
 		$branchId = user()->branch_id;
 		$builder = $db->table('master_jenis_identitas as a')
 			->select('a.id, a.id as action,a.Branch_id, a.Nama, a.UpdateDate')
-			->select('a.description,a.sort, a.active')
-			->whereIn('a.Branch_id', [$branchId, 0]);
+			->select('a.description,a.sort, a.active');
+			//->whereIn('a.Branch_id', [$branchId, 0]);
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
@@ -56,13 +56,13 @@ class JenisIdentitas extends \Base\Controllers\BaseResourceController
 			})
 			->edit('action', function ($row) use ($branchId) {
 				$edit = '';
-				if ($row->Branch_id == $branchId) {
+				//if ($row->Branch_id == $branchId) {
 				$edit = '<a href="javascript:void(0);" data-href="' . base_url('api/jenis-identitas/detail/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
 				$active = '<a href="' . base_url('master-jenis-identitas/apply_status/' . $row->id . '?field=active&value=1') . '"  data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Active" class="btn btn-success active-data"><i class="pe-7s-check font-weight-bold"> </i> </a>';
 				$inactive = '<a href="' . base_url('master-jenis-identitas/apply_status/' . $row->id . '?field=active&value=0') . '" data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Inactive" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"> </i> </a>';
 				$delete = '<a href="javascript:void(0);" data-href="' . base_url('master-jenis-identitas/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
 				return $edit . ' ' . $active . ' ' . $inactive . ' ' . $delete;
-			}
+			
 		})
 			->toJson();
 		return $dataTable;
