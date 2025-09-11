@@ -1,6 +1,6 @@
 <?php
 
-namespace Artikel\Models;
+namespace Katalog\Models;
 
 class ArtikelModel extends \Base\Models\DataModel
 {
