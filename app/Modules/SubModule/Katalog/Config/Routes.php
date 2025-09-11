@@ -30,7 +30,9 @@ $routes->group('katalog', ['namespace' => 'Katalog\Controllers'], function ($sub
 	$subroutes->add('create-marc-from-file', 'Katalog::createFromMarcFile');
 
 	$subroutes->add('view_decrypted/(:any)', 'Katalog::view_decrypted/$1');
+  $subroutes->add('view_decrypted_article/(:any)', 'Katalog::view_decrypted_article/$1');
 	$subroutes->add('get_decrypted_content/(:any)', 'Katalog::get_decrypted_content/$1');
+  $subroutes->add('get_decrypted_content_article/(:any)', 'Katalog::get_decrypted_content_article/$1');
 
 	//custom
 	$subroutes->add('karantina', 'Katalog::karantina');
@@ -65,7 +67,9 @@ $routes->group('api/katalog', ['namespace' => 'Katalog\Controllers\Api'], functi
 	$subroutes->add('upload_cover/(:any)/(:any)', 'Katalog::upload_cover/$1/$2');
 	$subroutes->add('upload_file', 'Katalog::upload_file');
 	$subroutes->add('upload_file/(:any)/(:any)', 'Katalog::upload_file/$1/$2');
+  $subroutes->add('upload_file_digital_artikel', 'Katalog::upload_file_digital_artikel');
 	$subroutes->add('delete_file/(:any)', 'Katalog::delete_file/$1');
+  $subroutes->add('delete_file_article/(:any)', 'Katalog::delete_file_article/$1');
 
 	//artikel
 	$subroutes->add('datatable_artikel', 'Katalog::datatable_artikel');

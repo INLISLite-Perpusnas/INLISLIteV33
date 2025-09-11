@@ -13,6 +13,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 	use ResponseTrait;
 	public $fileModel;
 	public $katalogModel;
+  public $serialArticleFilesModel;
 	public $validation;
 	public $session;
 	public $modulePath;
@@ -24,6 +25,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 	{
 		$this->fileModel = new \Katalog\Models\FileModel();
 		$this->katalogModel = new \Katalog\Models\KatalogModel();
+    $this->serialArticleFilesModel = new \Katalog\Models\SerialArticleFilesModel();
 		$this->artikelModel = new \Katalog\Models\ArtikelModel();
 		$this->validation = \Config\Services::validation();
 		$this->session = session();
@@ -500,7 +502,116 @@ class Katalog extends \Base\Controllers\BaseResourceController
 		}
 	}
 
+	public function upload_file_digital_artikel()
+{
+    helper('auth');
+    try {
+        $upload_id = $this->request->getPost('upload_id');
+        $upload_ref_id = $this->request->getPost('upload_ref_id');
+        $upload_field = $this->request->getPost('upload_field');
 
+        $files = (array) $this->request->getPost('upload_file');
+
+        $upload_articles_id = $this->request->getPost('upload_articles_id');
+
+        if (count($files)) {
+            $insertData = [];
+            $updateData = [];
+            foreach ($files as $uuid => $name) {
+                if (file_exists($this->uploadPath . $name)) {
+                    $file = new File($this->uploadPath . $name);
+
+					           // === Tambahan cek ukuran file ===
+					          $maxSize = 2 * 1024 * 1024; // 2MB
+					          if ($file->getSize() > $maxSize) {
+					          	throw new \RuntimeException("Ukuran file '{$name}' melebihi batas 2MB.");
+					          }
+					          // === Akhir tambahan ===
+
+                    $newFileName = $file->getRandomName();
+
+                    // Move the file to the module path
+                    $file->move($this->modulePath, $newFileName);
+
+                    // Check if the file is a PDF
+                    if (strtolower($file->getExtension()) === 'pdf') {
+                        // Create an instance of the Encryption class
+                        $encryption = new \App\Libraries\Encryption();
+
+                        // Path to the moved file
+                        $filePath = $this->modulePath . $newFileName;
+
+                        // Path for the encrypted file
+                        $encryptedFilePath = $this->modulePath . 'encrypted_' . $newFileName;
+
+                        // Encrypt the file
+                        $encryption->encryptFile($filePath, $encryptedFilePath);
+
+                        // Delete the original unencrypted file
+                        unlink($filePath);
+
+                        // Update the filename to the encrypted version
+                        $newFileName = 'encrypted_' . $newFileName;
+                    }
+
+                    if (!empty($upload_id)) {
+                        $updateData = [
+                            $upload_field => $newFileName,
+                            // 'Catalog_id' => $upload_ref_id,
+                            'Articles_id' => $upload_articles_id,
+                            'UpdateDate' => date('Y-m-d H:i:s'),
+                        ];
+                    } else {
+                        $data = [
+                            $upload_field => $newFileName,
+                            // 'Catalog_id' => $upload_ref_id,
+                            'Articles_id' => $upload_articles_id,
+                            'UpdateDate' => date('Y-m-d H:i:s'),
+                        ];
+                        $insertData[] = $data;
+                    }
+                }
+            }
+
+            if (!empty($updateData)) {
+                $upsertData = $this->serialArticleFilesModel->update($upload_id, $updateData);
+            }
+
+            if (!empty($insertData)) {
+                $upsertData = $this->serialArticleFilesModel->insertBatch($insertData);
+            }
+
+            if ($upsertData) {
+                set_message('toastr_msg', 'File Konten Digital Artikel berhasil diupload');
+                set_message('toastr_type', 'success');
+
+                return $this->respondCreated([
+                    'status'   => 201,
+                    'error'    => false,
+                    'messages' => ['success' => 'File Konten Digital Artikel berhasil diupload']
+                ]);
+            } else {
+                set_message('toastr_msg', 'File Konten Digital Artikel gagal diupload');
+                set_message('toastr_type', 'warning');
+
+                return $this->respond([
+                    'status'   => 400,
+                    'error'    => true,
+                    'messages' => ['error' => 'File Konten Digital Artikel gagal diupload']
+                ]);
+            }
+        }
+    } catch (\Exception $e) {
+        set_message('toastr_msg', 'Terjadi kesalahan: ' . $e->getMessage());
+        set_message('toastr_type', 'error');
+
+        return $this->respond([
+            'status'   => 500,
+            'error'    => true,
+            'messages' => ['error' => 'Terjadi kesalahan: ' . $e->getMessage()]
+        ]);
+    }
+}
 
 	public function view_decrypted($ID)
 	{
@@ -708,6 +819,24 @@ class Katalog extends \Base\Controllers\BaseResourceController
 			->toJson();
 
 		return $dataTable;
+  }
+  
+  public function delete_file_article($ID)
+  {
+    $file = $this->serialArticleFilesModel->find($ID);
+		if ($file) {
+			$content = $this->modulePath . $file->FileURL;
+			unlink($content);
+			$this->serialArticleFilesModel->delete($file->ID);
+			set_message('toastr_msg', 'File Konten Digital Artikel berhasil dihapus');
+			set_message('toastr_type', 'success');
+			set_message('message', 'File Konten Digital Artikel berhasil dihapus');
+		} else {
+			set_message('toastr_msg', 'File Konten Digital Artikel gagal dihapus');
+			set_message('toastr_type', 'warning');
+			set_message('message', 'File Konten Digital Artikel gagal dihapus');
+		}
+		return redirect()->back();
 	}
 
 	public function create_artikel()

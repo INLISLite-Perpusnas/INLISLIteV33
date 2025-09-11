@@ -22,6 +22,8 @@ class Katalog extends \Base\Controllers\BaseController
 	public $katalogRuasModel;
 	public $artikelModel;
 	public $worksheetModel;
+  public $articleModel;
+  public $serialArticleFilesModel;
 	public $uploadPath;
 	public $modulePath;
 	public $validation;
@@ -36,6 +38,8 @@ class Katalog extends \Base\Controllers\BaseController
 		$this->katalogRuasModel = new \Katalog\Models\KatalogRuasModel();
 		$this->worksheetModel = new \Katalog\Models\WorksheetModel();
 		$this->eksemplarModel = new \Eksemplar\Models\EksemplarModel();
+    $this->articleModel = new \Katalog\Models\ArtikelModel();
+    $this->serialArticleFilesModel = new \Katalog\Models\SerialArticleFilesModel();
 		$this->uploadPath = ROOTPATH . 'public/uploads/';
 		$this->modulePath = ROOTPATH . 'public/uploads/katalog/';
 		$this->validation = \Config\Services::validation();
@@ -842,6 +846,8 @@ class Katalog extends \Base\Controllers\BaseController
 
 		$files = $this->fileModel->where('Catalog_id', $catalog_id)->orderBy('UpdateDate', 'desc')->findAll();
 		$data['files'] = $files;
+    
+		$data['article_files'] = $this->serialArticleFilesModel->getWithArticle($catalog_id);
 
 		$this->validation->setRule('judul[a]', 'Judul Utama', 'trim');
 		if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
@@ -1003,6 +1009,8 @@ class Katalog extends \Base\Controllers\BaseController
 			$worksheetModel = new DataModel('worksheets', null, 'ID');
 			$worksheets = $worksheetModel->orderBy('NoUrut')->findAll();
 			$data['worksheets'] = $worksheets;
+
+      $data['serial_articles'] = $this->articleModel->findAll(); 
 
 			$worksheet_id = $this->request->getvar('worksheet_id') ?? 1;
 			if (!$session->has('worksheet_id')) {
@@ -1305,6 +1313,21 @@ class Katalog extends \Base\Controllers\BaseController
 		return view('Katalog\Views\slug\pdf_viewer', ['fileId' => $ID, 'fileName' => $file->FileURL]);
 	}
 
+  public function view_decrypted_article($ID)
+	{
+		// Load the file model
+
+
+		// Get the file record
+		$file = $this->serialArticleFilesModel->find($ID);
+		if (!$file || !file_exists($this->modulePath . $file->FileURL)) {
+			return $this->response->setStatusCode(404)->setBody('File not found');
+		}
+
+		// Instead of serving the file directly, we'll render a view with our custom PDF viewer
+		return view('Katalog\Views\slug\pdf_viewer_article', ['fileId' => $ID, 'fileName' => $file->FileURL]);
+	}
+
 	public function get_decrypted_content($ID)
 	{
 
@@ -1328,6 +1351,31 @@ class Katalog extends \Base\Controllers\BaseController
 
 		return $this->response->setBody($content);
 	}
+
+  public function get_decrypted_content_article($ID)
+	{
+
+		$file = $this->serialArticleFilesModel->find($ID);
+
+		if (!$file || !file_exists($this->modulePath . $file->FileURL)) {
+			return $this->response->setStatusCode(404)->setBody('File not found');
+		}
+
+		$tempDecryptedFile = tempnam(sys_get_temp_dir(), 'decrypted_');
+		$encryption = new \App\Libraries\Encryption();
+		$encryption->decryptFile($this->modulePath . $file->FileURL, $tempDecryptedFile);
+
+		$this->response->setContentType('application/pdf');
+		$this->response->setHeader('Content-Disposition', 'inline; filename="' . $file->FileURL . '"');
+		$this->response->setHeader('X-Frame-Options', 'SAMEORIGIN');
+		$this->response->setHeader('Content-Security-Policy', "default-src 'self'; object-src 'self'");
+
+		$content = file_get_contents($tempDecryptedFile);
+		unlink($tempDecryptedFile);
+
+		return $this->response->setBody($content);
+	}
+
 	// Fungsi untuk menampilkan form
 	public function showCreateForm()
 	{
