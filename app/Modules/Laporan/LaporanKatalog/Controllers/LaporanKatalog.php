@@ -17,6 +17,7 @@ class LaporanKatalog extends \Base\Controllers\BaseController
 	function __construct()
 	{
 		$this->katalogModel = new \Katalog\Models\KatalogModel();
+        $this->masterkelasbesarModel = new \MasterKelasBesar\Models\MasterKelasBesarModel();
 	}
 
 	public function index()
@@ -32,10 +33,11 @@ class LaporanKatalog extends \Base\Controllers\BaseController
             'PublishLocation' => 'Tempat Terbit',
             'PublishYear' => 'Tahun Terbit',
             'Subject' => 'Subjek',
+            'PhysicalDescription' => 'Deskripsi Fisik',
             'ISBN' => 'ISBN',
             'CallNumber' => 'No. Panggil',
             'Languages' => 'Bahasa',
-            'DeweyNo' => 'No. Dewey',
+            'DeweyNo' => 'Klas DDC',
             'IsOPAC' => 'Status OPAC',
             'IsBNI' => 'Status BNI',
             'IsKIN' => 'Status KIN',
@@ -44,8 +46,11 @@ class LaporanKatalog extends \Base\Controllers\BaseController
             'UpdateDate' => 'Tanggal Diperbarui'
         ];
 
+        $masterkelasbesarOptions = $this->masterkelasbesarModel->where('active', 1)->findAll();
+
         $data = [
-            'columns' => $columns
+            'columns' => $columns,
+            'masterkelasbesarOptions' => $masterkelasbesarOptions
         ];
 
         return view('LaporanKatalog\Views\index', $data);
@@ -54,8 +59,7 @@ class LaporanKatalog extends \Base\Controllers\BaseController
     public function preview()
     {
         $columns = json_decode($this->request->getPost('columns'), true);
-        $filterType = $this->request->getPost('filter_type');
-       
+        $filterType = $this->request->getPost('filter_type');    
         
         if (empty($columns)) {
             return '<div class="alert alert-warning">Pilih minimal satu kolom untuk preview data</div>';
@@ -65,7 +69,6 @@ class LaporanKatalog extends \Base\Controllers\BaseController
         $query = $this->katalogModel->select($columns);
 
        
-
         switch ($filterType) {
             case 'date':
                 $startDate = $this->request->getPost('start_date');
@@ -116,6 +119,12 @@ class LaporanKatalog extends \Base\Controllers\BaseController
                 break;
         }
 
+        
+        $masterkelasbesarId = $this->request->getPost('masterkelasbesar_id');
+        if ($masterkelasbesarId &&  $masterkelasbesarId != '') {
+            $query->like('catalogs.DeweyNo',  $masterkelasbesarId);
+        }
+
         // Get first 20 rows
         $katalogs = $query->limit(20)->find();
 
@@ -130,6 +139,26 @@ class LaporanKatalog extends \Base\Controllers\BaseController
                             <tr>';
         
         foreach ($columns as $column) {
+            if($column == 'ControlNumber') $column = 'No Kontrol';
+            else if ($column == 'BIBID') $column = 'BIB ID';
+            else if ($column == 'Title') $column = 'Judul';
+            else if ($column == 'Author') $column = 'Pengarang';
+            else if ($column == 'Edition') $column = 'Edisi';
+            else if ($column == 'Publisher') $column = 'Penerbit';
+            else if ($column == 'PublishLocation') $column = 'Tempat Terbit';
+            else if ($column == 'PublishYear') $column = 'Tahun Terbit';
+            else if ($column == 'Subject') $column = 'Subjek';
+            else if ($column == 'PhysicalDescription') $column = 'Deskripsi Fisik';
+            else if ($column == 'ISBN') $column = 'ISBN';
+            else if ($column == 'CallNumber') $column = 'No Panggil';
+            else if ($column == 'Languages') $column = 'Bahasa';
+            else if ($column == 'DeweyNo') $column = 'Klas DDC';
+            else if ($column == 'IsOPAC') $column = 'Status OPAC';
+            else if ($column == 'IsBNI') $column = 'Status BNI';
+            else if ($column == 'IsKIN') $column = 'Status KIN';
+            else if ($column == 'IsRDA') $column = 'Status RDA';
+            else if ($column == 'CreateDate') $column = 'Tanggal Dibuat';
+            else if ($column == 'UpdateDate') $column = 'Tanggal Diperbarui';          
             $html .= '<th>' . esc($column) . '</th>';
         }
         
@@ -225,19 +254,50 @@ class LaporanKatalog extends \Base\Controllers\BaseController
                 break;
         }
 
+        $masterkelasbesarId = $this->request->getPost('masterkelasbesar_id');
+        if ($masterkelasbesarId &&  $masterkelasbesarId != '') {
+            $query->like('catalogs.DeweyNo',  $masterkelasbesarId);
+        }
+
         $katalogs = $query->findAll();
 
         // Create Excel
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
+        // Buat mapping nama field ke label header
+        $columnLabels = [
+            'ControlNumber' => 'No. Kontrol',
+            'BIBID' => 'BIB ID',
+            'Title' => 'Judul',
+            'Author' => 'Pengarang',
+            'Edition' => 'Edisi',
+            'Publisher' => 'Penerbit',
+            'PublishLocation' => 'Tempat Terbit',
+            'PublishYear' => 'Tahun Terbit',
+            'Subject' => 'Subjek',
+            'PhysicalDescription' => 'Deskripsi Fisik',
+            'ISBN' => 'ISBN',
+            'CallNumber' => 'No. Panggil',
+            'Languages' => 'Bahasa',
+            'DeweyNo' => 'Klas DDC',
+            'IsOPAC' => 'Status OPAC',
+            'IsBNI' => 'Status BNI',
+            'IsKIN' => 'Status KIN',
+            'IsRDA' => 'Status RDA',
+            'CreateDate' => 'Tanggal Dibuat',
+            'UpdateDate' => 'Tanggal Diperbarui'
+        ];
+
         // Add header row
         $col = 'A';
         foreach ($selectedColumns as $column) {
-            $sheet->setCellValue($col . '1', $column);
+            $label = isset($columnLabels[$column]) ? $columnLabels[$column] : $column;
+            $sheet->setCellValue($col . '1', $label);
             $sheet->getColumnDimension($col)->setAutoSize(true);
             $col++;
         }
+    
 
         // Add data rows
         $row = 2;
