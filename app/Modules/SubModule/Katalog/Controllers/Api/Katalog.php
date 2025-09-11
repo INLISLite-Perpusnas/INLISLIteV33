@@ -17,11 +17,14 @@ class Katalog extends \Base\Controllers\BaseResourceController
 	public $session;
 	public $modulePath;
 	public $uploadPath;
+	public $artikelModel;
+
 
 	function __construct()
 	{
 		$this->fileModel = new \Katalog\Models\FileModel();
 		$this->katalogModel = new \Katalog\Models\KatalogModel();
+		$this->artikelModel = new \Katalog\Models\ArtikelModel();
 		$this->validation = \Config\Services::validation();
 		$this->session = session();
 		$this->modulePath = ROOTPATH . 'public/uploads/katalog/';
@@ -32,61 +35,61 @@ class Katalog extends \Base\Controllers\BaseResourceController
 		}
 	}
 
-public function datatable($IsQUARANTINE = 0)
-{
-    $db = db_connect('data');
+	public function datatable($IsQUARANTINE = 0)
+	{
+		$db = db_connect('data');
 
-    $builder = $db->table('catalogs as a')
-        ->select('a.ID, a.ID as action')
-        ->select('a.ControlNumber, a.BIBID, a.Title, a.Author, a.Edition, a.Publisher, a.PublishLocation, a.PublishYear, a.Publikasi, a.Subject, a.PhysicalDescription, a.ISBN, a.CallNumber, a.Note, a.Languages, a.DeweyNo, a.ApproveDateOPAC, a.IsOPAC, a.IsBNI, a.IsKIN, a.IsRDA, a.CoverURL, a.Worksheet_id, a.CreateBy, a.CreateDate, a.CreateTerminal, a.UpdateBy, a.UpdateDate, a.UpdateTerminal, a.MARC_LOC, a.PRESERVASI_ID, a.QUARANTINEDBY, a.QUARANTINEDDATE, a.QUARANTINEDTERMINAL, a.Member_id, a.KIILastUploadDate')
-        ->select('a.Branch_id, a.Location_id')
-        ->select('0 as Eksemplar')
-        ->where('a.IsQUARANTINE', $IsQUARANTINE)
-        ->orderBy('a.ID', 'DESC');
+		$builder = $db->table('catalogs as a')
+			->select('a.ID, a.ID as action')
+			->select('a.ControlNumber, a.BIBID, a.Title, a.Author, a.Edition, a.Publisher, a.PublishLocation, a.PublishYear, a.Publikasi, a.Subject, a.PhysicalDescription, a.ISBN, a.CallNumber, a.Note, a.Languages, a.DeweyNo, a.ApproveDateOPAC, a.IsOPAC, a.IsBNI, a.IsKIN, a.IsRDA, a.CoverURL, a.Worksheet_id, a.CreateBy, a.CreateDate, a.CreateTerminal, a.UpdateBy, a.UpdateDate, a.UpdateTerminal, a.MARC_LOC, a.PRESERVASI_ID, a.QUARANTINEDBY, a.QUARANTINEDDATE, a.QUARANTINEDTERMINAL, a.Member_id, a.KIILastUploadDate')
+			->select('a.Branch_id, a.Location_id')
+			->select('0 as Eksemplar')
+			->where('a.IsQUARANTINE', $IsQUARANTINE)
+			->orderBy('a.ID', 'DESC');
 
-    $dataTable = DataTable::of($builder)
-        ->addNumbering('no')
-        ->edit('ID', function ($row) {
-            return '<input type="checkbox" class="check" name="ID[]" value="' . $row->ID . '">';
-        })
-        ->edit('BIBID', function ($row)  {
-            helper('reference');
-            $html  = $row->BIBID . '<br>';
+		$dataTable = DataTable::of($builder)
+			->addNumbering('no')
+			->edit('ID', function ($row) {
+				return '<input type="checkbox" class="check" name="ID[]" value="' . $row->ID . '">';
+			})
+			->edit('BIBID', function ($row) {
+				helper('reference');
+				$html  = $row->BIBID . '<br>';
 
 
-            return $html;
-        })
-        ->edit('Eksemplar', function ($row) {
-            helper('eksemplar');
-            return count_collections($row->ID);
-        })
-        ->edit('IsRDA', function ($row) {
-            $checked = $row->IsRDA == 1 ? 'checked' : '';
-            return '<input type="checkbox" class="apply-status" data-href="' . base_url('api/katalog/switch/' . $row->ID) . '" data-checked="' . $checked . '" data-field="IsRDA" ' . $checked . ' data-toggle="toggle" data-onstyle="success" data-on="RDA" data-off="AACR" data-size="mini">';
-        })
-        ->edit('IsOPAC', function ($row) {
-            $checked = $row->IsOPAC == 1 ? 'checked' : '';
-            return '<input type="checkbox" class="apply-status" data-href="' . base_url('api/katalog/switch/' . $row->ID) . '" data-checked="' . $checked . '" data-field="IsOPAC" ' . $checked . ' data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="mini">';
-        })
-        ->edit('action', function ($row) use ($IsQUARANTINE) {
-            if ($row->IsRDA == 0) {
-                $edit = '<a href="' . base_url('katalog/edit/' . $row->ID . '?rda=0') . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-            } else {
-                $edit = '<a href="' . base_url('katalog/edit/' . $row->ID . '?rda=1') . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-            }
+				return $html;
+			})
+			->edit('Eksemplar', function ($row) {
+				helper('eksemplar');
+				return count_collections($row->ID);
+			})
+			->edit('IsRDA', function ($row) {
+				$checked = $row->IsRDA == 1 ? 'checked' : '';
+				return '<input type="checkbox" class="apply-status" data-href="' . base_url('api/katalog/switch/' . $row->ID) . '" data-checked="' . $checked . '" data-field="IsRDA" ' . $checked . ' data-toggle="toggle" data-onstyle="success" data-on="RDA" data-off="AACR" data-size="mini">';
+			})
+			->edit('IsOPAC', function ($row) {
+				$checked = $row->IsOPAC == 1 ? 'checked' : '';
+				return '<input type="checkbox" class="apply-status" data-href="' . base_url('api/katalog/switch/' . $row->ID) . '" data-checked="' . $checked . '" data-field="IsOPAC" ' . $checked . ' data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="mini">';
+			})
+			->edit('action', function ($row) use ($IsQUARANTINE) {
+				if ($row->IsRDA == 0) {
+					$edit = '<a href="' . base_url('katalog/edit/' . $row->ID . '?rda=0') . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
+				} else {
+					$edit = '<a href="' . base_url('katalog/edit/' . $row->ID . '?rda=1') . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
+				}
 
-            $delete = '';
-            // Only show delete button if IsQUARANTINE = 1
-            if ($IsQUARANTINE == 1) {
-                $delete = '<a href="' . base_url('katalog/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
-            }
+				$delete = '';
+				// Only show delete button if IsQUARANTINE = 1
+				if ($IsQUARANTINE == 1) {
+					$delete = '<a href="' . base_url('katalog/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+				}
 
-            return $edit . ($delete ? ' ' . $delete : '');
-        })
-        ->toJson();
+				return $edit . ($delete ? ' ' . $delete : '');
+			})
+			->toJson();
 
-    return $dataTable;
-}
+		return $dataTable;
+	}
 
 	public function katalog($IsQUARANTINE = 0)
 	{
@@ -391,152 +394,152 @@ public function datatable($IsQUARANTINE = 0)
 		}
 	}
 	public function upload_file()
-{
-    helper('auth');
-    try {
-        $upload_id = $this->request->getPost('upload_id');
-        $upload_ref_id = $this->request->getPost('upload_ref_id');
-        $upload_field = $this->request->getPost('upload_field');
+	{
+		helper('auth');
+		try {
+			$upload_id = $this->request->getPost('upload_id');
+			$upload_ref_id = $this->request->getPost('upload_ref_id');
+			$upload_field = $this->request->getPost('upload_field');
 
-        $files = (array) $this->request->getPost('upload_file');
+			$files = (array) $this->request->getPost('upload_file');
 
-        if (count($files)) {
-            $insertData = [];
-            $updateData = [];
-            foreach ($files as $uuid => $name) {
-                if (file_exists($this->uploadPath . $name)) {
-                    $file = new File($this->uploadPath . $name);
+			if (count($files)) {
+				$insertData = [];
+				$updateData = [];
+				foreach ($files as $uuid => $name) {
+					if (file_exists($this->uploadPath . $name)) {
+						$file = new File($this->uploadPath . $name);
 
-					 // === Tambahan cek ukuran file ===
-					$maxSize = 2 * 1024 * 1024; // 2MB
-					if ($file->getSize() > $maxSize) {
-						throw new \RuntimeException("Ukuran file '{$name}' melebihi batas 2MB.");
+						// === Tambahan cek ukuran file ===
+						$maxSize = 2 * 1024 * 1024; // 2MB
+						if ($file->getSize() > $maxSize) {
+							throw new \RuntimeException("Ukuran file '{$name}' melebihi batas 2MB.");
+						}
+						// === Akhir tambahan ===
+
+						$newFileName = $file->getRandomName();
+
+						// Move the file to the module path
+						$file->move($this->modulePath, $newFileName);
+
+						// Check if the file is a PDF
+						if (strtolower($file->getExtension()) === 'pdf') {
+							// Create an instance of the Encryption class
+							$encryption = new \App\Libraries\Encryption();
+
+							// Path to the moved file
+							$filePath = $this->modulePath . $newFileName;
+
+							// Path for the encrypted file
+							$encryptedFilePath = $this->modulePath . 'encrypted_' . $newFileName;
+
+							// Encrypt the file
+							$encryption->encryptFile($filePath, $encryptedFilePath);
+
+							// Delete the original unencrypted file
+							unlink($filePath);
+
+							// Update the filename to the encrypted version
+							$newFileName = 'encrypted_' . $newFileName;
+						}
+
+						if (!empty($upload_id)) {
+							$updateData = [
+								$upload_field => $newFileName,
+								'Catalog_id' => $upload_ref_id,
+								'UpdateDate' => date('Y-m-d H:i:s'),
+							];
+						} else {
+							$data = [
+								$upload_field => $newFileName,
+								'Catalog_id' => $upload_ref_id,
+								'UpdateDate' => date('Y-m-d H:i:s'),
+							];
+							$insertData[] = $data;
+						}
 					}
-					// === Akhir tambahan ===
+				}
 
-                    $newFileName = $file->getRandomName();
+				if (!empty($updateData)) {
+					$upsertData = $this->fileModel->update($upload_id, $updateData);
+				}
 
-                    // Move the file to the module path
-                    $file->move($this->modulePath, $newFileName);
+				if (!empty($insertData)) {
+					$upsertData = $this->fileModel->insertBatch($insertData);
+				}
 
-                    // Check if the file is a PDF
-                    if (strtolower($file->getExtension()) === 'pdf') {
-                        // Create an instance of the Encryption class
-                        $encryption = new \App\Libraries\Encryption();
+				if ($upsertData) {
+					set_message('toastr_msg', 'File Konten Digital berhasil diupload');
+					set_message('toastr_type', 'success');
 
-                        // Path to the moved file
-                        $filePath = $this->modulePath . $newFileName;
+					return $this->respondCreated([
+						'status'   => 201,
+						'error'    => false,
+						'messages' => ['success' => 'File Konten Digital berhasil diupload']
+					]);
+				} else {
+					set_message('toastr_msg', 'File Konten Digital gagal diupload');
+					set_message('toastr_type', 'warning');
 
-                        // Path for the encrypted file
-                        $encryptedFilePath = $this->modulePath . 'encrypted_' . $newFileName;
+					return $this->respond([
+						'status'   => 400,
+						'error'    => true,
+						'messages' => ['error' => 'File Konten Digital gagal diupload']
+					]);
+				}
+			}
+		} catch (\Exception $e) {
+			set_message('toastr_msg', 'Terjadi kesalahan: ' . $e->getMessage());
+			set_message('toastr_type', 'error');
 
-                        // Encrypt the file
-                        $encryption->encryptFile($filePath, $encryptedFilePath);
+			return $this->respond([
+				'status'   => 500,
+				'error'    => true,
+				'messages' => ['error' => 'Terjadi kesalahan: ' . $e->getMessage()]
+			]);
+		}
+	}
 
-                        // Delete the original unencrypted file
-                        unlink($filePath);
 
-                        // Update the filename to the encrypted version
-                        $newFileName = 'encrypted_' . $newFileName;
-                    }
-
-                    if (!empty($upload_id)) {
-                        $updateData = [
-                            $upload_field => $newFileName,
-                            'Catalog_id' => $upload_ref_id,
-                            'UpdateDate' => date('Y-m-d H:i:s'),
-                        ];
-                    } else {
-                        $data = [
-                            $upload_field => $newFileName,
-                            'Catalog_id' => $upload_ref_id,
-                            'UpdateDate' => date('Y-m-d H:i:s'),
-                        ];
-                        $insertData[] = $data;
-                    }
-                }
-            }
-
-            if (!empty($updateData)) {
-                $upsertData = $this->fileModel->update($upload_id, $updateData);
-            }
-
-            if (!empty($insertData)) {
-                $upsertData = $this->fileModel->insertBatch($insertData);
-            }
-
-            if ($upsertData) {
-                set_message('toastr_msg', 'File Konten Digital berhasil diupload');
-                set_message('toastr_type', 'success');
-
-                return $this->respondCreated([
-                    'status'   => 201,
-                    'error'    => false,
-                    'messages' => ['success' => 'File Konten Digital berhasil diupload']
-                ]);
-            } else {
-                set_message('toastr_msg', 'File Konten Digital gagal diupload');
-                set_message('toastr_type', 'warning');
-
-                return $this->respond([
-                    'status'   => 400,
-                    'error'    => true,
-                    'messages' => ['error' => 'File Konten Digital gagal diupload']
-                ]);
-            }
-        }
-    } catch (\Exception $e) {
-        set_message('toastr_msg', 'Terjadi kesalahan: ' . $e->getMessage());
-        set_message('toastr_type', 'error');
-
-        return $this->respond([
-            'status'   => 500,
-            'error'    => true,
-            'messages' => ['error' => 'Terjadi kesalahan: ' . $e->getMessage()]
-        ]);
-    }
-}
-
-	
 
 	public function view_decrypted($ID)
-    {
-        // Load the file model
-  
+	{
+		// Load the file model
 
-        // Get the file record
-        $file = $this->fileModel->find($ID);
+
+		// Get the file record
+		$file = $this->fileModel->find($ID);
 		if (!$file || !file_exists($this->modulePath . $file->FileURL)) {
-            return $this->response->setStatusCode(404)->setBody('File not found');
-        }
+			return $this->response->setStatusCode(404)->setBody('File not found');
+		}
 
-        // Instead of serving the file directly, we'll render a view with our custom PDF viewer
-        return view('Katalog\Views\slug\pdf_viewer', ['fileId' => $ID, 'fileName' => $file->FileURL]);
-    }
+		// Instead of serving the file directly, we'll render a view with our custom PDF viewer
+		return view('Katalog\Views\slug\pdf_viewer', ['fileId' => $ID, 'fileName' => $file->FileURL]);
+	}
 
-    public function get_decrypted_content($ID)
-    {
-       
-        $file = $this->fileModel->find($ID);
+	public function get_decrypted_content($ID)
+	{
 
-        if (!$file || !file_exists($this->modulePath . $file->FileURL)) {
-            return $this->response->setStatusCode(404)->setBody('File not found');
-        }
+		$file = $this->fileModel->find($ID);
 
-        $tempDecryptedFile = tempnam(sys_get_temp_dir(), 'decrypted_');
-        $encryption = new \App\Libraries\Encryption();
-        $encryption->decryptFile($this->modulePath . $file->FileURL, $tempDecryptedFile);
+		if (!$file || !file_exists($this->modulePath . $file->FileURL)) {
+			return $this->response->setStatusCode(404)->setBody('File not found');
+		}
 
-        $this->response->setContentType('application/pdf');
-        $this->response->setHeader('Content-Disposition', 'inline; filename="' . $file->FileURL . '"');
-        $this->response->setHeader('X-Frame-Options', 'SAMEORIGIN');
-        $this->response->setHeader('Content-Security-Policy', "default-src 'self'; object-src 'self'");
+		$tempDecryptedFile = tempnam(sys_get_temp_dir(), 'decrypted_');
+		$encryption = new \App\Libraries\Encryption();
+		$encryption->decryptFile($this->modulePath . $file->FileURL, $tempDecryptedFile);
 
-        $content = file_get_contents($tempDecryptedFile);
-        unlink($tempDecryptedFile);
+		$this->response->setContentType('application/pdf');
+		$this->response->setHeader('Content-Disposition', 'inline; filename="' . $file->FileURL . '"');
+		$this->response->setHeader('X-Frame-Options', 'SAMEORIGIN');
+		$this->response->setHeader('Content-Security-Policy', "default-src 'self'; object-src 'self'");
 
-        return $this->response->setBody($content);
-    }
+		$content = file_get_contents($tempDecryptedFile);
+		unlink($tempDecryptedFile);
+
+		return $this->response->setBody($content);
+	}
 	public function get_all_tags($worksheet_id)
 	{
 		if ($worksheet_id === null) {
@@ -655,8 +658,8 @@ public function datatable($IsQUARANTINE = 0)
 	}
 
 	public function delete_file($ID)
-    {
-        $file = $this->fileModel->find($ID);
+	{
+		$file = $this->fileModel->find($ID);
 		if ($file) {
 			$content = $this->modulePath . $file->FileURL;
 			unlink($content);
@@ -675,14 +678,223 @@ public function datatable($IsQUARANTINE = 0)
 	public function datatable_artikel()
 	{
 		$db = db_connect('data');
+		$catalog_id = $this->request->getGet('catalog_id')
+			?? $this->request->getPost('catalog_id')
+			?? $this->request->getVar('catalog_id');
+
+		if (empty($catalog_id)) {
+			return $this->response->setJSON([
+				'error' => true,
+				'message' => 'Catalog ID is required'
+			])->setStatusCode(400);
+		}
 
 		$builder = $db->table('serial_articles as a')
-			->select('a.id', 'a.Title')
-			->orderBy('a.id', 'DESC');
+			->select('a.id, a.Title, a.Creator, a.Contributor, a.StartPage, a.Pages, a.Subject, a.EDISISERIAL, a.TANGGAL_TERBIT_EDISI_SERIAL, a.ISOPAC')
+			->where('a.Catalog_id', $catalog_id);
 
-		$dataTable = DataTable::of($builder)
+		$dataTable = \App\Libraries\DataTable::of($builder)
+			->addNumbering('no')
+			->edit('action', function ($row) {
+				return '
+						<button class="btn btn-primary btn-sm btn-edit-artikel" data-id="' . $row->id . '" type="button">
+							<i class="fa fa-edit"></i>
+						</button>
+						<button class="btn btn-danger btn-sm btn-delete-artikel ml-1" data-id="' . $row->id . '" type="button">
+							<i class="fa fa-trash"></i>
+						</button>
+				';
+			})
 			->toJson();
 
 		return $dataTable;
+	}
+
+	public function create_artikel()
+	{
+		$validation = \Config\Services::validation();
+
+		$catalog_id     = $this->request->getPost('catalog_id');
+		$title          = $this->request->getPost('title');
+		$creator        = $this->request->getPost('creator_final');
+		$contributor    = $this->request->getPost('contributor_final');
+		$start_page     = $this->request->getPost('start_page');
+		$pages          = $this->request->getPost('pages');
+		$subject        = $this->request->getPost('subject_final');
+		$edisi_serial   = $this->request->getPost('edisi_serial');
+		$tanggal_terbit = $this->request->getPost('tanggal_terbit');
+		$isopac         = $this->request->getPost('isopac') ? 1 : 0;
+
+		$validation->setRules([
+			'catalog_id' => 'required|integer',
+			'title'      => 'required|string',
+		]);
+
+		if (!$validation->withRequest($this->request)->run()) {
+			return $this->response->setJSON([
+				'status' => 400,
+				'messages' => [
+					'error' => $validation->getErrors()
+				]
+			]);
+		}
+
+		$data = [
+			'Catalog_id'         => $catalog_id,
+			'Title'             => $title,
+			'Creator'           => $creator,
+			'Contributor'       => $contributor,
+			'StartPage'         => $start_page,
+			'Pages'             => $pages,
+			'Subject'           => $subject,
+			'EDISISERIAL'       => $edisi_serial,
+			'TANGGAL_TERBIT_EDISI_SERIAL' => $tanggal_terbit,
+			'ISOPAC'            => $isopac,
+		];
+
+		$db = db_connect('data');
+		$builder = $db->table('serial_articles');
+
+		try {
+			$builder->insert($data);
+		} catch (\Exception $e) {
+			$response = [
+				'error' => true,
+				'message' => 'Artikel gagal disimpan',
+			];
+		}
+
+		$response = [
+			'error' => false,
+			'message' => 'Artikel berhasil disimpan',
+		];
+
+		return $this->simpleResponse($response);
+	}
+
+	public function edit_artikel($id = null)
+	{
+		if (!$id) {
+			return $this->response->setJSON([
+				'error' => true,
+				'message' => 'ID is required'
+			])->setStatusCode(400);
+		}
+
+		$validation = \Config\Services::validation();
+
+		$catalog_id     = $this->request->getPost('catalog_id');
+		$title          = $this->request->getPost('title');
+		$creator        = $this->request->getPost('creator_final');
+		$contributor    = $this->request->getPost('contributor_final');
+		$start_page     = $this->request->getPost('start_page');
+		$pages          = $this->request->getPost('pages');
+		$subject        = $this->request->getPost('subject_final');
+		$edisi_serial   = $this->request->getPost('edisi_serial');
+		$tanggal_terbit = $this->request->getPost('tanggal_terbit');
+		$isopac         = $this->request->getPost('isopac') ? 1 : 0;
+
+		$validation->setRules([
+			'catalog_id' => 'required|integer',
+			'title'      => 'required|string',
+		]);
+
+		if (!$validation->withRequest($this->request)->run()) {
+			return $this->response->setJSON([
+				'error' => true,
+				'message' => $validation->getErrors()
+			])->setStatusCode(400);
+		}
+
+		$db = db_connect('data');
+		$builder = $db->table('serial_articles');
+
+		$existing = $builder->where('id', $id)->get()->getRow();
+		if (!$existing) {
+			return $this->response->setJSON([
+				'error' => true,
+				'message' => 'Artikel tidak ditemukan'
+			])->setStatusCode(404);
+		}
+
+		$data = [
+			'Catalog_id'         => $catalog_id,
+			'Title'              => $title,
+			'Creator'            => $creator,
+			'Contributor'        => $contributor,
+			'StartPage'          => $start_page,
+			'Pages'              => $pages,
+			'Subject'            => $subject,
+			'EDISISERIAL'        => $edisi_serial,
+			'TANGGAL_TERBIT_EDISI_SERIAL' => $tanggal_terbit,
+			'ISOPAC'             => $isopac,
+		];
+
+		try {
+			$builder->where('id', $id)->update($data);
+		} catch (\Exception $e) {
+			$response = [
+				'error' => true,
+				'message' => 'Artikel gagal disimpan',
+			];
+		}
+
+		$response = [
+			'error' => false,
+			'message' => 'Artikel berhasil disimpan',
+		];
+
+		return $this->simpleResponse($response);
+	}
+
+	public function delete_artikel($id = null)
+	{
+		if (!$id) {
+			return $this->response->setJSON([
+				'error' => true,
+				'message' => 'ID is required'
+			])->setStatusCode(400);
+		}
+
+		$db = db_connect('data');
+		$builder = $db->table('serial_articles');
+
+		$artikel = $builder->where('id', $id)->get()->getRow();
+
+		if (!$artikel) {
+			return $this->response->setJSON([
+				'error' => true,
+				'message' => 'Artikel tidak ditemukan'
+			])->setStatusCode(404);
+		}
+
+		try {
+			$builder->where('id', $id)->delete();
+
+			return $this->response->setJSON([
+				'error' => false,
+				'message' => 'Artikel berhasil dihapus.'
+			]);
+		} catch (\Exception $e) {
+			return $this->response->setJSON([
+				'error' => true,
+				'message' => 'Gagal menghapus artikel: ' . $e->getMessage()
+			])->setStatusCode(500);
+		}
+	}
+
+	public function get_artikel($id = null)
+	{
+		if (!$id) {
+			return $this->response->setJSON(['error' => true, 'message' => 'ID is required'])->setStatusCode(400);
+		}
+
+		$artikel = $this->artikelModel->get_by_id($id);
+
+		if (!$artikel) {
+			return $this->response->setJSON(['error' => true, 'message' => 'Article not found'])->setStatusCode(404);
+		}
+
+		return $this->response->setJSON(['error' => false, 'data' => $artikel]);
 	}
 }

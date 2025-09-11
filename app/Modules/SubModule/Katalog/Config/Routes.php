@@ -38,6 +38,13 @@ $routes->group('katalog', ['namespace' => 'Katalog\Controllers'], function ($sub
 	$subroutes->add('proses_opac', 'Katalog::proses_opac');
 	$subroutes->add('pulihkan_katalog', 'Katalog::pulihkan_katalog');
 	$subroutes->add('hapus_permanen', 'Katalog::hapus_permanen');
+
+	//artikel
+	$subroutes->add('datatable_artikel', 'Katalog::datatable_artikel');
+	$subroutes->add('create_artikel', 'Katalog::create_artikel');
+	$subroutes->add('get_artikel/(:any)', 'Katalog::get_artikel/$1');
+	$subroutes->add('edit_artikel/(:any)', 'Katalog::edit_artikel/$1');
+	$subroutes->add('delete_artikel/(:any)', 'Katalog::delete_artikel/$1');
 });
 
 $routes->group('api/katalog', ['namespace' => 'Katalog\Controllers\Api'], function ($subroutes) {
@@ -62,6 +69,10 @@ $routes->group('api/katalog', ['namespace' => 'Katalog\Controllers\Api'], functi
 
 	//artikel
 	$subroutes->add('datatable_artikel', 'Katalog::datatable_artikel');
+	$subroutes->add('create_artikel', 'Katalog::create_artikel');
+	$subroutes->add('get_artikel/(:any)', 'Katalog::get_artikel/$1');
+	$subroutes->add('edit_artikel/(:any)', 'Katalog::edit_artikel/$1');
+	$subroutes->add('delete_artikel/(:any)', 'Katalog::delete_artikel/$1');
 
 	//marc
 	$subroutes->add('add_to_session/(:any)', 'Katalog::add_to_session/$1');

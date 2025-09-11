@@ -20,6 +20,7 @@ class Katalog extends \Base\Controllers\BaseController
 	public $fileModel;
 	public $katalogModel;
 	public $katalogRuasModel;
+	public $artikelModel;
 	public $worksheetModel;
 	public $uploadPath;
 	public $modulePath;
@@ -31,6 +32,7 @@ class Katalog extends \Base\Controllers\BaseController
 	{
 		$this->fileModel = new \Katalog\Models\FileModel();
 		$this->katalogModel = new \Katalog\Models\KatalogModel();
+		$this->artikelModel = new \Katalog\Models\ArtikelModel();
 		$this->katalogRuasModel = new \Katalog\Models\KatalogRuasModel();
 		$this->worksheetModel = new \Katalog\Models\WorksheetModel();
 		$this->eksemplarModel = new \Eksemplar\Models\EksemplarModel();
@@ -375,7 +377,7 @@ class Katalog extends \Base\Controllers\BaseController
 					}
 				}
 				// ... Kode Anda untuk mem-filter data yang Value-nya hanya '$a'
-				$catalog_ruas_data = array_filter($catalog_ruas_data, function($item) {
+				$catalog_ruas_data = array_filter($catalog_ruas_data, function ($item) {
 					return trim($item['Value']) !== '$a';
 				});
 				$catalog_ruas_data = array_values($catalog_ruas_data);
@@ -394,11 +396,11 @@ class Katalog extends \Base\Controllers\BaseController
 
 				// 2. Tambahkan Tag 001 ke bagian paling AWAL dari array
 				array_unshift($catalog_ruas_data, $tag_001);
-				
+
 				$katalogRuasModel->insertBatch($catalog_ruas_data);
 
 				$update_data = convert_catalog_ruas($CatalogId);
-				
+
 				$catalogsModel->update($CatalogId, $update_data);
 			}
 
@@ -431,155 +433,155 @@ class Katalog extends \Base\Controllers\BaseController
 
 	// Tambahkan method ini di dalam class controller Katalog Anda
 
-public function edit_marc($id = null)
-{
-	
+	public function edit_marc($id = null)
+	{
 
-	if (!$id) {
-		set_message('toastr_msg', 'ID Katalog tidak ditemukan');
-		set_message('toastr_type', 'error');
-		return redirect()->to('katalog');
-	}
 
-	$catalogsModel = new DataModel('catalogs', null, 'ID');
-	$catalog = $catalogsModel->find($id);
-
-	if (!$catalog) {
-		set_message('toastr_msg', 'Data katalog tidak ditemukan');
-		set_message('toastr_type', 'error');
-		return redirect()->to('katalog');
-	}
-
-	$data['title'] = 'Edit Katalog Form MARC';
-	$data['catalog'] = $catalog;
-
-	$this->validation->setRule('Worksheet_id', 'Jenis Bahan', 'required');
-	
-	if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
-		$post = $this->request->getPost();
-
-		// Update catalog basic info
-		$update_catalog = array(
-			'Worksheet_id' => $this->request->getPost('Worksheet_id'),
-		);
-		$catalogsModel->update($id, $update_catalog);
-
-		// Delete existing catalog_ruas data
-		$katalogRuasModel = new DataModel('catalog_ruas', null, 'ID');
-		$katalogRuasModel->where('CatalogId', $id)->delete();
-
-		$Indexes = $this->request->getPost('Index');
-		$Indicator1s = $this->request->getPost('Indicator1');
-		$Indicator2s = $this->request->getPost('Indicator2');
-		$Values = $this->request->getPost('Value');
-
-		$catalogRuasData = [];
-		foreach ($Values as $key => $value) {
-			$items = [];
-			if (array_key_exists($key, $Values)) {
-				$items['Value'] = is_array($Values[$key]) ? $Values[$key] : [$Values[$key]];
-			}
-			if (array_key_exists($key, $Indicator1s)) {
-				$items['Indicator1'] = is_array($Indicator1s[$key]) ? $Indicator1s[$key] : [$Indicator1s[$key]];
-			}
-			if (array_key_exists($key, $Indicator2s)) {
-				$items['Indicator2'] = is_array($Indicator2s[$key]) ? $Indicator2s[$key] : [$Indicator2s[$key]];
-			}
-			$catalogRuasData[$key] = $items;
+		if (!$id) {
+			set_message('toastr_msg', 'ID Katalog tidak ditemukan');
+			set_message('toastr_type', 'error');
+			return redirect()->to('katalog');
 		}
 
-		if (!empty($catalogRuasData)) {
-			$catalog_ruas_data = [];
-			foreach ($catalogRuasData as $key => $items) {
-				foreach ($items['Value'] as $index => $row) {
-					$Value = isset($items['Value'][$index]) ? $items['Value'][$index] : '';
-					$Indicator1 = isset($items['Indicator1'][$index]) ? $items['Indicator1'][$index] : '';
-					$Indicator2 = isset($items['Indicator2'][$index]) ? $items['Indicator2'][$index] : '';
-					$item = array(
-						'CatalogId' => $id,
-						'Tag' => $key,
-						'Value' => $Value,
-						'Indicator1' => $Indicator1,
-						'Indicator2' => $Indicator2,
-					);
-					array_push($catalog_ruas_data, $item);
-				}
-			}
-			
-			// Filter data yang Value-nya hanya '$a'
-			$catalog_ruas_data = array_filter($catalog_ruas_data, function($item) {
-				return trim($item['Value']) !== '$a';
-			});
-			$catalog_ruas_data = array_values($catalog_ruas_data);
+		$catalogsModel = new DataModel('catalogs', null, 'ID');
+		$catalog = $catalogsModel->find($id);
 
-			// Tambahkan Tag 001 jika belum ada
-			$has_001 = false;
-			foreach ($catalog_ruas_data as $item) {
-				if ($item['Tag'] === '001') {
-					$has_001 = true;
-					break;
+		if (!$catalog) {
+			set_message('toastr_msg', 'Data katalog tidak ditemukan');
+			set_message('toastr_type', 'error');
+			return redirect()->to('katalog');
+		}
+
+		$data['title'] = 'Edit Katalog Form MARC';
+		$data['catalog'] = $catalog;
+
+		$this->validation->setRule('Worksheet_id', 'Jenis Bahan', 'required');
+
+		if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
+			$post = $this->request->getPost();
+
+			// Update catalog basic info
+			$update_catalog = array(
+				'Worksheet_id' => $this->request->getPost('Worksheet_id'),
+			);
+			$catalogsModel->update($id, $update_catalog);
+
+			// Delete existing catalog_ruas data
+			$katalogRuasModel = new DataModel('catalog_ruas', null, 'ID');
+			$katalogRuasModel->where('CatalogId', $id)->delete();
+
+			$Indexes = $this->request->getPost('Index');
+			$Indicator1s = $this->request->getPost('Indicator1');
+			$Indicator2s = $this->request->getPost('Indicator2');
+			$Values = $this->request->getPost('Value');
+
+			$catalogRuasData = [];
+			foreach ($Values as $key => $value) {
+				$items = [];
+				if (array_key_exists($key, $Values)) {
+					$items['Value'] = is_array($Values[$key]) ? $Values[$key] : [$Values[$key]];
 				}
+				if (array_key_exists($key, $Indicator1s)) {
+					$items['Indicator1'] = is_array($Indicator1s[$key]) ? $Indicator1s[$key] : [$Indicator1s[$key]];
+				}
+				if (array_key_exists($key, $Indicator2s)) {
+					$items['Indicator2'] = is_array($Indicator2s[$key]) ? $Indicator2s[$key] : [$Indicator2s[$key]];
+				}
+				$catalogRuasData[$key] = $items;
 			}
 
-			if (!$has_001) {
-				$tag_001 = [
-					'CatalogId'  => $id,
-					'Tag'        => '001',
-					'Value'      => $catalog->ControlNumber,
-					'Indicator1' => '',
-					'Indicator2' => '',
+			if (!empty($catalogRuasData)) {
+				$catalog_ruas_data = [];
+				foreach ($catalogRuasData as $key => $items) {
+					foreach ($items['Value'] as $index => $row) {
+						$Value = isset($items['Value'][$index]) ? $items['Value'][$index] : '';
+						$Indicator1 = isset($items['Indicator1'][$index]) ? $items['Indicator1'][$index] : '';
+						$Indicator2 = isset($items['Indicator2'][$index]) ? $items['Indicator2'][$index] : '';
+						$item = array(
+							'CatalogId' => $id,
+							'Tag' => $key,
+							'Value' => $Value,
+							'Indicator1' => $Indicator1,
+							'Indicator2' => $Indicator2,
+						);
+						array_push($catalog_ruas_data, $item);
+					}
+				}
+
+				// Filter data yang Value-nya hanya '$a'
+				$catalog_ruas_data = array_filter($catalog_ruas_data, function ($item) {
+					return trim($item['Value']) !== '$a';
+				});
+				$catalog_ruas_data = array_values($catalog_ruas_data);
+
+				// Tambahkan Tag 001 jika belum ada
+				$has_001 = false;
+				foreach ($catalog_ruas_data as $item) {
+					if ($item['Tag'] === '001') {
+						$has_001 = true;
+						break;
+					}
+				}
+
+				if (!$has_001) {
+					$tag_001 = [
+						'CatalogId'  => $id,
+						'Tag'        => '001',
+						'Value'      => $catalog->ControlNumber,
+						'Indicator1' => '',
+						'Indicator2' => '',
+					];
+					array_unshift($catalog_ruas_data, $tag_001);
+				}
+
+				$katalogRuasModel->insertBatch($catalog_ruas_data);
+
+				$update_data = convert_catalog_ruas($id);
+				$catalogsModel->update($id, $update_data);
+			}
+
+			set_message('toastr_msg', 'Data katalog berhasil diupdate');
+			set_message('toastr_type', 'success');
+			return redirect()->to('katalog');
+		} else {
+			$session = service('session');
+			$worksheetModel = new DataModel('worksheets', null, 'ID');
+			$worksheets = $worksheetModel->orderBy('NoUrut')->findAll();
+			$data['worksheets'] = $worksheets;
+
+			$worksheet_id = $this->request->getvar('worksheet_id') ?? $catalog->Worksheet_id;
+
+			// Clear session untuk edit
+			$session->remove('worksheet_id');
+			$session->remove('worksheet_fields');
+			$session->set('worksheet_id', $worksheet_id);
+
+			// Get existing catalog_ruas data
+			$katalogRuasModel = new DataModel('catalog_ruas', null, 'ID');
+			$existing_ruas = $katalogRuasModel->where('CatalogId', $id)->findAll();
+
+			$all_tags = get_all_tags($worksheet_id);
+
+			// Prepare existing data untuk ditampilkan di form
+			$existing_data = [];
+			foreach ($existing_ruas as $ruas) {
+				$existing_data[$ruas->Tag][] = [
+					'Value' => $ruas->Value,
+					'Indicator1' => $ruas->Indicator1,
+					'Indicator2' => $ruas->Indicator2
 				];
-				array_unshift($catalog_ruas_data, $tag_001);
 			}
-			
-			$katalogRuasModel->insertBatch($catalog_ruas_data);
 
-			$update_data = convert_catalog_ruas($id);
-			$catalogsModel->update($id, $update_data);
+			$data['existing_data'] = $existing_data;
+			$data['session_tags'] = $all_tags->session_tags;
+			$data['filtered_tags'] = $all_tags->filtered_tags;
+
+			return view('Katalog\Views\edit_marc', $data);
 		}
-
-		set_message('toastr_msg', 'Data katalog berhasil diupdate');
-		set_message('toastr_type', 'success');
-		return redirect()->to('katalog');
-	} else {
-		$session = service('session');
-		$worksheetModel = new DataModel('worksheets', null, 'ID');
-		$worksheets = $worksheetModel->orderBy('NoUrut')->findAll();
-		$data['worksheets'] = $worksheets;
-
-		$worksheet_id = $this->request->getvar('worksheet_id') ?? $catalog->Worksheet_id;
-		
-		// Clear session untuk edit
-		$session->remove('worksheet_id');
-		$session->remove('worksheet_fields');
-		$session->set('worksheet_id', $worksheet_id);
-
-		// Get existing catalog_ruas data
-		$katalogRuasModel = new DataModel('catalog_ruas', null, 'ID');
-		$existing_ruas = $katalogRuasModel->where('CatalogId', $id)->findAll();
-		
-		$all_tags = get_all_tags($worksheet_id);
-	
-		// Prepare existing data untuk ditampilkan di form
-		$existing_data = [];
-		foreach ($existing_ruas as $ruas) {
-			$existing_data[$ruas->Tag][] = [
-				'Value' => $ruas->Value,
-				'Indicator1' => $ruas->Indicator1,
-				'Indicator2' => $ruas->Indicator2
-			];
-		}
-		
-		$data['existing_data'] = $existing_data;
-		$data['session_tags'] = $all_tags->session_tags;
-		$data['filtered_tags'] = $all_tags->filtered_tags;
-
-		return view('Katalog\Views\edit_marc', $data);
 	}
-}
 
 
-	
+
 
 	public function hapus_permanen()
 	{
@@ -1598,7 +1600,7 @@ public function edit_marc($id = null)
 			$catalogData['CreateDate'] = date('Y-m-d H:i:s');
 			$catalogData['CreateTerminal'] = $this->request->getIPAddress();
 			$catalogData['active'] = 1;
-			
+
 			// Filter data sesuai field tabel
 			$tableFields = $this->db->getFieldNames('catalogs');
 			$filteredData = [];
@@ -1690,5 +1692,202 @@ public function edit_marc($id = null)
 				'message' => 'Error: ' . $e->getMessage()
 			]);
 		}
+	}
+
+	public function create_artikel()
+	{
+		$validation = \Config\Services::validation();
+
+		$catalog_id     = $this->request->getPost('catalog_id');
+		$title          = $this->request->getPost('title');
+		$creator        = $this->request->getPost('creator_final');
+		$contributor    = $this->request->getPost('contributor_final');
+		$start_page     = $this->request->getPost('start_page');
+		$pages          = $this->request->getPost('pages');
+		$subject        = $this->request->getPost('subject_final');
+		$edisi_serial   = $this->request->getPost('edisi_serial');
+		$tanggal_terbit = $this->request->getPost('tanggal_terbit');
+		$isopac         = $this->request->getPost('isopac') ? 1 : 0;
+
+		$validation->setRules([
+			'catalog_id' => 'required|integer',
+			'title'      => 'required|string',
+		]);
+
+		if (!$validation->withRequest($this->request)->run()) {
+			return $this->response->setJSON([
+				'status' => 400,
+				'messages' => [
+					'error' => $validation->getErrors()
+				]
+			]);
+		}
+
+		$data = [
+			'Catalog_id'         => $catalog_id,
+			'Title'             => $title,
+			'Creator'           => $creator,
+			'Contributor'       => $contributor,
+			'StartPage'         => $start_page,
+			'Pages'             => $pages,
+			'Subject'           => $subject,
+			'EDISISERIAL'       => $edisi_serial,
+			'TANGGAL_TERBIT_EDISI_SERIAL' => $tanggal_terbit,
+			'ISOPAC'            => $isopac,
+		];
+
+		$db = db_connect('data');
+		$builder = $db->table('serial_articles');
+
+		try {
+			$builder->insert($data);
+		} catch (\Exception $e) {
+			$response = [
+				'error' => true,
+				'message' => 'Artikel gagal disimpan',
+			];
+		}
+
+		$catalog = $db->table('catalogs')->where('ID', $catalog_id)->get()->getRow();
+
+		$data = [
+			'catalog' => $catalog,
+		];
+
+		set_message('toastr_msg', 'Artikel berhasil disimpan');
+		set_message('toastr_type', 'success');
+
+		set_message('message', $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message'));
+		return redirect()->to(base_url('katalog/edit/' . $catalog_id . '?slug=artikel'));
+	}
+
+	public function edit_artikel($id = null)
+	{
+		if (!$id) {
+			return $this->response->setJSON([
+				'error' => true,
+				'message' => 'ID is required'
+			])->setStatusCode(400);
+		}
+
+		$validation = \Config\Services::validation();
+
+		$catalog_id     = $this->request->getPost('catalog_id');
+		$title          = $this->request->getPost('title');
+		$creator        = $this->request->getPost('creator_final');
+		$contributor    = $this->request->getPost('contributor_final');
+		$start_page     = $this->request->getPost('start_page');
+		$pages          = $this->request->getPost('pages');
+		$subject        = $this->request->getPost('subject_final');
+		$edisi_serial   = $this->request->getPost('edisi_serial');
+		$tanggal_terbit = $this->request->getPost('tanggal_terbit');
+		$isopac         = $this->request->getPost('isopac') ? 1 : 0;
+
+		$validation->setRules([
+			'catalog_id' => 'required|integer',
+			'title'      => 'required|string',
+		]);
+
+		if (!$validation->withRequest($this->request)->run()) {
+			return $this->response->setJSON([
+				'error' => true,
+				'message' => $validation->getErrors()
+			])->setStatusCode(400);
+		}
+
+		$db = db_connect('data');
+		$builder = $db->table('serial_articles');
+
+		$existing = $builder->where('id', $id)->get()->getRow();
+		if (!$existing) {
+			return $this->response->setJSON([
+				'error' => true,
+				'message' => 'Artikel tidak ditemukan'
+			])->setStatusCode(404);
+		}
+
+		$data = [
+			'Catalog_id'         => $catalog_id,
+			'Title'              => $title,
+			'Creator'            => $creator,
+			'Contributor'        => $contributor,
+			'StartPage'          => $start_page,
+			'Pages'              => $pages,
+			'Subject'            => $subject,
+			'EDISISERIAL'        => $edisi_serial,
+			'TANGGAL_TERBIT_EDISI_SERIAL' => $tanggal_terbit,
+			'ISOPAC'             => $isopac,
+		];
+
+		try {
+			$builder->where('id', $id)->update($data);
+		} catch (\Exception $e) {
+			$response = [
+				'error' => true,
+				'message' => 'Artikel gagal disimpan',
+			];
+		}
+
+		$response = [
+			'error' => false,
+			'message' => 'Artikel berhasil disimpan',
+		];
+
+		set_message('toastr_msg', 'Artikel berhasil diperbarui');
+		set_message('toastr_type', 'success');
+
+		set_message('message', $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message'));
+		return redirect()->to(base_url('katalog/edit/' . $catalog_id . '?slug=artikel'));
+	}
+
+	public function delete_artikel($id = null)
+	{
+		if (!$id) {
+			return $this->response->setJSON([
+				'error' => true,
+				'message' => 'ID is required'
+			])->setStatusCode(400);
+		}
+
+		$db = db_connect('data');
+		$builder = $db->table('serial_articles');
+
+		$artikel = $builder->where('id', $id)->get()->getRow();
+
+		if (!$artikel) {
+			return $this->response->setJSON([
+				'error' => true,
+				'message' => 'Artikel tidak ditemukan'
+			])->setStatusCode(404);
+		}
+
+		try {
+			$builder->where('id', $id)->delete();
+
+			return $this->response->setJSON([
+				'error' => false,
+				'message' => 'Artikel berhasil dihapus.'
+			]);
+		} catch (\Exception $e) {
+			return $this->response->setJSON([
+				'error' => true,
+				'message' => 'Gagal menghapus artikel: ' . $e->getMessage()
+			])->setStatusCode(500);
+		}
+	}
+
+	public function get_artikel($id = null)
+	{
+		if (!$id) {
+			return $this->response->setJSON(['error' => true, 'message' => 'ID is required'])->setStatusCode(400);
+		}
+
+		$artikel = $this->artikelModel->get_by_id($id);
+
+		if (!$artikel) {
+			return $this->response->setJSON(['error' => true, 'message' => 'Article not found'])->setStatusCode(404);
+		}
+
+		return $this->response->setJSON(['error' => false, 'data' => $artikel]);
 	}
 }
