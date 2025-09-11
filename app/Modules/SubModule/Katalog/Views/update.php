@@ -43,10 +43,17 @@ $actions = array(
 
 	<ul class="body-tabs body-tabs-layout tabs-animated body-tabs-animated nav mb-3">
 		<li class="nav-item">
-			<a class="nav-link <?= ($slug == 'katalog_edit') ? 'active' : '' ?>" href="<?= base_url('katalog/edit/' . $catalog->ID) ?>">
-				<span>KATALOG</span>
-			</a>
+			<?php if ($catalog->Worksheet_id == 4): ?> 
+				<a class="nav-link <?= ($slug == 'katalog_edit') ? 'active' : '' ?>" href="<?= base_url('katalog/edit/' . $catalog->ID . '?rda=0') ?>">
+					<span>KATALOG</span>
+				</a>
+			<?php else: ?>
+				<a class="nav-link <?= ($slug == 'katalog_edit') ? 'active' : '' ?>" href="<?= base_url('katalog/edit/' . $catalog->ID ) ?>">
+					<span>KATALOG</span>
+				</a>
+			<?php endif; ?>
 		</li>
+
 		<?php foreach (array('eksemplar', 'cover', 'konten_digital') as $group) : ?>
 			<li class="nav-item">
 				<a class="nav-link <?= ($slug == trim($group)) ? 'active' : '' ?>" href="<?= base_url('katalog/edit/' . $catalog->ID . '?slug=' . $group) ?>">

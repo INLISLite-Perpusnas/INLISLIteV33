@@ -671,4 +671,18 @@ public function datatable($IsQUARANTINE = 0)
 		}
 		return redirect()->back();
 	}
+
+	public function datatable_artikel()
+	{
+		$db = db_connect('data');
+
+		$builder = $db->table('serial_articles as a')
+			->select('a.id', 'a.Title')
+			->orderBy('a.id', 'DESC');
+
+		$dataTable = DataTable::of($builder)
+			->toJson();
+
+		return $dataTable;
+	}
 }

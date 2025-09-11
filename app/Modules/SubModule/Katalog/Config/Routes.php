@@ -60,6 +60,9 @@ $routes->group('api/katalog', ['namespace' => 'Katalog\Controllers\Api'], functi
 	$subroutes->add('upload_file/(:any)/(:any)', 'Katalog::upload_file/$1/$2');
 	$subroutes->add('delete_file/(:any)', 'Katalog::delete_file/$1');
 
+	//artikel
+	$subroutes->add('datatable_artikel', 'Katalog::datatable_artikel');
+
 	//marc
 	$subroutes->add('add_to_session/(:any)', 'Katalog::add_to_session/$1');
 	$subroutes->add('remove_from_session/(:any)', 'Katalog::remove_from_session/$1');
