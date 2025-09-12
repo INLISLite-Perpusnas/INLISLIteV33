@@ -845,6 +845,41 @@ public function upload_file_digital_artikel()
 		return $this->simpleResponse($response);
 	}
 
+  public function datatable_artikel()
+	{
+		$db = db_connect('data');
+		$catalog_id = $this->request->getGet('catalog_id')
+			?? $this->request->getPost('catalog_id')
+			?? $this->request->getVar('catalog_id');
+
+		if (empty($catalog_id)) {
+			return $this->response->setJSON([
+				'error' => true,
+				'message' => 'Catalog ID is required'
+			])->setStatusCode(400);
+		}
+
+		$builder = $db->table('serial_articles as a')
+			->select('a.id, a.Title, a.Creator, a.Contributor, a.StartPage, a.Pages, a.Subject, a.EDISISERIAL, a.TANGGAL_TERBIT_EDISI_SERIAL, a.ISOPAC')
+			->where('a.Catalog_id', $catalog_id);
+
+		$dataTable = \App\Libraries\DataTable::of($builder)
+			->addNumbering('no')
+			->edit('action', function ($row) {
+				return '
+						<button class="btn btn-primary btn-sm btn-edit-artikel" data-id="' . $row->id . '" type="button">
+							<i class="fa fa-edit"></i>
+						</button>
+						<button class="btn btn-danger btn-sm btn-delete-artikel ml-1" data-id="' . $row->id . '" type="button">
+							<i class="fa fa-trash"></i>
+						</button>
+				';
+			})
+			->toJson();
+
+		return $dataTable;
+	}
+
   public function create_artikel()
 	{
 		$validation = \Config\Services::validation();

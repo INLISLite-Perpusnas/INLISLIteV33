@@ -848,6 +848,8 @@ class Katalog extends \Base\Controllers\BaseController
     $files = $this->fileModel->where('Catalog_id', $catalog_id)->orderBy('UpdateDate', 'desc')->findAll();
     $data['files'] = $files;
 
+    $data['article_files'] = $this->serialArticleFilesModel->getWithArticle($catalog_id);
+
     $this->validation->setRule('judul[a]', 'Judul Utama', 'trim');
     if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
 
@@ -1008,6 +1010,8 @@ class Katalog extends \Base\Controllers\BaseController
       $worksheetModel = new DataModel('worksheets', null, 'ID');
       $worksheets = $worksheetModel->orderBy('NoUrut')->findAll();
       $data['worksheets'] = $worksheets;
+
+      $data['serial_articles'] = $this->articleModel->findAll(); 
 
       $worksheet_id = $this->request->getvar('worksheet_id') ?? 1;
       if (!$session->has('worksheet_id')) {
