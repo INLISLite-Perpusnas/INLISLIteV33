@@ -13,16 +13,20 @@ class Katalog extends \Base\Controllers\BaseResourceController
   use ResponseTrait;
   public $fileModel;
   public $katalogModel;
+  public $serialArticleFilesModel;
   public $validation;
   public $session;
   public $modulePath;
   public $uploadPath;
+  public $artikelModel;
 
   function __construct()
   {
     $this->fileModel = new \Katalog\Models\FileModel();
     $this->katalogModel = new \Katalog\Models\KatalogModel();
     $this->edisiSerialModel = new \Katalog\Models\EdisiSerialModel();
+    $this->serialArticleFilesModel = new \Katalog\Models\SerialArticleFilesModel();
+    $this->artikelModel = new \Katalog\Models\ArtikelModel();
     $this->validation = \Config\Services::validation();
     $this->session = session();
     $this->modulePath = ROOTPATH . 'public/uploads/katalog/';
@@ -498,7 +502,116 @@ class Katalog extends \Base\Controllers\BaseResourceController
     }
   }
 
+public function upload_file_digital_artikel()
+{
+    helper('auth');
+    try {
+        $upload_id = $this->request->getPost('upload_id');
+        $upload_ref_id = $this->request->getPost('upload_ref_id');
+        $upload_field = $this->request->getPost('upload_field');
 
+        $files = (array) $this->request->getPost('upload_file');
+
+        $upload_articles_id = $this->request->getPost('upload_articles_id');
+
+        if (count($files)) {
+            $insertData = [];
+            $updateData = [];
+            foreach ($files as $uuid => $name) {
+                if (file_exists($this->uploadPath . $name)) {
+                    $file = new File($this->uploadPath . $name);
+
+					           // === Tambahan cek ukuran file ===
+					          $maxSize = 2 * 1024 * 1024; // 2MB
+					          if ($file->getSize() > $maxSize) {
+					          	throw new \RuntimeException("Ukuran file '{$name}' melebihi batas 2MB.");
+					          }
+					          // === Akhir tambahan ===
+
+                    $newFileName = $file->getRandomName();
+
+                    // Move the file to the module path
+                    $file->move($this->modulePath, $newFileName);
+
+                    // Check if the file is a PDF
+                    if (strtolower($file->getExtension()) === 'pdf') {
+                        // Create an instance of the Encryption class
+                        $encryption = new \App\Libraries\Encryption();
+
+                        // Path to the moved file
+                        $filePath = $this->modulePath . $newFileName;
+
+                        // Path for the encrypted file
+                        $encryptedFilePath = $this->modulePath . 'encrypted_' . $newFileName;
+
+                        // Encrypt the file
+                        $encryption->encryptFile($filePath, $encryptedFilePath);
+
+                        // Delete the original unencrypted file
+                        unlink($filePath);
+
+                        // Update the filename to the encrypted version
+                        $newFileName = 'encrypted_' . $newFileName;
+                    }
+
+                    if (!empty($upload_id)) {
+                        $updateData = [
+                            $upload_field => $newFileName,
+                            // 'Catalog_id' => $upload_ref_id,
+                            'Articles_id' => $upload_articles_id,
+                            'UpdateDate' => date('Y-m-d H:i:s'),
+                        ];
+                    } else {
+                        $data = [
+                            $upload_field => $newFileName,
+                            // 'Catalog_id' => $upload_ref_id,
+                            'Articles_id' => $upload_articles_id,
+                            'UpdateDate' => date('Y-m-d H:i:s'),
+                        ];
+                        $insertData[] = $data;
+                    }
+                }
+            }
+
+            if (!empty($updateData)) {
+                $upsertData = $this->serialArticleFilesModel->update($upload_id, $updateData);
+            }
+
+            if (!empty($insertData)) {
+                $upsertData = $this->serialArticleFilesModel->insertBatch($insertData);
+            }
+
+            if ($upsertData) {
+                set_message('toastr_msg', 'File Konten Digital Artikel berhasil diupload');
+                set_message('toastr_type', 'success');
+
+                return $this->respondCreated([
+                    'status'   => 201,
+                    'error'    => false,
+                    'messages' => ['success' => 'File Konten Digital Artikel berhasil diupload']
+                ]);
+            } else {
+                set_message('toastr_msg', 'File Konten Digital Artikel gagal diupload');
+                set_message('toastr_type', 'warning');
+
+                return $this->respond([
+                    'status'   => 400,
+                    'error'    => true,
+                    'messages' => ['error' => 'File Konten Digital Artikel gagal diupload']
+                ]);
+            }
+        }
+    } catch (\Exception $e) {
+        set_message('toastr_msg', 'Terjadi kesalahan: ' . $e->getMessage());
+        set_message('toastr_type', 'error');
+
+        return $this->respond([
+            'status'   => 500,
+            'error'    => true,
+            'messages' => ['error' => 'Terjadi kesalahan: ' . $e->getMessage()]
+        ]);
+    }
+}	
 
   public function view_decrypted($ID)
   {
@@ -673,6 +786,24 @@ class Katalog extends \Base\Controllers\BaseResourceController
     return redirect()->back();
   }
 
+  public function delete_file_article($ID)
+  {
+    $file = $this->serialArticleFilesModel->find($ID);
+		if ($file) {
+			$content = $this->modulePath . $file->FileURL;
+			unlink($content);
+			$this->serialArticleFilesModel->delete($file->ID);
+			set_message('toastr_msg', 'File Konten Digital Artikel berhasil dihapus');
+			set_message('toastr_type', 'success');
+			set_message('message', 'File Konten Digital Artikel berhasil dihapus');
+		} else {
+			set_message('toastr_msg', 'File Konten Digital Artikel gagal dihapus');
+			set_message('toastr_type', 'warning');
+			set_message('message', 'File Konten Digital Artikel gagal dihapus');
+		}
+		return redirect()->back();
+	}
+
   public function datatableEdisiSerial(int $catalog_id)
   {
     $db = db_connect('data');
@@ -712,5 +843,228 @@ class Katalog extends \Base\Controllers\BaseResourceController
 			];
 		}
 		return $this->simpleResponse($response);
+	}
+
+  public function datatable_artikel()
+	{
+		$db = db_connect('data');
+		$catalog_id = $this->request->getGet('catalog_id')
+			?? $this->request->getPost('catalog_id')
+			?? $this->request->getVar('catalog_id');
+
+		if (empty($catalog_id)) {
+			return $this->response->setJSON([
+				'error' => true,
+				'message' => 'Catalog ID is required'
+			])->setStatusCode(400);
+		}
+
+		$builder = $db->table('serial_articles as a')
+			->select('a.id, a.Title, a.Creator, a.Contributor, a.StartPage, a.Pages, a.Subject, a.EDISISERIAL, a.TANGGAL_TERBIT_EDISI_SERIAL, a.ISOPAC')
+			->where('a.Catalog_id', $catalog_id);
+
+		$dataTable = \App\Libraries\DataTable::of($builder)
+			->addNumbering('no')
+			->edit('action', function ($row) {
+				return '
+						<button class="btn btn-primary btn-sm btn-edit-artikel" data-id="' . $row->id . '" type="button">
+							<i class="fa fa-edit"></i>
+						</button>
+						<button class="btn btn-danger btn-sm btn-delete-artikel ml-1" data-id="' . $row->id . '" type="button">
+							<i class="fa fa-trash"></i>
+						</button>
+				';
+			})
+			->toJson();
+
+		return $dataTable;
+	}
+
+  public function create_artikel()
+	{
+		$validation = \Config\Services::validation();
+
+		$catalog_id     = $this->request->getPost('catalog_id');
+		$title          = $this->request->getPost('title');
+		$creator        = $this->request->getPost('creator_final');
+		$contributor    = $this->request->getPost('contributor_final');
+		$start_page     = $this->request->getPost('start_page');
+		$pages          = $this->request->getPost('pages');
+		$subject        = $this->request->getPost('subject_final');
+		$edisi_serial   = $this->request->getPost('edisi_serial');
+		$tanggal_terbit = $this->request->getPost('tanggal_terbit');
+		$isopac         = $this->request->getPost('isopac') ? 1 : 0;
+
+		$validation->setRules([
+			'catalog_id' => 'required|integer',
+			'title'      => 'required|string',
+		]);
+
+		if (!$validation->withRequest($this->request)->run()) {
+			return $this->response->setJSON([
+				'status' => 400,
+				'messages' => [
+					'error' => $validation->getErrors()
+				]
+			]);
+		}
+
+		$data = [
+			'Catalog_id'         => $catalog_id,
+			'Title'             => $title,
+			'Creator'           => $creator,
+			'Contributor'       => $contributor,
+			'StartPage'         => $start_page,
+			'Pages'             => $pages,
+			'Subject'           => $subject,
+			'EDISISERIAL'       => $edisi_serial,
+			'TANGGAL_TERBIT_EDISI_SERIAL' => $tanggal_terbit,
+			'ISOPAC'            => $isopac,
+		];
+
+		$db = db_connect('data');
+		$builder = $db->table('serial_articles');
+
+		try {
+			$builder->insert($data);
+		} catch (\Exception $e) {
+			$response = [
+				'error' => true,
+				'message' => 'Artikel gagal disimpan',
+			];
+		}
+
+		$response = [
+			'error' => false,
+			'message' => 'Artikel berhasil disimpan',
+		];
+
+		return $this->simpleResponse($response);
+	}
+
+  	public function edit_artikel($id = null)
+	{
+		if (!$id) {
+			return $this->response->setJSON([
+				'error' => true,
+				'message' => 'ID is required'
+			])->setStatusCode(400);
+		}
+
+		$validation = \Config\Services::validation();
+
+		$catalog_id     = $this->request->getPost('catalog_id');
+		$title          = $this->request->getPost('title');
+		$creator        = $this->request->getPost('creator_final');
+		$contributor    = $this->request->getPost('contributor_final');
+		$start_page     = $this->request->getPost('start_page');
+		$pages          = $this->request->getPost('pages');
+		$subject        = $this->request->getPost('subject_final');
+		$edisi_serial   = $this->request->getPost('edisi_serial');
+		$tanggal_terbit = $this->request->getPost('tanggal_terbit');
+		$isopac         = $this->request->getPost('isopac') ? 1 : 0;
+
+		$validation->setRules([
+			'catalog_id' => 'required|integer',
+			'title'      => 'required|string',
+		]);
+
+		if (!$validation->withRequest($this->request)->run()) {
+			return $this->response->setJSON([
+				'error' => true,
+				'message' => $validation->getErrors()
+			])->setStatusCode(400);
+		}
+
+		$db = db_connect('data');
+		$builder = $db->table('serial_articles');
+
+		$existing = $builder->where('id', $id)->get()->getRow();
+		if (!$existing) {
+			return $this->response->setJSON([
+				'error' => true,
+				'message' => 'Artikel tidak ditemukan'
+			])->setStatusCode(404);
+		}
+
+		$data = [
+			'Catalog_id'         => $catalog_id,
+			'Title'              => $title,
+			'Creator'            => $creator,
+			'Contributor'        => $contributor,
+			'StartPage'          => $start_page,
+			'Pages'              => $pages,
+			'Subject'            => $subject,
+			'EDISISERIAL'        => $edisi_serial,
+			'TANGGAL_TERBIT_EDISI_SERIAL' => $tanggal_terbit,
+			'ISOPAC'             => $isopac,
+		];
+
+		try {
+			$builder->where('id', $id)->update($data);
+		} catch (\Exception $e) {
+			$response = [
+				'error' => true,
+				'message' => 'Artikel gagal disimpan',
+			];
+		}
+
+		$response = [
+			'error' => false,
+			'message' => 'Artikel berhasil disimpan',
+		];
+
+		return $this->simpleResponse($response);
+	}
+
+  public function delete_artikel($id = null)
+	{
+		if (!$id) {
+			return $this->response->setJSON([
+				'error' => true,
+				'message' => 'ID is required'
+			])->setStatusCode(400);
+		}
+
+		$db = db_connect('data');
+		$builder = $db->table('serial_articles');
+
+		$artikel = $builder->where('id', $id)->get()->getRow();
+
+		if (!$artikel) {
+			return $this->response->setJSON([
+				'error' => true,
+				'message' => 'Artikel tidak ditemukan'
+			])->setStatusCode(404);
+		}
+
+		try {
+			$builder->where('id', $id)->delete();
+
+			return $this->response->setJSON([
+				'error' => false,
+				'message' => 'Artikel berhasil dihapus.'
+			]);
+		} catch (\Exception $e) {
+			return $this->response->setJSON([
+				'error' => true,
+				'message' => 'Gagal menghapus artikel: ' . $e->getMessage()
+			])->setStatusCode(500);
+		}
+	}
+
+  public function get_artikel($id = null)
+	{
+		if (!$id) {
+			return $this->response->setJSON(['error' => true, 'message' => 'ID is required'])->setStatusCode(400);
+		}
+
+		$artikel = $this->artikelModel->get_by_id($id);
+
+		if (!$artikel) {
+			return $this->response->setJSON(['error' => true, 'message' => 'Article not found'])->setStatusCode(404);
+		}
+
+		return $this->response->setJSON(['error' => false, 'data' => $artikel]);
 	}
 }
