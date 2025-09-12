@@ -29,9 +29,6 @@ $request = service('request');
       </tbody>
     </table>
   </div>
-  <div class="card-footer">
-    <a href="<?= base_url('katalog') ?>" class="btn btn-secondary btn-lg mb-3"><i class="fa fa-list mr-2"></i> Kembali ke Daftar Katalog</a>
-  </div>
 </div>
 
 <?= $this->section('script'); ?>
@@ -196,7 +193,7 @@ $request = service('request');
         if (res.error == false) {
           Swal.fire({
             title: 'Berhasil',
-            html: 'Jenis Akses berhasil ditambah.',
+            html: 'Edisi serial berhasil ditambah.',
             type: 'success',
             showConfirmButton: false,
             timer: 5000,
@@ -240,4 +237,3 @@ $request = service('request');
   });
 </script>
 <?= $this->endSection('script'); ?>
-</div>

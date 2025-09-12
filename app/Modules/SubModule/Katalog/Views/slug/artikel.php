@@ -59,6 +59,13 @@
 					<input type="hidden" name="catalog_id" value="<?= $catalog->ID ?>">
 
 					<div class="form-group">
+						<label for="edisi_serial">Edisi Serial</label>
+						<select class="form-control" name="edisi_serial" id="edisi_serial_select" required>
+							<option value="">-- Pilih Edisi Serial --</option>
+						</select>
+					</div>
+
+					<div class="form-group">
 						<label for="title">Judul</label>
 						<input type="text" class="form-control" name="title" required>
 					</div>
@@ -107,11 +114,6 @@
 								</div>
 							</div>
 						</div>
-					</div>
-
-					<div class="form-group">
-						<label for="edisi_serial">Edisi Serial</label>
-						<input type="text" class="form-control" name="edisi_serial">
 					</div>
 
 					<div class="form-group">
@@ -271,6 +273,7 @@
 
 		$('button[data-target="#modalTambahArtikel"]').on('click', function() {
 			$('#modalTambahArtikelLabel').text('Tambah Artikel');
+			loadEdisiSerialOptions(<?= $catalog->ID ?>);
 		});
 
 		$(document).ready(function() {
@@ -392,7 +395,7 @@
 
 						$('input[name="start_page"]').val(data.StartPage);
 						$('input[name="pages"]').val(data.Pages);
-						$('input[name="edisi_serial"]').val(data.EDISISERIAL);
+						loadEdisiSerialOptions(<?= $catalog->ID ?>, data.EDISISERIAL);
 						$('input[name="tanggal_terbit"]').val(data.TANGGAL_TERBIT_EDISI_SERIAL);
 
 						$('input[name="isopac"]').prop('checked', data.ISOPAC == 1);
@@ -442,8 +445,25 @@
 			});
 		});
 
-
-
+		function loadEdisiSerialOptions(catalogId, selected = '') {
+			$.ajax({
+				url: '<?= base_url('api/katalog/get-edisi-serial') ?>/' + catalogId,
+				type: 'GET',
+				success: function(res) {
+					if (!res.error) {
+						let options = '<option value="">-- Pilih Edisi Serial --</option>';
+						res.data.forEach(function(item) {
+							let selectedAttr = (item.no_edisi_serial === selected) ? 'selected' : '';
+							options += `<option value="${item.no_edisi_serial}" ${selectedAttr}>${item.no_edisi_serial}</option>`;
+						});
+						$('#edisi_serial_select').html(options);
+					}
+				},
+				error: function() {
+					console.error('Failed to load edisi serial options');
+				}
+			});
+		}
 	});
 </script>
 <?= $this->endSection('script'); ?>

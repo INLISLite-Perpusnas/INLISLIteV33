@@ -83,10 +83,8 @@ $actions = array(
   <?php endif; ?>
 
   <a href="<?= base_url('katalog') ?>" class="btn btn-secondary btn-lg mb-3"><i class="fa fa-list mr-2"></i> Kembali ke Daftar Katalog</a>
-	
-  <?= $this->endSection('page'); ?>
 </div>
-
+<?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
 <?= $this->include('Katalog\Views\add_script'); ?>

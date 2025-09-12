@@ -92,6 +92,7 @@ $routes->group('api/katalog', ['namespace' => 'Katalog\Controllers\Api'], functi
   //edisi serial
   $subroutes->add('datatable-edisi-serial/(:any)', 'Katalog::datatableEdisiSerial/$1');
   $subroutes->add('create-edisi-serial', 'Katalog::createEdisiSerial');
+  $subroutes->add('get-edisi-serial/(:any)', 'Katalog::get_edisi_serial_by_catalog/$1');
 });
 
 $routes->group('karantina-katalog', ['namespace' => 'Katalog\Controllers'], function ($subroutes) {
