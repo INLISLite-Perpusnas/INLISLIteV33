@@ -41,12 +41,15 @@ $routes->group('katalog', ['namespace' => 'Katalog\Controllers'], function ($sub
 	$subroutes->add('pulihkan_katalog', 'Katalog::pulihkan_katalog');
 	$subroutes->add('hapus_permanen', 'Katalog::hapus_permanen');
 
-	//artikel
+  //artikel
 	$subroutes->add('datatable_artikel', 'Katalog::datatable_artikel');
 	$subroutes->add('create_artikel', 'Katalog::create_artikel');
 	$subroutes->add('get_artikel/(:any)', 'Katalog::get_artikel/$1');
 	$subroutes->add('edit_artikel/(:any)', 'Katalog::edit_artikel/$1');
 	$subroutes->add('delete_artikel/(:any)', 'Katalog::delete_artikel/$1');
+
+  //edisi serial
+  $subroutes->add('delete-edisi-serial/(:any)/(:any)', 'Katalog::deleteEdisiSerial/$1/$2');
 });
 
 $routes->group('api/katalog', ['namespace' => 'Katalog\Controllers\Api'], function ($subroutes) {
@@ -85,6 +88,10 @@ $routes->group('api/katalog', ['namespace' => 'Katalog\Controllers\Api'], functi
 	$subroutes->add('get_field_indicator1/(:any)', 'Katalog::get_field_indicator1/$1');
 	$subroutes->add('get_field_indicator2/(:any)', 'Katalog::get_field_indicator2/$1');
 	$subroutes->add('get_field_content/(:any)', 'Katalog::get_field_content/$1');
+
+  //edisi serial
+  $subroutes->add('datatable-edisi-serial/(:any)', 'Katalog::datatableEdisiSerial/$1');
+  $subroutes->add('create-edisi-serial', 'Katalog::createEdisiSerial');
 });
 
 $routes->group('karantina-katalog', ['namespace' => 'Katalog\Controllers'], function ($subroutes) {
