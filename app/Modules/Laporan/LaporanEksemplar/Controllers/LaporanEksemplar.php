@@ -112,12 +112,20 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
                     $query->where('YEAR(collections.CreateDate)', $year);
                 }
                 break;
-            case 'location':
+            /*case 'location':
             $location = $this->request->getPost('location');
             if ($location) {
                 $query->where('collections.Location_Library_id', $location);
             }
+                break;*/
+            case 'location':
+            $location = $this->request->getPost('location_ruang');
+            if ($location) {
+                $query->where('collections.Location_id', $location);
+
+            }
                 break;
+        
             case 'tanggalpengadaan':
                 $startDate = $this->request->getPost('tp_start_date');
                 $endDate = $this->request->getPost('tp_end_date');
@@ -154,6 +162,8 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
 
         // Get first 20 rows
         $eksemplars = $query->limit(20)->find();
+        log_message('debug', 'Last Query Preview: ' . $this->eksemplarModel->getLastQuery());
+
 
         if (empty($eksemplars)) {
             return '<div class="alert alert-info">Tidak ada data yang ditemukan dengan filter yang dipilih</div>';
@@ -279,10 +289,17 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
                     $query->where('YEAR(collections.CreateDate)', $year);
                 }
                 break;
-            case 'location':
+            /*case 'location':
                 $location = $this->request->getPost('location');
                 if ($location) {
                     $query->where('collections.Location_Library_id', $location);
+                }
+                break;*/
+            case 'location':
+                $location = $this->request->getPost('location_ruang');
+                if ($location) {
+                    $query->where('collections.Location_id', $location);
+
                 }
                 break;
             case 'tanggalpengadaan':
@@ -320,6 +337,7 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
         }
 
         $eksemplars = $query->findAll();
+   
 
         // Create Excel
         $spreadsheet = new Spreadsheet();
@@ -459,4 +477,19 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
 		$this->data['title'] = 'Laporan - Eksemplar';
 		echo view('Report\Views\member_list', $this->data);
 	}
+    public function getRuang()
+{
+    $locationLibraryId = $this->request->getPost('location_id');    
+    $db = \Config\Database::connect('data');
+
+    $builder = $db->table('locations');
+    $builder->select('ID, Name');
+
+    if (!empty($locationLibraryId)) {
+        $builder->where('LocationLibrary_id', $locationLibraryId);
+    }
+
+    $result = $builder->get()->getResult();
+    return $this->response->setJSON($result);
+}
 }
