@@ -55,7 +55,6 @@ $slug = $request->getGet('slug') ?? '';
                         <th class="text-center">Nama Anggota</th>
                         <th class="text-center" width="100">Nomor Anggota</th>
                         <th class="text-center">Nomor Barcode Koleksi</th>
-                        <th class="text-center">Nama Perpustakaan</th>
                         <th class="text-center">Lokasi Perpustakaan</th>
                         <th class="text-center">Lokasi Ruang</th>
                         <th class="text-center" width="50">Aksi</th>
@@ -110,10 +109,6 @@ $slug = $request->getGet('slug') ?? '';
                 },
                 {
                     data: 'Barcode_no'
-                },
-                {
-                    data: 'Branch_name',
-                    className: 'text-center'
                 },
                 {
                     data: 'LocationLibrary_name',

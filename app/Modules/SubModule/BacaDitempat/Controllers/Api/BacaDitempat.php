@@ -39,13 +39,13 @@ class BacaDitempat extends \Base\Controllers\BaseResourceController
 			->select('a.ID as id, a.ID as action')
 			->select('a.CreateDate as VisitDate')
 			->select('a.Member_id, members.Fullname as Member_name, members.MemberNo as Member_no')
-			->select('branchs.Name as Branch_name')
 			->select('a.Location_Id as Location_id , locations.Name as Location_name')
 			->select('location_library.Name as LocationLibrary_name')
 			->select('a.collection_id as Collection_id, "" as Barcode_no')
 			->join('members', 'members.ID = a.Member_id', 'left')
 			->join('locations', 'locations.ID = a.Location_id', 'left')
-			->join('location_library', 'location_library.ID = locations.LocationLibrary_id', 'left');
+			->join('location_library', 'location_library.ID = locations.LocationLibrary_id', 'left')
+			->groupBy('a.ID','desc');
 		
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
