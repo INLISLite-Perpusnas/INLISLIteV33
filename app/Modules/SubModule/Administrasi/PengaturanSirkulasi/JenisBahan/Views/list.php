@@ -93,7 +93,7 @@ $slug = $request->getGet('slug') ?? '';
                     orderable: false
                 },
                 {
-                    data: 'Name'
+                    data: 'Name',
                 },
                 {
                     data: 'MaxPinjamKoleksi',
