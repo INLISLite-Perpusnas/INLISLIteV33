@@ -15,8 +15,8 @@ $slug = $request->getGet('slug') ?? '';
 				<div class="page-title-icon">
 					<i class="pe-7s-server icon-gradient bg-strong-bliss"></i>
 				</div>
-				<div>Redaksi keanggotaan
-					<div class="page-title-subheading">Daftar semua Redaksi keanggotaan</div>
+				<div>Redaksi Keanggotaan
+					<div class="page-title-subheading">Daftar semua Redaksi Keanggotaan</div>
 				</div>
 			</div>
 			<div class="page-title-actions">

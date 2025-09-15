@@ -122,7 +122,7 @@ $rda = $request->getGet('rda') ?? 1;
 					<div class=" col-md-12 terbitanBerkala" style="display: block;">
 						<div class="form-group">
 							<label for="judulSebelumnya">Judul Sebelumnya</label>
-							<input type="text" class="form-control" name="judulSebelumnya" id="judulSebelumnya" placeholder="" value="<?= $str_247 ?? "" ?>" />
+							<input type="text" class="form-control" name="judulSebelumnya" id="judulSebelumnya" placeholder="" value="<?= $str_247['a'] ?? "" ?>" />
 						</div>
 					</div>
 				<?php endif; ?>
@@ -364,7 +364,7 @@ $rda = $request->getGet('rda') ?? 1;
 					<div class=" col-md-6 terbitanBerkala" style="display: block;">
 						<div class="form-group">
 							<label for="frekuensi">Frekuensi Saat Ini</label>
-							<input type="text" class="form-control" name="frekuensi" id="frekuensi" placeholder="" value="<?= trim($str_310 ?? '') ?>" />
+							<input type="text" class="form-control" name="frekuensi" id="frekuensi" placeholder="" value="<?= trim($str_310['a'] ?? '') ?>" />
 						</div>
 					</div>
 					<div class=" col-md-12 terbitanBerkala" style="display: block;">
