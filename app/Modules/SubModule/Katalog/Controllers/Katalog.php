@@ -1793,30 +1793,21 @@ class Katalog extends \Base\Controllers\BaseController
 			'EDISISERIAL'       => $edisi_serial,
 			'TANGGAL_TERBIT_EDISI_SERIAL' => $tanggal_terbit,
 			'ISOPAC'            => $isopac,
+			'CreateBy' => user_id(),
+			'UpdateBy' => user_id()
 		];
 
-		$db = db_connect('data');
-		$builder = $db->table('serial_articles');
 
-		try {
-			$builder->insert($data);
-		} catch (\Exception $e) {
-			$response = [
-				'error' => true,
-				'message' => 'Artikel gagal disimpan',
-			];
+		$save_data_id = $this->artikelModel->insert($data);
+		if ($save_data_id) {
+			$this->session->setFlashdata('toastr_msg', 'Artikel berhasil disimpan');
+			$this->session->setFlashdata('toastr_type', 'success');
+			set_message('toastr_msg', 'Artikel berhasil diperbarui');
+			set_message('toastr_type', 'success');
+		} else {
+			set_message('toastr_msg', 'Artikel berhasil diperbarui');
+			set_message('toastr_type', 'success');
 		}
-
-		$catalog = $db->table('catalogs')->where('ID', $catalog_id)->get()->getRow();
-
-		$data = [
-			'catalog' => $catalog,
-		];
-
-		set_message('toastr_msg', 'Artikel berhasil disimpan');
-		set_message('toastr_type', 'success');
-
-		set_message('message', $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message'));
 		return redirect()->to(base_url('katalog/edit/' . $catalog_id . '?slug=artikel'));
 	}
 
@@ -1876,6 +1867,7 @@ class Katalog extends \Base\Controllers\BaseController
 			'EDISISERIAL'        => $edisi_serial,
 			'TANGGAL_TERBIT_EDISI_SERIAL' => $tanggal_terbit,
 			'ISOPAC'             => $isopac,
+			'UpdateBy' => user_id()
 		];
 
 		try {
