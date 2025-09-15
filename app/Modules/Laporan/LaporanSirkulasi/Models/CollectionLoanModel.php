@@ -64,4 +64,78 @@ class CollectionLoanModel extends \App\Models\BaseModel
 
             return $builder; // penting → return builder, bukan langsung result
       }
+      public function getAnggotaSeringMeminjam($startDate = null, $endDate = null, $limit = null, $offset = 0)
+      {
+            $subquery = "
+                        SELECT
+                              members.`MemberNo` AS NoAnggota,
+                              members.`FullName` AS NamaAnggota,
+                              members.`Address` AS Alamat,
+                              members.`Phone` AS Phone,
+                              members.`Email` AS Email,
+                              COUNT(collectionloanitems.ID) AS JumlahPeminjaman
+                        FROM
+                              collectionloanitems
+                        INNER JOIN
+                              members ON members.ID = collectionloanitems.member_id
+                       GROUP BY
+                              members.`MemberNo`, members.`FullName`, members.`Address`, members.`Phone`, members.`Email`
+                        ";
+
+            $builder = $this->db->table("($subquery) as anggota_peminjam");
+
+            // Filter tanggal (opsional)
+            if ($startDate && $endDate) {
+                  $builder->where('collectionloanitems.LoanDate >=', $startDate)
+                        ->where('collectionloanitems.LoanDate <=', $endDate);
+            }
+
+            // Order & limit
+            $builder->orderBy('JumlahPeminjaman', 'DESC');
+            if ($limit !== null) {
+                  $builder->limit($limit, $offset);
+            }
+
+            return $builder;
+      }
+      public function getKoleksiSeringDipinjam($startDate = null, $endDate = null, $limit = null, $offset = 0)
+      {
+            $subquery = "
+                        SELECT
+                              catalogs.`Title` AS JudulBuku,
+                              catalogs.`Author` AS Pengarang,
+                              catalogs.`Publisher` AS Penerbit,
+                              catalogs.`PublishYear` AS TahunTerbit,
+                              catalogs.`PublishLocation` AS TempatTerbit,
+                              catalogs.`ISBN` AS ISBN,
+                              catalogs.`CallNumber` AS NoPanggil,
+                              catalogs.`DeweyNo` AS NoDDC,
+                              COUNT(collectionloanitems.ID) AS JumlahPeminjaman
+                        FROM
+                              collectionloanitems
+                        INNER JOIN
+                              collections ON collections.ID = collectionloanitems.Collection_id
+                        INNER JOIN
+                              catalogs ON catalogs.ID = collections.Catalog_id
+                        GROUP BY
+                              catalogs.`Title`, catalogs.`Author`, catalogs.`Publisher`, catalogs.`PublishYear`, catalogs.`PublishLocation`, catalogs.`ISBN`, catalogs.`CallNumber`, catalogs.`DeweyNo`
+
+                        ";
+
+            $builder = $this->db->table("($subquery) as koleksi_sering_dipinjam");
+
+            // Filter tanggal (opsional)
+            if ($startDate && $endDate) {
+                  $builder->where('collectionloanitems.LoanDate >=', $startDate)
+                        ->where('collectionloanitems.LoanDate <=', $endDate);
+            }
+
+            // Order & limit
+            $builder->orderBy('JumlahPeminjaman', 'DESC');
+            if ($limit !== null) {
+                  $builder->limit($limit, $offset);
+            }
+
+            return $builder;
+      }
 }

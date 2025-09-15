@@ -7,22 +7,24 @@ $date_to = $request->getGet('date_to') ?? '';
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
 <style>
-.preview-container {
-    margin-top: 20px;
-    border-top: 1px solid #dee2e6;
-    padding-top: 20px;
-}
-.preview-table {
-    max-height: 500px;
-    overflow-y: auto;
-}
-.filter-section {
-    border: 1px solid #dee2e6;
-    border-radius: 5px;
-    padding: 15px;
-    margin-bottom: 15px;
-    background-color: #f8f9fa;
-}
+    .preview-container {
+        margin-top: 20px;
+        border-top: 1px solid #dee2e6;
+        padding-top: 20px;
+    }
+
+    .preview-table {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    .filter-section {
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+        background-color: #f8f9fa;
+    }
 </style>
 <?= $this->endSection('style'); ?>
 
@@ -65,20 +67,18 @@ $date_to = $request->getGet('date_to') ?? '';
 
             <form action="<?= base_url('laporan-sirkulasi/export') ?>" method="post">
                 <?= csrf_field() ?>
-                
+                <div class="form-group mb-3">
+                    <label><b>Pilih Jenis Laporan</b></label>
+                    <select class="form-control" name="report_type" id="report_type">
+                        <option value="peminjaman">Laporan Peminjaman</option>
+                        <option value="anggota">Laporan Anggota Sering Meminjam</option>
+                        <option value="koleksi">Laporan Koleksi Sering Dipinjam</option>
+                    </select>
+                </div>
+
                 <div class="form-group mb-3">
                     <label><b>Pilih Kolom yang akan diekspor</b></label>
-                    <div class="row">
-                        <?php foreach ($columns as $key => $label) : ?>
-                            <div class="col-md-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="columns[]" value="<?= $key ?>" id="<?= $key ?>">
-                                    <label class="form-check-label" for="<?= $key ?>">
-                                        <?= $label ?>
-                                    </label>
-                                </div>
-                            </div>
-                        <?php endforeach ?>
+                    <div class="row" id="columns_container">
                     </div>
                 </div>
 
@@ -137,6 +137,18 @@ $date_to = $request->getGet('date_to') ?? '';
                     </select>
                 </div>
 
+                <!-- <div class="form-group mb-3">
+                    <label><strong>Filter Berdasarkan Petugas</strong></label>
+                    <select class="form-control" name="petugas" id="petugas">
+                        <option value="">-- Semua Petugas --</option>
+                        <?php if (isset($petugas)) : ?>
+                            <?php foreach ($petugas as $orang) : ?>
+                                <option value="<?= $orang->FullName ?>"><?= $orang->FullName ?></option>
+                            <?php endforeach ?>
+                        <?php endif ?>
+                    </select>
+                </div> -->
+
                 <!-- Gender Filter Section -->
                 <!-- <div class="form-group mb-3">
                     <label><strong>Filter Berdasarkan Jenis Kelamin</strong></label>
@@ -174,7 +186,7 @@ $date_to = $request->getGet('date_to') ?? '';
                     </select>
                 </div> -->
 
-                 <!-- Room Filter Section -->
+                <!-- Room Filter Section -->
                 <!-- <div class="form-group mb-3">
                     <label><strong>Filter Berdasarkan Ruang Perpustakaan</strong></label>
                     <select class="form-control" name="room" id="room">
@@ -209,7 +221,7 @@ $date_to = $request->getGet('date_to') ?? '';
                     </select>
                 </div>
 
-               <div class="text-center mb-3">
+                <div class="text-center mb-3">
                     <button type="submit" class="btn btn-success btn-lg">
                         <i class="fas fa-download"></i> Export to Excel
                     </button>
@@ -234,81 +246,134 @@ $date_to = $request->getGet('date_to') ?? '';
 <?= $this->section('script'); ?>
 
 <script>
-$('#location').change(function(e) {
-    var Location_Library_id = $("#location option:selected").val();
-    getData(`<?= base_url('api/eksemplar/locations') ?>/${Location_Library_id}`, `#room`, false,
-        `-- Semua Ruang Perpustakaan --`);
-});
+    const allColumns = {
+        peminjaman: <?= json_encode($columns) ?>,
+        anggota: <?= json_encode($columnsAnggota) ?>,
+        koleksi: <?= json_encode($columnsKoleksi) ?>
+    };
 
-$(document).ready(function() {
-    // Function to update preview table
-    function updatePreview() {
-        const selectedColumns = [];
-        $('input[name="columns[]"]:checked').each(function() {
-            selectedColumns.push($(this).val());
+
+    $('#location').change(function(e) {
+        var Location_Library_id = $("#location option:selected").val();
+        getData(`<?= base_url('api/eksemplar/locations') ?>/${Location_Library_id}`, `#room`, false,
+            `-- Semua Ruang Perpustakaan --`);
+    });
+
+    $(document).ready(function() {
+        // Panggil fungsi saat dropdown jenis laporan berubah
+        $('#report_type').change(function() {
+            const selectedReport = $(this).val();
+            updateColumns(selectedReport);
+            updatePreview(); // Perbarui juga preview data
         });
 
-        const filterType = $('#filter_type').val();
-        //const genderId = $('#gender_id').val(); 
-        // const visitor_type = $('#visitor_type').val();
-        // const location = $('#location').val();
-        // const room = $('#room').val();
-        // const destination = $('#destination').val();
-        const kop = $('#kop').val();
-        const formData = new FormData();
-        
-        formData.append('columns', JSON.stringify(selectedColumns));
-        formData.append('filter_type', filterType);
-        // formData.append('gender_id', genderId); 
-        // formData.append('visitor_type', visitor_type); 
-        // formData.append('location', location); 
-        // formData.append('room', room);
-        // formData.append('destination', destination);
-        formData.append('kop', kop);
+        function updateColumns(reportType) {
+            const columnsContainer = $('#columns_container');
+            columnsContainer.empty(); // Hapus opsi kolom yang sudah ada
 
-        // Add appropriate date filters based on filter type
-        if (filterType === 'date') {
-            formData.append('start_date', $('input[name="start_date"]').val());
-            formData.append('end_date', $('input[name="end_date"]').val());
-        } else if (filterType === 'month') {
-            formData.append('month', $('select[name="month"]').val());
-            formData.append('year', $('#month_filter select[name="year"]').val());
-        } else if (filterType === 'year') {
-            formData.append('year', $('#year_filter select[name="year"]').val());
+            const columns = allColumns[reportType];
+            if (columns) {
+                $.each(columns, function(key, label) {
+                    const columnHtml = `
+                <div class="col-md-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="columns[]" value="${key}" id="${key}">
+                        <label class="form-check-label" for="${key}">
+                            ${label}
+                        </label>
+                    </div>
+                </div>
+            `;
+                    columnsContainer.append(columnHtml);
+                });
+            }
+            // Tambahkan kembali event listener ke checkbox yang baru
+            $('input[name="columns[]"]').change(updatePreview);
         }
 
-        // Show loading indicator
-        $('#preview-table').html('<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Memuat preview data...</p></div>');
+        // Function to update preview table
+        function updatePreview() {
+            const selectedColumns = [];
+            $('input[name="columns[]"]:checked').each(function() {
+                selectedColumns.push($(this).val());
+            });
 
-        // Make AJAX call to get preview data
-        $.ajax({
-            url: '<?= base_url('laporan-sirkulasi/preview') ?>',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                $('#preview-table').html(response);
-            },
-            error: function(xhr, status, error) {
-                console.error('Error fetching preview:', error);
+            const filterType = $('#filter_type').val();
+            const reportType = $('#report_type').val();
+            // const petugas = $('#petugas').val();
+            //const genderId = $('#gender_id').val(); 
+            // const visitor_type = $('#visitor_type').val();
+            // const location = $('#location').val();
+            // const room = $('#room').val();
+            // const destination = $('#destination').val();
+            const kop = $('#kop').val();
+            const formData = new FormData();
+
+            formData.append('report_type', reportType);
+            formData.append('columns', JSON.stringify(selectedColumns));
+            formData.append('filter_type', filterType);
+            // formData.append('petugas', petugas);
+            // formData.append('gender_id', genderId); 
+            // formData.append('visitor_type', visitor_type); 
+            // formData.append('location', location); 
+            // formData.append('room', room);
+            // formData.append('destination', destination);
+            formData.append('kop', kop);
+
+            // Add appropriate date filters based on filter type
+            if (filterType === 'date') {
+                formData.append('start_date', $('input[name="start_date"]').val());
+                formData.append('end_date', $('input[name="end_date"]').val());
+            } else if (filterType === 'month') {
+                formData.append('month', $('select[name="month"]').val());
+                formData.append('year', $('#month_filter select[name="year"]').val());
+            } else if (filterType === 'year') {
+                formData.append('year', $('#year_filter select[name="year"]').val());
             }
+
+            // Show loading indicator
+            $('#preview-table').html('<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Memuat preview data...</p></div>');
+
+            // Make AJAX call to get preview data
+            $.ajax({
+                url: '<?= base_url('laporan-sirkulasi/preview') ?>',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('#preview-table').html(response);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching preview:', error);
+                }
+            });
+        }
+
+        // Event listeners for form changes
+        $('#filter_type, #gender_id, #visitor_type, #location, #room, #destination, input[name="start_date"], input[name="end_date"], select[name="month"], select[name="year"]').change(updatePreview);
+        // Delegasi event untuk checkbox kolom yang dibuat secara dinamis
+        $('#columns_container').on('change', 'input[name="columns[]"]', updatePreview);
+        $('input[name="start_date"], input[name="end_date"]').change(updatePreview);
+        $('select[name="month"], select[name="year"]').change(updatePreview);
+
+        // Event listeners for form changes
+        $('#report_type').change(function() {
+            const selectedReport = $(this).val();
+            updateColumns(selectedReport);
+            updatePreview();
         });
-    }
 
-    // Event listeners for form changes
-    $('input[name="columns[]"], #filter_type, #gender_id, #visitor_type, #location, #room, #destination').change(updatePreview);
-    $('input[name="start_date"], input[name="end_date"]').change(updatePreview);
-    $('select[name="month"], select[name="year"]').change(updatePreview);
+        // Panggil saat halaman dimuat pertama kali
+        updateColumns($('#report_type').val());
+        // Initial preview load
+        updatePreview();
 
-    // Initial preview load
-    updatePreview();
-
-    // Show/hide filter sections
-    $('#filter_type').change(function() {
-        $('.filter-section').hide();
-        $('#' + $(this).val() + '_filter').show();
+        // Show/hide filter sections
+        $('#filter_type').change(function() {
+            $('.filter-section').hide();
+            $('#' + $(this).val() + '_filter').show();
+        });
     });
-});
 </script>
 <?= $this->endSection('script'); ?>
