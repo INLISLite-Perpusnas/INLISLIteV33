@@ -141,7 +141,16 @@ $request = service('request');
                                 <?php endforeach; ?>
                             </select>
                         </div>
+
+                    <label>Lokasi Ruang</label>
+                        <div class="select-wrapper">
+                            <select class="form-control" name="location_ruang">
+                                <option value="">-Pilih-</option>
+                            </select>
+                        </div>
                 </div>
+
+            
 
                   <div id="tanggalpengadaan_filter" class="filter-section mb-3" style="display: none;">
                     <div class="row">
@@ -219,6 +228,8 @@ $(document).ready(function() {
             formData.append('year', $('#year_filter select[name="year"]').val());
         } else if (filterType === 'location') {
             formData.append('location', $('#location_filter select[name="location"]').val());
+            formData.append('location_ruang', $('#location_filter select[name="location_ruang"]').val());
+
         } else if (filterType === 'tanggalpengadaan') {
             formData.append('tp_start_date', $('#tanggalpengadaan_filter input[name="tp_start_date"]').val());
             formData.append('tp_end_date', $('#tanggalpengadaan_filter input[name="tp_end_date"]').val());
@@ -252,7 +263,8 @@ $(document).ready(function() {
     $('input[name="columns[]"], #filter_type').change(updatePreview);
     $('input[name="start_date"], input[name="end_date"]').change(updatePreview);
     $('select[name="month"], select[name="year"]').change(updatePreview);
-    $('select[name="location"]').change(updatePreview);
+//    $('select[name="location"]').change(updatePreview);
+    $('select[name="location_ruang"]').change(updatePreview);
     $('input[name="tp_start_date"], input[name="tp_end_date"]').change(updatePreview);
     $('input[name="author"]').change(updatePreview);
     $('input[name="subject"]').change(updatePreview);
@@ -267,6 +279,37 @@ $(document).ready(function() {
         $('.filter-section').hide();
         $('#' + $(this).val() + '_filter').show();
     });
+
+    $('select[name="location"]').change(function() {
+        let locationId = $(this).val();
+        let ruangSelect = $('select[name="location_ruang"]');
+        
+        // Kosongkan dulu
+        ruangSelect.html('<option value="">-Pilih-</option>');
+
+        if (locationId) {
+            $.ajax({
+                url: "<?= base_url('laporan-eksemplar/get-ruang') ?>", 
+                type: "POST",
+                data: { location_id: locationId },
+                dataType: "json",
+                success: function(data) {
+                    if (data.length > 0) {
+                        $.each(data, function(i, item) {
+                            ruangSelect.append('<option value="'+item.ID+'">'+item.Name+'</option>');
+                        });
+                    } else {
+                        ruangSelect.append('<option value="">Tidak ada ruang</option>');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                    ruangSelect.append('<option value="">Error load data</option>');
+                }
+            });
+        }
+    });
+
 });
 </script>
 <?= $this->endSection('script'); ?>

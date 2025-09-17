@@ -10,6 +10,7 @@ $routes->group('laporan-eksemplar', ['namespace' => 'LaporanEksemplar\Controller
 	$subroutes->add('visitor_export', 'LaporanEksemplar::visitor_export');
 	$subroutes->add('member', 'LaporanEksemplar::member');
 	$subroutes->add('member_export', 'LaporanEksemplar::member_export');
+	$subroutes->post('get-ruang', 'LaporanEksemplar::getRuang');
 });
 
 $routes->group('api/laporan-eksemplar', ['namespace' => 'LaporanEksemplar\Controllers\Api'], function ($subroutes) {//crud

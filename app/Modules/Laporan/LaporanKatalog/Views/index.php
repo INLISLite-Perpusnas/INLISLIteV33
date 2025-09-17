@@ -14,6 +14,13 @@ $request = service('request');
     max-height: 500px;
     overflow-y: auto;
 }
+.filter-section {
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #f8f9fa;
+}
 </style>
 <?= $this->endSection('style'); ?>
 
@@ -43,7 +50,7 @@ $request = service('request');
 
     <div class="card">
         <div class="card-header">
-            <h4>Export Data Katalog</h4>
+            <h5><strong>Export Data Katalog</strong></h5>
         </div>
         <div class="card-body">
             <?php if (session('errors')) : ?>
@@ -74,7 +81,7 @@ $request = service('request');
                 </div>
 
                 <div class="form-group mb-3">
-                    <label>Filter Berdasarkan</label>
+                   <label><b>Filter Berdasarkan</b></label>
                     <select class="form-control" name="filter_type" id="filter_type">
                         <option value="date">Tanggal</option>
                         <option value="month">Bulan</option>
@@ -87,6 +94,7 @@ $request = service('request');
                 </div>
 
                 <div id="date_filter" class="filter-section mb-3">
+                    <h6 class="mb-3"><i class="fas fa-calendar-alt"></i> Filter Berdasarkan Tanggal</h6>
                     <div class="row">
                         <div class="col-md-6">
                             <label>Tanggal Mulai</label>
@@ -100,6 +108,7 @@ $request = service('request');
                 </div>
 
                 <div id="month_filter" class="filter-section mb-3" style="display: none;">
+                    <h6 class="mb-3"><i class="fas fa-calendar-alt"></i> Filter Berdasarkan Bulan</h6>
                     <div class="row">
                         <div class="col-md-6">
                             <label>Bulan</label>
@@ -121,7 +130,7 @@ $request = service('request');
                 </div>
 
                 <div id="year_filter" class="filter-section mb-3" style="display: none;">
-                    <label>Tahun</label>
+                    <h6 class="mb-3"><i class="fas fa-calendar-alt"></i> Filter Berdasarkan Tahun</h6>
                     <select name="year" class="form-control">
                         <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
                             <option value="<?= $i ?>"><?= $i ?></option>
@@ -149,12 +158,29 @@ $request = service('request');
                     <input type="text" name="publisher" class="form-control">
                 </div>
 
-                <button type="submit" class="btn btn-primary">Export to Excel</button>
+                 <!-- Klass DDC Filter Section -->
+                <div class="form-group mb-3">
+                    <label><strong>Filter Berdasarkan Klas DDC</strong></label>
+                    <select class="form-control" name="masterkelasbesar_id" id="masterkelasbesar_id">
+                        <option value="">-- Semua Klas DDC --</option>
+                        <?php if (isset($masterkelasbesarOptions)) : ?>
+                            <?php foreach ($masterkelasbesarOptions as $kelas) : ?>
+                                <option value="<?= $kelas->kdKelas ?>"><?= $kelas->namakelas ?></option>
+                            <?php endforeach ?>
+                        <?php endif ?>
+                    </select>
+                </div>
+
+                <div class="text-center mb-3">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fas fa-download"></i> Export to Excel
+                    </button>
+                </div>
             </form>
 
             <!-- Preview Section -->
             <div class="preview-container">
-                <h5>Preview (20 Baris Pertama)</h5>
+                <h5><i class="fas fa-eye"></i> Preview Data (20 Baris Pertama)</h5>
                 <div class="preview-table" id="preview-table">
                     <div class="text-center">
                         <p>Pilih kolom dan filter untuk melihat preview data</p>
@@ -177,9 +203,11 @@ $(document).ready(function() {
         });
 
         const filterType = $('#filter_type').val();
+        const masterkelasbesarId = $('#masterkelasbesar_id').val();
         const formData = new FormData();
         formData.append('columns', JSON.stringify(selectedColumns));
         formData.append('filter_type', filterType);
+        formData.append('masterkelasbesar_id', masterkelasbesarId);
 
         // Add appropriate date filters based on filter type
         if (filterType === 'date') {
@@ -198,7 +226,12 @@ $(document).ready(function() {
             formData.append('publisher', $('#publisher_filter input[name="publisher"]').val());
         } else if (filterType === 'publishlocation') {
             formData.append('publishlocation', $('#publishlocation_filter input[name="publishlocation"]').val());
+        } else if (filterType === 'masterkelasbesar_id') {
+            formData.append('masterkelasbesar_id', $('select[name="masterkelasbesar_id"]').val());
         }
+
+         // Show loading indicator
+        $('#preview-table').html('<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Memuat preview data...</p></div>');
 
         // Make AJAX call to get preview data
         $.ajax({
@@ -217,7 +250,7 @@ $(document).ready(function() {
     }
 
     // Event listeners for form changes
-    $('input[name="columns[]"], #filter_type').change(updatePreview);
+    $('input[name="columns[]"], #filter_type, #masterkelasbesar_id').change(updatePreview);
     $('input[name="start_date"], input[name="end_date"]').change(updatePreview);
     $('select[name="month"], select[name="year"]').change(updatePreview);
     $('input[name="author"]').change(updatePreview);

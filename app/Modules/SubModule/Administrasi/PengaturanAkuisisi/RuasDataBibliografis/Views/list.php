@@ -137,7 +137,7 @@ $slug = $request->getGet('slug') ?? '';
                                         <th width="15%">Tag</th>
                                         <th width="50%">Nama Field</th>
                                         <th width="20%">Status</th>
-                                        <th width="10%">Aksi</th>
+                                        
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -160,12 +160,7 @@ $slug = $request->getGet('slug') ?? '';
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-primary" 
-                                                        title="Edit">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                            </td>
+                                            
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
