@@ -2,7 +2,7 @@
 if (!function_exists('get_member_data')) {
 	function get_member_data($member_no)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('members m')
 			->select('m.*')
 			->where('m.MemberNo', $member_no);
@@ -26,7 +26,7 @@ if (!function_exists('get_object_array')) {
 if (!function_exists('get_member_location')) {
 	function get_member_location($member_id)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('memberloanauthorizelocation mae')
 			->select('mae.LocationLoan_id')
 			->where('mae.Member_id', $member_id);
@@ -38,7 +38,7 @@ if (!function_exists('get_member_location')) {
 if (!function_exists('get_member_category')) {
 	function get_member_category($member_id)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('memberloanauthorizecategory mac')
 			->select('mac.CategoryLoan_id')
 			->where('mac.Member_id', $member_id);

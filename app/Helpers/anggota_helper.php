@@ -202,7 +202,7 @@ if ( ! function_exists('bulan'))
 // Tambahkan function helper untuk generate member number
 if (!function_exists('generateMemberNumber')) {
     function generateMemberNumber($identityNo = null) {
-        $db = db_connect('data');
+        $db = db_connect();
         
         // Ambil setting dari tabel settingparameters
         $setting = $db->table('settingparameters')
@@ -241,7 +241,7 @@ if (!function_exists('generateMemberNumber')) {
 if (!function_exists('generateFormat1')) {
     function generateFormat1() {
         // Format: YYMMDD99999
-        $db = db_connect('data');
+        $db = db_connect();
         $today = date('ymd'); // YY-MM-DD format
         
         // Cari nomor terakhir dengan prefix hari ini
@@ -269,7 +269,7 @@ if (!function_exists('generateFormat1')) {
 if (!function_exists('generateFormat2')) {
     function generateFormat2() {
         // Format: YYYYMM99
-        $db = db_connect('data');
+        $db = db_connect();
         $yearMonth = date('Ym'); // YYYY-MM format
         
         // Cari nomor terakhir dengan prefix bulan ini
@@ -297,7 +297,7 @@ if (!function_exists('generateFormat2')) {
 if (!function_exists('generateFormat3')) {
     function generateFormat3() {
         // Format: 99999L2015
-        $db = db_connect('data');
+        $db = db_connect();
         $year = date('Y'); // Current year
         $suffix = 'L' . $year;
         
@@ -326,7 +326,7 @@ if (!function_exists('generateFormat3')) {
 if (!function_exists('generateAutoNumber')) {
     function generateAutoNumber() {
         // Auto increment number
-        $db = db_connect('data');
+        $db = db_connect();
         $lastMember = $db->table('members')
                         ->select('MemberNo')
                         // PERBAIKAN: Gabungkan kondisi REGEXP menjadi satu string
@@ -357,7 +357,7 @@ if (!function_exists('is_form_field_active')) {
      */
     function is_form_field_active(string $field_id, int $jenis_perpustakaan_id): bool
     {
-        $db = db_connect('data');
+        $db = db_connect();
         $field_setting = $db->table('members_form as a')
             ->select('a.active')
             ->join('member_fields as b', 'b.id = a.Member_Field_id')

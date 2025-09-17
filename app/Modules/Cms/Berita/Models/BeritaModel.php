@@ -4,6 +4,7 @@ namespace Berita\Models;
 
 class BeritaModel extends \App\Models\BaseModel
 {
+    protected $DBGroup      		= 'data';
     protected $table      			= 't_berita';
     protected $primaryKey 			= 'id';
     protected $returnType     		= 'object';

@@ -4,7 +4,7 @@ namespace PeraturanPeminjamanHari\Models;
 
 class PeraturanPeminjamanHariModel extends \App\Models\BaseModel
 {
-    protected $DBGroup              = 'data';
+    protected $DBGroup              = 'default';
     protected $table      			= 'peraturan_peminjaman_hari';
     protected $primaryKey 			= 'ID';
     protected $returnType     		= 'object';

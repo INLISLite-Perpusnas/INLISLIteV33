@@ -25,7 +25,7 @@ class Peminjaman extends \Base\Controllers\BaseController
 		$this->collectionLoanItemModel = new \Peminjaman\Models\CollectionLoanItemModel();
 		$this->cart = new \App\Libraries\Cart();
 		$this->uploadPath = ROOTPATH . 'public/uploads/';
-		$this->db=db_connect('data');
+		$this->db=db_connect();
 		$this->modulePath = ROOTPATH . 'public/uploads/peminjaman/';
 
 		if (!file_exists($this->uploadPath)) {

@@ -1,5 +1,5 @@
 <?php
-$db=db_connect('data');
+$db=db_connect();
 $nama_perpustakaan=$db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value?:"Perpustakaan Mitra";
 $alamat=$db->table('settingparameters')->where('Name', 'NamaLokasiPerpustakaan')->get()->getRow()->Value?:"Jl.Perpustakaan Mitra";
 $tentang_kami=$db->table('settingparameters')->where('Name', 'TentangKami')->get()->getRow()->Value?:"Perpustakaan Mitra";

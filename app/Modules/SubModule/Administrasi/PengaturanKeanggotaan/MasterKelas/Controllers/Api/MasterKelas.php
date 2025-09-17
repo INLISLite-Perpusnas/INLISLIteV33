@@ -30,7 +30,7 @@ class MasterKelas extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('kelas_siswa as a')
 			->select('a.id, a.id as action,a.namakelassiswa as Nama, a.UpdateDate')
 			->select('a.active');

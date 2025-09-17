@@ -19,6 +19,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 	public $modulePath;
 	public $uploadPath;
 	public $artikelModel;
+	public $edisiSerialModel;
 
 	function __construct()
 	{
@@ -39,12 +40,11 @@ class Katalog extends \Base\Controllers\BaseResourceController
 
 	public function datatable($IsQUARANTINE = 0)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 
 		$builder = $db->table('catalogs as a')
 			->select('a.ID, a.ID as action')
 			->select('a.ControlNumber, a.BIBID, a.Title, a.Author, a.Edition, a.Publisher, a.PublishLocation, a.PublishYear, a.Publikasi, a.Subject, a.PhysicalDescription, a.ISBN, a.CallNumber, a.Note, a.Languages, a.DeweyNo, a.ApproveDateOPAC, a.IsOPAC, a.IsBNI, a.IsKIN, a.IsRDA, a.CoverURL, a.Worksheet_id, a.CreateBy, a.CreateDate, a.CreateTerminal, a.UpdateBy, a.UpdateDate, a.UpdateTerminal, a.MARC_LOC, a.PRESERVASI_ID, a.QUARANTINEDBY, a.QUARANTINEDDATE, a.QUARANTINEDTERMINAL, a.Member_id, a.KIILastUploadDate')
-			->select('a.Branch_id, a.Location_id')
 			->select('0 as Eksemplar')
 			->where('a.IsQUARANTINE', $IsQUARANTINE)
 			->orderBy('a.ID', 'DESC');
@@ -96,7 +96,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 	public function katalog($IsQUARANTINE = 0)
 	{
 		$branch_id = $this->request->getGet('branch_id');
-		$db = db_connect('data');
+		$db = db_connect();
 
 		$builder = $db->table('catalogs as a')
 			->select('a.ID, a.ID as action')
@@ -704,7 +704,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 			return $this->fail('Field ID tidak ditemukan.');
 		}
 
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('fieldindicator1s as fi')
 			->select('fi.Field_id as action, fi.Field_id, fi.Code, fi.Name')
 			->where('fi.Field_id', $field_id);
@@ -726,7 +726,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 			return $this->fail('Field ID tidak ditemukan.');
 		}
 
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('fieldindicator2s as fi')
 			->select('fi.Field_id as action, fi.Field_id, fi.Code, fi.Name')
 			->where('fi.Field_id', $field_id);
@@ -748,7 +748,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 			return $this->fail('Field ID tidak ditemukan.');
 		}
 
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('fielddatas as fi')
 			->select('fi.Field_id as action, fi.Field_id, fi.Code, fi.Name, fi.Field_id as Input')
 			->where('fi.Field_id', $field_id);
@@ -806,7 +806,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 
 	public function datatableEdisiSerial(int $catalog_id)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('master_edisi_serial as a')
 			->select('a.id, a.Catalog_id, a.no_edisi_serial, a.tgl_edisi_serial, a.CreateBy, a.CreateDate, a.UpdateBy, a.UpdateDate, a.id as action')
 			->where('a.Catalog_id', $catalog_id);
@@ -847,7 +847,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 
 	public function datatable_artikel()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$catalog_id = $this->request->getGet('catalog_id')
 			?? $this->request->getPost('catalog_id')
 			?? $this->request->getVar('catalog_id');
@@ -922,7 +922,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 			'ISOPAC'            => $isopac,
 		];
 
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('serial_articles');
 
 		try {
@@ -976,7 +976,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 			])->setStatusCode(400);
 		}
 
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('serial_articles');
 
 		$existing = $builder->where('id', $id)->get()->getRow();
@@ -1026,7 +1026,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 			])->setStatusCode(400);
 		}
 
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('serial_articles');
 
 		$artikel = $builder->where('id', $id)->get()->getRow();
@@ -1076,7 +1076,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 			])->setStatusCode(400);
 		}
 
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('master_edisi_serial')
 			->select('id, no_edisi_serial')
 			->where('Catalog_id', $catalog_id)

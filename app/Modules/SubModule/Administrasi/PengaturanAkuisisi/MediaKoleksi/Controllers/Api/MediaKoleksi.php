@@ -31,7 +31,7 @@ class MediaKoleksi extends \Base\Controllers\BaseResourceController
 
 	public function datatable()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('collectionmedias as a')
 			->select('a.ID, a.ID as action, a.Name as Nama, a.UpdateDate, a.active, a.Branch_id')
 			->select('0 as JumlahKoleksi');
@@ -43,7 +43,7 @@ class MediaKoleksi extends \Base\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('JumlahKoleksi', function ($row) {
-				$db = db_connect('data');
+				$db = db_connect();
 				$builder = $db->table('collections')->where('Media_id', $row->ID);
 				return $builder->countAllResults();
 			})

@@ -23,7 +23,7 @@ if (!function_exists('get_cart_extend')) {
 if (!function_exists('count_extend')) {
 	function count_extend($CollectionLoanItem_id)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('collectionloanextends cle')
 			->select('count(cle.id) as total')
 			->where('cle.CollectionLoanItem_id', $CollectionLoanItem_id);

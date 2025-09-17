@@ -30,7 +30,7 @@ class MasterFakultas extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$branchId=user()->branch_id;
 		$builder = $db->table('master_fakultas as a')
 			->select('a.id, a.id as action,a.Nama,a.Branch_id, a.UpdateDate')

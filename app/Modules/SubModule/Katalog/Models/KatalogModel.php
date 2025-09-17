@@ -58,23 +58,4 @@ class KatalogModel extends \Base\Models\DataModel
         return $db->getResult();
     }
 
-    // update data
-    function update_action($id, $data)
-    {
-        $conn = \Config\Database::connect('data');
-        $db   = $conn->table($this->table);
-
-        return $db->where('id', $id)
-            ->update($data);
-    }
-
-    // delete data
-    function delete_action($id)
-    {
-        $conn      = \Config\Database::connect('data');
-        $db = $conn->table($this->table);
-
-        return $db->where($this->table, $id)
-            ->delete();
-    }
 }

@@ -32,7 +32,7 @@ class SumberKoleksi extends \Base\Controllers\BaseResourceController
 	public function datatable($slug = null)
 {
     // dd(user()->category);
-    $db = db_connect('data');
+    $db = db_connect();
     $builder = $db->table('collectionsources as a')
         ->select('a.ID, a.ID as action, a.Name as Nama, a.UpdateDate, a.active, a.Branch_id')
         ->select('0 as JumlahKoleksi');
@@ -54,19 +54,19 @@ class SumberKoleksi extends \Base\Controllers\BaseResourceController
     // Conditionally apply JumlahKoleksi edit based on user category
     if (user()->category == 'admin') {
         $dataTable->edit('JumlahKoleksi', function ($row) {
-            $db = db_connect('data');
+            $db = db_connect();
             $builder = $db->table('collections')->where('Source_id', $row->ID);
             return $builder->countAllResults();
         });
     } elseif (user()->category == 'sa_umum') {
         $dataTable->edit('JumlahKoleksi', function ($row) {
-            $db = db_connect('data');
+            $db = db_connect();
             $builder = $db->table('collections')->where('Source_id', $row->ID)->where('Branch_id', branch_id());
             return $builder->countAllResults();
         });
     } else {
         $dataTable->edit('JumlahKoleksi', function ($row) {
-            $db = db_connect('data');
+            $db = db_connect();
             $builder = $db->table('collections')->where('Source_id', $row->ID)->where('Branch_id', branch_id());
             return $builder->countAllResults();
         });

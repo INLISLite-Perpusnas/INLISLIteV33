@@ -80,7 +80,7 @@ class JenisAnggota extends \Base\Controllers\BaseController
     public function DefaultLokasi($id)
     {
         $this->data['title'] = 'Default Lokasi';
-        $db = db_connect('data');
+        $db = db_connect();
 
         $locations = $this->lokasi->where('Branch_id', user()->branch_id)->findAll();
 
@@ -95,7 +95,7 @@ class JenisAnggota extends \Base\Controllers\BaseController
         $joinedData = $query->getResult();
        
 
-        $db = db_connect('data');
+        $db = db_connect();
         $builder = $db->table('collectioncategorysdefault');
         $builder->select('CollectionCategory_id,JenisAnggota_id');
         $builder->where('JenisAnggota_id', $id);
@@ -142,7 +142,7 @@ class JenisAnggota extends \Base\Controllers\BaseController
     public function DefaultBahan($id)
     {
         $this->data['title'] = 'Default Jenis Bahan';
-        $db = db_connect('data');
+        $db = db_connect();
         // Perform the join query
         $query = $db->table('collectioncategorysdefault')
             ->join('collectioncategorys', 'collectioncategorys.ID = collectioncategorysdefault.CollectionCategory_id')

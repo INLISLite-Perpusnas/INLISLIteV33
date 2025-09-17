@@ -228,7 +228,7 @@ private function isValidImage($filePath)
         $this->response->setContentType('application/json');
 
         try {
-            $db = db_connect('data');
+            $db = db_connect();
             $query = $db->table('settingparameters')
                        ->select('Value')
                        ->where('Name', 'Logo')
@@ -284,7 +284,7 @@ private function isValidImage($filePath)
             $this->deleteOldLogoFile();
 
             // Hapus dari database
-            $db = db_connect('data');
+            $db = db_connect();
             $db->table('settingparameters')
                ->where('Name', 'Logo')
                ->delete();
@@ -313,7 +313,7 @@ private function isValidImage($filePath)
     private function saveLogoToDatabase($newFilename)
     {
       
-        $db = db_connect('data');
+        $db = db_connect();
         $category = $this->request->getPost('category') ?? 'logo';
 
         if ($category === 'logo') {
@@ -338,7 +338,7 @@ private function isValidImage($filePath)
      */
     private function deleteOldLogoFile()
     {
-        $db = db_connect('data');
+        $db = db_connect();
         $category = $this->request->getPost('category') ?? 'logo';
         if($category === 'logo') {
         $query = $db->table('settingparameters')

@@ -48,7 +48,7 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('collectionloans cl')
 			->select('cli.ID, cli.ID as action')
 			->select('cli.CollectionLoan_id, cli.LoanDate, cli.DueDate, cli.ActualReturn, cli.LateDays')
@@ -185,7 +185,7 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 
 	public function loan_datatable($member_no = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('collectionloans cl')
 			->select('cli.ID, cli.ID as action')
 			->select('cli.CollectionLoan_id, cli.LoanDate, cli.DueDate, cli.ActualReturn, cli.LateDays')
@@ -292,7 +292,7 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 
 	public function loan_datatable_simple($member_no = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('collectionloans cl')
 			->select('cli.ID, cli.ID as action')
 			->select('cli.CollectionLoan_id, cli.LoanDate, cli.DueDate, cli.ActualReturn, cli.LateDays')
@@ -377,7 +377,7 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 
 	public function koleksi($member_no = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('collections col')
 			->select('col.ID,col.Branch_id, col.ID as action')
 			->select('col.NomorBarcode, col.UpdateDate')

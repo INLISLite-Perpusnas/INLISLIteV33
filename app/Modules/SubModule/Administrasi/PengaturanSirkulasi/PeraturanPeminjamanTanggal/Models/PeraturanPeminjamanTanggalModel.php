@@ -4,7 +4,7 @@ namespace PeraturanPeminjamanTanggal\Models;
 
 class PeraturanPeminjamanTanggalModel extends \App\Models\BaseModel
 {
-    protected $DBGroup              = 'data';
+    protected $DBGroup              = 'default';
     protected $table      			= 'peraturan_peminjaman_tanggal';
     protected $primaryKey 			= 'ID';
     protected $returnType     		= 'object';

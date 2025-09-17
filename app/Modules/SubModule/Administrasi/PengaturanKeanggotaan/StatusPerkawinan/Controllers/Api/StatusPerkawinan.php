@@ -30,7 +30,7 @@ class StatusPerkawinan extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('master_status_perkawinan as a')
 			->select('a.id, a.id as action, a.Nama, a.UpdateDate, a.active');
 

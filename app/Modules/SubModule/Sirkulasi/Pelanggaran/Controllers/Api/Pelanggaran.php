@@ -33,7 +33,7 @@ class Pelanggaran extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('pelanggaran p')
 			->select('cli.ID, cli.ID as action')
 			->select('cli.CollectionLoan_id, cli.LoanDate, cli.DueDate, cli.ActualReturn, cli.LateDays')

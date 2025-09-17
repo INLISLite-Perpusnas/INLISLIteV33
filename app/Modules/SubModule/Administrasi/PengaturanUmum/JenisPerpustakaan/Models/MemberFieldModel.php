@@ -4,7 +4,7 @@ namespace JenisPerpustakaan\Models;
 
 class MemberFieldModel extends \Base\Models\DataModel
 {
-    protected $DBGroup              = 'data';
+    protected $DBGroup              = 'default';
     protected $table                  = 'member_fields';
     protected $primaryKey             = 'id';
     protected $returnType             = 'object';

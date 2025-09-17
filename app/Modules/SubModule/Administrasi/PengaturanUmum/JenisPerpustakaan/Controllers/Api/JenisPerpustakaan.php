@@ -31,7 +31,7 @@ class JenisPerpustakaan extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('jenis_perpustakaan as a')
 			->select('a.ID as id, a.ID as action, a.Name, a.UpdateDate')
 			->select('a.description,a.sort, a.active')
@@ -73,7 +73,7 @@ class JenisPerpustakaan extends \Base\Controllers\BaseResourceController
 
 	public function form($id = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('members_form as a')
 			->select('a.ID as id, a.ID as form_id, a.Member_Field_id as field_id, a.Jenis_Perpustakaan_id as jenis_perpustakaan_id, b.name as field_name, a.active, b.mandatory ')
 			->join('member_fields as b', 'b.id = a.Member_Field_id')

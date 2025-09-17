@@ -6,7 +6,7 @@ use CodeIgniter\Model;
 
 class BackendModel extends Model
 {
-    protected $DBGroup	= 'backend';
+   protected $DBGroup = 'data';
 	protected $table = 'table';
     protected $primaryKey = 'id'; 
     protected $returnType = 'object';

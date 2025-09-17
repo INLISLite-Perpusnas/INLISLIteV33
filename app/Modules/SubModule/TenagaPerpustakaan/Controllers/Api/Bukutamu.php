@@ -36,7 +36,7 @@ class BukuTamu extends \Base\Controllers\BaseResourceController
 	public function datatable()
 	{
 	
-		$db = db_connect('data');
+		$db = db_connect();
 		$branch_id = branch_id();
 		$builder = $db->table('memberguesses as a')
 			->select('a.id, a.id as action')
@@ -88,7 +88,7 @@ class BukuTamu extends \Base\Controllers\BaseResourceController
 
 	public function non_anggota_datatable()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('memberguesses as a')
 			->select('a.id, a.id as action')
 			->select('a.CreateDate as VisitDate')
@@ -142,7 +142,7 @@ class BukuTamu extends \Base\Controllers\BaseResourceController
 
 	public function rombongan_datatable()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('groupguesses as a')
 			->select('a.ID, a.ID as id, a.ID as action')
 			->select('a.CreateDate as VisitDate')

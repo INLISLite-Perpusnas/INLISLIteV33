@@ -20,7 +20,7 @@ class LaporanAI extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->geminiApiKey = env('GEMINI_API_KEY'); // Set di .env file
-        $this->db = db_connect('data');
+        $this->db = db_connect();
         
         // Handle MySQL ONLY_FULL_GROUP_BY mode
         $this->configureMySQLMode();

@@ -31,7 +31,7 @@ class JenisIdentitas extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$branchId = user()->branch_id;
 		$builder = $db->table('master_jenis_identitas as a')
 			->select('a.id, a.id as action,a.Branch_id, a.Nama, a.UpdateDate')

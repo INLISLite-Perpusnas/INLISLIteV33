@@ -30,7 +30,7 @@ class LokasiRuang extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 {
-    $db = db_connect('data');
+    $db = db_connect();
     $branch_id = user()->branch_id ?? $this->request->getGet('branch_id');
     $builder = $db->table('locations as a')
         ->select('a.ID, a.ID as action, a.Code, a.Name, a.active');
@@ -178,7 +178,7 @@ class LokasiRuang extends \Base\Controllers\BaseResourceController
         return $this->failValidationError('Kode tidak boleh kosong');
     }
 
-    $db = db_connect('data');
+    $db = db_connect();
 
     $builder = $db->table('locations as a')
         ->select('a.ID, a.Code, a.Name')

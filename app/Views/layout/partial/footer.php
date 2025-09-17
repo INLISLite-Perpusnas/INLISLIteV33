@@ -1,5 +1,5 @@
 <?php
-$db=db_connect('data');
+$db=db_connect();
 $nama_perpustakaan=$db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value?:"Perpustakaan Mitra;";
 $year = date('Y');
 ?>

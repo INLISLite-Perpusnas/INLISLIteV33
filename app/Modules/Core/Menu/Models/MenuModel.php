@@ -4,7 +4,7 @@ namespace Menu\Models;
 
 class MenuModel extends \Base\Models\BaseModel
 {
-	protected $DBGroup              = 'default';
+	protected $DBGroup              = 'data';
 	protected $table      			= 'c_menus'; 
     protected $primaryKey 			= 'id';
     protected $returnType     		= 'object';

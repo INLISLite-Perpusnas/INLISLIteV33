@@ -20,7 +20,7 @@ class LaporanSirkulasi extends \Base\Controllers\BaseController
     {
         $this->collectionLoanModel = new \LaporanSirkulasi\Models\CollectionLoanModel();
 
-        $this->db = db_connect('data');
+        $this->db = db_connect();
     }
 
     public function index()
@@ -201,7 +201,7 @@ class LaporanSirkulasi extends \Base\Controllers\BaseController
         $dateRow = 2;
         // ... (kode kop tetap sama) ...
         if ($kop === 'Ya') {
-            $this->db = db_connect('data');
+            $this->db = db_connect();
             $logokop = $this->db->table('settingparameters')
                 ->where('Name', 'LogoKop')
                 ->get()

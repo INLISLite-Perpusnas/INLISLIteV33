@@ -35,7 +35,7 @@ class RedaksiKeanggotaan extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('memberrules as a')
 			->select('a.ID as id, a.ID as action')
 			->select('a.NameCategory as NameCategory, a.SortNum as SortNum');

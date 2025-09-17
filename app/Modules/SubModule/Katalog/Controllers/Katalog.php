@@ -732,7 +732,7 @@ class Katalog extends \Base\Controllers\BaseController
 
 			$IsRedirect = $this->request->getPost('IsRedirect');
 
-			$db = db_connect('data');
+			$db = db_connect();
 			$db->transBegin();
 			try {
 				$catalog_id = $this->katalogModel->insert($save_data);
@@ -962,12 +962,11 @@ class Katalog extends \Base\Controllers\BaseController
 			$update_data['IsOPAC'] = $IsOPAC ? 1 : 0;
 
 			$IsRedirect = $this->request->getPost('IsRedirect');
-
 			// Start a transaction
-			$db = db_connect('data');
+			$db = db_connect();
 			$db->transBegin();
 			try {
-				$this->katalogModel->update($catalog_id, $update_data);
+				$update=$this->katalogModel->update($catalog_id, $update_data);
 				$post = array_merge(
 					array(
 						'ControlNumber' => $ControlNumber,
@@ -1215,7 +1214,7 @@ class Katalog extends \Base\Controllers\BaseController
 
 	public function report()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('catalogs as a')
 			->select('a.ID, a.BIBID, a.Title,  a.Edition, a. Publisher, a.PhysicalDescription, a.ControlNumber, a.IsOPAC, a.IsRDA')
 			->select('a.ID as action, 0 as Eksemplar')
@@ -1845,7 +1844,7 @@ class Katalog extends \Base\Controllers\BaseController
 			])->setStatusCode(400);
 		}
 
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('serial_articles');
 
 		$existing = $builder->where('id', $id)->get()->getRow();
@@ -1900,7 +1899,7 @@ class Katalog extends \Base\Controllers\BaseController
 			])->setStatusCode(400);
 		}
 
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('serial_articles');
 
 		$artikel = $builder->where('id', $id)->get()->getRow();

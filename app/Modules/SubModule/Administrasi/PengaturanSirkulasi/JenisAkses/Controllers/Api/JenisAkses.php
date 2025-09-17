@@ -30,7 +30,7 @@ class JenisAkses extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('collectionrules as a')
 			->select('a.ID, a.ID as action, a.Name as Nama, a.UpdateDate, a.active')
 			->select('0 as JumlahKoleksi');
@@ -42,7 +42,7 @@ class JenisAkses extends \Base\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('JumlahKoleksi', function ($row) {
-				$db = db_connect('data');
+				$db = db_connect();
 				$builder = $db->table('collections')->where('Rule_id', $row->ID);
 				return $builder->countAllResults();
 			})

@@ -4,7 +4,7 @@ namespace Katalog\Models;
 
 class ArtikelModel extends \Base\Models\DataModel
 {
-    protected $DBGroup              = 'data';
+    protected $DBGroup              = 'default';
     protected $table                  = 'serial_articles';
     protected $primaryKey             = 'id';
     protected $returnType             = 'object';

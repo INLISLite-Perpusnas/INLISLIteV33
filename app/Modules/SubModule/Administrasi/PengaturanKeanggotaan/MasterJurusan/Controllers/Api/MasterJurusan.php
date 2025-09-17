@@ -22,7 +22,7 @@ class MasterJurusan extends \Base\Controllers\BaseResourceController
 		$this->jurusanModel = new \MasterJurusan\Models\MasterJurusanModel();
 		$this->validation = \Config\Services::validation();
 		$this->session = session();
-		$this->db=db_connect('data');
+		$this->db=db_connect();
 		$this->modulePath = ROOTPATH . 'public/uploads/jurusan/';
 		$this->uploadPath = WRITEPATH . 'uploads/';
 		helper('reference');
@@ -33,7 +33,7 @@ class MasterJurusan extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('master_jurusan as a')
 			->select('a.id, a.id as action,a.Nama, a.UpdateDate')
 			->select('a.active');

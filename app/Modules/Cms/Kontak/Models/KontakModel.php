@@ -4,7 +4,7 @@ namespace Kontak\Models;
 
 class KontakModel extends \App\Models\BaseModel
 {
-	protected $DBGroup              = 'backend';
+	protected $DBGroup              = 'data';
     protected $table      			= 't_kontak';
     protected $primaryKey 			= 'id';
     protected $returnType     		= 'object';

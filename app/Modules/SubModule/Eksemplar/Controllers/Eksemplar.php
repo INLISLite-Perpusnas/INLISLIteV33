@@ -205,7 +205,7 @@ class Eksemplar extends \Base\Controllers\BaseController
     private function generateNomorBarcode($collectionData = [], $increment = 1)
     {
 
-        $db = db_connect('data');
+        $db = db_connect();
         $query = $db->table('collections')->select('MAX(RIGHT(NomorBarcode,5)) as no')->get();
         $no = $query->getRow()->no;
 
@@ -707,7 +707,7 @@ class Eksemplar extends \Base\Controllers\BaseController
             $eksemplar_ids = $post['eksemplar_ids'];
             $eksemplar_ids_arr = explode(',', $eksemplar_ids);
 
-            $db = db_connect('data');
+            $db = db_connect();
             $builder = $db->table('collections as a')
                 ->select('a.ID, a.ID as action')
                 ->select('a.NomorBarcode')
@@ -755,7 +755,7 @@ class Eksemplar extends \Base\Controllers\BaseController
     {
         helper('reference');
 
-        $db = db_connect('data');
+        $db = db_connect();
         $builder = $db->table('collections as a')
             ->select('a.ID, a.ID as action, a.ID as Collection_id')
             ->select('a.NomorBarcode, a.TanggalPengadaan, a.NoInduk, a.Catalog_id, a.IsOPAC')
@@ -848,7 +848,7 @@ class Eksemplar extends \Base\Controllers\BaseController
         }
 
         // Koneksi ke database
-        $db = db_connect('data');
+        $db = db_connect();
         try {
             // Perbarui status IsQUARANTINE menjadi 1
             $builder = $db->table('collections');

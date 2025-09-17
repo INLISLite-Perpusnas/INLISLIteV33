@@ -4,7 +4,7 @@ namespace Katalog\Models;
 
 class SerialArticleFilesModel extends \Base\Models\DataModel
 {
-    protected $DBGroup              = 'data';
+    protected $DBGroup              = 'default';
     protected $table                  = 'serial_articlefiles';
     protected $primaryKey             = 'ID';
     protected $returnType             = 'object';

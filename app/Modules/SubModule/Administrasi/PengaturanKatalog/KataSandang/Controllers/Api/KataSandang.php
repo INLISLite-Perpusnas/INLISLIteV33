@@ -20,7 +20,7 @@ class KataSandang extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('kata_sandang as a')
 			->select('a.ID as id, a.ID as action, a.Tag as tag, a.Name as name, a.JumlahKarakter as length, a.UpdateDate as update_date');
 

@@ -30,7 +30,7 @@ class TujuanKunjungan extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('tujuan_kunjungan as a')
 			->select('a.ID as id, a.ID as action, a.Code, a.TujuanKunjungan, a.Member, a.NonMember, a.Rombongan, a.active, a.UpdateDate');
 

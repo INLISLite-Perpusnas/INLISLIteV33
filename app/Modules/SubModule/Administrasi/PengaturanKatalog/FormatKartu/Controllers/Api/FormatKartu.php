@@ -20,7 +20,7 @@ class FormatKartu extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('cardformats as a')
 			->select('a.ID as id, a.ID as action, a.Name as name, a.Width as width, a.Height as height, a.FontName as font_name, a.FontSize as font_size, a.UpdateDate as update_date')
 			->select('a.ID as dimension, a.ID as font');

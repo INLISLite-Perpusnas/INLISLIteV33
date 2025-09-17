@@ -31,7 +31,7 @@ class JenisDenda extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('jenis_denda as a')
 			->select('a.ID, a.ID as action, a.Name as Nama, a.Code, a.UpdateDate')
 			->select('a.active');

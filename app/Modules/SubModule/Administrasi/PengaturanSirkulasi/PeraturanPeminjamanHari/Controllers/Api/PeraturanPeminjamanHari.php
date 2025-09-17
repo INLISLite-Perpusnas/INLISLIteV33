@@ -32,7 +32,7 @@ class PeraturanPeminjamanHari extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('peraturan_peminjaman_hari as a')
 			->select('a.ID, a.ID as action, a.DayIndex as Hari, a.MaxPinjamKoleksi,a.MaxLoanDays,a.DendaTenorJumlah,a.DaySuspend,a.DayPerpanjang,a.CountPerpanjang, a.active');
 
@@ -68,7 +68,7 @@ public function detail($id = null)
         return $this->failNotFound('ID parameter is required');
     }
 
-    $db = db_connect('data');
+    $db = db_connect();
     
     // Get main data from peraturan_peminjaman_hari
     $mainData = $db->table('peraturan_peminjaman_hari')
@@ -133,7 +133,7 @@ public function detail($id = null)
 					'Branch_id' => branch_id()
 				];
 			}
-			$db = db_connect('data');
+			$db = db_connect();
 			// Insert the data as a batch
 			$db->table('collectioncategorysloanhari')->insertBatch($dataToInsert);
 			$this->session->setFlashdata('toastr_msg', 'Peraturan Peminjaman Hari berhasil disimpan');
@@ -205,7 +205,7 @@ public function detail($id = null)
             // Handle categories update
             $selectedCategories = $this->request->getPost('Category_id');
             if (!empty($selectedCategories) && is_array($selectedCategories)) {
-                $db = db_connect('data');
+                $db = db_connect();
                 
                 // Delete existing categories for this record
                 $db->table('collectioncategorysloanhari')

@@ -14,7 +14,7 @@ public function login()
 		if (logged_in()) {
 			return redirect()->to('/dashboard');
 		}
-        $db=db_connect('data');
+        $db=db_connect();
 
         $logo=$db->table('settingparameters')->where('Name', 'Logo')->get()->getRow()->Value?:"Perpustakaan Mitra";
         $data['logo']=$logo;

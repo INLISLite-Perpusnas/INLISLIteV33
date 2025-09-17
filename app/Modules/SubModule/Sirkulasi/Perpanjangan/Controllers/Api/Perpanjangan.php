@@ -35,7 +35,7 @@ class Perpanjangan extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('collectionloanextends cle')
 			->select('cli.ID, cli.ID as action')
 			->select('cli.CollectionLoan_id, cli.LoanDate, cli.DueDate, cli.ActualReturn, cli.LateDays')
@@ -145,7 +145,7 @@ class Perpanjangan extends \Base\Controllers\BaseResourceController
 
 	public function loan_datatable()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('collections col')
 			->select('cli.ID, cli.ID as action')
 			->select('cli.CollectionLoan_id, cli.LoanDate, cli.DueDate, cli.ActualReturn, cli.LateDays')

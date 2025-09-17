@@ -4,7 +4,7 @@ namespace Base\Models;
 
 class BaseModelWithoutTimeStamps extends \CodeIgniter\Model
 {
-    protected $DBGroup	     = 'default';
+    protected $DBGroup       = 'data';
 	protected $table         = 'table';
     protected $primaryKey    = 'id'; 
     protected $returnType    = 'object';

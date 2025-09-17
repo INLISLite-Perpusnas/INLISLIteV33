@@ -6,10 +6,6 @@ $routes->group('laporan-sirkulasi', ['namespace' => 'LaporanSirkulasi\Controller
 	$subroutes->add('index', 'LaporanSirkulasi::index');
 	$subroutes->add('export', 'LaporanSirkulasi::export');
 	$subroutes->add('preview', 'LaporanSirkulasi::preview');
-	// $subroutes->add('visitor', 'LaporanSirkulasi::visitor');
-	// $subroutes->add('visitor_export', 'LaporanSirkulasi::visitor_export');
-	// $subroutes->add('member', 'LaporanSirkulasi::member');
-	// $subroutes->add('member_export', 'LaporanSirkulasi::member_export');
 });
 
 $routes->group('api/laporan-sirkulasi', ['namespace' => 'LaporanSirkulasi\Controllers\Api'], function ($subroutes) {//crud

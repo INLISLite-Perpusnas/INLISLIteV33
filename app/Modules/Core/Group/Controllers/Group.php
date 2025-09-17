@@ -25,7 +25,9 @@ class Group extends \Base\Controllers\BaseController
 
 	public function index()
 	{
+		
 		$groups = $this->groupModel->orderBy('id', 'asc')->findAll();
+	
 		$this->data['title'] = 'Role';
 		$this->data['groups'] = $groups;
 		echo view('Group\Views\list', $this->data);
@@ -100,11 +102,13 @@ class Group extends \Base\Controllers\BaseController
 	public function permissions($group_id = null)
 	{
 		$this->data['title'] = 'Permission - Role';
+		
 		$group = get_single('auth_groups', 'id, name', 'id =' . $group_id);
 		$groupPermissionModel = new GroupPermissionModel();
 		$permissionModel = new BaseModel('auth_permissions');
 
 		$permissions = $permissionModel->orderby('name', 'asc')->findAll();
+		
 		$this->data['permissions'] = $permissions;
 		$this->data['permissions_users'] = permissions_users(null, $group_id);
 		// dd($this->data['permissions_users']);

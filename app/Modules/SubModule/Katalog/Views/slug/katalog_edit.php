@@ -12,7 +12,7 @@ $rda = $request->getGet('rda') ?? 1;
 				<button class="btn btn bg-primary text-white worksheet-btn-load disabled" type="button"><i class="fa fa-check"></i> Jenis Bahan</button>
 			</div>
 			<input type="hidden" class="form-control" name="worksheet_id" id="worksheet_id" placeholder="" value="<?= $catalog->Worksheet_id ?>" />
-			<input type="text" class="form-control" name="worksheet_name" id="worksheet_name" placeholder="" value="<?= $worksheet->Name ?>" readonly />
+			<input type="text" class="form-control" name="worksheet_name" id="worksheet_name" placeholder="" value="<?= $worksheet->Name??'' ?>" readonly />
 			<div class="input-group-append">
 				<button class="btn btn bg-primary text-white isRda-btn-load disabled" type="button"><i class="fa fa-check"></i> Pedoman Katalog</button>
 			</div>

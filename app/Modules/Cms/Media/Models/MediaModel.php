@@ -4,7 +4,7 @@ namespace Media\Models;
 
 class MediaModel extends \App\Models\BaseModel
 {
-	protected $DBGroup              = 'backend';
+	protected $DBGroup              = 'data';
     protected $table      			= 't_page';
     protected $primaryKey 			= 'id';
     protected $returnType     		= 'object';

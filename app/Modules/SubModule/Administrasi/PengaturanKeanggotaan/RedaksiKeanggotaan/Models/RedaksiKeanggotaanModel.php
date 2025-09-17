@@ -5,7 +5,7 @@ namespace RedaksiKeanggotaan\Models;
 class RedaksiKeanggotaanModel extends \App\Models\BaseModel
 {
     protected $table      			= 'memberrules';
-    protected $DBGroup              = 'data';
+    protected $DBGroup              = 'default';
     protected $primaryKey 			= 'id';
     protected $returnType     		= 'object';
     protected $useSoftDeletes 		= false;

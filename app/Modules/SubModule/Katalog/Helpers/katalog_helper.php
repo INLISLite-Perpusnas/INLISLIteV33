@@ -200,7 +200,7 @@ if (!function_exists('stringify_catalog_ruas')) {
 if (!function_exists('get_all_tags')) {
 	function get_all_tags($worksheet_id = '1')
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$session = service('session');
 		if (!$session->has('worksheet_fields')) {
 			$builder = $db->table('worksheetfields as wsf')
@@ -236,7 +236,7 @@ if (!function_exists('get_all_tags')) {
 if (!function_exists('add_to_session')) {
 	function add_to_session($field_id = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$session = service('session');
 
 		$builder = $db->table('fields as f')
@@ -280,7 +280,7 @@ if (!function_exists('add_to_session')) {
 if (!function_exists('remove_from_session')) {
 	function remove_from_session($field_id = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$session = service('session');
 
 		$builder = $db->table('fields as f')
@@ -314,7 +314,7 @@ if (!function_exists('remove_from_session')) {
 if (!function_exists('get_field_indicator1')) {
 	function get_field_indicator1($field_id = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('fieldindicator1s as fi')
 			->select('fi.Field_id as ID, fi.Code, fi.Name')
 			->where('fi.Field_id', $field_id);
@@ -327,7 +327,7 @@ if (!function_exists('get_field_indicator1')) {
 if (!function_exists('get_field_indicator2')) {
 	function get_field_indicator2($field_id = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('fieldindicator2s as fi')
 			->select('fi.Code, fi.Name')
 			->where('fi.Field_id', $field_id);
@@ -340,7 +340,7 @@ if (!function_exists('get_field_indicator2')) {
 if (!function_exists('select_two')) {
 	function select_two()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('refferenceitems');
 
 		$query = $builder->where('Refference_id', 5)
@@ -376,7 +376,7 @@ if (!function_exists('get_catalog')) {
 if (!function_exists('get_control_number')) {
 	function get_control_number()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		//get last control number
 		if (!empty($id)) {
 			$query2 = $db->query('SELECT catalog_ruas.`Value` AS MaxControlNumber FROM catalog_ruas WHERE catalog_ruas.`CatalogId` = "' . $id . '" AND catalog_ruas.`Tag` ="001" ');
@@ -399,7 +399,7 @@ if (!function_exists('get_control_number')) {
 if (!function_exists('get_bib_id')) {
 	function get_bib_id()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		if (!empty($id)) {
 			$query2 = $db->query('SELECT catalog_ruas.`Value` AS MaxBibId FROM catalog_ruas WHERE catalog_ruas.`CatalogId` = "' . $id . '" AND catalog_ruas.`Tag` ="035" ');
 			$row = $query2->getRow()->MaxBibId;

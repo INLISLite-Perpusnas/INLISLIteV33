@@ -22,7 +22,7 @@ class JenisBahanPustaka extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('worksheets as a')
 			->select('a.ID as id, a.ID as action, a.Format_id as format_id, a.Name as name, a.UpdateDate as update_date')
 			->select('f.Name as format')

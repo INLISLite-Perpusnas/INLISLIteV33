@@ -30,7 +30,7 @@ class JenisBahan extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('worksheets as a')
 			->select('a.ID, a.ID as action, a.MaxPinjamKoleksi, a.Name, a.MaxLoanDays, a.DendaTenorJumlah, a.DaySuspend, a.DayPerpanjang, a.CountPerpanjang, a.active, a.Branch_id')
 			->where('a.Branch_id', 0);

@@ -33,7 +33,7 @@ class BacaDitempat extends \Base\Controllers\BaseResourceController
 
 	public function datatable()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$branch_id = user()->branch_id ?? $this->request->getGet('branch_id');
 		$builder = $db->table('bacaditempat as a')
 			->select('a.ID as id, a.ID as action')

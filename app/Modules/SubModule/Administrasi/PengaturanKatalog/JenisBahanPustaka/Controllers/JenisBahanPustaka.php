@@ -124,7 +124,7 @@ class JenisBahanPustaka extends \Base\Controllers\BaseController
 			$ws = $this->wsModel->find($id);
 			$this->data['ws'] = $ws;
 
-			$db = db_connect('data');
+			$db = db_connect();
 			$builder = $db->table('worksheetfields as wsf')
 				->select('wsf.ID, wsf.Field_id')
 				->select('f.Tag, f.Name')

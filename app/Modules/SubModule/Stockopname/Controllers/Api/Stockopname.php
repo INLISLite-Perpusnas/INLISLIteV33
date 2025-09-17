@@ -34,7 +34,7 @@ class Stockopname extends \Base\Controllers\BaseResourceController
 	public function datatable()
 	{
 	
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('stockopname as a')
 			->select('a.ID, a.ID as action')
 			->select('a.CreateDate as CreateDate, a.ProjectName as ProjectName, a.TglMulai as TglMulai, a.Koordinator, a.Tahun,a.Keterangan as Keterangan');

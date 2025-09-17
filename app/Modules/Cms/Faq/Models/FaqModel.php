@@ -4,7 +4,7 @@ namespace Faq\Models;
 
 class FaqModel extends \App\Models\BaseModel
 {
-	protected $DBGroup              = 'backend';
+	protected $DBGroup              = 'data';
     protected $table      			= 't_faq';
     protected $primaryKey 			= 'id';
     protected $returnType     		= 'object';

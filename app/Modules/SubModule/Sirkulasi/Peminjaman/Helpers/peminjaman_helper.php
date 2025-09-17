@@ -23,7 +23,7 @@ if (!function_exists('get_cart_loan')) {
 if (!function_exists('get_loan_count')) {
 	function get_loan_count($member_id)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('collectionloanitems cli')
 			->select('count(cli.ID) as total')
 			->where('cli.LoanStatus','Loan')
@@ -39,7 +39,7 @@ if (!function_exists('insert_peminjaman')) {
 	{
 		
 		return true;
-		// $db = db_connect('data');
+		// $db = db_connect();
 		// $builder = $db->table('collectionloanextends cle')
 		// 	->select('count(cle.id) as total')
 		// 	->where('cle.CollectionLoanItem_id', $CollectionLoanItem_id);

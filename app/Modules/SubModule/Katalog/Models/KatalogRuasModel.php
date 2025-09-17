@@ -4,7 +4,7 @@ namespace Katalog\Models;
 
 class KatalogRuasModel extends \Base\Models\DataModel
 {
-    protected $DBGroup              = 'data';
+    protected $DBGroup              = 'default';
     protected $table                  = 'catalog_ruas';
     protected $primaryKey             = 'ID';
     protected $returnType             = 'object';
@@ -27,7 +27,7 @@ class KatalogRuasModel extends \Base\Models\DataModel
     {
         $id = array_column($data, 'CatalogId')[0];
 
-        $conn = db_connect('data');
+        $conn = db_connect();
         $db = $conn->table($this->table);
         $this->db->table($this->table)->where('CatalogId', $id)->delete();
 

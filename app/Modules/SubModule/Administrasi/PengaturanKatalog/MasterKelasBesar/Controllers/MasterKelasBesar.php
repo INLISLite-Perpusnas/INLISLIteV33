@@ -159,7 +159,7 @@ class MasterKelasBesar extends \Base\Controllers\BaseController
 
     public function datatable($slug = null)
     {
-        $db = db_connect('data');
+        $db = db_connect();
         $branch_id = user()->branch_id ?? $this->request->getGet('branch_id');
         
         $builder = $db->table('master_kelas_besar as a')

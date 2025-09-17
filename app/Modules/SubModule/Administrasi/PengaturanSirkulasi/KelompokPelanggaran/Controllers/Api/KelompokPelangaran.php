@@ -23,7 +23,7 @@ class KelompokPelanggaran extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$branchId=user()->branch_id;
 		$builder = $db->table('kelompok_pelanggaran as a')
 		  ->select('a.id, a.id as action, a.Name as Name, a.Jumlah as Jumlah,  a.Warna as Warna,  a.Branch_id, a.CreateDate as CreateDate, a.UpdateDate as UpdateDate, a.active as active')

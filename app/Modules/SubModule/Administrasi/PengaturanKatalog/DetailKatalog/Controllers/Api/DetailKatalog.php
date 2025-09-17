@@ -31,7 +31,7 @@ class DetailKatalog extends \Base\Controllers\BaseResourceController
 
 	public function datatable()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('settingcatalogdetail as a')
 			->select('a.ID, a.ID as action, a.active, a.Branch_id')
 			->select('b.Tag, b.Name as Name')
@@ -46,7 +46,7 @@ class DetailKatalog extends \Base\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('JumlahKoleksi', function ($row) {
-				$db = db_connect('data');
+				$db = db_connect();
 				$builder = $db->table('collections')->where('Media_id', $row->ID);
 				return $builder->countAllResults();
 			})

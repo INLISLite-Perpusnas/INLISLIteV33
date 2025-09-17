@@ -31,7 +31,7 @@ class KategoriKoleksi extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{ 
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('collectioncategorys as a')
 			->select('a.ID, a.ID as action, a.Name as Nama, a.UpdateDate, a.active, a.Branch_id')
 			->select('0 as JumlahKoleksi');
@@ -51,7 +51,7 @@ class KategoriKoleksi extends \Base\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('JumlahKoleksi', function ($row) {
-				$db = db_connect('data');
+				$db = db_connect();
 				$builder = $db->table('collections')->where('Category_id', $row->ID);
 				return $builder->countAllResults();
 			})

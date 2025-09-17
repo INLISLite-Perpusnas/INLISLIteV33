@@ -4,7 +4,7 @@ namespace Banner\Models;
 
 class BannerModel extends \App\Models\BaseModel
 {
-    // protected $DBGroup              = 'backend';
+    protected $DBGroup              = 'default';
 	protected $table      			= 't_banner'; 
     protected $primaryKey 			= 'id';
     protected $returnType     		= 'object';

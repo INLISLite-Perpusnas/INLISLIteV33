@@ -5,7 +5,7 @@ namespace Anggota\Models;
 
 class Anggotahakakses extends \App\Models\BaseModel
 {
-    protected $DBGroup              = 'data';
+    protected $DBGroup              = 'default';
     protected $table      			= 'memberloanauthorizelocation';
     protected $primaryKey 			= 'DataID';
     protected $returnType     		= 'object';

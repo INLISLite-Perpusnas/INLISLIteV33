@@ -53,7 +53,7 @@ class Anggota extends \Base\Controllers\BaseResourceController
 		 * Query builder to get data from database
 		 * @var \CodeIgniter\Database\BaseBuilder $builder
 		 */
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('members as a');
 		$builder->select([
 			// Kolom dari tabel members (a)

@@ -20,7 +20,7 @@ class PenyediaKatalog extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('library as a')
 			->select('a.ID as id, a.ID as action, a.NAME as alias, a.FULLNAME as name, a.UpdateDate as update_date')
 			->select('a.ID as database, a.URL as endpoint, a.PORT as port, a.DATABASENAME as db, a.RECORDSYNTAX as sintax, a.PROTOCOL as protocol');

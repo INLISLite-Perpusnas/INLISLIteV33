@@ -432,7 +432,7 @@ class User extends \Base\Controllers\BaseResourceController
 		$search = $this->request->getGet('search') ?? '';
 		$page = $this->request->getGet('page') ?? '1';
 
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder_count = $db->table('branchs as a')
 			->select('count(*) as total')
 			->like('a.Code', $search);
@@ -445,7 +445,7 @@ class User extends \Base\Controllers\BaseResourceController
 		$offset = $page * $per_page;
 		$limit = $offset - $per_page;
 
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('branchs as a')
 			->select('a.ID as id, concat(a.Code," ","(",a.Name,")") as text')
 			->like('a.Code', $search)

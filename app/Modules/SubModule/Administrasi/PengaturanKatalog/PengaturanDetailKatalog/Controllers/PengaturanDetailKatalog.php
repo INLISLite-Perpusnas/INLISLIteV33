@@ -64,7 +64,7 @@ class PengaturanDetailKatalog extends \Base\Controllers\BaseController
 				echo view('PengaturanDetailKatalog\Views\update', $this->data);
 			}
 		} else {
-			$db = db_connect('data');
+			$db = db_connect();
 			$builder = $db->table('settingcatalogdetail as scd')
 				->select('scd.ID, scd.Field_id')
 				->select('f.Tag, f.Name')

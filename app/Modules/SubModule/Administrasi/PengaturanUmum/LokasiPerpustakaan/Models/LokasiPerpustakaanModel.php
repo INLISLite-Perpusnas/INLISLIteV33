@@ -4,7 +4,7 @@ namespace LokasiPerpustakaan\Models;
 
 class LokasiPerpustakaanModel extends \App\Models\BaseModel
 {
-    protected $DBGroup              = 'data';
+    protected $DBGroup              = 'default';
 	protected $table      			= 'location_library';
     protected $primaryKey 			= 'ID';
     protected $returnType     		= 'object';

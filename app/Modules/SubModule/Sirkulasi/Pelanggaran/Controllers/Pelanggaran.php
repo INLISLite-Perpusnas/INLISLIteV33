@@ -31,7 +31,7 @@ class Pelanggaran extends \Base\Controllers\BaseController
     }
     public function index()
     {
-        // $db = db_connect('data');
+        // $db = db_connect();
         // $data = get_ref_table('collectionloanitems','ID, LoanDate, DueDate, ActualReturn','ID=1','inlis', true);
         // dd($data);
         // $abc = late_days($data->ActualReturn, $data->DueDate);

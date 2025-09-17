@@ -30,7 +30,7 @@ class JenisPelanggaran extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('jenis_pelanggaran as a')
 			->select('a.ID as id, a.ID as action, a.JenisPelanggaran, a.Keterangan, a.UpdateDate')
 			->select('a.description,a.sort, a.active');

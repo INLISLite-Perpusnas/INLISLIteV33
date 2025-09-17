@@ -31,7 +31,7 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 
 	public function katalog($IsQUARANTINE = 0)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('catalogs as a')
 			->select('a.ID, a.ID as action')
 			->select('a.ControlNumber, a.BIBID, a.Title, a.Author, a.Edition, a.Publisher, a.PublishLocation, a.PublishYear, a.Publikasi, a.Subject, a.PhysicalDescription, a.ISBN, a.CallNumber, a.Note, a.Languages, a.DeweyNo, a.ApproveDateOPAC, a.IsOPAC, a.IsBNI, a.IsKIN, a.IsRDA, a.CoverURL, a.Worksheet_id, a.CreateBy, a.CreateDate, a.CreateTerminal, a.UpdateBy, a.UpdateDate, a.UpdateTerminal, a.MARC_LOC, a.PRESERVASI_ID, a.QUARANTINEDBY, a.QUARANTINEDDATE, a.QUARANTINEDTERMINAL, a.Member_id, a.KIILastUploadDate')
@@ -94,7 +94,7 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 	public function datatable($IsQUARANTINE = 0, $catalog_id = '', $Iskeranjang = 0)
 {
     $flag = 1;
-    $db = db_connect('data');
+    $db = db_connect();
     $builder = $db->table('collections as a')
         ->select('a.ID, a.ID as action, a.ID as Collection_id')
         ->select('a.NomorBarcode, a.TanggalPengadaan, a.NoInduk, a.Catalog_id, a.IsOPAC, a.ISDRM, a.IsQUARANTINE, a.Status_id')
@@ -415,14 +415,14 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 
 	public function get_collectionsources()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$query = $db->table('collectionsources')->select('ID as code, Name as name')->get();
 		return $this->simpleResponse($query->getResult());
 	}
 
 	public function get_collectionpartners()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$query = $db->table('partners')->select('ID as code, Name as name')
 		->where('Branch_id', branch_id())->get();
 		return $this->simpleResponse($query->getResult());
@@ -430,35 +430,35 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 
 	public function get_collectionrules()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$query = $db->table('collectionrules')->select('ID as code, Name as name')->get();
 		return $this->simpleResponse($query->getResult());
 	}
 
 	public function get_collectionmedias()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$query = $db->table('collectionmedias')->select('ID as code, Name as name')->get();
 		return $this->simpleResponse($query->getResult());
 	}
 
 	public function get_collectioncategory()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$query = $db->table('collectioncategorys')->select('ID as code, Name as name')->get();
 		return $this->simpleResponse($query->getResult());
 	}
 
 	public function get_collectionstatus()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$query = $db->table('collectionstatus')->select('ID as code, Name as name')->get();
 		return $this->simpleResponse($query->getResult());
 	}
 
 	public function get_collectioncurrency()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$query = $db->table('currency')->select('Currency as code, Description as name')->where('active', '1')->orderBy('Description')->get();
 		return $this->simpleResponse($query->getResult());
 	}
@@ -472,7 +472,7 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 
 	public function get_locationlibrary()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$query = $db->table('location_library')->select('ID as code, Name as name')->where('Branch_id', user()->branch_id)->orderBy('Name')->get();
 		return $this->simpleResponse($query->getResult());
 	}
@@ -482,7 +482,7 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 		$search = $this->request->getGet('search') ?? '';
 		$page = $this->request->getGet('page') ?? '1';
 
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder_count = $db->table('location_library as a')
 			->select('count(*) as total')
 			->like('a.Name', $search);
@@ -492,7 +492,7 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 		$offset = $page * $per_page;
 		$limit = $offset - $per_page;
 
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('location_library as a')
 			->select('a.ID as id, a.Name as text')
 			->where('a.Branch_id', user()->branch_id)
@@ -510,7 +510,7 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 
 	public function get_locations($LocationLibrary_id = 0)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$query = $db->table('locations')
 			->select('ID as code, Name as name')
 			->where('LocationLibrary_id', $LocationLibrary_id)->orderBy('Name')->get();
@@ -562,7 +562,7 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
         ];
 
         // Insert to database
-        $db = db_connect('data');
+        $db = db_connect();
         $builder = $db->table('partners');
         $inserted = $builder->insert($data);
         
@@ -598,7 +598,7 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
             ], 400);
         }
 
-        $db = db_connect('data');
+        $db = db_connect();
         $partner = $db->table('partners')
             ->where('ID', $id)
             ->get()
@@ -640,7 +640,7 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
         }
 
         // Check if record exists
-        $db = db_connect('data');
+        $db = db_connect();
         $partner = $db->table('partners')
             ->where('ID', $id)
             ->get()

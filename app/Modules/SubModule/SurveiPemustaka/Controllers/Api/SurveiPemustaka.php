@@ -30,7 +30,7 @@ class SurveiPemustaka extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('survey as a')
 			->select('a.ID as id, a.ID as action')
 			->select('a.NomorUrut as sort, a.IsActive as active')
@@ -76,7 +76,7 @@ class SurveiPemustaka extends \Base\Controllers\BaseResourceController
 
 	public function question_datatable($Survey_id = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('survey_pertanyaan as a')
 			->select('a.ID as id, a.ID as action')
 			->select('a.NoUrut as sort')
@@ -119,7 +119,7 @@ class SurveiPemustaka extends \Base\Controllers\BaseResourceController
 
 	public function items_datatable($Survey_Pertanyaan_id = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('survey_pilihan as a')
 			->select('a.ID as id, a.ID as action')
 			->select('a.Pilihan as Name, a.ChoosenCount as Respondent')

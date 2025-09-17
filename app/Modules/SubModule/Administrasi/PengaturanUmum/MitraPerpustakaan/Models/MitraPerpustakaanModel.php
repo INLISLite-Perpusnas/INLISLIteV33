@@ -4,7 +4,7 @@ namespace MitraPerpustakaan\Models;
 
 class MitraPerpustakaanModel extends \App\Models\BaseModel
 {
-    protected $DBGroup              = 'data';
+    protected $DBGroup              = 'default';
 	protected $table      			= 'branchs';
     protected $primaryKey 			= 'ID';
     protected $returnType     		= 'object';

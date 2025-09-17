@@ -122,7 +122,7 @@ public function create()
         return redirect()->to('anggota');
     }
                           
-    $db = db_connect('data');
+    $db = db_connect();
 	$this->data['db'] = $db;
 	$jenisperpustakaan=$db->table('settingparameters')->where('Name', 'JenisPerpustakaan')->get()->getRow()->Value?:"UMUM";
 
@@ -202,7 +202,7 @@ public function create()
     if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
         
         // PASTIKAN MemberNo unik
-        $db = db_connect('data');
+        $db = db_connect();
         $existingMember = $db->table('members')->where('MemberNo', $MemberNo)->get()->getRow();
         
         // Jika MemberNo sudah ada, generate ulang
@@ -431,7 +431,7 @@ public function create()
 			set_message('toastr_type', 'error');
 			return redirect()->to('anggota');
 		}
-		$db=db_connect('data');
+		$db=db_connect();
 	$jenisperpustakaan=$db->table('settingparameters')->where('Name', 'JenisPerpustakaan')->get()->getRow()->Value?:"UMUM";
 
 	if($jenisperpustakaan=="UMUM"){
@@ -903,7 +903,7 @@ public function create()
 
 	public function import()
 	{
-		$db=db_connect('data');
+		$db=db_connect();
 	  // Check if the request contains a file
 	  if (!$this->request->getFile('excel_file')) {
         return redirect()->back()->with('message', 'No file selected for upload.');
@@ -1061,7 +1061,7 @@ public function printanggota($id = null)
 		$bg_base64 = 'data:image/png;base64,' . base64_encode($bg);
 		$this->data['bg_base64'] = $bg_base64;
     // Load required libraries
-    $db = db_connect('data'); // Use 'data' database connect();
+    $db = db_connect(); // Use 'data' database connect();
 
     // Get member data with related tables
     $anggota = $db->table('members m')
@@ -1165,7 +1165,7 @@ echo view('Anggota\Views\pdf\pdf1',$this->data);
 public function printkartubelakang($id = null)
 {
     // Load required libraries
-    $db = db_connect('data'); // Use 'data' database connect();
+    $db = db_connect(); // Use 'data' database connect();
 
    
 
@@ -1238,7 +1238,7 @@ echo view('Anggota\Views\pdf\cetak-kartubelakang',$this->data);
 		} else {
 			$photo_html = '<img src="' . $photo_base64 . '" width="225px" height="250px" style="background-color: #ffffff; padding: 5px; margin-bottom: 15px"/>';
 		}
-		$db=db_connect('data');
+		$db=db_connect();
 		$nama_perpustakaan=$db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value?:"Perpustakaan Mitra";
 		// Corrected line 6
 		$logo = $db->table('settingparameters')->where('Name', 'Logo')->get()->getRow()->Value?:"Perpustakaan Mitra";
@@ -1301,7 +1301,7 @@ echo view('Anggota\Views\pdf\cetak-kartubelakang',$this->data);
 
 	public function report()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('members as a')
 			->select('a.ID, a.ID as action, a.ID as cid')
 			->select('a.IsKeranjang, a.FullName, a.Phone, a.Email, a.PhotoUrl, a.MemberNo,  a.RegisterDate, a.EndDate, a.Branch_id')
@@ -1469,7 +1469,7 @@ public function multipleprint(){
         throw new \Exception('ID anggota tidak valid');
     }
     
-    $db = db_connect('data'); // Use 'data' database
+    $db = db_connect(); // Use 'data' database
     
     // Get library settings once
     $perpus_name = $db->table('settingparameters')

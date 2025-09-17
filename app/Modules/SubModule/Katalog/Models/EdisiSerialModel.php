@@ -4,7 +4,7 @@ namespace Katalog\Models;
 
 class EdisiSerialModel extends \Base\Models\DataModel
 {
-  protected $DBGroup              = 'data';
+  protected $DBGroup              = 'default';
   protected $table            = 'master_edisi_serial';
   protected $primaryKey       = 'ID';
   protected $returnType         = 'object';

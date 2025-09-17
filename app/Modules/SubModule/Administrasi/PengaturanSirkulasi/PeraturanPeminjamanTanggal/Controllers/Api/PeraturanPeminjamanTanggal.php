@@ -32,7 +32,7 @@ class PeraturanPeminjamanTanggal extends \Base\Controllers\BaseResourceControlle
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('peraturan_peminjaman_tanggal as a')
 			->select('a.ID, a.ID as action, a.TanggalAwal as TanggalAwal,a.TanggalAkhir as TanggalAkhir, a.MaxPinjamKoleksi,a.MaxLoanDays,a.DendaTenorJumlah,a.DaySuspend,a.DayPerpanjang,a.CountPerpanjang, a.active');
 
@@ -68,7 +68,7 @@ public function detail($id = null)
         return $this->failNotFound('ID parameter is required');
     }
 
-    $db = db_connect('data');
+    $db = db_connect();
     
     // Get main data from peraturan_peminjaman_tanggal
     $mainData = $db->table('peraturan_peminjaman_tanggal')

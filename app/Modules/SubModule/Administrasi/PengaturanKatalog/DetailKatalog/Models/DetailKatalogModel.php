@@ -4,7 +4,7 @@ namespace DetailKatalog\Models;
 
 class DetailKatalogModel extends \App\Models\BaseModel
 {
-    protected $DBGroup              = 'data';
+    protected $DBGroup              = 'default';
     protected $table                  = 'collectionmedias';
     protected $primaryKey             = 'ID';
     protected $returnType             = 'object';

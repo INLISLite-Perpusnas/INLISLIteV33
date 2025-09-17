@@ -4,7 +4,7 @@ namespace JenisBahan\Models;
 
 class JenisBahanModel extends \App\Models\BaseModel
 {
-    protected $DBGroup              = 'data';
+    protected $DBGroup              = 'default';
     protected $table                  = 'worksheets';
     protected $primaryKey             = 'ID';
     protected $returnType             = 'object';

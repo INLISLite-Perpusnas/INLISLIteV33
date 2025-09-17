@@ -31,7 +31,7 @@ class UnitKerja extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('master_jenis_identitas as a')
 			->select('a.ID, a.id as action,a.Code,a.Description, a.Nama, a.UpdateDate')
 			->select('a.description,a.sort, a.active');

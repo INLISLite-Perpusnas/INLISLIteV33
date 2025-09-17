@@ -33,7 +33,7 @@ class HariLibur extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('holidays as a')
 			->select('a.ID, a.ID as action,a.Dates,a.Names, a.UpdateDate')
 			->select('a.active')

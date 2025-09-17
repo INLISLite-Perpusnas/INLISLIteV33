@@ -17,7 +17,7 @@ if (!function_exists('cookie_location')) {
 if (!function_exists('get_location')) {
     function get_location($code)
     {
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('locations as a')
 			->select('a.ID, a.Code, a.Name')
 			->select('a.LocationLibrary_id, a.Branch_id, c.Name as Branch_name')

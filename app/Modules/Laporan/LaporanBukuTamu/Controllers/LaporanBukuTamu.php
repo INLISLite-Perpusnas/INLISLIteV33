@@ -15,6 +15,8 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
 	public $authorize;
 	public $anggotaModel;
     public $guestModel;
+    public $lokasiperpustakaanModel;
+    public $tujuanKunjunganModel;
 
 	function __construct()
 	{
@@ -146,7 +148,7 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
         $dateRow  = 2;
 
         if ($kop === 'Ya') {
-            $this->db= db_connect('data');
+            $this->db= db_connect();
             $logokop = $this->db->table('settingparameters')
                 ->where('Name', 'LogoKop')
                 ->get()

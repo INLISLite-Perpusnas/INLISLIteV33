@@ -36,7 +36,7 @@ class MitraPerpustakaan extends \Base\Controllers\BaseResourceController
 		$NPP_KabKota_id = $this->request->getGet('NPP_KabKota_id') ?? '';
 		$NPP_Kecamatan_id = $this->request->getGet('NPP_Kecamatan_id') ?? '';
 
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('branchs as a')
 			->select('a.ID, a.Code, a.Name, a.Alias, "" as Alamat, "" as Jenis')
 			->select('a.NPP_id, a.NPP_Jenis, a.NPP_Provinsi_id, a.NPP_KabKota_id, a.NPP_Kecamatan_id, a.NPP_Kelurahan_id')
@@ -115,7 +115,7 @@ class MitraPerpustakaan extends \Base\Controllers\BaseResourceController
 		$search = $this->request->getGet('search') ?? '';
 		$page = $this->request->getGet('page') ?? '1';
 
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder_count = $db->table('branchs as a')
 			->select('count(*) as total')
 			->like('a.Name', $search);
@@ -125,7 +125,7 @@ class MitraPerpustakaan extends \Base\Controllers\BaseResourceController
 		$offset = $page * $per_page;
 		$limit = $offset - $per_page;
 
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('branchs as a')
 			->select('a.ID as id, a.Name as text')
 			->like('a.Name', $search)
@@ -244,7 +244,7 @@ class MitraPerpustakaan extends \Base\Controllers\BaseResourceController
 
 	public function check($code = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('branchs as a')
 			->select('a.ID, a.Code, a.Name')
 			->where('a.Alias', $code);

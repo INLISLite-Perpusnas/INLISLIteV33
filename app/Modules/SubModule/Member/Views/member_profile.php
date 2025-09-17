@@ -1,5 +1,5 @@
 <?php 
-	$db = db_connect('data');
+	$db = db_connect();
 	$builder = $db->table('memberloanauthorizelocation mal')
 		->join('location_library ll','ll.ID=mal.LocationLoan_id')
 		->where('mal.Member_id',$member->ID);

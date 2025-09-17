@@ -74,7 +74,7 @@ class Anggota extends \Base\Controllers\BaseController
 		// Simpan ke array data
 		$this->data['slug'] = $slug;
 		
-		$db = db_connect('data');
+		$db = db_connect();
 
 		$jenisperpustakaan = $db->table('settingparameters')->where('Name', 'JenisPerpustakaan')->get()->getRow()->Value ?: "UMUM";
 		$member_no = user()->username;
@@ -168,7 +168,7 @@ class Anggota extends \Base\Controllers\BaseController
 			return redirect()->to('anggota');
 		}
 
-		$db = db_connect('data');
+		$db = db_connect();
 		$this->data['db'] = $db;
 		$jenisperpustakaan = $db->table('settingparameters')->where('Name', 'JenisPerpustakaan')->get()->getRow()->Value ?: "UMUM";
 
@@ -245,7 +245,7 @@ class Anggota extends \Base\Controllers\BaseController
 		if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
 
 			// PASTIKAN MemberNo unik
-			$db = db_connect('data');
+			$db = db_connect();
 			$existingMember = $db->table('members')->where('MemberNo', $MemberNo)->get()->getRow();
 
 			// Jika MemberNo sudah ada, generate ulang
@@ -474,7 +474,7 @@ class Anggota extends \Base\Controllers\BaseController
 			set_message('toastr_type', 'error');
 			return redirect()->to('anggota');
 		}
-		$db = db_connect('data');
+		$db = db_connect();
 		$jenisperpustakaan = $db->table('settingparameters')->where('Name', 'JenisPerpustakaan')->get()->getRow()->Value ?: "UMUM";
 
 		if ($jenisperpustakaan == "UMUM") {
@@ -948,7 +948,7 @@ class Anggota extends \Base\Controllers\BaseController
 
 	public function import()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		// Check if the request contains a file
 		if (!$this->request->getFile('excel_file')) {
 			return redirect()->back()->with('message', 'No file selected for upload.');
@@ -1106,7 +1106,7 @@ class Anggota extends \Base\Controllers\BaseController
 		$bg_base64 = 'data:image/png;base64,' . base64_encode($bg);
 		$this->data['bg_base64'] = $bg_base64;
 		// Load required libraries
-		$db = db_connect('data'); // Use 'data' database connect();
+		$db = db_connect(); // Use 'data' database connect();
 
 		// Get member data with related tables
 		$anggota = $db->table('members m')
@@ -1209,7 +1209,7 @@ class Anggota extends \Base\Controllers\BaseController
 	public function printkartubelakang($id = null)
 	{
 		// Load required libraries
-		$db = db_connect('data'); // Use 'data' database connect();
+		$db = db_connect(); // Use 'data' database connect();
 
 
 
@@ -1281,7 +1281,7 @@ class Anggota extends \Base\Controllers\BaseController
 		} else {
 			$photo_html = '<img src="' . $photo_base64 . '" width="225px" height="250px" style="background-color: #ffffff; padding: 5px; margin-bottom: 15px"/>';
 		}
-		$db = db_connect('data');
+		$db = db_connect();
 		$nama_perpustakaan = $db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value ?: "Perpustakaan Mitra";
 		// Corrected line 6
 		$logo = $db->table('settingparameters')->where('Name', 'Logo')->get()->getRow()->Value ?: "Perpustakaan Mitra";
@@ -1344,7 +1344,7 @@ class Anggota extends \Base\Controllers\BaseController
 
 	public function report()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('members as a')
 			->select('a.ID, a.ID as action, a.ID as cid')
 			->select('a.IsKeranjang, a.FullName, a.Phone, a.Email, a.PhotoUrl, a.MemberNo,  a.RegisterDate, a.EndDate, a.Branch_id')
@@ -1512,7 +1512,7 @@ class Anggota extends \Base\Controllers\BaseController
 			throw new \Exception('ID anggota tidak valid');
 		}
 
-		$db = db_connect('data'); // Use 'data' database
+		$db = db_connect(); // Use 'data' database
 
 		// Get library settings once
 		$perpus_name = $db->table('settingparameters')

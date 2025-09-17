@@ -18,7 +18,7 @@ class MasterKelasBesar extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('fields as a')
 			->select('a.ID as id, a.ID as action, a.MasterKelasBesar as code, a.Name as name')
 			->select('a.Length as length, a.Fixed as fixed, a.Enabled as enabled, a.Repeatable as repeatable, a.Mandatory as mandatory, a.IsCustomable as customable')
@@ -150,7 +150,7 @@ class MasterKelasBesar extends \Base\Controllers\BaseResourceController
 
 	public function get_all_MasterKelasBesars()
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$query = $db->table('fields')->select('ID as code, Name as name')->get();
 		return $this->simpleResponse($query->getResult());
 	}

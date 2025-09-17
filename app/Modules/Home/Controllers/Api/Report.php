@@ -67,7 +67,7 @@ class Report extends \Base\Controllers\BaseResourceController
 
 	public function member_datatable($isKeranjang = 0)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('members as a')
 			->select('a.ID, a.ID as action, a.ID as cid')
 			->select('a.IsKeranjang, a.FullName, a.Phone, a.Email, a.PhotoUrl, a.MemberNo, a.Email, a.RegisterDate, a.EndDate')

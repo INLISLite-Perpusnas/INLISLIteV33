@@ -30,7 +30,7 @@ class JenisAnggota extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
-		$db = db_connect('data');
+		$db = db_connect();
 		$builder = $db->table('jenis_anggota as a')
 			->select('a.id, a.id as action, a.jenisanggota')
 			->select('a.MasaBerlakuAnggota, a.BiayaPendaftaran, a.MaxLoanDays,a.MaxPinjamKoleksi, a.DayPerpanjang, a.BiayaPerpanjangan, a.UploadDokumenKeanggotaanOnline, a.UpdateDate')

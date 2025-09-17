@@ -1,5 +1,5 @@
 <?php
-$db = db_connect('data');
+$db = db_connect();
 $request = service('request');
 $slug = $request->getGet('slug');
 $select2 = select_two();

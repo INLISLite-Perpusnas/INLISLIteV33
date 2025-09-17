@@ -41,7 +41,7 @@ class JenisPerpustakaan extends \Base\Controllers\BaseController
     public function form(int $id = 0)
     {
         $this->data['title'] = 'Form Anggota';
-        $db = db_connect('data');
+        $db = db_connect();
         $builder = $db->table('members_form as a')
             ->select('a.ID as form_id, b.id as field_id, b.name as field_name, b.mandatory ')
             ->join('member_fields as b', 'b.id = a.Member_Field_id')

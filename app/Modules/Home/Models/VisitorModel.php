@@ -4,6 +4,7 @@ namespace Opac\Models;
 
 class VisitorModel extends \App\Models\BaseModel
 {
+    protected $dbGroup           	= 'data';
     protected $table      			= 'c_visitors'; 
     protected $primaryKey 			= 'id';
     protected $returnType     		= 'object';

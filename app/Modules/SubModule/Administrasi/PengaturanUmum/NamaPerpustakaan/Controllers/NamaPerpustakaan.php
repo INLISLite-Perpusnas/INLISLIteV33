@@ -23,7 +23,7 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 	{
 		$this->auth = \Myth\Auth\Config\Services::authentication();
 		$this->authorize = \Myth\Auth\Config\Services::authorization();
-		$this->db= db_connect('data');
+		$this->db= db_connect();
 		$this->validation = \Config\Services::validation();
 		$this->session = session();
 		$this->branchModel = new \NamaPerpustakaan\Models\BranchModel();

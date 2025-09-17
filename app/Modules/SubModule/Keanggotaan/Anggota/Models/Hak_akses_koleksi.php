@@ -5,7 +5,7 @@ namespace Anggota\Models;
 
 class Hak_akses_koleksi extends \App\Models\BaseModel
 {
-    protected $DBGroup              = 'data';
+    protected $DBGroup              = 'default';
     protected $table      			= 'memberloanauthorizecategory';
     protected $primaryKey 			= 'DataID';
     protected $returnType     		= 'object';

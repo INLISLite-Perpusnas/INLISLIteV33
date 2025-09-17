@@ -4,7 +4,7 @@ namespace NamaPerpustakaan\Models;
 
 class BranchModel extends \Base\Models\DataModel
 {
-    protected $DBGroup              = 'data';
+    protected $DBGroup              = 'default';
     protected $table                  = 'branchs';
     protected $primaryKey             = 'ID';
     protected $returnType             = 'object';

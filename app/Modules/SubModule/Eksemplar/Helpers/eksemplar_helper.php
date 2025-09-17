@@ -35,14 +35,14 @@ if (!function_exists('data_catalog')) {
 
 function get_branch_id($location_library_id)
 {
-	$db = db_connect('data');
+	$db = db_connect();
 	$query = $db->table('location_library')->select('Branch_id as no')->where('ID', $location_library_id)->get();
 	$no = $query->getRow()->no;
 	return $no;
 }
 function get_branch($branch_id)
 {
-	$db = db_connect('data');
+	$db = db_connect();
 	$query = $db->table('branchs')->where('ID', $branch_id)->get();
 	$row = $query->getRow();
 	return $row;
@@ -50,7 +50,7 @@ function get_branch($branch_id)
 
 function gen_no_barcode($i = 1)
 {
-	$db = db_connect('data');
+	$db = db_connect();
 	$query = $db->table('collections')->select('MAX(RIGHT(NomorBarcode,5)) as no')->get();
 	$no = $query->getRow()->no;
 	$formatQuery = $db->table('settingparameters')
@@ -76,7 +76,7 @@ function gen_no_barcode($i = 1)
 
 function gen_no_rfid($i = 1)
 {
-	$db = db_connect('data');
+	$db = db_connect();
 	$query = $db->table('collections')->select('MAX(RIGHT(RFID,5)) as no')->get();
 	$no = $query->getRow()->no;
 	$format = get_parameter('nomor-rfid', '{yyyy}/PN/{99999}');
@@ -96,7 +96,7 @@ function gen_no_rfid($i = 1)
 
 function gen_no_induk($i = 1)
 {
-	$db = db_connect('data');
+	$db = db_connect();
 	$query = $db->table('collections')->select('MAX(RIGHT(NoInduk,5)) as no')->get();
 	$no = $query->getRow()->no;
 	$format = get_parameter('nomor-induk', '{yyyy}/PN/{99999}');

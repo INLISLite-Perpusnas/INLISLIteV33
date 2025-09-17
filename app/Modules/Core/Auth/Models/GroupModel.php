@@ -6,7 +6,7 @@ use CodeIgniter\Model;
 
 class GroupModel extends \Base\Models\BaseModel
 {
-	protected $DBGroup              = 'default';
+	protected $DBGroup              = 'data';
     protected $table      			= 'auth_groups'; 
     protected $primaryKey 			= 'id';
     protected $returnType     		= 'object';

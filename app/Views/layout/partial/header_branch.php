@@ -2,13 +2,13 @@
 
 $header_title = "";
 $header_sub_title = "";
-$db = db_connect('data');
+$db = db_connect();
  $logo=$db->table('settingparameters')->where('Name', 'Logo')->get()->getRow()->Value?:"Perpustakaan Mitra";
 
 $header_logo =base_url('uploads/branch/') . $logo?? base_url('perpusnas.png');
 $branch_title = "INLISLite Backoffice";
 
-$db=db_connect('data');
+$db=db_connect();
 $nama_perpustakaan=$db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value?:"Perpustakaan Mitra";
 $npp_perpustakaan=$db->table('settingparameters')->where('Name', 'NPPPerpustakaan')->get()->getRow()->Value?:"NPP Perpustakaan Mitra";
 $alamat_perpustakaan=$db->table('settingparameters')->where('Name', 'NamaLokasiPerpustakaan')->get()->getRow()->Value?:"Alamat Perpustakaan Mitra";

@@ -48,7 +48,7 @@ $total_koleksi = $koleksiModel
     ->where('branch_id', user()->branch_id)
     ->countAllResults(false);
 
-$db = db_connect('data');
+$db = db_connect();
 $builder = $db->table('collectionloans');
 $total_peminjaman = $builder
     ->where('branch_id', user()->branch_id)

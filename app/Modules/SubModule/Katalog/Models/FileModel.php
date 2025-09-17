@@ -4,7 +4,7 @@ namespace Katalog\Models;
 
 class FileModel extends \Base\Models\DataModel
 {
-    protected $DBGroup              = 'data';
+    protected $DBGroup              = 'default';
     protected $table                  = 'catalogfiles';
     protected $primaryKey             = 'ID';
     protected $returnType             = 'object';
