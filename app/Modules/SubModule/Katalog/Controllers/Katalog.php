@@ -1300,8 +1300,8 @@ class Katalog extends \Base\Controllers\BaseController
 
 	public function view_decrypted($ID)
 	{
-		// Load the file model
-
+		// Set one key session
+		session()->set('one_key', encData($ID));
 
 		// Get the file record
 		$file = $this->fileModel->find($ID);
@@ -1315,9 +1315,6 @@ class Katalog extends \Base\Controllers\BaseController
 
 	public function view_decrypted_article($ID)
 	{
-		// Load the file model
-
-
 		// Get the file record
 		$file = $this->serialArticleFilesModel->find($ID);
 		if (!$file || !file_exists($this->modulePath . $file->FileURL)) {
@@ -1331,7 +1328,24 @@ class Katalog extends \Base\Controllers\BaseController
 	public function get_decrypted_content($ID)
 	{
 
-		$file = $this->fileModel->find($ID);
+		$oneKey = session()->get('one_key');
+		session()->remove('one_key');
+
+		if (!isset($_SERVER['HTTP_REFERER'])) {
+			dd('Not found');
+		}
+
+		$id = decData($ID);
+		$currentURL = base_url('katalog/view_decrypted/' . $id);
+		if ($_SERVER['HTTP_REFERER']!=$currentURL) {
+			dd('Not found');
+		}
+
+		if (!$oneKey || $oneKey !== $ID) {
+			dd('Not found');
+		}
+
+		$file = $this->fileModel->find($id);
 
 		if (!$file || !file_exists($this->modulePath . $file->FileURL)) {
 			return $this->response->setStatusCode(404)->setBody('File not found');
