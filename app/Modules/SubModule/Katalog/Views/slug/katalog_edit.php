@@ -7,25 +7,42 @@ $rda = $request->getGet('rda') ?? 1;
 ?>
 <div class="card-header" style="min-height:100px">
 	<div class="form-group col-md-12">
-		<div class="select-wrapper input-group mt-2 mb-2">
-			<div class="input-group-prepend">
-				<button class="btn btn bg-primary text-white worksheet-btn-load disabled" type="button"><i class="fa fa-check"></i> Jenis Bahan</button>
-			</div>
-			<input type="hidden" class="form-control" name="worksheet_id" id="worksheet_id" placeholder="" value="<?= $catalog->Worksheet_id ?>" />
-			<input type="text" class="form-control" name="worksheet_name" id="worksheet_name" placeholder="" value="<?= $worksheet->Name??'' ?>" readonly />
-			<div class="input-group-append">
-				<button class="btn btn bg-primary text-white isRda-btn-load disabled" type="button"><i class="fa fa-check"></i> Pedoman Katalog</button>
-			</div>
-			<input type="text" class="form-control" name="catalog_type" id="catalog_type" placeholder="" value="<?= $catalog->IsRDA == 1 ? 'Katalog RDA' : 'Katalog AACR' ?>" readonly />
+	<div class="row">
+		<div class="col-md-6">
+			<label for="worksheet_id" class="form-label">
+				<i class="fa fa-check text-primary"></i> Jenis Bahan
+			</label>
+			<select class="form-control" name="Worksheet_id" id="worksheet_id">
+				<?php foreach ($worksheets as $row) : ?>
+					<option value="<?= $row->ID ?>" <?= set_select('Worksheet_id', $row->ID, ($catalog->Worksheet_id == $row->ID)); ?>>
+						<?= $row->Name ?>
+					</option>
+				<?php endforeach; ?>
+			</select>
+		</div>
+		
+		<div class="col-md-6">
+			<label for="catalog_type" class="form-label">
+				<i class="fa fa-check text-primary"></i> Pedoman Katalog
+			</label>
+			<select class="form-control" name="IsRDA" id="catalog_type">
+				<option value="0" <?= set_select('IsRDA', '0', ($catalog->IsRDA == 0)); ?>>
+					Katalog AACR
+				</option>
+				<option value="1" <?= set_select('IsRDA', '1', ($catalog->IsRDA == 1)); ?>>
+					Katalog RDA
+				</option>
+			</select>
 		</div>
 	</div>
+</div>
 </div>
 
 <div class="card-header">
 	<i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Data Bibliografis
 	<div class="btn-actions-pane-right actions-icon-btn">
 		<div class="col-md-6">
-			<a href="#" class="btn btn-dark btn-lg"><i class="fa fa-th mr-2"></i>Tampilkan Form MARC</a>
+			<a href="/katalog/edit_marc/<?= $catalog->ID ?>" class="btn btn-dark btn-lg"><i class="fa fa-th mr-2"></i>Tampilkan Form MARC</a>
 		</div>
 	</div>
 </div>

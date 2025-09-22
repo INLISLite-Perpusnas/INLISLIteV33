@@ -29,6 +29,7 @@ class Katalog extends \Base\Controllers\BaseController
 	public $validation;
 	public $db;
 	public $eksemplarModel;
+	public $edisiSerialModel;
 
 	function __construct()
 	{
@@ -333,6 +334,7 @@ class Katalog extends \Base\Controllers\BaseController
 		$this->validation->setRule('Worksheet_id', 'Jenis Bahan', 'required');
 		if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
 			$post = $this->request->getPost();
+			
 
 			$catalogsModel = new DataModel('catalogs', null, 'ID');
 			$save_data = array(
@@ -341,6 +343,11 @@ class Katalog extends \Base\Controllers\BaseController
 				'BIBID' => random_string('numeric', 13),
 				'Branch_id' => user()->branch_id,
 			);
+
+			if (!empty($this->request->getPost('IsRDA'))) {
+				$IsRDA = $this->request->getPost('IsRDA');
+				$save_data['IsRDA'] = $IsRDA ? 1 : 0;
+			}
 			$CatalogId = $catalogsModel->insert($save_data);
 
 			$Indexes = $this->request->getPost('Index');

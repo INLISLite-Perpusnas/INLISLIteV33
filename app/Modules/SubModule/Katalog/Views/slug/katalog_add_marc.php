@@ -16,6 +16,19 @@ $select2 = select_two();
 			</div>
 		</div>
 	</div>
+		<div class="col-md-6">
+			<label for="catalog_type" class="form-label">
+				<i class="fa fa-check text-primary"></i> Pedoman Katalog
+			</label>
+			<select class="form-control" name="IsRDA" id="catalog_type">
+				<option value="0" <?= set_select('IsRDA', '0'); ?>>
+					Katalog AACR
+				</option>
+				<option value="1" <?= set_select('IsRDA', '1'); ?>>
+					Katalog RDA
+				</option>
+			</select>
+		</div>
 </div>
 
 <div class="card-header">
