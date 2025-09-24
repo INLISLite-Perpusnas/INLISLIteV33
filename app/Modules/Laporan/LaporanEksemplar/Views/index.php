@@ -14,6 +14,36 @@ $request = service('request');
     max-height: 500px;
     overflow-y: auto;
 }
+.filter-section {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+    background-color: #f8f9fa;
+}
+.filter-section h6 {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+.columns-section {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+.filters-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+@media (max-width: 768px) {
+    .filters-container {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
 <?= $this->endSection('style'); ?>
 
@@ -26,7 +56,7 @@ $request = service('request');
                     <i class="pe-7s-notebook icon-gradient bg-strong-bliss"></i>
                 </div>
                 <div>Laporan Eksemplar
-                    <div class="page-title-subheading">Export Data Eksemplar</div>
+                    <div class="page-title-subheading">Export Data Eksemplar dengan Multiple Filter</div>
                 </div>
             </div>
             <div class="page-title-actions">
@@ -43,7 +73,8 @@ $request = service('request');
 
     <div class="card">
         <div class="card-header">
-            <h4>Export Data Eksemplar</h4>
+            <h5><strong>Export Data Eksemplar</strong></h5>
+            <p class="text-muted mb-0">Pilih kolom dan filter yang diinginkan. Anda dapat mengkombinasikan beberapa filter sekaligus.</p>
         </div>
         <div class="card-body">
             <?php if (session('errors')) : ?>
@@ -57,13 +88,22 @@ $request = service('request');
             <form action="<?= base_url('laporan-eksemplar/export') ?>" method="post">
                 <?= csrf_field() ?>
                 
-                <div class="form-group mb-3">
-                    <label>Pilih Kolom yang akan diekspor</label>
+                <!-- Columns Selection -->
+                <div class="columns-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0"><i class="fas fa-columns"></i> Pilih Kolom yang akan diekspor</h6>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="select_all_columns">
+                            <label class="form-check-label font-weight-bold text-primary" for="select_all_columns">
+                                <i class="fas fa-check-double"></i> Pilih Semua Kolom
+                            </label>
+                        </div>
+                    </div>
                     <div class="row">
                         <?php foreach ($columns as $key => $label) : ?>
                             <div class="col-md-4">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="columns[]" value="<?= $key ?>" id="<?= $key ?>">
+                                    <input class="form-check-input column-checkbox" type="checkbox" name="columns[]" value="<?= $key ?>" id="<?= $key ?>">
                                     <label class="form-check-label" for="<?= $key ?>">
                                         <?= $label ?>
                                     </label>
@@ -73,127 +113,188 @@ $request = service('request');
                     </div>
                 </div>
 
-                <div class="form-group mb-3">
-                    <label>Filter Berdasarkan</label>
-                    <select class="form-control" name="filter_type" id="filter_type">
-                        <option value="date">Tanggal</option>
-                        <option value="month">Bulan</option>
-                        <option value="year">Tahun</option>
-                        <option value="location">Lokasi Perpustakaan</option>
-                        <option value="tanggalpengadaan">Tanggal Pengadaan</option>
-                        <option value="author">Pengarang</option>
-                        <option value="publishlocation">Tempat Terbit</option>
-                        <option value="subject">Subjek</option>
-                        <option value="publisher">Penerbit</option>
-                    </select>
-                </div>
-
-                <div id="date_filter" class="filter-section mb-3">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label>Tanggal Mulai</label>
-                            <input type="date" name="start_date" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label>Tanggal Akhir</label>
-                            <input type="date" name="end_date" class="form-control">
+                <!-- Multiple Filters Container -->
+                <div class="filters-container">
+                    <!-- Filter Tanggal Dibuat -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-calendar-alt"></i> Filter Berdasarkan Tanggal Dibuat</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Tanggal Mulai</label>
+                                <input type="date" name="start_date" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label>Tanggal Akhir</label>
+                                <input type="date" name="end_date" class="form-control">
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div id="month_filter" class="filter-section mb-3" style="display: none;">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label>Bulan</label>
-                            <select name="month" class="form-control">
-                                <?php for ($i = 1; $i <= 12; $i++) : ?>
-                                    <option value="<?= $i ?>"><?= date('F', mktime(0, 0, 0, $i, 1)) ?></option>
-                                <?php endfor ?>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Tahun</label>
-                            <select name="year" class="form-control">
-                                <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
-                                    <option value="<?= $i ?>"><?= $i ?></option>
-                                <?php endfor ?>
-                            </select>
+                    <!-- Filter Bulan & Tahun Dibuat -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-calendar-alt"></i> Filter Berdasarkan Bulan & Tahun Dibuat</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Bulan</label>
+                                <select name="month" class="form-control">
+                                    <option value="">-- Pilih Bulan --</option>
+                                    <?php for ($i = 1; $i <= 12; $i++) : ?>
+                                        <option value="<?= $i ?>"><?= date('F', mktime(0, 0, 0, $i, 1)) ?></option>
+                                    <?php endfor ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label>Tahun</label>
+                                <select name="year" class="form-control">
+                                    <option value="">-- Pilih Tahun --</option>
+                                    <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
+                                        <option value="<?= $i ?>"><?= $i ?></option>
+                                    <?php endfor ?>
+                                </select>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div id="year_filter" class="filter-section mb-3" style="display: none;">
-                    <label>Tahun</label>
-                    <select name="year" class="form-control">
-                        <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
-                            <option value="<?= $i ?>"><?= $i ?></option>
-                        <?php endfor ?>
-                    </select>
-                </div>
+                    <!-- Filter Tahun Saja -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-calendar"></i> Filter Berdasarkan Tahun Dibuat Saja</h6>
+                        <label>Tahun</label>
+                        <select name="year_only" class="form-control">
+                            <option value="">-- Pilih Tahun --</option>
+                            <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
+                                <option value="<?= $i ?>"><?= $i ?></option>
+                            <?php endfor ?>
+                        </select>
+                    </div>
 
-                 <div id="location_filter" class="filter-section mb-3" style="display: none;">
-                   <label>Lokasi Perpustakaan</label>
-                        <div class="select-wrapper">
+                    <!-- Filter Tanggal Pengadaan -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-calendar-plus"></i> Filter Berdasarkan Tanggal Pengadaan</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Tanggal Mulai</label>
+                                <input type="date" name="tp_start_date" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label>Tanggal Akhir</label>
+                                <input type="date" name="tp_end_date" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter Lokasi -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-map-marker-alt"></i> Filter Berdasarkan Lokasi</h6>
+                        <label>Lokasi Perpustakaan</label>
+                        <div class="select-wrapper mb-3">
                             <select class="form-control" name="location">
-                                <option value="">-Pilih-</option>
-                                <?php foreach (get_ref_table('location_library', 'ID, Name', 'Branch_id = ' . user()->branch_id ?? '', 'data') as $row) : ?>
+                                <option value="">-- Pilih Lokasi --</option>
+                                <?php foreach (get_ref_table('location_library', 'ID, Name') as $row) : ?>
                                     <option value="<?= $row->ID ?>"><?= $row->Name ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
 
-                    <label>Lokasi Ruang</label>
+                        <label>Lokasi Ruang</label>
                         <div class="select-wrapper">
                             <select class="form-control" name="location_ruang">
-                                <option value="">-Pilih-</option>
+                                <option value="">-- Pilih Ruang --</option>
                             </select>
                         </div>
-                </div>
+                    </div>
 
-            
+                    <!-- Filter Pengarang -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-user-edit"></i> Filter Berdasarkan Pengarang</h6>
+                        <label>Pengarang</label>
+                        <input type="text" name="author" class="form-control" placeholder="Masukkan nama pengarang...">
+                    </div>
 
-                  <div id="tanggalpengadaan_filter" class="filter-section mb-3" style="display: none;">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label>Tanggal Mulai</label>
-                            <input type="date" name="tp_start_date" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label>Tanggal Akhir</label>
-                            <input type="date" name="tp_end_date" class="form-control">
-                        </div>
+                    <!-- Filter Tempat Terbit -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-globe"></i> Filter Berdasarkan Tempat Terbit</h6>
+                        <label>Tempat Terbit</label>
+                        <input type="text" name="publishlocation" class="form-control" placeholder="Masukkan tempat terbit...">
+                    </div>
+
+                    <!-- Filter Subjek -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-tags"></i> Filter Berdasarkan Subjek</h6>
+                        <label>Subjek</label>
+                        <input type="text" name="subject" class="form-control" placeholder="Masukkan subjek...">
+                    </div>
+
+                    <!-- Filter Penerbit -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-building"></i> Filter Berdasarkan Penerbit</h6>
+                        <label>Penerbit</label>
+                        <input type="text" name="publisher" class="form-control" placeholder="Masukkan nama penerbit...">
+                    </div>
+
+                    <!-- Filter CreateBy -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-user-plus"></i> Filter Berdasarkan Dibuat Oleh</h6>
+                        <label>Dibuat Oleh</label>
+                        <select name="createby" class="form-control">
+                            <option value="">-- Semua User --</option>
+                            <?php if (isset($userOptions)) : ?>
+                                <?php foreach ($userOptions as $user) : ?>
+                                    <option value="<?= $user->id ?>">
+                                        <?= $user->username ?>
+                                    </option>
+                                <?php endforeach ?>
+                            <?php endif ?>
+                        </select>
+                    </div>
+
+                    <!-- Filter UpdateBy -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-user-edit"></i> Filter Berdasarkan Diperbarui Oleh</h6>
+                        <label>Diperbarui Oleh</label>
+                        <select name="updateby" class="form-control">
+                            <option value="">-- Semua User --</option>
+                            <?php if (isset($userOptions)) : ?>
+                                <?php foreach ($userOptions as $user) : ?>
+                                    <option value="<?= $user->id ?>">
+                                        <?= $user->username ?>
+                                    </option>
+                                <?php endforeach ?>
+                            <?php endif ?>
+                        </select>
                     </div>
                 </div>
 
-                 <div id="publishlocation_filter" class="filter-section mb-3" style="display: none;">
-                    <label>Tempat Terbit</label>
-                    <input type="text" name="publishlocation" class="form-control">
+                <!-- Export Button -->
+                <div class="text-center mb-4">
+                    <button type="submit" class="btn btn-success btn-lg px-5" id="exportBtn">
+                        <i class="fas fa-download"></i> Export to Excel
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-lg px-5 ml-2" onclick="clearAllFilters()">
+                        <i class="fas fa-eraser"></i> Clear All Filters
+                    </button>
                 </div>
 
-                <div id="author_filter" class="filter-section mb-3" style="display: none;">
-                    <label>Pengarang</label>
-                    <input type="text" name="author" class="form-control">
+                <!-- Export Warning -->
+                <div class="alert alert-warning" style="display: none;" id="exportWarning">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle fa-2x mr-3"></i>
+                        <div>
+                            <strong>Perhatian:</strong> Export data dalam jumlah besar membutuhkan waktu lebih lama.<br>
+                            <small>Maksimum export: <strong>50,000 records</strong>. Gunakan filter untuk mengurangi jumlah data jika diperlukan.</small>
+                        </div>
+                    </div>
                 </div>
-
-                <div id="subject_filter" class="filter-section mb-3" style="display: none;">
-                    <label>Subjek</label>
-                    <input type="text" name="subject" class="form-control">
-                </div>
-
-                <div id="publisher_filter" class="filter-section mb-3" style="display: none;">
-                    <label>Penerbit</label>
-                    <input type="text" name="publisher" class="form-control">
-                </div>
-
-                <button type="submit" class="btn btn-primary">Export to Excel</button>
             </form>
 
             <!-- Preview Section -->
             <div class="preview-container">
-                <h5>Preview (20 Baris Pertama)</h5>
+                <h5><i class="fas fa-eye"></i> Preview Data (20 Baris Pertama)</h5>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Preview akan otomatis terupdate setiap kali Anda mengubah pilihan kolom atau filter.
+                </div>
                 <div class="preview-table" id="preview-table">
                     <div class="text-center">
-                        <p>Pilih kolom dan filter untuk melihat preview data</p>
+                        <p>Pilih kolom untuk melihat preview data</p>
                     </div>
                 </div>
             </div>
@@ -212,36 +313,33 @@ $(document).ready(function() {
             selectedColumns.push($(this).val());
         });
 
-        const filterType = $('#filter_type').val();
+        if (selectedColumns.length === 0) {
+            $('#preview-table').html('<div class="text-center"><p>Pilih minimal satu kolom untuk melihat preview data</p></div>');
+            return;
+        }
+
         const formData = new FormData();
         formData.append('columns', JSON.stringify(selectedColumns));
-        formData.append('filter_type', filterType);
 
-        // Add appropriate date filters based on filter type
-        if (filterType === 'date') {
-            formData.append('start_date', $('input[name="start_date"]').val());
-            formData.append('end_date', $('input[name="end_date"]').val());
-        } else if (filterType === 'month') {
-            formData.append('month', $('select[name="month"]').val());
-            formData.append('year', $('#month_filter select[name="year"]').val());
-        } else if (filterType === 'year') {
-            formData.append('year', $('#year_filter select[name="year"]').val());
-        } else if (filterType === 'location') {
-            formData.append('location', $('#location_filter select[name="location"]').val());
-            formData.append('location_ruang', $('#location_filter select[name="location_ruang"]').val());
+        // Add all filter values
+        formData.append('start_date', $('input[name="start_date"]').val());
+        formData.append('end_date', $('input[name="end_date"]').val());
+        formData.append('month', $('select[name="month"]').val());
+        formData.append('year', $('select[name="year"]').val());
+        formData.append('year_only', $('select[name="year_only"]').val());
+        formData.append('tp_start_date', $('input[name="tp_start_date"]').val());
+        formData.append('tp_end_date', $('input[name="tp_end_date"]').val());
+        formData.append('location', $('select[name="location"]').val());
+        formData.append('location_ruang', $('select[name="location_ruang"]').val());
+        formData.append('author', $('input[name="author"]').val());
+        formData.append('publishlocation', $('input[name="publishlocation"]').val());
+        formData.append('subject', $('input[name="subject"]').val());
+        formData.append('publisher', $('input[name="publisher"]').val());
+        formData.append('createby', $('select[name="createby"]').val());
+        formData.append('updateby', $('select[name="updateby"]').val());
 
-        } else if (filterType === 'tanggalpengadaan') {
-            formData.append('tp_start_date', $('#tanggalpengadaan_filter input[name="tp_start_date"]').val());
-            formData.append('tp_end_date', $('#tanggalpengadaan_filter input[name="tp_end_date"]').val());
-        } else if (filterType === 'author') {
-            formData.append('author', $('#author_filter input[name="author"]').val());
-        } else if (filterType === 'subject') {
-            formData.append('subject', $('#subject_filter input[name="subject"]').val());
-        } else if (filterType === 'publisher') {
-            formData.append('publisher', $('#publisher_filter input[name="publisher"]').val());
-        } else if (filterType === 'publishlocation') {
-            formData.append('publishlocation', $('#publishlocation_filter input[name="publishlocation"]').val());
-        }
+        // Show loading indicator
+        $('#preview-table').html('<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i><p>Memuat preview data...</p></div>');
 
         // Make AJAX call to get preview data
         $.ajax({
@@ -255,37 +353,52 @@ $(document).ready(function() {
             },
             error: function(xhr, status, error) {
                 console.error('Error fetching preview:', error);
+                $('#preview-table').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Terjadi kesalahan saat memuat preview data. Silakan coba lagi.</div>');
             }
         });
     }
 
-    // Event listeners for form changes
-    $('input[name="columns[]"], #filter_type').change(updatePreview);
-    $('input[name="start_date"], input[name="end_date"]').change(updatePreview);
-    $('select[name="month"], select[name="year"]').change(updatePreview);
-//    $('select[name="location"]').change(updatePreview);
-    $('select[name="location_ruang"]').change(updatePreview);
-    $('input[name="tp_start_date"], input[name="tp_end_date"]').change(updatePreview);
-    $('input[name="author"]').change(updatePreview);
-    $('input[name="subject"]').change(updatePreview);
-    $('input[name="publisher"]').change(updatePreview); 
-    $('input[name="publishlocation"]').change(updatePreview);
-
-    // Initial preview load
-    updatePreview();
-
-    // Show/hide filter sections
-    $('#filter_type').change(function() {
-        $('.filter-section').hide();
-        $('#' + $(this).val() + '_filter').show();
+    // Handle Select All Columns
+    $('#select_all_columns').change(function() {
+        const isChecked = $(this).is(':checked');
+        $('.column-checkbox').prop('checked', isChecked);
+        updatePreview();
     });
 
+    // Handle individual column checkboxes
+    $('.column-checkbox').change(function() {
+        updateSelectAllStatus();
+        updatePreview();
+    });
+
+    // Function to update select all checkbox status
+    function updateSelectAllStatus() {
+        const totalColumns = $('.column-checkbox').length;
+        const checkedColumns = $('.column-checkbox:checked').length;
+        
+        if (checkedColumns === 0) {
+            $('#select_all_columns').prop('indeterminate', false).prop('checked', false);
+        } else if (checkedColumns === totalColumns) {
+            $('#select_all_columns').prop('indeterminate', false).prop('checked', true);
+        } else {
+            $('#select_all_columns').prop('indeterminate', true);
+        }
+    }
+
+    // Event listeners for filter inputs
+    $('input[type="date"], input[type="text"], select').on('change keyup', debounce(updatePreview, 500));
+
+    // Initial setup
+    updateSelectAllStatus();
+    updatePreview();
+
+    // Handle location dropdown change for loading rooms
     $('select[name="location"]').change(function() {
         let locationId = $(this).val();
         let ruangSelect = $('select[name="location_ruang"]');
         
-        // Kosongkan dulu
-        ruangSelect.html('<option value="">-Pilih-</option>');
+        // Clear first
+        ruangSelect.html('<option value="">-- Pilih Ruang --</option>');
 
         if (locationId) {
             $.ajax({
@@ -304,12 +417,44 @@ $(document).ready(function() {
                 },
                 error: function(xhr, status, error) {
                     console.error(error);
-                    ruangSelect.append('<option value="">Error load data</option>');
+                    ruangSelect.append('<option value="">Error loading data</option>');
                 }
             });
         }
     });
 
+    // Debounce function to limit API calls
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
 });
+
+// Function to clear all filters
+function clearAllFilters() {
+    if (confirm('Apakah Anda yakin ingin menghapus semua filter?')) {
+        // Clear all input fields
+        $('input[type="date"], input[type="text"]').val('');
+        $('select').prop('selectedIndex', 0);
+        $('select[name="location_ruang"]').html('<option value="">-- Pilih Ruang --</option>');
+        
+        // Update preview
+        const selectedColumns = [];
+        $('input[name="columns[]"]:checked').each(function() {
+            selectedColumns.push($(this).val());
+        });
+        
+        if (selectedColumns.length > 0) {
+            updatePreview();
+        }
+    }
+}
 </script>
 <?= $this->endSection('script'); ?>
