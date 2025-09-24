@@ -266,7 +266,7 @@ if (!empty($npp_kabkota_id)) {
                 <?php endif; ?>
             </div>
         </div>
-        <div class="col-md-3">
+        <!-- <div class="col-md-3">
             <div class="main-card mb-3 card">
                 <div class="card-body">
                     <h5 class="card-title">Histori</h5>
@@ -342,7 +342,7 @@ if (!empty($npp_kabkota_id)) {
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
     </div>
 </div>
 <?= $this->endSection('page'); ?>
