@@ -423,8 +423,7 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 	public function get_collectionpartners()
 	{
 		$db = db_connect();
-		$query = $db->table('partners')->select('ID as code, Name as name')
-		->where('Branch_id', branch_id())->get();
+		$query = $db->table('partners')->select('ID as code, Name as name')->get();
 		return $this->simpleResponse($query->getResult());
 	}
 
@@ -459,7 +458,7 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 	public function get_collectioncurrency()
 	{
 		$db = db_connect();
-		$query = $db->table('currency')->select('Currency as code, Description as name')->where('active', '1')->orderBy('Description')->get();
+		$query = $db->table('currency')->select('Currency as code, Description as name')->orderBy('Description')->get();
 		return $this->simpleResponse($query->getResult());
 	}
 
@@ -473,7 +472,7 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 	public function get_locationlibrary()
 	{
 		$db = db_connect();
-		$query = $db->table('location_library')->select('ID as code, Name as name')->where('Branch_id', user()->branch_id)->orderBy('Name')->get();
+		$query = $db->table('location_library')->select('ID as code, Name as name')->orderBy('Name')->get();
 		return $this->simpleResponse($query->getResult());
 	}
 
@@ -558,7 +557,6 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
             'Address' => $this->request->getPost('Address'),
             'Phone' => $this->request->getPost('Phone'),
             'Fax' => $this->request->getPost('Fax'),
-            'Branch_id' => branch_id()
         ];
 
         // Insert to database

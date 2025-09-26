@@ -196,7 +196,12 @@ function addWatermark() {
         currentSearchIndex = -1;
         searchResults = [];
 
-        let loadingTask = pdfjsLib.getDocument('<?= base_url('katalog/get_decrypted_content/' . $fileId) ?>');
+//        let loadingTask = pdfjsLib.getDocument('<?= base_url('katalog/get_decrypted_content/' . $fileId) ?>');
+        let loadingTask = pdfjsLib.getDocument({
+            url: '<?= base_url('katalog/get_decrypted_content/' . $fileId) ?>',
+            httpHeaders: { Authorization: `Bearer csddd` },
+            withCredentials: true,
+        });
         loadingTask.promise.then(function(pdf) {
             let countPromises = [];
             for (let i = 1; i <= pdf.numPages; i++) {
@@ -271,7 +276,7 @@ function addWatermark() {
     document.getElementById('search').addEventListener('click', performSearch);
 
     // Load PDF document
-    let loadingTask = pdfjsLib.getDocument('<?= base_url('katalog/get_decrypted_content/' . $fileId) ?>');
+    let loadingTask = pdfjsLib.getDocument('<?= base_url('katalog/get_decrypted_content/' . encData($fileId)) ?>');
     loadingTask.promise.then(function(pdfDoc_) {
         pdfDoc = pdfDoc_;
         document.getElementById('page-count').textContent = pdfDoc.numPages;

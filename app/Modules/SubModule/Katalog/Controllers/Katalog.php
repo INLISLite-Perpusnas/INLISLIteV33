@@ -1168,15 +1168,16 @@ class Katalog extends \Base\Controllers\BaseController
 	{
 		// Load the file model
 
-
+        $id = decData($ID);
+	   	session()->set('one_key', $id);
 		// Get the file record
-		$file = $this->fileModel->find($ID);
+		$file = $this->fileModel->find($id);
 		if (!$file || !file_exists($this->modulePath . $file->FileURL)) {
 			return $this->response->setStatusCode(404)->setBody('File not found');
 		}
 
 		// Instead of serving the file directly, we'll render a view with our custom PDF viewer
-		return view('Katalog\Views\slug\pdf_viewer', ['fileId' => $ID, 'fileName' => $file->FileURL]);
+		return view('Katalog\Views\slug\pdf_viewer', ['fileId' => $id, 'fileName' => $file->FileURL]);
 	}
 
 	public function view_decrypted_article($ID)
@@ -1196,21 +1197,21 @@ class Katalog extends \Base\Controllers\BaseController
 
 public function get_decrypted_content($ID)
 	{
-
+   
 		$oneKey = session()->get('one_key');
 		session()->remove('one_key');
 
 		if (!isset($_SERVER['HTTP_REFERER'])) {
 			dd('Not found');
 		}
-
 		$id = decData($ID);
-		$currentURL = base_url('katalog/view_decrypted/' . $id);
-		if ($_SERVER['HTTP_REFERER']!=$currentURL) {
+		$baseUrl = $_SERVER['HTTP_REFERER'];
+		$currentURL = base_url('katalog/view_decrypted/');
+		$idUrl = decData(str_replace($currentURL, '', $baseUrl));
+		if ($idUrl!=$id) {
 			dd('Not found');
 		}
-
-		if (!$oneKey || $oneKey !== $ID) {
+		if (!$oneKey || $oneKey !== $id) {
 			dd('Not found');
 		}
 
