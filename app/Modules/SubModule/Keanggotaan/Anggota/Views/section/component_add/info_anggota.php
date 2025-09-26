@@ -78,7 +78,7 @@
                                     <div class="select-wrapper">
                                         <select class="form-control select2" name="LocationLoan_id[]" multiple="multiple" style="width:100%" required>
                                             <option value="">-Pilih-</option>
-                                            <?php foreach (get_ref_table('location_library', 'ID, Name', 'Branch_id = ' . user()->branch_id ?? '', 'data') as $row) : ?>
+                                            <?php foreach (get_ref_table('location_library', 'ID, Name') as $row) : ?>
                                                 <option value="<?= $row->ID ?>" <?= set_select('LocationLoan_id[]', $row->ID) ?>><?= $row->Name ?></option>
                                             <?php endforeach; ?>
                                         </select>

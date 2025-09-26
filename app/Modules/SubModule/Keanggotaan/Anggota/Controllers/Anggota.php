@@ -284,7 +284,7 @@ class Anggota extends \Base\Controllers\BaseController
 				'UnitKerja_id' 	=> $this->request->getPost('UnitKerja_id'),
 				'Fakultas_id' 	=> $this->request->getPost('Fakultas_id'),
 				'Jurusan_id' 	=> $this->request->getPost('Jurusan_id'),
-				'IsKeranjang'  => 1,
+				'IsKeranjang'  => 0,
 				'StatusAnggota_id' => $this->request->getPost('StatusAnggota_id'),
 				'RegisterDate' => date("Y-m-d H:i:s"),
 				'EndDate' => $this->request->getPost('EndDate'),
@@ -295,60 +295,52 @@ class Anggota extends \Base\Controllers\BaseController
 
 			$province = $this->request->getPost('Province');
 			if (!empty($province)) {
-				$save_data['ProvinceCode'] = $province;
 				$region = $this->regionModel->where('code', $province)->first();
 				$save_data['Province'] = $region->name;
 			}
 
 			$city = $this->request->getPost('City');
 			if (!empty($city)) {
-				$save_data['CityCode'] = $city;
 				$region = $this->regionModel->where('code', $city)->first();
 				$save_data['City'] = $region->name;
 			}
 
 			$kecamatan = $this->request->getPost('Kecamatan');
 			if (!empty($kecamatan)) {
-				$save_data['KecamatanCode'] = $kecamatan;
 				$region = $this->regionModel->where('code', $kecamatan)->first();
 				$save_data['Kecamatan'] = $region->name;
 			}
 
 			$kelurahan = $this->request->getPost('Kelurahan');
 			if (!empty($kelurahan)) {
-				$save_data['KelurahanCode'] = $kelurahan;
 				$region = $this->regionModel->where('code', $kelurahan)->first();
 				$save_data['Kelurahan'] = $region->name;
 			}
 
 			$provinceNow = $this->request->getPost('ProvinceNow');
 			if (!empty($provinceNow)) {
-				$save_data['ProvinceNowCode'] = $provinceNow;
 				$region = $this->regionModel->where('code', $provinceNow)->first();
 				$save_data['ProvinceNow'] = $region->name;
 			}
 
 			$cityNow = $this->request->getPost('CityNow');
 			if (!empty($cityNow)) {
-				$save_data['CityNowCode'] = $cityNow;
 				$region = $this->regionModel->where('code', $cityNow)->first();
 				$save_data['CityNow'] = $region->name;
 			}
 
 			$kecamatanNow = $this->request->getPost('KecamatanNow');
 			if (!empty($kecamatanNow)) {
-				$save_data['KecamatanNowCode'] = $kecamatanNow;
 				$region = $this->regionModel->where('code', $kecamatanNow)->first();
 				$save_data['KecamatanNow'] = $region->name;
 			}
 
 			$kelurahanNow = $this->request->getPost('KelurahanNow');
 			if (!empty($kelurahanNow)) {
-				$save_data['KelurahanNowCode'] = $kelurahanNow;
 				$region = $this->regionModel->where('code', $kelurahanNow)->first();
 				$save_data['KelurahanNow'] = $region->name;
 			}
-			// dd($save_data);
+			
 
 			// Logic Upload
 			$files = (array) $this->request->getPost('PhotoUrl');
@@ -581,56 +573,48 @@ class Anggota extends \Base\Controllers\BaseController
 
 				$province = $this->request->getPost('Province');
 				if (!empty($province)) {
-					$update_data['ProvinceCode'] = $province;
 					$region = $this->regionModel->where('code', $province)->first();
 					$update_data['Province'] = $region->name;
 				}
 
 				$city = $this->request->getPost('City');
 				if (!empty($city)) {
-					$update_data['CityCode'] = $city;
 					$region = $this->regionModel->where('code', $city)->first();
 					$update_data['City'] = $region->name;
 				}
 
 				$kecamatan = $this->request->getPost('Kecamatan');
 				if (!empty($kecamatan)) {
-					$update_data['KecamatanCode'] = $kecamatan;
 					$region = $this->regionModel->where('code', $kecamatan)->first();
 					$update_data['Kecamatan'] = $region->name;
 				}
 
 				$kelurahan = $this->request->getPost('Kelurahan');
 				if (!empty($kelurahan)) {
-					$update_data['KelurahanCode'] = $kelurahan;
 					$region = $this->regionModel->where('code', $kelurahan)->first();
 					$update_data['Kelurahan'] = $region->name;
 				}
 
 				$provinceNow = $this->request->getPost('ProvinceNow');
 				if (!empty($provinceNow)) {
-					$update_data['ProvinceNowCode'] = $provinceNow;
 					$region = $this->regionModel->where('code', $provinceNow)->first();
 					$update_data['ProvinceNow'] = $region->name;
 				}
 
 				$cityNow = $this->request->getPost('CityNow');
 				if (!empty($cityNow)) {
-					$update_data['CityNowCode'] = $cityNow;
 					$region = $this->regionModel->where('code', $cityNow)->first();
 					$update_data['CityNow'] = $region->name;
 				}
 
 				$kecamatanNow = $this->request->getPost('KecamatanNow');
 				if (!empty($kecamatanNow)) {
-					$update_data['KecamatanNowCode'] = $kecamatanNow;
 					$region = $this->regionModel->where('code', $kecamatanNow)->first();
 					$update_data['KecamatanNow'] = $region->name;
 				}
 
 				$kelurahanNow = $this->request->getPost('KelurahanNow');
 				if (!empty($kelurahanNow)) {
-					$update_data['KelurahanNowCode'] = $kelurahanNow;
 					$region = $this->regionModel->where('code', $kelurahanNow)->first();
 					$update_data['KelurahanNow'] = $region->name;
 				}

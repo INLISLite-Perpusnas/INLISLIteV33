@@ -32,7 +32,7 @@
 									<label for="Province">Provinsi*</label>
 									<div>
 										<select required data-error="Pilih Provinsi" class="form-control select2" id="Province" name="Province" style="width:100%"></select>
-										<!-- <option value="<?= $anggota->ProvinceCode ?? '' ?>" selected><?= $anggota->Province ?? '' ?></option> -->
+										<option value="<?= $anggota->ProvinceCode ?? '' ?>" selected><?= $anggota->Province ?? '' ?></option>
 										</select>
 									</div>
 								</div>
@@ -128,7 +128,7 @@
 									<label for="ProvinceNow">Provinsi*</label>
 									<div>
 										<select required data-error="Pilih Provinsi" class="form-control select2" id="ProvinceNow" name="ProvinceNow" style="width:100%"></select>
-											<!-- <option value="<?= $anggota->ProvinceCode ?? '' ?>" selected><?= $anggota->ProvinceNow ?? '' ?></option> -->
+											<option value="<?= $anggota->ProvinceCode ?? '' ?>" selected><?= $anggota->ProvinceNow ?? '' ?></option>
 										</select>
 									</div>
 								</div>

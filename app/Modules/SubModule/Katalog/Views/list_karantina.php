@@ -50,6 +50,7 @@ $slug = $request->getGet('slug') ?? '';
 							<th class="text-center" width="">Publisher</th>
 							<th class="text-center" width="">Deskripsi Fisik</th>
 							<th class="text-center" width="">No. Panggil</th>
+							<th class="text-center" width="">Aksi</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -115,9 +116,14 @@ $slug = $request->getGet('slug') ?? '';
 				{
 					data: 'ControlNumber'
 				},
+				{
+					data: 'action',
+					className: 'text-center',
+					orderable: false
+				},
 			],
 			"order": [
-				[1, "asc"]
+				[0, "asc"]
 			],
 			"drawCallback": function(data, type, full, meta) {
 				var api = this.api();

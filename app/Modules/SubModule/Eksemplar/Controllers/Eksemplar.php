@@ -531,139 +531,6 @@ class Eksemplar extends \Base\Controllers\BaseController
         echo view('templates/script', $data);
     }
 
-    public function update_action($id)
-    {
-        // $branch_id = user()->branch_id ?? $this->request->getGet('branch_id');
-        $ID = $this->request->getPost('ID');
-        $NomorBarcode = $this->request->getPost('NomorBarcode');
-        $NoInduk = $this->request->getPost('NoInduk');
-        $Currency = $this->request->getPost('Currency');
-        $RFID = $this->request->getPost('RFID');
-        $Price = $this->request->getPost('Price');
-        $PriceType = $this->request->getPost('PriceType');
-        $TanggalPengadaan = $this->request->getPost('TanggalPengadaan');
-        $CallNumber = $this->request->getPost('CallNumber');
-        $Branch_id = $this->request->getPost('Branch_id');
-        $Catalog_id = $this->request->getPost('Catalog_id');
-        $Partner_id = $this->request->getPost('Partner_id');
-        $Location_id = $this->request->getPost('Location_id');
-        $Rule_id = $this->request->getPost('Rule_id');
-        $Category_id = $this->request->getPost('Category_id');
-        $Media_id = $this->request->getPost('Media_id');
-        $Source_id = $this->request->getPost('Source_id');
-        $Status_id = $this->request->getPost('Status_id');
-        $Location_Library_id = $this->request->getPost('Location_Library_id');
-        $Keterangan_Sumber = $this->request->getPost('Keterangan_Sumber');
-        $CreateBy = $this->request->getPost('CreateBy');
-        $CreateDate = $this->request->getPost('CreateDate');
-        $CreateTerminal = $this->request->getPost('CreateTerminal');
-        $UpdateBy = $this->request->getPost('UpdateBy');
-        $UpdateDate = $this->request->getPost('UpdateDate');
-        $UpdateTerminal = $this->request->getPost('UpdateTerminal');
-        $IsVerified = $this->request->getPost('IsVerified');
-        $QUARANTINEDBY = $this->request->getPost('QUARANTINEDBY');
-        $QUARANTINEDDATE = $this->request->getPost('QUARANTINEDDATE');
-        $QUARANTINEDTERMINAL = $this->request->getPost('QUARANTINEDTERMINAL');
-        $ISREFERENSI = $this->request->getPost('ISREFERENSI');
-        $EDISISERIAL = $this->request->getPost('EDISISERIAL');
-        $NOJILID = $this->request->getPost('NOJILID');
-        $TANGGAL_TERBIT_EDISI_SERIAL = $this->request->getPost('TANGGAL_TERBIT_EDISI_SERIAL');
-        $BAHAN_SERTAAN = $this->request->getPost('BAHAN_SERTAAN');
-        $KETERANGAN_LAIN = $this->request->getPost('KETERANGAN_LAIN');
-        $TGLENTRYJILID = $this->request->getPost('TGLENTRYJILID');
-        $IDJILID = $this->request->getPost('IDJILID');
-        $NOMORPANGGILJILID = $this->request->getPost('NOMORPANGGILJILID');
-        $ISOPAC = $this->request->getPost('ISOPAC');
-        $JILIDCREATEBY = $this->request->getPost('JILIDCREATEBY');
-        $KIILastUploadDate = $this->request->getPost('KIILastUploadDate');
-        $BookingMemberID = $this->request->getPost('BookingMemberID');
-        $BookingExpiredDate = $this->request->getPost('BookingExpiredDate');
-        $IsDeposit = $this->request->getPost('IsDeposit');
-        $NomorDeposit = $this->request->getPost('NomorDeposit');
-        $ThnTerbitDeposit = $this->request->getPost('ThnTerbitDeposit');
-        $deposit_ws_ID = $this->request->getPost('deposit_ws_ID');
-        $deposit_kode_wilayah_ID = $this->request->getPost('deposit_kode_wilayah_ID');
-        $Nomor_Regis = $this->request->getPost('Nomor_Regis');
-
-        helper('form');
-
-        $model = new AkuisisiModel();
-        // $val = $this->_rules();		
-        // if ($val->withRequest($this->request)->run() == false) {
-        // 	$data = [
-        // 		'agama' => [],
-        // 		'action' => base_url() . '/agama/update_action/' . $id,
-        // 		'title' => 'Daftar Agama',
-        // 		'button' => 'Ubah',
-        // 		'breadcrumb' => [
-        // 			'Agama',
-        // 			'Ubah Agama',
-        // 		],
-        // 		'validation' => $val
-        // 	];
-        // 	echo view('templates/meta', $data);
-        // 	echo view('templates/header', $data);
-        // 	echo view('backend/akuisisi/collections_read', $data);
-        // 	echo view('templates/footer', $data);
-        // 	echo view('templates/rightsidebar', $data);
-        // 	echo view('templates/script', $data);
-        // } else {
-        // 	$update = [
-        // 		'ID' => $ID,
-        // 		'NomorBarcode' => $NomorBarcode,
-        // 		'NoInduk' => $NoInduk,
-        // 		'Currency' => $Currency,
-        // 		'RFID' => $RFID,
-        // 		'Price' => $Price,
-        // 		'PriceType' => $PriceType,
-        // 		'TanggalPengadaan' => $TanggalPengadaan,
-        // 		'CallNumber' => $CallNumber,
-        // 		'Branch_id' => $Branch_id,
-        // 		'Catalog_id' => $Catalog_id,
-        // 		'Partner_id' => $Partner_id,
-        // 		'Location_id' => $Location_id,
-        // 		'Rule_id' => $Rule_id,
-        // 		'Category_id' => $Category_id,
-        // 		'Media_id' => $Media_id,
-        // 		'Source_id' => $Source_id,
-        // 		'Status_id' => $Status_id,
-        // 		'Location_Library_id' => $Location_Library_id,
-        // 		'Keterangan_Sumber' => $Keterangan_Sumber,
-        // 		'CreateBy' => $CreateBy,
-        // 		'CreateDate' => $CreateDate,
-        // 		'CreateTerminal' => $CreateTerminal,
-        // 		'UpdateBy' => $UpdateBy,
-        // 		'UpdateDate' => $UpdateDate,
-        // 		'UpdateTerminal' => $UpdateTerminal,
-        // 		'IsVerified' => $IsVerified,
-        // 		'QUARANTINEDBY' => $QUARANTINEDBY,
-        // 		'QUARANTINEDDATE' => $QUARANTINEDDATE,
-        // 		'QUARANTINEDTERMINAL' => $QUARANTINEDTERMINAL,
-        // 		'ISREFERENSI' => $ISREFERENSI,
-        // 		'EDISISERIAL' => $EDISISERIAL,
-        // 		'NOJILID' => $NOJILID,
-        // 		'TANGGAL_TERBIT_EDISI_SERIAL' => $TANGGAL_TERBIT_EDISI_SERIAL,
-        // 		'BAHAN_SERTAAN' => $BAHAN_SERTAAN,
-        // 		'KETERANGAN_LAIN' => $KETERANGAN_LAIN,
-        // 		'TGLENTRYJILID' => $TGLENTRYJILID,
-        // 		'IDJILID' => $IDJILID,
-        // 		'NOMORPANGGILJILID' => $NOMORPANGGILJILID,
-        // 		'ISOPAC' => $ISOPAC,
-        // 		'JILIDCREATEBY' => $JILIDCREATEBY,
-        // 		'KIILastUploadDate' => $KIILastUploadDate,
-        // 		'BookingMemberID' => $BookingMemberID,
-        // 		'BookingExpiredDate' => $BookingExpiredDate,
-        // 		'IsDeposit' => $IsDeposit,
-        // 		'NomorDeposit' => $NomorDeposit,
-        // 		'ThnTerbitDeposit' => $ThnTerbitDeposit,
-        // 		'deposit_ws_ID' => $deposit_ws_ID,
-        // 		'deposit_kode_wilayah_ID' => $deposit_kode_wilayah_ID,
-        // 		'Nomor_Regis' => $Nomor_Regis,
-        // 	];
-        // 	$model->update_action($id, $update);
-        // 	return redirect()->route('collections');
-        // }
-    }
 
     public function delete($id)
     {
@@ -1353,6 +1220,7 @@ class Eksemplar extends \Base\Controllers\BaseController
             'BIBID' => $this->generateBibId($controlNumber), // Generate BIBID based on ControlNumber
             'Title' => $title,
             'Author' => $author,
+            'Worksheet_id'=>1,
             'Edition' => $this->getValue($row, $headerMap, 'EDISI'),
             'Publisher' => $publisher,
             'PublishLocation' => $publishLocation,

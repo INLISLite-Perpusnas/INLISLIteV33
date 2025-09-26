@@ -1,7 +1,5 @@
 <?php
 $request = service('request');
-$date_from = $request->getGet('date_from') ?? '';
-$date_to = $request->getGet('date_to') ?? '';
 ?>
 
 <?= $this->extend('App\Views\layout\main'); ?>
@@ -18,14 +16,33 @@ $date_to = $request->getGet('date_to') ?? '';
 }
 .filter-section {
     border: 1px solid #dee2e6;
-    border-radius: 5px;
-    padding: 15px;
+    border-radius: 8px;
+    padding: 20px;
     margin-bottom: 15px;
     background-color: #f8f9fa;
 }
-.user-filter-section {
-    background-color: #e3f2fd;
-    border: 1px solid #1976d2;
+.filter-section h6 {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+.columns-section {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+.filters-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+@media (max-width: 768px) {
+    .filters-container {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
 <?= $this->endSection('style'); ?>
@@ -36,10 +53,10 @@ $date_to = $request->getGet('date_to') ?? '';
         <div class="page-title-wrapper">
             <div class="page-title-heading">
                 <div class="page-title-icon">
-                    <i class="pe-7s-graph2 icon-gradient bg-strong-bliss"></i>
+                    <i class="pe-7s-users icon-gradient bg-strong-bliss"></i>
                 </div>
                 <div>Laporan Anggota
-                    <div class="page-title-subheading">Daftar Semua Anggota dengan Filter Multi-Database</div>
+                    <div class="page-title-subheading">Export Data Anggota dengan Multiple Filter</div>
                 </div>
             </div>
             <div class="page-title-actions">
@@ -56,8 +73,8 @@ $date_to = $request->getGet('date_to') ?? '';
 
     <div class="card">
         <div class="card-header">
-            <h4><i class="fas fa-file-export"></i> Export Data Anggota</h4>
-            <small class="text-muted">Pilih kolom dan filter yang diinginkan untuk export data anggota</small>
+            <h5><strong>Export Data Anggota</strong></h5>
+            <p class="text-muted mb-0">Pilih kolom dan filter yang diinginkan. Anda dapat mengkombinasikan beberapa filter sekaligus.</p>
         </div>
         <div class="card-body">
             <?php if (session('errors')) : ?>
@@ -68,17 +85,31 @@ $date_to = $request->getGet('date_to') ?? '';
                 </div>
             <?php endif ?>
 
+            <?php if (session('error')) : ?>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> <?= session('error') ?>
+                </div>
+            <?php endif ?>
+
             <form action="<?= base_url('laporan-anggota/export') ?>" method="post">
                 <?= csrf_field() ?>
-
-                <!-- Column Selection Section -->
-                <div class="form-group mb-4">
-                    <label><strong><i class="fas fa-columns"></i> Pilih Kolom yang akan diekspor</strong></label>
+                
+                <!-- Columns Selection -->
+                <div class="columns-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0"><i class="fas fa-columns"></i> Pilih Kolom yang akan diekspor</h6>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="select_all_columns">
+                            <label class="form-check-label font-weight-bold text-primary" for="select_all_columns">
+                                <i class="fas fa-check-double"></i> Pilih Semua Kolom
+                            </label>
+                        </div>
+                    </div>
                     <div class="row">
                         <?php foreach ($columns as $key => $label) : ?>
-                            <div class="col-md-4 col-sm-6">
+                            <div class="col-md-4">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="columns[]" value="<?= $key ?>" id="<?= $key ?>">
+                                    <input class="form-check-input column-checkbox" type="checkbox" name="columns[]" value="<?= $key ?>" id="<?= $key ?>">
                                     <label class="form-check-label" for="<?= $key ?>">
                                         <?= $label ?>
                                     </label>
@@ -86,155 +117,214 @@ $date_to = $request->getGet('date_to') ?? '';
                             </div>
                         <?php endforeach ?>
                     </div>
-                    <small class="text-muted mt-2">
-                        <i class="fas fa-info-circle"></i> Pilih minimal satu kolom untuk melakukan export
-                    </small>
                 </div>
 
-                <!-- User Filter Section -->
-                <div class="filter-section user-filter-section mb-3">
-                    <h6 class="mb-3"><i class="fas fa-users"></i> Filter Berdasarkan User (Database Terpisah)</h6>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label><strong>Filter Berdasarkan Pembuat (CreatedBy)</strong></label>
-                            <select class="form-control" name="created_by_id" id="created_by_id">
-                                <option value="">-- Semua Pembuat --</option>
-                                <?php if (isset($userOptions) && is_array($userOptions)) : ?>
-                                    <?php foreach ($userOptions as $user) : ?>
-                                        <option value="<?= $user->id ?>"><?= esc($user->username) ?></option>
-                                    <?php endforeach ?>
-                                <?php endif ?>
-                            </select>
-                            <small class="text-muted">Filter berdasarkan user yang membuat data anggota</small>
-                        </div>
-                        <div class="col-md-6">
-                            <label><strong>Filter Berdasarkan Pengubah (UpdatedBy)</strong></label>
-                            <select class="form-control" name="updated_by_id" id="updated_by_id">
-                                <option value="">-- Semua Pengubah --</option>
-                                <?php if (isset($userOptions) && is_array($userOptions)) : ?>
-                                    <?php foreach ($userOptions as $user) : ?>
-                                        <option value="<?= $user->id ?>"><?= esc($user->username) ?></option>
-                                    <?php endforeach ?>
-                                <?php endif ?>
-                            </select>
-                            <small class="text-muted">Filter berdasarkan user yang terakhir mengubah data anggota</small>
+                <!-- Multiple Filters Container -->
+                <div class="filters-container">
+                    <!-- Filter Tanggal Registrasi -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-calendar-alt"></i> Filter Berdasarkan Tanggal Registrasi</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Tanggal Mulai</label>
+                                <input type="date" name="start_date" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label>Tanggal Akhir</label>
+                                <input type="date" name="end_date" class="form-control">
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Gender Filter Section -->
-                <div class="form-group mb-3">
-                    <label><strong><i class="fas fa-venus-mars"></i> Filter Berdasarkan Jenis Kelamin</strong></label>
-                    <select class="form-control" name="gender_id" id="gender_id">
-                        <option value="">-- Semua Jenis Kelamin --</option>
-                        <?php if (isset($genderOptions)) : ?>
-                            <?php foreach ($genderOptions as $gender) : ?>
-                                <option value="<?= $gender->id ?>"><?= esc($gender->Name) ?></option>
-                            <?php endforeach ?>
-                        <?php endif ?>
-                    </select>
-                </div>
-
-                <!-- Member Type Filter Section -->
-                <div class="form-group mb-3">
-                    <label><strong><i class="fas fa-user-tag"></i> Filter Berdasarkan Jenis Anggota</strong></label>
-                    <select class="form-control" name="member_type_id" id="member_type_id">
-                        <option value="">-- Semua Jenis Anggota --</option>
-                        <?php if (isset($memberTypeOptions)) : ?>
-                            <?php foreach ($memberTypeOptions as $memberType) : ?>
-                                <option value="<?= $memberType->id ?>"><?= esc($memberType->jenisanggota) ?></option>
-                            <?php endforeach ?>
-                        <?php endif ?>
-                    </select>
-                </div>
-
-                <!-- Date Filter Type Selection -->
-                <div class="form-group mb-3">
-                    <label><strong><i class="fas fa-filter"></i> Jenis Filter Tanggal</strong></label>
-                    <select class="form-control" name="filter_type" id="filter_type">
-                        <option value="date">Filter berdasarkan Range Tanggal</option>
-                        <option value="month">Filter berdasarkan Bulan</option>
-                        <option value="year">Filter berdasarkan Tahun</option>
-                    </select>
-                </div>
-
-                <!-- Date Range Filter -->
-                <div id="date_filter" class="filter-section mb-3">
-                    <h6 class="mb-3"><i class="fas fa-calendar-alt"></i> Filter Berdasarkan Range Tanggal</h6>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label>Tanggal Mulai</label>
-                            <input type="date" name="start_date" class="form-control" max="<?= date('Y-m-d') ?>">
-                        </div>
-                        <div class="col-md-6">
-                            <label>Tanggal Akhir</label>
-                            <input type="date" name="end_date" class="form-control" max="<?= date('Y-m-d') ?>">
+                    <!-- Filter Bulan & Tahun Registrasi -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-calendar-alt"></i> Filter Berdasarkan Bulan & Tahun Registrasi</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Bulan</label>
+                                <select name="month" class="form-control">
+                                    <option value="">-- Pilih Bulan --</option>
+                                    <?php for ($i = 1; $i <= 12; $i++) : ?>
+                                        <option value="<?= $i ?>"><?= date('F', mktime(0, 0, 0, $i, 1)) ?></option>
+                                    <?php endfor ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label>Tahun</label>
+                                <select name="year" class="form-control">
+                                    <option value="">-- Pilih Tahun --</option>
+                                    <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
+                                        <option value="<?= $i ?>"><?= $i ?></option>
+                                    <?php endfor ?>
+                                </select>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Month Filter -->
-                <div id="month_filter" class="filter-section mb-3" style="display: none;">
-                    <h6 class="mb-3"><i class="fas fa-calendar"></i> Filter Berdasarkan Bulan</h6>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label>Bulan</label>
-                            <select name="year" class="form-control">
-                                <option value="">-- Pilih Tahun --</option>
-                                <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
-                                    <option value="<?= $i ?>" <?= ($i == date('Y')) ? 'selected' : '' ?>>
-                                        <?= $i ?>
+                    <!-- Filter Tahun Registrasi Saja -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-calendar"></i> Filter Berdasarkan Tahun Registrasi Saja</h6>
+                        <label>Tahun</label>
+                        <select name="year_only" class="form-control">
+                            <option value="">-- Pilih Tahun --</option>
+                            <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
+                                <option value="<?= $i ?>"><?= $i ?></option>
+                            <?php endfor ?>
+                        </select>
+                    </div>
+
+                    <!-- Filter Tanggal Lahir -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-birthday-cake"></i> Filter Berdasarkan Tanggal Lahir</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Tanggal Mulai</label>
+                                <input type="date" name="birth_start_date" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label>Tanggal Akhir</label>
+                                <input type="date" name="birth_end_date" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter Jenis Kelamin -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-venus-mars"></i> Filter Berdasarkan Jenis Kelamin</h6>
+                        <label>Jenis Kelamin</label>
+                        <select name="gender_id" class="form-control">
+                            <option value="">-- Semua Jenis Kelamin --</option>
+                            <?php if (isset($genderOptions)) : ?>
+                                <?php foreach ($genderOptions as $gender) : ?>
+                                    <option value="<?= $gender->id ?>"><?= esc($gender->Name) ?></option>
+                                <?php endforeach ?>
+                            <?php endif ?>
+                        </select>
+                    </div>
+
+                    <!-- Filter Jenis Anggota -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-user-tag"></i> Filter Berdasarkan Jenis Anggota</h6>
+                        <label>Jenis Anggota</label>
+                        <select name="member_type_id" class="form-control">
+                            <option value="">-- Semua Jenis Anggota --</option>
+                            <?php if (isset($memberTypeOptions)) : ?>
+                                <?php foreach ($memberTypeOptions as $memberType) : ?>
+                                    <option value="<?= $memberType->id ?>"><?= esc($memberType->jenisanggota) ?></option>
+                                <?php endforeach ?>
+                            <?php endif ?>
+                        </select>
+                    </div>
+
+                    <!-- Filter Nama Lengkap -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-user"></i> Filter Berdasarkan Nama Lengkap</h6>
+                        <label>Nama Lengkap</label>
+                        <input type="text" name="fullname" class="form-control" placeholder="Masukkan nama lengkap...">
+                    </div>
+
+                    <!-- Filter Tempat Lahir -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-map-marker-alt"></i> Filter Berdasarkan Tempat Lahir</h6>
+                        <label>Tempat Lahir</label>
+                        <input type="text" name="place_of_birth" class="form-control" placeholder="Masukkan tempat lahir...">
+                    </div>
+
+                    <!-- Filter Alamat -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-home"></i> Filter Berdasarkan Alamat</h6>
+                        <label>Alamat</label>
+                        <input type="text" name="address" class="form-control" placeholder="Masukkan alamat...">
+                    </div>
+
+                    <!-- Filter Provinsi -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-map"></i> Filter Berdasarkan Provinsi</h6>
+                        <label>Provinsi</label>
+                        <input type="text" name="province" class="form-control" placeholder="Masukkan nama provinsi...">
+                    </div>
+
+                    <!-- Filter Kota -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-city"></i> Filter Berdasarkan Kota</h6>
+                        <label>Kota</label>
+                        <input type="text" name="city" class="form-control" placeholder="Masukkan nama kota...">
+                    </div>
+
+                    <!-- Filter Institusi -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-university"></i> Filter Berdasarkan Institusi</h6>
+                        <label>Nama Institusi</label>
+                        <input type="text" name="institution_name" class="form-control" placeholder="Masukkan nama institusi...">
+                    </div>
+
+                    <!-- Filter Email -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-envelope"></i> Filter Berdasarkan Email</h6>
+                        <label>Email</label>
+                        <input type="email" name="email" class="form-control" placeholder="Masukkan email...">
+                    </div>
+
+                    <!-- Filter CreateBy -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-user-plus"></i> Filter Berdasarkan Dibuat Oleh</h6>
+                        <label>Dibuat Oleh</label>
+                        <select name="createby" class="form-control">
+                            <option value="">-- Semua User --</option>
+                            <?php if (isset($userOptions)) : ?>
+                                <?php foreach ($userOptions as $user) : ?>
+                                    <option value="<?= $user->id ?>">
+                                        <?= $user->username ?>
                                     </option>
-                                <?php endfor ?>
-                            </select>
-                        </div>
+                                <?php endforeach ?>
+                            <?php endif ?>
+                        </select>
+                    </div>
+
+                    <!-- Filter UpdateBy -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-user-edit"></i> Filter Berdasarkan Diperbarui Oleh</h6>
+                        <label>Diperbarui Oleh</label>
+                        <select name="updateby" class="form-control">
+                            <option value="">-- Semua User --</option>
+                            <?php if (isset($userOptions)) : ?>
+                                <?php foreach ($userOptions as $user) : ?>
+                                    <option value="<?= $user->id ?>">
+                                        <?= $user->username ?>
+                                    </option>
+                                <?php endforeach ?>
+                            <?php endif ?>
+                        </select>
                     </div>
                 </div>
 
-                <!-- Year Filter -->
-                <div id="year_filter" class="filter-section mb-3" style="display: none;">
-                    <h6 class="mb-3"><i class="fas fa-calendar-year"></i> Filter Berdasarkan Tahun</h6>
-                    <label>Tahun</label>
-                    <select name="year" class="form-control">
-                        <option value="">-- Pilih Tahun --</option>
-                        <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
-                            <option value="<?= $i ?>" <?= ($i == date('Y')) ? 'selected' : '' ?>>
-                                <?= $i ?>
-                            </option>
-                        <?php endfor ?>
-                    </select>
-                </div>
-
-                <!-- Action Buttons -->
+                <!-- Export Button -->
                 <div class="text-center mb-4">
-                    <button type="button" id="select-all-columns" class="btn btn-info btn-sm">
-                        <i class="fas fa-check-double"></i> Pilih Semua Kolom
+                    <button type="submit" class="btn btn-success btn-lg px-5" id="exportBtn">
+                        <i class="fas fa-download"></i> Export to Excel
                     </button>
-                    <button type="button" id="clear-all-columns" class="btn btn-secondary btn-sm">
-                        <i class="fas fa-times"></i> Hapus Semua Pilihan
+                    <button type="button" class="btn btn-secondary btn-lg px-5 ml-2" onclick="clearAllFilters()">
+                        <i class="fas fa-eraser"></i> Clear All Filters
                     </button>
                 </div>
 
-                <div class="text-center mb-3">
-                    <button type="submit" class="btn btn-success btn-lg">
-                        <i class="fas fa-download"></i> Export ke Excel
-                    </button>
-                </div>
+                <!-- Export Warning -->
+               
             </form>
 
             <!-- Preview Section -->
             <div class="preview-container">
-                <h5><i class="fas fa-eye"></i> Preview Data (Maksimal 20 Baris Pertama)</h5>
+                <h5><i class="fas fa-eye"></i> Preview Data (20 Baris Pertama)</h5>
+                 <div>
+                            <strong>Perhatian:</strong> Export data dalam jumlah besar membutuhkan waktu lebih lama.<br>
+                            <small>Maksimum export: <strong>50,000 records</strong>. Gunakan filter untuk mengurangi jumlah data jika diperlukan.</small>
+                        </div>
                 <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i>
-                    <strong>Informasi:</strong> Preview menampilkan maksimal 20 baris pertama sesuai dengan filter yang dipilih. 
-                    File export akan berisi semua data yang sesuai dengan filter.
+                    <i class="fas fa-info-circle"></i> Preview akan otomatis terupdate setiap kali Anda mengubah pilihan kolom atau filter.
                 </div>
                 <div class="preview-table" id="preview-table">
-                    <div class="text-center text-muted py-5">
-                        <i class="fas fa-info-circle fa-3x mb-3"></i>
-                        <p class="h5">Pilih kolom dan filter untuk melihat preview data</p>
-                        <small>Data akan dimuat secara otomatis ketika Anda memilih kolom atau mengubah filter</small>
+                    <div class="text-center">
+                        <p>Pilih kolom untuk melihat preview data</p>
                     </div>
                 </div>
             </div>
@@ -253,40 +343,37 @@ $(document).ready(function() {
             selectedColumns.push($(this).val());
         });
 
-        const filterType = $('#filter_type').val();
-        const genderId = $('#gender_id').val();
-        const memberTypeId = $('#member_type_id').val();
-        const createdById = $('#created_by_id').val(); // New filter
-        const updatedById = $('#updated_by_id').val(); // New filter
-        
-        const formData = new FormData();
-        formData.append('columns', JSON.stringify(selectedColumns));
-        formData.append('filter_type', filterType);
-        formData.append('gender_id', genderId);
-        formData.append('member_type_id', memberTypeId);
-        formData.append('created_by_id', createdById); // Add to form data
-        formData.append('updated_by_id', updatedById); // Add to form data
-
-        // Add appropriate date filters based on filter type
-        if (filterType === 'date') {
-            formData.append('start_date', $('input[name="start_date"]').val());
-            formData.append('end_date', $('input[name="end_date"]').val());
-        } else if (filterType === 'month') {
-            formData.append('month', $('#month_filter select[name="month"]').val());
-            formData.append('year', $('#month_filter select[name="year"]').val());
-        } else if (filterType === 'year') {
-            formData.append('year', $('#year_filter select[name="year"]').val());
+        if (selectedColumns.length === 0) {
+            $('#preview-table').html('<div class="text-center"><p>Pilih minimal satu kolom untuk melihat preview data</p></div>');
+            $('#exportWarning').hide();
+            return;
         }
 
+        const formData = new FormData();
+        formData.append('columns', JSON.stringify(selectedColumns));
+
+        // Add all filter values
+        formData.append('start_date', $('input[name="start_date"]').val());
+        formData.append('end_date', $('input[name="end_date"]').val());
+        formData.append('month', $('select[name="month"]').val());
+        formData.append('year', $('select[name="year"]').val());
+        formData.append('year_only', $('select[name="year_only"]').val());
+        formData.append('birth_start_date', $('input[name="birth_start_date"]').val());
+        formData.append('birth_end_date', $('input[name="birth_end_date"]').val());
+        formData.append('gender_id', $('select[name="gender_id"]').val());
+        formData.append('member_type_id', $('select[name="member_type_id"]').val());
+        formData.append('fullname', $('input[name="fullname"]').val());
+        formData.append('place_of_birth', $('input[name="place_of_birth"]').val());
+        formData.append('address', $('input[name="address"]').val());
+        formData.append('province', $('input[name="province"]').val());
+        formData.append('city', $('input[name="city"]').val());
+        formData.append('institution_name', $('input[name="institution_name"]').val());
+        formData.append('email', $('input[name="email"]').val());
+        formData.append('createby', $('select[name="createby"]').val());
+        formData.append('updateby', $('select[name="updateby"]').val());
+
         // Show loading indicator
-        $('#preview-table').html(`
-            <div class="text-center py-5">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="sr-only">Loading...</span>
-                </div>
-                <p class="mt-3">Memuat preview data...</p>
-            </div>
-        `);
+        $('#preview-table').html('<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i><p>Memuat preview data...</p></div>');
 
         // Make AJAX call to get preview data
         $.ajax({
@@ -297,133 +384,84 @@ $(document).ready(function() {
             contentType: false,
             success: function(response) {
                 $('#preview-table').html(response);
-                
-                // Add some styling to the preview table
-                $('#preview-table table').addClass('table-hover');
-                
-                // Show success message if data found
+                // Show export warning if data exists
                 if (response.includes('<table')) {
-                    const rowCount = $(response).find('tbody tr').length;
-                    const successMsg = `<div class="alert alert-success alert-dismissible fade show mb-3">
-                        <i class="fas fa-check-circle"></i>
-                        <strong>Berhasil!</strong> Menampilkan ${rowCount} baris data untuk preview.
-                        <button type="button" class="close" data-dismiss="alert">
-                            <span>&times;</span>
-                        </button>
-                    </div>`;
-                    $('#preview-table').prepend(successMsg);
+                    $('#exportWarning').show();
                 }
             },
             error: function(xhr, status, error) {
                 console.error('Error fetching preview:', error);
-                $('#preview-table').html(`
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <strong>Error!</strong> Terjadi kesalahan saat memuat preview data.
-                        <br><small>Error: ${error}</small>
-                    </div>
-                `);
+                $('#preview-table').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Terjadi kesalahan saat memuat preview data. Silakan coba lagi.</div>');
+                $('#exportWarning').hide();
             }
         });
     }
 
-    // Event listeners for form changes
-    $('input[name="columns[]"], #filter_type, #gender_id, #member_type_id, #created_by_id, #updated_by_id').change(function() {
-        updatePreview();
-    });
-    
-    $('input[name="start_date"], input[name="end_date"]').change(function() {
-        updatePreview();
-    });
-    
-    $('select[name="month"], select[name="year"]').change(function() {
+    // Handle Select All Columns
+    $('#select_all_columns').change(function() {
+        const isChecked = $(this).is(':checked');
+        $('.column-checkbox').prop('checked', isChecked);
         updatePreview();
     });
 
-    // Initial preview load
+    // Handle individual column checkboxes
+    $('.column-checkbox').change(function() {
+        updateSelectAllStatus();
+        updatePreview();
+    });
+
+    // Function to update select all checkbox status
+    function updateSelectAllStatus() {
+        const totalColumns = $('.column-checkbox').length;
+        const checkedColumns = $('.column-checkbox:checked').length;
+        
+        if (checkedColumns === 0) {
+            $('#select_all_columns').prop('indeterminate', false).prop('checked', false);
+        } else if (checkedColumns === totalColumns) {
+            $('#select_all_columns').prop('indeterminate', false).prop('checked', true);
+        } else {
+            $('#select_all_columns').prop('indeterminate', true);
+        }
+    }
+
+    // Event listeners for filter inputs
+    $('input[type="date"], input[type="text"], input[type="email"], select').on('change keyup', debounce(updatePreview, 500));
+
+    // Initial setup
+    updateSelectAllStatus();
     updatePreview();
 
-    // Show/hide filter sections based on filter type
-    $('#filter_type').change(function() {
-        $('.filter-section:not(.user-filter-section)').hide();
-        const selectedFilter = $(this).val();
-        $('#' + selectedFilter + '_filter').show();
-        updatePreview();
-    });
-
-    // Select all columns functionality
-    $('#select-all-columns').click(function() {
-        $('input[name="columns[]"]').prop('checked', true);
-        updatePreview();
-        $(this).removeClass('btn-info').addClass('btn-success');
-        setTimeout(() => {
-            $(this).removeClass('btn-success').addClass('btn-info');
-        }, 1000);
-    });
-
-    // Clear all columns functionality
-    $('#clear-all-columns').click(function() {
-        $('input[name="columns[]"]').prop('checked', false);
-        updatePreview();
-        $(this).removeClass('btn-secondary').addClass('btn-warning');
-        setTimeout(() => {
-            $(this).removeClass('btn-warning').addClass('btn-secondary');
-        }, 1000);
-    });
-
-    // Add visual feedback when checkboxes are changed
-    $('input[name="columns[]"]').change(function() {
-        const checkedCount = $('input[name="columns[]"]:checked').length;
-        const label = $(this).closest('.form-group').find('label').first();
-        
-        if (checkedCount === 0) {
-            label.addClass('text-danger').removeClass('text-success');
-        } else {
-            label.addClass('text-success').removeClass('text-danger');
-        }
-        
-        // Update column counter
-        const counterText = `(${checkedCount} kolom dipilih)`;
-        label.find('.column-counter').remove();
-        label.append(` <small class="column-counter text-muted">${counterText}</small>`);
-    });
-
-    // Form validation before submit
-    $('form').on('submit', function(e) {
-        const selectedColumns = $('input[name="columns[]"]:checked').length;
-        
-        if (selectedColumns === 0) {
-            e.preventDefault();
-            alert('Pilih minimal satu kolom untuk melakukan export!');
-            $('input[name="columns[]"]').first().focus();
-            return false;
-        }
-        
-        // Show loading state on submit button
-        const submitBtn = $(this).find('button[type="submit"]');
-        const originalText = submitBtn.html();
-        submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Mengekspor...').prop('disabled', true);
-        
-        // Re-enable button after 5 seconds (in case of error)
-        setTimeout(() => {
-            submitBtn.html(originalText).prop('disabled', false);
-        }, 5000);
-    });
-
-    // Add tooltips to filter sections
-    $('[data-toggle="tooltip"]').tooltip();
-
-    // Enhance date inputs
-    $('input[type="date"]').on('change', function() {
-        const startDate = $('input[name="start_date"]').val();
-        const endDate = $('input[name="end_date"]').val();
-        
-        if (startDate && endDate && startDate > endDate) {
-            alert('Tanggal mulai tidak boleh lebih besar dari tanggal akhir!');
-            $(this).val('');
-            return;
-        }
-    });
+    // Debounce function to limit API calls
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
 });
+
+// Function to clear all filters
+function clearAllFilters() {
+    if (confirm('Apakah Anda yakin ingin menghapus semua filter?')) {
+        // Clear all input fields
+        $('input[type="date"], input[type="text"], input[type="email"]').val('');
+        $('select').prop('selectedIndex', 0);
+        
+        // Update preview
+        const selectedColumns = [];
+        $('input[name="columns[]"]:checked').each(function() {
+            selectedColumns.push($(this).val());
+        });
+        
+        if (selectedColumns.length > 0) {
+            updatePreview();
+        }
+    }
+}
 </script>
 <?= $this->endSection('script'); ?>

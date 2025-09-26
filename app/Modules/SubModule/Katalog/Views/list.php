@@ -51,10 +51,6 @@ $request = service('request');
 					<?php endif; ?>
 				<?php endif; ?>
 
-				<a href="<?= base_url('report/katalog') ?>" class="btn btn-secondary btn-sm mr-2">
-					<i class="fa fa-file-excel"></i> Ekspor Laporan
-				</a>
-
 				<div class="dropdown">
 					<button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button"
 						id="downloadMarcDropdownKatalog" data-toggle="dropdown" aria-expanded="false">
