@@ -741,38 +741,3 @@ function convert_catalog_ruas($CatalogId)
 
     return $update_data;
 }
-
-
-
-function encData($data)
-{
-    $encrypter = service('encrypter');
-    return urlsafeB64encode($encrypter->encrypt($data));
-}
-
-function decData($data)
-{
-    try {
-        $encrypter = service('encrypter');
-        return $encrypter->decrypt(urlsafeB64decode($data));
-    } catch (\Exception $e) {
-        throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
-    }
-}
-
-function urlsafeB64encode($string)
-{
-    $data = base64_encode($string);
-    $data = str_replace(array('+', '/', '='), array('-', '_', ''), $data);
-    return $data;
-}
-
-function urlsafeB64decode($string)
-{
-    $data = str_replace(array('-', '_'), array('+', '/'), $string);
-    $mod4 = strlen($data) % 4;
-    if ($mod4) {
-        $data .= substr('====', $mod4);
-    }
-    return base64_decode($data);
-}
