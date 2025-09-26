@@ -1182,9 +1182,6 @@ class Katalog extends \Base\Controllers\BaseController
 
 	public function view_decrypted_article($ID)
 	{
-		// Load the file model
-
-
 		// Get the file record
 		$file = $this->serialArticleFilesModel->find($ID);
 		if (!$file || !file_exists($this->modulePath . $file->FileURL)) {
