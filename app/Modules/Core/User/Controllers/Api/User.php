@@ -218,7 +218,7 @@ class User extends \Base\Controllers\BaseResourceController
 			$last_name = $this->request->getPost('last_name');
 			$is_branch = $this->request->getPost('is_branch') ?? 1;
 			$provinsi_id = $this->request->getPost('provinsi_id') ?? user()->npp_provinsi_id;
-			$branch_id = $this->request->getPost('branch_id') ?? "";
+			$branch_id = $this->settingModel->where('Name', 'Branch_id')->first()->Value ?? 'ID Perpustakaan Mitra';
 
 			try {
 				$kabkota_id = (null !== $this->request->getPost('kabkota_id')) ? $this->request->getPost('kabkota_id') : user()->kabkota_id;
@@ -280,12 +280,10 @@ class User extends \Base\Controllers\BaseResourceController
 				'company' => $this->request->getPost('company'),
 				'address' => $this->request->getPost('address'),
 				'coordinate' => $this->request->getPost('coordinate'),
+				'branch_id' => $this->settingModel->where('Name', 'Branch_id')->first()->Value ?? 'ID Perpustakaan Mitra'
 			);
 
-			if (!empty($this->request->getPost('branch_id'))) {
-				$branch_id = $this->request->getPost('branch_id');
-				$update_data['branch_id'] = $branch_id;
-			}
+		
 
 			if ($this->request->getPost('password')) {
 				$update_data['password_hash'] = $this->password->hash($this->request->getPost('password'));
@@ -296,7 +294,7 @@ class User extends \Base\Controllers\BaseResourceController
 
 			$userUpdate = $this->userModel->update($id, $update_data);
 			if ($userUpdate) {
-				if (is_member('admin') || is_member('sa_pus')) {
+				if (is_member('admin')) {
 					$groups = $this->authorize->groups();
 					foreach ($groups as $group) {
 						$this->authorize->removeUserFromGroup($id, $group->id);
@@ -307,29 +305,6 @@ class User extends \Base\Controllers\BaseResourceController
 						$this->authorize->addUserToGroup($id, $group_id);
 					}
 				}
-					// Update settings
-					$dataToUpdate = [
-						'NamaPerpustakaan' => trim($this->request->getPost('perpus_nama')),
-						'NamaLokasiPerpustakaan' => trim($this->request->getPost('perpus_alamat')),
-						'NPPPerpustakaan' => trim($this->request->getPost('perpus_npp')),
-						'EmailPerpustakaan' => trim($this->request->getPost('perpus_email')),
-						'JenisPerpustakaan' => trim($this->request->getPost('perpus_jenis')),
-					];
-                  
-					$success = true;
-					foreach ($dataToUpdate as $name => $value) {
-						$row = $this->settingModel->where('Name', $name)->first();
-					
-						if ($row) {
-							if (!$this->settingModel->update($row->ID, ['Value' => $value])) {
-								$success = false;
-							}
-						} else {
-							if (!$this->settingModel->insert(['Name' => $name, 'Value' => $value])) {
-								$success = false;
-							}
-						}
-					}
 				
 
 

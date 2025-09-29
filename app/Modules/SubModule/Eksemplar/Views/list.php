@@ -7,19 +7,18 @@ $actions = array(
 	'cetak-label-a4-2' => 'Cetak Label A4-2 (Barcode + No. Panggil)',
 	'cetak-label-a4-3' => 'Cetak Label A4-3 (Barcode + No. Panggil + 1 Warna)',
 	'cetak-label-a4-4' => 'Cetak Label A4-4 (Barcode + No. Panggil + 1 Warna)',
-	'cetak-label-a4-4-qrcode' => 'Cetak Label A4-4 (Qrcode + No. Panggil + 1 Warna)',
 	// 'cetak-label-a4-5' => 'Cetak Label A4-4 (Barcode + No. Panggil + 1 Warna)',
 	// 'cetak-label-a4-5' => 'Cetak Label A4-4 (Barcode + No. Panggil + 1 Warna)',
 	'tampil-opac' => 'Tampilkan di Opac',
 	'karantina-eksemplar' => 'Karantina Eksemplar',
 );
 ?>
-
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
+
 <div class="app-main__inner">
 	<div class="app-page-title">
 		<div class="page-title-wrapper">
@@ -34,7 +33,7 @@ $actions = array(
 			<div class="page-title-actions">
 				<nav class="" aria-label="breadcrumb">
 					<ol class="breadcrumb">
-						<li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
+						<li class="breadcrumb-item"><a href="<?= base_url('Eksemplar') ?>"><i class="fa fa-home"></i> Home</a></li>
 						<li class="active breadcrumb-item" aria-current="page">Eksemplar</li>
 					</ol>
 				</nav>
@@ -70,47 +69,49 @@ $actions = array(
 							<option value="<?= $key ?>" <?= set_select('action', $key, false); ?>><?= $value ?></option>
 						<?php endforeach; ?>
 					</select>
-					<form class="input-group-append" name="form_process" id="form_process" action="" method="post">
-						<input type="hidden" value="" name="eksemplar_ids" id="eksemplar_ids">
-						<input type="hidden" value="" name="eksemplar_tpl" id="eksemplar_tpl">
-						<button type="submit" class="btn bg-primary text-white worksheet-btn-load" id="btnProcess" type="button" style="min-width:80px"><i class="fa fa-check "></i> Proses </button>
-					</form>
+					
+					
+						<button  class="btn bg-primary text-white worksheet-btn-load" id="btnProcess2" type="button" style="min-width:80px"><i class="fa fa-check "></i> Proses </button>
+					
 				</div>
 			</div>
 		</div>
 		<div class="card-body">
 			<form name="form_items" id="form_items">
-				<!-- Bagian tabel yang diupdate untuk menambahkan kolom Status -->
-<table style="width: 100%;" id="tbl_data" class="table table-hover table-striped table-bordered">
-    <thead>
-        <tr>
-            <th class="text-center" width="35">
-                <input type="checkbox" class="check_data" title="Pilih Semua">
-            </th>
-            <th class="text-center" width="100">No. Barcode</th>
-            <th class="text-center" width="100">Tanggal Pengadaan</th>
-            <th class="text-center" width="100">No. Induk</th>
-            <th class="text-center" width="">Data Bibliografis</th>
-            <th class="text-center" width="80">Status</th>
-            <th class="text-center" width="">OPAC</th>
-            <th class="text-center" width="">DRM</th>
-            <th class="text-center" width="">Karantina</th>
-            <th class="text-center" width="80">Aksi</th>
-        </tr>
-    </thead>
-    <tbody>
-    </tbody>
-</table>
+				<table style="width: 100%;" id="tbl_data" class="table table-hover table-striped table-bordered">
+					<thead>
+						<tr>
+							<th class="text-center" width="35">
+							<input type="checkbox" class="check_data" title="Pilih Semua">
+							</th>
+							<th class="text-center" width="100">No. Barcode</th>
+							<th class="text-center" width="100">Tanggal Pengadaan</th>
+							<th class="text-center" width="100">No. Induk</th>
+							<th class="text-center" width="">Data Bibliografis</th>
+							<th class="text-center" width="">OPAC</th>
+                            <th class="text-center" width="">DRM</th>
+							<th class="text-center" width="">Karantina</th>
+							<th class="text-center" width="80">Aksi</th>
+						</tr>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
 			</form>
 		</div>
 		
 	</div>
 </div>
-<?= $this->endSection('page'); ?>
 
+<?= $this->endSection('page'); ?>
 <?= $this->section('script'); ?>
 
+	
 <script>
+	$('#branch_id').select2({
+    maximumInputLength: 3
+});
+var t;
 $(document).ready(function() {
     t = $('#tbl_data').DataTable({
         "processing": true,
@@ -132,11 +133,10 @@ $(document).ready(function() {
                 "sFirst": "<i class='fa fa-chevron-double-left'></i>",
             }
         },
-        "columns": [
-            {
+        "columns": [{
                 data: 'ID',
                 className: 'text-center',
-                orderable: true
+                orderable: false
             },
             {
                 data: 'NomorBarcode',
@@ -150,11 +150,6 @@ $(document).ready(function() {
             },
             {
                 data: 'Catalog_id'
-            },
-            {
-                data: 'StatusName',
-                className: 'text-center',
-                orderable: true
             },
             {
                 data: 'IsOPAC',
@@ -177,11 +172,191 @@ $(document).ready(function() {
                 orderable: false
             },
         ],
-        "order": [
-            [0, "desc"]
-        ],
-        // ... sisa kode drawCallback dan initComplete tetap sama
+        "drawCallback": function(data, type, full, meta) {
+            var api = this.api();
+            var data = api.rows().data();
+            $('[data-toggle="tooltip"]').tooltip();
+            $('.apply-status').bootstrapToggle();
+            $(".apply-status").on('change', function() {
+                var url = $(this).attr('data-href');
+                var field = $(this).attr('data-field');
+                var value = $(this).is(':checked');
+                var data_post = 'field=' + field + '&value=' + value;
+
+                $.ajax({
+                        url: url,
+                        type: 'POST',
+                        data: data_post,
+                    })
+                    .done(function(res) {
+                        
+                        if (res.error == false) {
+                            Swal.fire({
+                                title: 'Berhasil',
+                                html: res.message,
+                                type: 'success',
+                                showConfirmButton: false,
+                                timer: 5000,
+                            }).then(() => {});
+                        } else {
+                            Swal.fire({
+                                title: 'Gagal',
+                                text: res.message,
+                                type: 'error',
+                                showConfirmButton: false,
+                                timer: 5000
+                            }).then(() => {});
+                        }
+                    })
+                    .fail(function(res) {
+                        console.log(res);
+
+                        Swal.fire({
+                            title: 'Oups',
+                            text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
+                            type: 'error',
+                            showConfirmButton: false,
+                            timer: 5000
+                        }).then(() => {});
+                    });
+            });
+        },
+        "initComplete": function(settings, json) {
+            
+        }
     });
+
+	// Add this to your existing script section
+	$(document).ready(function() {
+    // Process button click handler
+    $('#btnProcess2').on('click', function() {
+        // Get selected action
+        var action = $('#action').val();
+        
+        if (!action) {
+            Swal.fire({
+                title: 'Peringatan',
+                text: 'Silakan pilih aksi terlebih dahulu!',
+                type: 'warning',
+                showConfirmButton: true
+            });
+            return false;
+        }
+        
+        // Get all checked items
+       
+		var checkedItems = [];
+		$('#tbl_data tbody input.check:checked').each(function() {
+			checkedItems.push($(this).val());
+		});
+
+        if (checkedItems.length === 0) {
+            Swal.fire({
+                title: 'Peringatan',
+                text: 'Silakan pilih setidaknya satu eksemplar!',
+                icon: 'warning',
+                showConfirmButton: true
+            });
+            return false;
+        }
+		alert(checkedItems);
+        
+        if (checkedItems.length === 0) {
+            Swal.fire({
+                title: 'Peringatan',
+                text: 'Silakan pilih minimal satu eksemplar!',
+                type: 'warning',
+                showConfirmButton: true
+            });
+            return false;
+        }
+        
+        // Handle different actions
+        if (action.includes('cetak-label')) {
+            // For print label actions
+            var form = $('<form>', {
+                'method': 'post',
+                'action': '<?= base_url('eksemplar/print_label') ?>',
+                'id': 'printLabelForm'
+            });
+            
+            // Add the eksemplar IDs as a comma-separated string
+            form.append($('<input>', {
+                'type': 'hidden',
+                'name': 'eksemplar_ids',
+                'value': checkedItems.join(',')
+            }));
+            
+            // Add the template name
+            form.append($('<input>', {
+                'type': 'hidden',
+                'name': 'eksemplar_tpl',
+                'value': action
+            }));
+            
+            // Add to body and submit
+            form.appendTo('body');
+            form.submit();
+        } else if (action === 'tampil-opac') {
+            // For OPAC display toggle
+            updateStatus(checkedItems, 'IsOPAC', true);
+        } else if (action === 'karantina-eksemplar') {
+            // For quarantine toggle
+            updateStatus(checkedItems, 'IsQUARANTINE', true);
+        }
+    });
+    
+    // Function to update status (OPAC/Quarantine)
+    function updateStatus(ids, field, value) {
+        $.ajax({
+            url: '<?= base_url('api/eksemplar/update_status') ?>',
+            type: 'POST',
+            data: {
+                ids: ids.join(','),
+                field: field,
+                value: value
+            },
+            dataType: 'json',
+            success: function(res) {
+                if (res.error === false) {
+                    Swal.fire({
+                        title: 'Berhasil',
+                        html: res.message,
+                        type: 'success',
+                        showConfirmButton: false,
+                        timer: 3000,
+                    }).then(() => {
+                        // Refresh the table to show updated status
+                        t.ajax.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Gagal',
+                        text: res.message,
+                        type: 'error',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Terjadi kesalahan saat memproses permintaan',
+                    type: 'error',
+                    showConfirmButton: true
+                });
+                console.error(xhr.responseText);
+            }
+        });
+    }
+    
+    // Handle "select all" checkbox
+    $('.check_data').on('click', function() {
+        $('.item-checkbox').prop('checked', $(this).prop('checked'));
+    });
+});
+ 
 });
 </script>
 <?= $this->endSection('script'); ?>

@@ -7,8 +7,9 @@ if (!isset($routes)) {
 $routes->group('master-nama-perpustakaan', ['namespace' => 'NamaPerpustakaan\Controllers'], function ($subroutes) { 
     $subroutes->add('', 'NamaPerpustakaan::index'); 
     $subroutes->add('index', 'NamaPerpustakaan::index'); 
-    $subroutes->add('update', 'NamaPerpustakaan::update'); 
     $subroutes->add('edit', 'NamaPerpustakaan::edit'); 
+    $subroutes->add('update', 'NamaPerpustakaan::update'); 
+    $subroutes->add('searchperpustakaan', 'NamaPerpustakaan::searchPerpustakaan'); 
     $subroutes->add('logo-upload', 'NamaPerpustakaan::uploadLogo');
     $subroutes->add('logo-current', 'NamaPerpustakaan::getCurrentLogo');
     $subroutes->add('logo-delete', 'NamaPerpustakaan::deleteLogo');

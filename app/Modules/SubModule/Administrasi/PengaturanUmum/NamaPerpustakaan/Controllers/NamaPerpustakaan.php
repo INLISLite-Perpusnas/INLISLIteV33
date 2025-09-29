@@ -39,8 +39,6 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 
 	public function index()
 	{
-	
-		
 		$logo=$this->db->table('settingparameters')->where('Name', 'Logo')->get()->getRow()->Value?:"Perpustakaan Mitra";
 		$logokop=$this->db->table('settingparameters')->where('Name', 'LogoKop')->get()->getRow()->Value?:"Perpustakaan Mitra";
 		
@@ -50,6 +48,7 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 		$this->data['nama_perpustakaan'] = $this->settingModel->where('Name', 'NamaPerpustakaan')->first()->Value ?? 'Perpustakaan Mitra';
 		$this->data['nama_lokasi_perpustakaan'] = $this->settingModel->where('Name', 'NamaLokasiPerpustakaan')->first()->Value ?? 'Alamat Perpustakaan Mitra';
 		$this->data['npp_perpustakaan'] = $this->settingModel->where('Name', 'NPPPerpustakaan')->first()->Value ?? 'NPP Perpustakaan Mitra';
+		$this->data['Branch_id'] = $this->settingModel->where('Name', 'Branch_id')->first()->Value ?? 'ID Perpustakaan Mitra';
 		$this->data['lokasi_perpustakaan'] = $this->settingModel->where('Name', 'NamaLokasiPerpustakaan')->first()->Value ?? 'Lokasi Perpustakaan Mitra';
 		$this->data['email_perpustakaan'] = $this->settingModel->where('Name', 'EmailPerpustakaan')->first()->Value ?? 'email@perpustakaan.mitra';
 		$this->data['jam_operasional'] = $this->settingModel->where('Name', 'JamOperasional')->first()->Value ?? 'Jam Operasional Perpustakaan Mitra';
@@ -65,6 +64,94 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 
 		echo view('NamaPerpustakaan\Views\update', $this->data);
 	}
+
+	/**
+	 * API endpoint untuk pencarian perpustakaan
+	 */
+	public function searchPerpustakaan()
+	{
+		$keyword = $this->request->getGet('q');
+		
+		if (!$keyword || strlen(trim($keyword)) < 3) {
+			return $this->failValidationErrors('Keyword minimal 3 karakter');
+		}
+
+		try {
+			// Ambil URL dan API Key dari file environment (.env)
+			$flaskApiUrl = env('FLASK_API_BASEURL') . '/perpustakaan?q=' . urlencode($keyword);
+			$apiKey = env('API_KEY');
+
+			// Validasi: Pastikan API Key sudah di-set di .env
+			if (!$apiKey) {
+				log_message('error', 'API_KEY tidak diatur di dalam file .env');
+				return $this->failServerError('Konfigurasi sisi server tidak lengkap.');
+			}
+			
+			// Initialize cURL
+			$curl = curl_init();
+			curl_setopt_array($curl, [
+				CURLOPT_URL => $flaskApiUrl,
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_TIMEOUT => 30,
+				CURLOPT_FOLLOWLOCATION => true,
+				CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+				CURLOPT_CUSTOMREQUEST => 'GET',
+				CURLOPT_SSL_VERIFYPEER => false, // tambahkan
+   				 CURLOPT_SSL_VERIFYHOST => false, // tambahkan
+				CURLOPT_HTTPHEADER => [
+					'Accept: application/json',
+					'Content-Type: application/json',
+					'X-API-KEY: ' . $apiKey // <-- API KEY DITAMBAHKAN DI SINI
+				],
+			]);
+
+			$response = curl_exec($curl);
+			$httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+			$error = curl_error($curl);
+			curl_close($curl);
+			
+
+			if ($error) {
+				log_message('error', 'cURL Error: ' . $error);
+				return $this->failServerError('Gagal terhubung ke API eksternal');
+			}
+
+			if ($httpCode !== 200) {
+				// Log respons error untuk debugging
+				log_message('error', 'API eksternal mengembalikan HTTP ' . $httpCode . ': ' . $response);
+				
+				// Berikan pesan error yang lebih spesifik jika memungkinkan
+				if ($httpCode === 401) {
+					
+					return $this->failUnauthorized('Autentikasi ke API eksternal gagal (API Key salah?).');
+
+				}
+				
+				return $this->failServerError('Terjadi kesalahan pada API eksternal');
+			}
+
+			$data = json_decode($response, true);
+			
+			if (json_last_error() !== JSON_ERROR_NONE) {
+				log_message('error', 'JSON decode error: ' . json_last_error_msg());
+				return $this->failServerError('Respons JSON dari API eksternal tidak valid');
+			}
+
+			return $this->respond([
+				'status' => 'success',
+				'data' => $data['data'] ?? [],
+				'message' => 'Data berhasil diambil'
+			]);
+
+		} catch (\Exception $e) {
+			log_message('error', 'Exception in searchPerpustakaan: ' . $e->getMessage());
+			return $this->failServerError('Terjadi kesalahan sistem');
+		}
+	}
+
+	/**
+	 * Update data perpustakaan dengan data dari pencarian
+	 */
 
 	public function update()
 	{
@@ -83,10 +170,13 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 				'Facebook' => trim($this->request->getPost('facebook')),
 				'Youtube' => trim($this->request->getPost('youtube')),
 				'Phone' => trim($this->request->getPost('phone')),
+				'Branch_id' => trim($this->request->getPost('branch_id')) ?: '',
 				'TulisanBanner' => trim($this->request->getPost('tulisan_banner')),
 				'TentangKami' => trim($this->request->getPost('tentang_kami')),
 				'IsUseKop' => $this->request->getPost('IsUseKop') ? 1 : 0,
-				'JamOperasional' => $LayananOperasionl_Str
+				'JamOperasional' => $LayananOperasionl_Str,
+				'JenisPerpustakaan' => trim($this->request->getPost('jenis_perpustakaan')),
+				'Branch_id' => trim($this->request->getPost('branch_id'))
 			];
 
 			$success = true;

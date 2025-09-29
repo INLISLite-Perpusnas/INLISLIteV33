@@ -586,6 +586,7 @@ class Eksemplar extends \Base\Controllers\BaseController
             $nama_perpustakaan = $db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value ?: "Perpustakaan Mitra";
 
             $LabelData = [];
+          
             foreach ($eksemplar_data as $row) {
 
                 // ===================================================================
