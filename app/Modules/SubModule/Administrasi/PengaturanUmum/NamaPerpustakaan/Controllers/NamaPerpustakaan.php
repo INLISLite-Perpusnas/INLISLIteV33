@@ -69,85 +69,68 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 	 * API endpoint untuk pencarian perpustakaan
 	 */
 	public function searchPerpustakaan()
-	{
-		$keyword = $this->request->getGet('q');
-		
-		if (!$keyword || strlen(trim($keyword)) < 3) {
-			return $this->failValidationErrors('Keyword minimal 3 karakter');
-		}
+{
+    $keyword = $this->request->getGet('q');
+    if (!$keyword || strlen(trim($keyword)) < 3) {
+        return $this->failValidationErrors('Keyword minimal 3 karakter');
+    }
+    $url = env('FLASK_API_BASEURL') . '/perpustakaan?q=' . urlencode($keyword);
 
-		try {
-			// Ambil URL dan API Key dari file environment (.env)
-			$flaskApiUrl = env('FLASK_API_BASEURL') . '/perpustakaan?q=' . urlencode($keyword);
-			$apiKey = env('API_KEY');
 
-			// Validasi: Pastikan API Key sudah di-set di .env
-			if (!$apiKey) {
-				log_message('error', 'API_KEY tidak diatur di dalam file .env');
-				return $this->failServerError('Konfigurasi sisi server tidak lengkap.');
-			}
-			
-			// Initialize cURL
-			$curl = curl_init();
-			curl_setopt_array($curl, [
-				CURLOPT_URL => $flaskApiUrl,
-				CURLOPT_RETURNTRANSFER => true,
-				CURLOPT_TIMEOUT => 30,
-				CURLOPT_FOLLOWLOCATION => true,
-				CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-				CURLOPT_CUSTOMREQUEST => 'GET',
-				CURLOPT_SSL_VERIFYPEER => false, // tambahkan
-   				 CURLOPT_SSL_VERIFYHOST => false, // tambahkan
-				CURLOPT_HTTPHEADER => [
-					'Accept: application/json',
-					'Content-Type: application/json',
-					'X-API-KEY: ' . $apiKey // <-- API KEY DITAMBAHKAN DI SINI
-				],
-			]);
+    $apiKey = env('API_KEY');
+    if (!$apiKey) {
+        log_message('error', 'API_KEY tidak di-set di .env');
+        return $this->failServerError('Konfigurasi sisi server tidak lengkap.');
+    }
 
-			$response = curl_exec($curl);
-			$httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-			$error = curl_error($curl);
-			curl_close($curl);
-			
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL            => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_MAXREDIRS      => 5,
+        CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_TIMEOUT        => 30,
+        CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+        CURLOPT_USERAGENT      => 'curl/8.8.0',
+        CURLOPT_IPRESOLVE      => CURL_IPRESOLVE_V4, 
+        CURLOPT_HTTPHEADER     => [
+            'Accept: application/json',
+            'x-api-key: ' . $apiKey, 
+        ],
+    ]);
 
-			if ($error) {
-				log_message('error', 'cURL Error: ' . $error);
-				return $this->failServerError('Gagal terhubung ke API eksternal');
-			}
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $errNo    = curl_errno($ch);
+    $errMsg   = curl_error($ch);
+    curl_close($ch);
 
-			if ($httpCode !== 200) {
-				// Log respons error untuk debugging
-				log_message('error', 'API eksternal mengembalikan HTTP ' . $httpCode . ': ' . $response);
-				
-				// Berikan pesan error yang lebih spesifik jika memungkinkan
-				if ($httpCode === 401) {
-					
-					return $this->failUnauthorized('Autentikasi ke API eksternal gagal (API Key salah?).');
+    if ($errNo) {
+        log_message('error', "cURL Error [{$errNo}]: {$errMsg}");
+        return $this->failServerError('Gagal terhubung ke API eksternal');
+    }
 
-				}
-				
-				return $this->failServerError('Terjadi kesalahan pada API eksternal');
-			}
+    if ($httpCode !== 200) {
+        log_message('error', 'API eksternal mengembalikan HTTP ' . $httpCode . ': ' . $response);
+        if ($httpCode === 401) {
+            return $this->failUnauthorized('Autentikasi ke API eksternal gagal (API Key salah?).');
+        }
+        return $this->failServerError('Terjadi kesalahan pada API eksternal');
+    }
 
-			$data = json_decode($response, true);
-			
-			if (json_last_error() !== JSON_ERROR_NONE) {
-				log_message('error', 'JSON decode error: ' . json_last_error_msg());
-				return $this->failServerError('Respons JSON dari API eksternal tidak valid');
-			}
+    $data = json_decode($response, true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        log_message('error', 'JSON decode error: ' . json_last_error_msg());
+        return $this->failServerError('Respons JSON dari API eksternal tidak valid');
+    }
 
-			return $this->respond([
-				'status' => 'success',
-				'data' => $data['data'] ?? [],
-				'message' => 'Data berhasil diambil'
-			]);
-
-		} catch (\Exception $e) {
-			log_message('error', 'Exception in searchPerpustakaan: ' . $e->getMessage());
-			return $this->failServerError('Terjadi kesalahan sistem');
-		}
-	}
+    return $this->respond([
+        'status'  => 'success',
+        'data'    => $data['data'] ?? $data ?? [],
+        'message' => 'Data berhasil diambil'
+    ]);
+}
 
 	/**
 	 * Update data perpustakaan dengan data dari pencarian
