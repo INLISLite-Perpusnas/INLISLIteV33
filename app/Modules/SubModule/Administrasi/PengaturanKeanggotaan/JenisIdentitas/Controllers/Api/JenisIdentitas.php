@@ -35,7 +35,7 @@ class JenisIdentitas extends \Base\Controllers\BaseResourceController
 		$branchId = user()->branch_id;
 		$builder = $db->table('master_jenis_identitas as a')
 			->select('a.id, a.id as action,a.Branch_id, a.Nama, a.UpdateDate')
-			->select('a.description,a.sort, a.active');
+			->select('a.active');
 			//->whereIn('a.Branch_id', [$branchId, 0]);
 
 		$dataTable = DataTable::of($builder)

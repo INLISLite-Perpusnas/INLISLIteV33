@@ -48,80 +48,13 @@ if (is_member('sa_kabkot')) {
 			</div>
 		</div>
 	</div>
-	<?php if (is_profiling() && (branch_id() == 0)) : ?>
-		<div class="main-card mb-3 card">
-			<div class="card-header"><i class="header-icon lnr-search icon-gradient bg-plum-plate"> </i> Filter
-				<div class="btn-actions-pane-right actions-icon-btn">
-
-				</div>
-			</div>
-			<div class="card-body">
-				<form name="form_items" id="form_search" action="">
-					<div class="row">
-						<div class="col-md-6">
-							<div class="form-group">
-								<label>Provinsi</label>
-								<div class="select-wrapper">
-									<select class="form-control select2" id="provinsi_id" name="provinsi_id" style="width:100%"></select>
-								</div>
-								<small class="help-block with-errors"></small>
-							</div>
-						</div>
-
-
-						<div class="col-md-6">
-							<div class="form-group">
-								<label>Kota / Kabupaten</label>
-								<div class="select-wrapper">
-									<select class="form-control select2" id="kabkota_id" name="kabkota_id" style="width:100%">
-										<option value="">-</option>
-									</select>
-								</div>
-								<small class="help-block with-errors"></small>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="form-group">
-								<label>Kecamatan</label>
-								<div class="select-wrapper">
-									<select class="form-control select2" id="kecamatan_id" name="kecamatan_id" style="width:100%">
-										<option value="">-</option>
-									</select>
-								</div>
-								<small class="help-block with-errors"></small>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="form-group">
-								<label>Kelurahan / Desa</label>
-								<div class="select-wrapper">
-									<select class="form-control select2" id="kelurahan_id" name="kelurahan_id" style="width:100%">
-										<option value="">-</option>
-									</select>
-								</div>
-								<small class="help-block with-errors"></small>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<label for="groups">NPP (Mitra Perpustakaan)</label>
-							<div class="select-wrapper">
-								<select class="form-control selectx" id="npp" name="npp" tabindex="-1" aria-hidden="true" style="width:100%">
-									<option value="">-</option>
-								</select>
-							</div>
-						</div>
-					</div>
-				</form>
-			</div>
-		</div>
-	<?php endif; ?>
+	
 
 	<div class="main-card mb-3 card">
 		<div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Lokasi Ruang
 			<div class="btn-actions-pane-right actions-icon-btn">
-				<?php if (is_allowed('lokasiruang/create')) : ?>
+				
 					<a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Lokasi Ruang</a>
-				<?php endif; ?>
 			</div>
 		</div>
 		<div class="card-body">

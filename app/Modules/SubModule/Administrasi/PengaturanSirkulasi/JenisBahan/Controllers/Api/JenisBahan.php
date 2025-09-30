@@ -32,12 +32,7 @@ class JenisBahan extends \Base\Controllers\BaseResourceController
 	{
 		$db = db_connect();
 		$builder = $db->table('worksheets as a')
-			->select('a.ID, a.ID as action, a.MaxPinjamKoleksi, a.Name, a.MaxLoanDays, a.DendaTenorJumlah, a.DaySuspend, a.DayPerpanjang, a.CountPerpanjang, a.active, a.Branch_id')
-			->where('a.Branch_id', 0);
-
-		if (is_profiling()) {
-			$builder->orWhere('a.Branch_id', user()->branch_id);
-		}
+			->select('a.ID, a.ID as action, a.MaxPinjamKoleksi, a.Name, a.MaxLoanDays, a.DendaTenorJumlah, a.DaySuspend, a.DayPerpanjang, a.CountPerpanjang, a.active');
 		
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
@@ -80,7 +75,15 @@ class JenisBahan extends \Base\Controllers\BaseResourceController
 	{
 		$save_data = array(
 			'Name' => $this->request->getPost('Name'),
-			'Branch_id' => branch_id()
+			'MaxPinjamKoleksi' => $this->request->getPost('MaxPinjamKoleksi'),
+			'MaxLoanDays' => $this->request->getPost('MaxLoanDays'),
+			'DayPerpanjang' => $this->request->getPost('DayPerpanjang'),
+			'CountPerpanjang' => $this->request->getPost('CountPerpanjang'),
+			'DendaType' => $this->request->getPost('DendaType'),
+			'DaySuspend' => $this->request->getPost('DaySuspend'),
+			'DendaPerTenor' => $this->request->getPost('DendaPerTenor'),
+			'SuspendType' => $this->request->getPost('SuspendType'),
+			'DaySuspend' => $this->request->getPost('DaySuspend')
 		);
 
 		$save_data_id = $this->jenisbahanModel->insert($save_data);

@@ -90,7 +90,6 @@ class JenisAkses extends \Base\Controllers\BaseResourceController
 	{
 		$save_data = array(
 			'Name' => $this->request->getPost('Name'),
-			'Branch_id' => branch_id()
 		);
 
 		$save_data_id = $this->jenisaksesModel->insert($save_data);

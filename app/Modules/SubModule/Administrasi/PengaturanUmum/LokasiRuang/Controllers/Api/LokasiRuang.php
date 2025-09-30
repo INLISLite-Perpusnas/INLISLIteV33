@@ -40,9 +40,7 @@ class LokasiRuang extends \Base\Controllers\BaseResourceController
 
     $builder->select('(SELECT COUNT(*) FROM collections WHERE Location_id = a.ID) as exemplar');
 
-    if ($branch_id) {
-        $builder->where('a.Branch_id', $branch_id);
-    }
+   
 
     $dataTable = DataTable::of($builder)
         ->addNumbering('no') // This adds the numbering column

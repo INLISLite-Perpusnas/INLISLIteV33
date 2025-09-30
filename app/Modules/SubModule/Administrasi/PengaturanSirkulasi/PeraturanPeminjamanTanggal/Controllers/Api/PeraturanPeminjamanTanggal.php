@@ -119,7 +119,6 @@ public function detail($id = null)
 			'SuspendTenorMultiply' => $this->request->getPost('SuspendTenorMultiply'),
 			'DayPerpanjang' => $this->request->getPost('DayPerpanjang'),
 			'CountPerpanjang' => $this->request->getPost('CountPerpanjang'),
-			'Branch_id' => branch_id()
 		];
 
 		if ($save_data) {
@@ -221,6 +220,7 @@ public function detail($id = null)
 
 	public function delete($ID = null)
 	{
+		$id=$ID;
 		$data = $this->peraturanpeminjamantanggalModel->find($id);
 		if ($data) {
 			$this->peraturanpeminjamantanggalModel->delete($id);

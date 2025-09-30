@@ -34,7 +34,7 @@ class JenisPerpustakaan extends \Base\Controllers\BaseResourceController
 		$db = db_connect();
 		$builder = $db->table('jenis_perpustakaan as a')
 			->select('a.ID as id, a.ID as action, a.Name, a.UpdateDate')
-			->select('a.description,a.sort, a.active')
+			->select('a.active')
 			->select('a.ID as form');
 
 		$dataTable = DataTable::of($builder)

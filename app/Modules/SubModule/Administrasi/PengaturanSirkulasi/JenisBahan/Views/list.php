@@ -33,8 +33,14 @@ $slug = $request->getGet('slug') ?? '';
     </div>
 
     <div class="main-card mb-3 card">
-        <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Jenis Bahan
-
+        <div class="card-header">
+            <i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>
+            Tabel Jenis Bahan
+            <div class="btn-actions-pane-right">
+                <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal_create">
+                    <i class="fa fa-plus"></i> Tambah
+                </button>
+            </div>
         </div>
         <div class="card-body">
             <?= get_message('message'); ?>
@@ -53,11 +59,11 @@ $slug = $request->getGet('slug') ?? '';
                         <th class="text-center" width="180">Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
-                </tbody>
+                <tbody></tbody>
             </table>
         </div>
     </div>
+
 </div>
 <?= $this->endSection('page'); ?>
 

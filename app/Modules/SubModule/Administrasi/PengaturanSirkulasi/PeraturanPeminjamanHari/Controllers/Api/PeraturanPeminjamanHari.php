@@ -118,7 +118,6 @@ public function detail($id = null)
 			'SuspendTenorMultiply' => $this->request->getPost('SuspendTenorMultiply'),
 			'DayPerpanjang' => $this->request->getPost('DayPerpanjang'),
 			'CountPerpanjang' => $this->request->getPost('CountPerpanjang'),
-			'Branch_id' => branch_id()
 		];
 
 		if ($save_data) {
@@ -257,9 +256,9 @@ public function detail($id = null)
 
 	public function delete($ID = null)
 	{
-		$data = $this->peraturanpeminjamanhariModel->find($id);
+		$data = $this->peraturanpeminjamanhariModel->find($ID);
 		if ($data) {
-			$this->peraturanpeminjamanhariModel->delete($id);
+			$this->peraturanpeminjamanhariModel->delete($ID);
 			$response = [
 				'status'   => 200,
 				'error'    => null,

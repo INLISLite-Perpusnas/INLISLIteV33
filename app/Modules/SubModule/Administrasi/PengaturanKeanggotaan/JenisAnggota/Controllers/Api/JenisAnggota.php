@@ -34,7 +34,7 @@ class JenisAnggota extends \Base\Controllers\BaseResourceController
 		$builder = $db->table('jenis_anggota as a')
 			->select('a.id, a.id as action, a.jenisanggota')
 			->select('a.MasaBerlakuAnggota, a.BiayaPendaftaran, a.MaxLoanDays,a.MaxPinjamKoleksi, a.DayPerpanjang, a.BiayaPerpanjangan, a.UploadDokumenKeanggotaanOnline, a.UpdateDate')
-			->select('a.description,a.sort, a.active');
+			->select('a.active');
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')

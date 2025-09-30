@@ -34,7 +34,7 @@ class LokasiPerpustakaan extends \Base\Controllers\BaseResourceController
 		$branch_id = user()->branch_id ?? $this->request->getGet('branch_id');
 		$builder = $db->table('location_library as a')
 			->select('a.ID, a.ID as action, a.Code, a.Name, a.Address')
-			->select('a.description, a.sort, a.active');
+			->select('a.active');
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')

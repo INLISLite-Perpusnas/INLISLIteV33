@@ -33,7 +33,7 @@ class MasterFakultas extends \Base\Controllers\BaseResourceController
 		$db = db_connect();
 		$branchId=user()->branch_id;
 		$builder = $db->table('master_fakultas as a')
-			->select('a.id, a.id as action,a.Nama,a.Branch_id, a.UpdateDate')
+			->select('a.id, a.id as action,a.Nama, a.UpdateDate')
 			->select('a.active');
 			
 
@@ -87,7 +87,6 @@ class MasterFakultas extends \Base\Controllers\BaseResourceController
 	{
 		$save_data = array(
 			'Nama' => $this->request->getPost('Nama'),
-			'Branch_id' => branch_id()
 		);
 
 		$save_data_id = $this->fakultasModel->insert($save_data);

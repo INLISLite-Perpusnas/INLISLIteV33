@@ -33,7 +33,7 @@ class JenisKelamin extends \Base\Controllers\BaseResourceController
 		$db = db_connect();
 		$builder = $db->table('jenis_kelamin as a')
 			->select('a.ID as id, a.ID as action, a.Name, a.UpdateDate')
-			->select('a.description,a.sort, a.active');
+			->select('a.active');
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
