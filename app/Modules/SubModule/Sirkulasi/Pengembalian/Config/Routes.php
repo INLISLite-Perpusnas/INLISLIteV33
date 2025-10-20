@@ -24,8 +24,9 @@ $routes->group('sirkulasi-pengembalian', ['namespace' => 'Pengembalian\Controlle
 
 $routes->group('api/sirkulasi-pengembalian', ['namespace' => 'Pengembalian\Controllers\Api'], function ($subroutes) {
 	$subroutes->add('detail/(:any)', 'Pengembalian::detail/$1');
-	$subroutes->add('create', 'Pengembalian::create');
 	$subroutes->add('edit/(:any)', 'Pengembalian::edit/$1');
+	$subroutes->add('create', 'Pengembalian::create');
+	$subroutes->add('save_violation', 'Pengembalian::save_violation');
 	$subroutes->add('delete/(:any)', 'Pengembalian::delete/$1');
 
 	//custom

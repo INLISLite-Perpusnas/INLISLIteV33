@@ -20,6 +20,7 @@ class Pengembalian extends \Base\Controllers\BaseResourceController
 	public $collectionModel;
 	protected $collectionLoanItemModel;
 	protected $cart;
+	protected $pelanggaranModel;
 
 	function __construct()
 	{
@@ -27,6 +28,7 @@ class Pengembalian extends \Base\Controllers\BaseResourceController
 		$this->collectionLoanItemModel = new \Peminjaman\Models\CollectionLoanItemModel();
 		$this->collectionLoanModel = new \Peminjaman\Models\CollectionLoanModel();
 		$this->collectionModel = new \Peminjaman\Models\CollectionModel();
+		 $this->pelanggaranModel = new \Pelanggaran\Models\PelanggaranModel();
 		$this->validation = \Config\Services::validation();
 		$this->session = session();
 		$this->modulePath = ROOTPATH . 'public/uploads/pengembalian/';
@@ -332,6 +334,82 @@ class Pengembalian extends \Base\Controllers\BaseResourceController
 			->toJson();
 		return $dataTable;
 	}
+
+	public function save_violation()
+{
+    if (!$this->request->isAJAX()) {
+        return redirect()->back();
+    }
+    
+    try {
+        $collectionLoanItemId = $this->request->getPost('collection_loan_item_id');
+        $lateDays = $this->request->getPost('late_days');
+        
+        // Validasi input
+        $validation = \Config\Services::validation();
+        $validation->setRules([
+            'jenis_pelanggaran_id' => 'required',
+            'jenis_denda_id' => 'required',
+            'jumlah_denda' => 'required|numeric',
+        ]);
+        
+        if (!$validation->withRequest($this->request)->run()) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Validasi gagal. Periksa kembali form Anda.'
+            ]);
+        }
+        
+        // Get loan item data
+        $loanItem =	$this->collectionLoanItemModel->find($collectionLoanItemId);
+        
+        if (!$loanItem) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Data peminjaman tidak ditemukan'
+            ]);
+        }
+        
+        $jenisPelanggaranId = $this->request->getPost('jenis_pelanggaran_id');
+        $jenisDendaId = $this->request->getPost('jenis_denda_id');
+        
+        // Hitung denda berdasarkan hari keterlambatan
+        $dendaPerHari = $this->request->getPost('jumlah_denda');
+        $jumlahDenda = $dendaPerHari * $lateDays;
+        
+        // Hitung jumlah suspend
+        $jumlahSuspend = $this->request->getPost('jumlah_suspend') ?: 0;
+        
+        $pelanggaranData = [
+            'CollectionLoan_id' => $loanItem->CollectionLoan_id,
+            'CollectionLoanItem_id' => $collectionLoanItemId,
+            'JenisPelanggaran_id' => $jenisPelanggaranId,
+            'JenisDenda_id' => $jenisDendaId,
+            'JumlahDenda' => $jumlahDenda,
+            'JumlahSuspend' => $jumlahSuspend,
+            'Member_id' => $this->request->getPost('member_id'),
+            'Collection_id' => $this->request->getPost('collection_id'),
+            'Paid' => 1, // Belum dibayar
+            'active' => 1,
+            'CreateBy' => session()->get('user_id'),
+            'CreateDate' => date('Y-m-d H:i:s'),
+            'CreateTerminal' => $this->request->getIPAddress()
+        ];
+     
+        $this->pelanggaranModel->insert($pelanggaranData);
+        
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Pelanggaran berhasil disimpan. Total denda: Rp ' . number_format($jumlahDenda, 0, ',', '.')
+        ]);
+        
+    } catch (\Exception $e) {
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+        ]);
+    }
+}
 
 	public function index()
 	{

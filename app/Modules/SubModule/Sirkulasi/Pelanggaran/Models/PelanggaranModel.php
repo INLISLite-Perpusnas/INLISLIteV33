@@ -5,7 +5,7 @@ namespace Pelanggaran\Models;
 class PelanggaranModel extends \Base\Models\DataModel
 {
 	protected $DBGroup              = 'data';
-    protected $table      			= 'collectionloans';
+    protected $table      			= 'pelanggaran';
     protected $primaryKey 			= 'ID';
     protected $returnType     		= 'object';
     protected $useSoftDeletes 		= false;

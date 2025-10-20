@@ -22,6 +22,8 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 	protected $modulePath;
 	protected $uploadPath;
 	protected $db;
+	protected $cart;
+	protected $pelanggaranModel;
 
 	function __construct()
 	{
@@ -30,6 +32,7 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 		$this->collectionModel = new \Peminjaman\Models\CollectionModel();
 		$this->collectionLoanModel = new \Peminjaman\Models\CollectionLoanModel();
 		$this->collectionLoanItemModel = new \Peminjaman\Models\CollectionLoanItemModel();
+		 $this->pelanggaranModel = new \Pelanggaran\Models\PelanggaranModel();
 		$this->validation = \Config\Services::validation();
 		$this->session = session();
 		$this->modulePath = ROOTPATH . 'public/uploads/peminjaman/';
@@ -63,22 +66,7 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 			->join('members m', 'm.ID = cli.member_id')
 			->join('location_library loc', 'loc.ID = col.Location_Library_id')
 			->where('cli.LoanStatus', 'Loan');
-		
 
-		// if (user()->category == 'admin') {
-		// } elseif (user()->category == 'sa_prov' && user()->branch_id === null) {
-		// 	$npp_provinsi_id = preg_replace('/\./', '', user()->npp_provinsi_id);
-		// 	$builder->where('b.NPP_Provinsi_id', $npp_provinsi_id);
-		// } elseif (user()->category == 'sa_prov' && user()->branch_id !== null) {
-		// 	$builder->where('a.Branch_id', branch_id());
-		// } elseif (user()->category == 'sa_kabkot' && user()->branch_id === null) {
-		// 	$npp_kabkota_id = preg_replace('/\./', '', user()->npp_kabkota_id);
-		// 	$builder->where('b.NPP_KabKota_id', $npp_kabkota_id);
-		// } elseif (user()->category == 'sa_kabkot' && user()->branch_id !== null) {
-		// 	$builder->where('a.Branch_id', branch_id());
-		// } else {
-		// 	$builder->where('a.Branch_id', branch_id());
-		// }
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
@@ -183,6 +171,8 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 		return $dataTable;
 	}
 
+
+
 	public function loan_datatable($member_no = null)
 	{
 		$db = db_connect();
@@ -190,9 +180,9 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 			->select('cli.ID, cli.ID as action')
 			->select('cli.CollectionLoan_id, cli.LoanDate, cli.DueDate, cli.ActualReturn, cli.LateDays')
 			->select('cl.UpdateDate')
-			->select('col.NomorBarcode')
+			->select('col.NomorBarcode, col.ID as collection_id')
 			->select('cat.Title, cat.PublishLocation, cat.Publisher, cat.PublishYear')
-			->select('m.Fullname, m.MemberNo')
+			->select('m.Fullname, m.MemberNo, m.ID as member_id')
 			->select('loc.Name as LocationLibrary')
 			->join('collectionloanitems cli', 'cli.CollectionLoan_id = cl.ID')
 			->join('collections col', 'col.ID = cli.Collection_id')
@@ -204,6 +194,7 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 		if (!empty($member_no)) {
 			$builder->where('m.MemberNo', $member_no);
 		}
+		// dd($builder->get()->getResult());
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
@@ -282,13 +273,83 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('action', function ($row) {
-				$edit = '<a href="javascript:void(0);" data-href="' . base_url('sirkulasi-pengembalian/do_return/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Kembalikan" class="btn btn-primary return-data"><i class="pe-7s-refresh font-weight-bold"> </i></a>';
-				$delete = '<a href="javascript:void(0);" data-href="' . base_url('sirkulasi-peminjaman/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
-				return $edit . ' ' . $delete;
+				// --- THIS ENTIRE BLOCK IS UPDATED ---
+				$isLate = false;
+				$lateDays = 0;
+				$db = db_connect();
+
+				$pelanggaran = $db->table('pelanggaran')
+				->select('CollectionLoanItem_id')->where('CollectionLoanItem_id', $row->CollectionLoan_id)->get()->getRow();
+
+				if ($row->DueDate < date('Y-m-d')) {
+					$periods = \Carbon\CarbonPeriod::create($row->DueDate, date('Y-m-d'));
+					$dates = [];
+					foreach ($periods as $period) {
+						if (in_array($period->format('N'), ['6', '7'])) continue;
+						$dates[] = $period->format('Y-m-d');
+					}
+					$lateDays = count($dates);
+					$isLate = $lateDays > 0;
+				}
+
+				$actionButtons = '';
+
+				if ($isLate && $pelanggaran !== NUll) {
+					// ADDED ALL data-* ATTRIBUTES HERE
+					$violationBtn = '<a href="javascript:void(0);" 
+                         data-toggle="modal" 
+									data-target="#modalViolation"
+									data-id="' . $row->ID . '" 
+									data-loan-id="' . $row->CollectionLoan_id . '"
+									data-barcode="' . $row->NomorBarcode . '"
+									data-title="' . htmlspecialchars($row->Title, ENT_QUOTES) . '"
+									data-late-days="' . $lateDays . '"
+									 data-member-id="' . $row->member_id . '"
+         						   data-collection-id="' . $row->collection_id . '"
+									data-toggle-tooltip="tooltip" 
+									data-placement="top" 
+									title="Tambah Pelanggaran" 
+									class="btn btn-warning add-violation">
+									<i class="pe-7s-attention font-weight-bold"></i> Pelanggaran
+                    </a>';
+
+					if ($row->PelanggaranID) {
+						if (!$row->Paid) {
+							$violationBtn .= ' <span class="badge badge-danger">Belum Bayar</span>';
+						} else {
+							$returnBtn = '<a href="javascript:void(0);" 
+                                data-href="' . base_url('sirkulasi-pengembalian/do_return/' . $row->ID) . '" 
+                                data-toggle="tooltip" data-placement="top" title="Kembalikan" class="btn btn-primary return-data">
+                                <i class="pe-7s-refresh font-weight-bold"></i>
+                            </a>';
+							$violationBtn = $returnBtn . ' ' . $violationBtn;
+						}
+					}
+
+					$actionButtons = $violationBtn;
+				} else {
+					$returnBtn = '<a href="javascript:void(0);" 
+                        data-href="' . base_url('sirkulasi-pengembalian/do_return/' . $row->ID) . '" 
+                        data-toggle="tooltip" data-placement="top" title="Kembalikan" class="btn btn-primary return-data">
+                        <i class="pe-7s-refresh font-weight-bold"></i>
+                    </a>';
+					$actionButtons = $returnBtn;
+				}
+
+				$delete = '<a href="javascript:void(0);" 
+                    data-href="' . base_url('sirkulasi-peminjaman/delete/' . $row->ID) . '" 
+                    data-toggle="tooltip" data-placement="top" title="Hapus" class="btn btn-danger remove-data">
+                    <i class="pe-7s-trash font-weight-bold"></i>
+                </a>';
+
+				return $actionButtons . ' ' . $delete;
 			})
 			->toJson();
 		return $dataTable;
 	}
+
+
+	
 
 	public function loan_datatable_simple($member_no = null)
 	{
@@ -383,10 +444,10 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 			->select('col.NomorBarcode, col.UpdateDate')
 			->select('cat.Title, cat.PublishLocation, cat.Publisher, cat.PublishYear')
 			->join('catalogs cat', 'cat.ID = col.Catalog_id');
-			// if(!empty(branch_id())){
-			// 	$builder->where('col.Branch_id', branch_id());
-				
-			// }
+		// if(!empty(branch_id())){
+		// 	$builder->where('col.Branch_id', branch_id());
+
+		// }
 
 		if (!empty($member_no)) {
 			$cli = get_ref_table('collectionloanitems', 'Collection_id', 'LoanStatus="Loan"', 'data');
@@ -579,53 +640,53 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 	{
 		// Ambil data JSON dari request
 		$json = $this->request->getJSON();
-	
+
 		if (!$json) {
 			return $this->fail('Invalid JSON input', 400);
 		}
-	
+
 		$member_id = $json->member_id ?? null;
 		$branch_id = $json->branch_id ?? null;
 		$collection_id = $json->collection_id ?? null;
 		$user_id = $json->user_id ?? null;
-	   
+
 		$collection_loan = get_ref_single('collectionloans', 'ID IS NOT NULL', 'data');
 		$increment = ((int) substr($collection_loan->ID, -5)) + 1;
 		$collection_loan_id = get_pad_number($increment, date('ymd'), 5);
-	
+
 		// Validasi input
 		if (!$member_id || !$branch_id || !$collection_id || !$user_id) {
 			return $this->fail('Missing required fields', 400);
 		}
-	
+
 		try {
 			// Check if member exists
 			$member = $this->anggotaModel->where('ID', $member_id)->first();
-		
-		
+
+
 			if (!$member) {
 				return $this->fail('Member not found', 404);
 			}
-	
+
 			// Check if collection exists
 			$collection = $this->collectionModel->where('ID', $collection_id)->first();
-			
+
 			if (!$collection) {
 				return $this->fail('Collection not found', 404);
 			}
-			$branchid=$this->collectionModel
-			->where('ID', $collection_id)
-			->where('Branch_id', $branch_id)->first();
-			
+			$branchid = $this->collectionModel
+				->where('ID', $collection_id)
+				->where('Branch_id', $branch_id)->first();
+
 			if (!$branchid) {
 				return $this->fail('Collection access denied', 404);
 			}
-	
+
 			// Check if collection is available (Status_id = 1)
 			if ($collection->Status_id != 1) {
 				return $this->fail('Collection is not available for loan', 400);
 			}
-	
+
 			// Simpan ke tabel collectionloans
 			$loanData = [
 				'ID' => $collection_loan_id,
@@ -635,16 +696,16 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 				'CollectionCount' => 1,
 				'CreateDate' => date('Y-m-d H:i:s'),
 			];
-	   
+
 			try {
 				$this->collectionLoanModel->insert($loanData);
 				$loanId = $this->collectionLoanModel->insertID();
 			} catch (\Exception $e) {
 				return $this->fail('Failed to create loan: ' . $e->getMessage(), 500);
 			}
-	   
+
 			$loanDate = date('Y-m-d H:i:s');
-	
+
 			// Simpan ke tabel collectionloanitems
 			$loanItemData = [
 				'Collection_id' => $collection_id,
@@ -657,28 +718,28 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 				'CreateBy' => $user_id,
 				'CreateDate' => date('Y-m-d H:i:s'),
 			];
-	
+
 			$this->collectionLoanItemModel->insert($loanItemData);
-	
+
 			// Update status koleksi menjadi 5
 			$this->collectionModel->where('id', $collection_id)
 				->set(['Status_id' => 5])
 				->update();
-	
+
 			// Kirim respons sukses
 			return $this->respond(['message' => 'Loan created successfully'], 200);
-	
 		} catch (\Exception $e) {
 			return $this->fail('Error: ' . $e->getMessage(), 500);
 		}
 	}
 
-	public function loan_history() {
+	public function loan_history()
+	{
 
 		// Mengambil parameter dari request
 		$requestedFields = $this->request->getVar('fields') ?? [
-			'collectionloanitems.*', 
-			'members.FullName', 
+			'collectionloanitems.*',
+			'members.FullName',
 			'collections.Catalog_id',
 			'collections.NomorBarcode'  // Added NomorBarcode to default fields
 		];
@@ -689,19 +750,19 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 		$order = $this->request->getVar('order') ?? 'collectionloanitems.ID';
 		$direction = $this->request->getVar('direction') ?? 'desc';
 		$loanStatus = $this->request->getVar('LoanStatus');
-		$member_id = $this->request->getVar('member_id'); 
+		$member_id = $this->request->getVar('member_id');
 		$barcode = $this->request->getVar('NomorBarcode');
-	
+
 		// Memastikan catalogs.Title selalu dimasukkan
 		$fields = array_unique(array_merge($requestedFields, ['catalogs.Title', 'collections.NomorBarcode']));
-	
+
 		// Memulai membangun query
 		$builder = $this->db->table('collectionloanitems')
 			->select($fields)
 			->join('members', 'members.ID = collectionloanitems.member_id', 'left')
 			->join('collections', 'collections.ID = collectionloanitems.Collection_id', 'left')
 			->join('catalogs', 'catalogs.ID = collections.Catalog_id', 'left');
-	
+
 		// Menerapkan filter
 		if ($loanStatus !== null) {
 			$builder->where('collectionloanitems.LoanStatus', $loanStatus);
@@ -713,24 +774,24 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 		if ($barcode !== null) {
 			$builder->where('collections.NomorBarcode', $barcode);
 		}
-	
+
 		if (!empty($search)) {
 			$builder->groupStart()
 				->like('catalogs.Title', $search)
 				->orLike('members.FullName', $search)
 				->groupEnd();
 		}
-	
+
 		// Menerapkan urutan
 		$builder->orderBy($order, $direction);
-	
+
 		// Mendapatkan jumlah total
 		$total_record = $builder->countAllResults(false);
 		$total_page = ceil($total_record / $limit);
-	
+
 		// Mendapatkan data berdasarkan halaman
 		$data = $builder->limit($limit, $offset)->get()->getResultArray();
-	
+
 		// Menyiapkan respon
 		$response = [
 			"total_record" => $total_record,
@@ -753,9 +814,7 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 				"data" => $data
 			]
 		];
-	
+
 		return $this->respond($response, 200);
 	}
-	
-
 }
