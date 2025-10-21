@@ -40,12 +40,12 @@ $slug = $request->getGet('slug') ?? '';
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate">
             </i>Tabel Berita <?= ucwords(unslugify($slug)) ?>
             <div class="btn-actions-pane-right actions-icon-btn">
-                <?php if (is_allowed('berita/create')) : ?>
-                    <a href="<?= base_url(
-                                    'cms/berita/create?slug=' . $slug
-                                ) ?>" class=" btn btn-success" title=""><i class="fa fa-plus"></i>
-                        Tambah Berita </a>
-                <?php endif; ?>
+
+                <a href="<?= base_url(
+                                'cms/berita/create?slug=' . $slug
+                            ) ?>" class=" btn btn-success" title=""><i class="fa fa-plus"></i>
+                    Tambah Berita </a>
+
             </div>
         </div>
         <div class="card-body">

@@ -66,117 +66,178 @@ class Berita extends \Base\Controllers\BaseController
         echo view('Berita\Views\view', $this->data);
     }
 
-    public function create()
-    {
-        $this->data['title'] = 'Tambah Berita';
-        $slug = $this->request->getGet('slug');
+   
+// ... (di dalam class controller Anda)
 
-        $this->validation->setRule('title', 'Judul Berita', 'required');
-        if (
-            $this->request->getPost() &&
-            $this->validation->withRequest($this->request)->run()
-        ) {
-            $db = \Config\Database::connect();
-            $db->transStart();
+public function create()
+{
+    $this->data['title'] = 'Tambah Berita';
+    $slug = $this->request->getGet('slug');
 
-            // Geser semua sort lama ke bawah
-            $this->beritaModel
-                ->where('sort >=', 1)
-                ->set('sort', 'sort + 1', false)
-                ->update();
+    // Tambahkan validasi untuk file
+    $this->validation->setRule('title', 'Judul Berita', 'required');
+    $this->validation->setRules([
+        'file_cover' => [
+            'label' => 'File Cover',
+            // 'permit_empty' mengizinkan file kosong. 
+            // Hapus jika file_cover wajib diisi.
+            'rules' => 'permit_empty|uploaded[file_cover]|max_size[file_cover,2048]|is_image[file_cover]',
+            'errors' => [
+                'uploaded' => 'File cover harus dipilih.',
+                'max_size' => 'Ukuran file cover maksimal 2MB.',
+                'is_image' => 'File cover harus berupa gambar (jpg, png, gif).',
+            ]
+        ],
+        // Validasi untuk setiap file di 'file_image'
+        'file_image.*' => [ 
+            'label' => 'File Image',
+            'rules' => 'permit_empty|uploaded[file_image]|max_size[file_image,2048]|is_image[file_image]',
+            'errors' => [
+                'uploaded' => 'Salah satu file image harus dipilih.',
+                'max_size' => 'Ukuran salah satu file image maksimal 2MB.',
+                'is_image' => 'Salah satu file image harus berupa gambar.',
+            ]
+        ]
+    ]);
 
-            $title_slug = url_title(
-                $this->request->getPost('title'),
-                '-',
-                true
-            );
-            $save_data = [
-                'title' => $this->request->getPost('title'),
-                'slug' => $title_slug,
-                'category' => $this->request->getPost('category'),
-                'sort' => 1,
-                'description' => $this->request->getPost('description'),
-                'content' => $this->request->getPost('content'),
-                'created_by' => user_id(),
-            ];
+    if (
+        $this->request->getPost() &&
+        $this->validation->withRequest($this->request)->run()
+    ) {
+        $db = \Config\Database::connect();
+        $db->transStart();
 
-            // Logic Upload
-            $files = (array) $this->request->getPost('file_cover');
-            if (count($files)) {
-                $listed_file = [];
-                foreach ($files as $uuid => $name) {
-                    if (file_exists($this->uploadPath . $name)) {
-                        $file = new File($this->uploadPath . $name);
-                        $newFileName =
-                            date('Ymd') . '_' . $file->getRandomName();
-                        $file->move($this->modulePath, $newFileName);
-                        $listed_file[] = $newFileName;
+        // Geser semua sort lama ke bawah
+        $this->beritaModel
+            ->where('sort >=', 1)
+            ->set('sort', 'sort + 1', false)
+            ->update();
 
-                        create_thumbnail(
-                            $this->modulePath,
-                            $newFileName,
-                            'thumb_',
-                            250
-                        );
-                    }
+        $title_slug = url_title(
+            $this->request->getPost('title'),
+            '-',
+            true
+        );
+        $save_data = [
+            'title' => $this->request->getPost('title'),
+            'slug' => $title_slug,
+            'category' => $this->request->getPost('category'),
+            'sort' => 1,
+            'description' => $this->request->getPost('description'),
+            'content' => $this->request->getPost('content'),
+            'created_at' => date('Y-m-d H:i:s'),
+            'created_by' => user_id(),
+        ];
+
+        // --- AWAL LOGIC UPLOAD BARU (terinspirasi dari uploadLogo) ---
+
+        try {
+            // --- Logic Upload file_cover ---
+            $coverFile = $this->request->getFile('file_cover');
+            if ($coverFile && $coverFile->isValid() && !$coverFile->hasMoved()) {
+                
+                // Validasi manual tambahan (seperti di uploadLogo)
+                $imageInfo = @getimagesize($coverFile->getTempName());
+                if ($imageInfo === false) {
+                    throw new \Exception('File cover bukan gambar yang valid.');
                 }
-                $save_data['file_cover'] = implode(',', $listed_file);
+
+                // Pindahkan file
+                $newFileName = date('Ymd') . '_' . $coverFile->getRandomName();
+                if (!$coverFile->move($this->modulePath, $newFileName)) {
+                    throw new \Exception('Gagal memindahkan file cover.');
+                }
+
+                // Buat thumbnail
+                create_thumbnail(
+                    $this->modulePath,
+                    $newFileName,
+                    'thumb_',
+                    250
+                );
+                
+                $save_data['file_cover'] = $newFileName;
             }
 
-            $files = (array) $this->request->getPost('file_image');
-            if (count($files)) {
-                $listed_file = [];
-                foreach ($files as $uuid => $name) {
-                    if (file_exists($this->uploadPath . $name)) {
-                        $file = new File($this->uploadPath . $name);
-                        $newFileName =
-                            date('Ymd') . '_' . $file->getRandomName();
-                        $file->move($this->modulePath, $newFileName);
+            // --- Logic Upload file_image (Multiple) ---
+            $imageFiles = $this->request->getFileMultiple('file_image');
+            $listed_file = [];
+            if ($imageFiles) {
+                foreach ($imageFiles as $imgFile) {
+                    if ($imgFile && $imgFile->isValid() && !$imgFile->hasMoved()) {
+                        
+                        // Validasi manual tambahan
+                        $imageInfo = @getimagesize($imgFile->getTempName());
+                        if ($imageInfo === false) {
+                            throw new \Exception('Salah satu file image bukan gambar yang valid.');
+                        }
+
+                        // Pindahkan file
+                        $newFileName = date('Ymd') . '_' . $imgFile->getRandomName();
+                        if (!$imgFile->move($this->modulePath, $newFileName)) {
+                            throw new \Exception('Gagal memindahkan salah satu file image.');
+                        }
+                        
                         $listed_file[] = $newFileName;
                     }
                 }
+            }
+            if (!empty($listed_file)) {
                 $save_data['file_image'] = implode(',', $listed_file);
             }
 
-            if (is_member('admin')) {
-                $index_arr = $this->request->getPost('index');
-                if (!empty($index_arr)) {
-                    $meta = [];
-                    foreach ($index_arr as $index => $value) {
-                        $meta[] = [
-                            'key' => $this->request->getPost('key')[$value],
-                            'value' => $this->request->getPost('value')[$value],
-                        ];
-                    }
-                    if (!empty($meta)) {
-                        $save_data['meta'] = json_encode($meta);
-                    }
+        } catch (\Exception $e) {
+            // Jika ada error saat upload file, batalkan transaksi
+            $db->transRollback();
+            set_message('toastr_msg', 'Upload Gagal: ' . $e->getMessage());
+            set_message('toastr_type', 'warning');
+            // Kembalikan ke form dengan data input sebelumnya
+            return redirect()->back()->withInput(); 
+        }
+        
+        // --- AKHIR LOGIC UPLOAD BARU ---
+
+
+        if (is_member('admin')) {
+            $index_arr = $this->request->getPost('index');
+            if (!empty($index_arr)) {
+                $meta = [];
+                foreach ($index_arr as $index => $value) {
+                    $meta[] = [
+                        'key' => $this->request->getPost('key')[$value],
+                        'value' => $this->request->getPost('value')[$value],
+                    ];
+                }
+                if (!empty($meta)) {
+                    $save_data['meta'] = json_encode($meta);
                 }
             }
-
-            $newPageId = $this->beritaModel->insert($save_data);
-            $db->transComplete();
-
-            if ($db->transStatus() === false) {
-                set_message('toastr_msg', 'Gagal menambah berita');
-                set_message('toastr_type', 'warning');
-                echo view('Berita\Views\add', $this->data);
-            } else {
-                set_message('toastr_msg', 'Berita berhasil ditambah');
-                set_message('toastr_type', 'success');
-                return redirect()->to('/cms/berita');
-            }
-        } else {
-            $this->data['redirect'] = base_url('berita/create');
-            set_message(
-                'message',
-                $this->validation->getErrors()
-                    ? $this->validation->listErrors()
-                    : $this->session->getFlashdata('message')
-            );
-            echo view('Berita\Views\add', $this->data);
         }
+
+        $newPageId = $this->beritaModel->insert($save_data);
+        $db->transComplete();
+
+        if ($db->transStatus() === false) {
+            set_message('toastr_msg', 'Gagal menambah berita');
+            set_message('toastr_type', 'warning');
+            // Gunakan redirect-back agar pesan error tampil
+            return redirect()->back()->withInput();
+        } else {
+            set_message('toastr_msg', 'Berita berhasil ditambah');
+            set_message('toastr_type', 'success');
+            return redirect()->to('/cms/berita');
+        }
+    } else {
+        $this->data['redirect'] = base_url('berita/create');
+        set_message(
+            'message',
+            $this->validation->getErrors()
+                ? $this->validation->listErrors()
+                : $this->session->getFlashdata('message')
+        );
+        echo view('Berita\Views\add', $this->data);
     }
+}
 
     public function do_upload()
     {
@@ -252,6 +313,7 @@ class Berita extends \Base\Controllers\BaseController
                     'sort' => $this->request->getPost('sort'),
                     'description' => $this->request->getPost('description'),
                     'content' => $this->request->getPost('content'),
+                    'created_at' => date('Y-m-d H:i:s'),
                     'updated_by' => user_id(),
                 ];
 
