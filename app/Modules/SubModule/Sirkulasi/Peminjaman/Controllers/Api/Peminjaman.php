@@ -279,7 +279,8 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 				$db = db_connect();
 
 				$pelanggaran = $db->table('pelanggaran')
-				->select('CollectionLoanItem_id')->where('CollectionLoanItem_id', $row->CollectionLoan_id)->get()->getRow();
+				->select('CollectionLoanItem_id')->where('CollectionLoanItem_id', $row->ID)->get()->getRow();
+				
 
 				if ($row->DueDate < date('Y-m-d')) {
 					$periods = \Carbon\CarbonPeriod::create($row->DueDate, date('Y-m-d'));
@@ -294,7 +295,7 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 
 				$actionButtons = '';
 
-				if ($isLate && $pelanggaran !== NUll) {
+				if ($pelanggaran==null && $isLate) {
 					// ADDED ALL data-* ATTRIBUTES HERE
 					$violationBtn = '<a href="javascript:void(0);" 
                          data-toggle="modal" 
@@ -313,18 +314,7 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 									<i class="pe-7s-attention font-weight-bold"></i> Pelanggaran
                     </a>';
 
-					if ($row->PelanggaranID) {
-						if (!$row->Paid) {
-							$violationBtn .= ' <span class="badge badge-danger">Belum Bayar</span>';
-						} else {
-							$returnBtn = '<a href="javascript:void(0);" 
-                                data-href="' . base_url('sirkulasi-pengembalian/do_return/' . $row->ID) . '" 
-                                data-toggle="tooltip" data-placement="top" title="Kembalikan" class="btn btn-primary return-data">
-                                <i class="pe-7s-refresh font-weight-bold"></i>
-                            </a>';
-							$violationBtn = $returnBtn . ' ' . $violationBtn;
-						}
-					}
+					
 
 					$actionButtons = $violationBtn;
 				} else {
