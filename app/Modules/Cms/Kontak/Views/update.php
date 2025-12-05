@@ -6,12 +6,12 @@ $slug = $request->getGet('slug') ?? '';
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
 <style>
-	.tox.tox-tinymce.tox-fullscreen {
+	/* .tox.tox-tinymce.tox-fullscreen {
 		z-index: 1050;
 		top: 60px !important;
 		left: 85px !important;
 		width: calc(100% - 85px) !important;
-	}
+	} */
 </style>
 <?= $this->endSection('style'); ?>
 
@@ -104,23 +104,55 @@ $slug = $request->getGet('slug') ?? '';
 <?= $this->section('script'); ?>
 <script>
 	$(document).ready(function() {
-		tinyMCE.init({
-			selector: 'textarea#description',
-			height: 430,
-			menubar: false,
-			pagebreak_separator: '<div style="page-break-after:always;clear:both"></div>',
-			plugins: 'link code image table pagebreak media lists fullscreen',
-			toolbar: 'fullscreen code | undo redo | bold italic underline strikethrough | fontsizeselect fontselect formatselect removeformat | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist checklist | insertfile image media pageembed template link anchor codesample | forecolor backcolor casechange permanentpen formatpainter | preview save print | pagebreak | charmap emoticons | a11ycheck ltr rtl  | table tabledelete ',
-			font_formats: "Dosis=Dosis, san serif; Andale Mono=andale mono,times; Arial=arial,helvetica,sans-serif; Arial Black=arial black,avant garde; Book Antiqua=book antiqua,palatino; Comic Sans MS=comic sans ms,sans-serif; Courier New=courier new,courier; Georgia=georgia,palatino; Helvetica=helvetica; Impact=impact,chicago; Symbol=symbol; Tahoma=tahoma,arial,helvetica,sans-serif; Terminal=terminal,monaco; Times New Roman=times new roman,times; Trebuchet MS=trebuchet ms,geneva; Verdana=verdana,geneva; Webdings=webdings; Wingdings=wingdings,zapf dingbats",
-			setup: function(editor) {
-				editor.on('init', function(e) {
-					editor.execCommand("fontName", true, "System Font");
-					editor.setContent(content);
-				});
-			},
-			fontsize_formats: "12pt 14pt 16pt 18pt 20pt 24pt 28pt 32pt",
-			content_style: "body { font-size: 12pt;}",
-		});
+		$('#content').summernote({
+            height: 430,
+            minHeight: null,
+            maxHeight: null,
+            focus: true,
+            toolbar: [
+                ['style', ['style', 'undo', 'redo', 'codeview']],
+                ['font', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+                ['fontname', ['fontname']],
+                ['fontsize', ['fontsize']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph', 'table']],
+                ['insert', ['link', 'picture', 'video', 'hr']],
+            ],
+            fontNames: ['System Font',
+                'Dosis', 'Andale Mono', 'Arial', 'Arial Black', 'Book Antiqua',
+                'Comic Sans MS', 'Courier New', 'Georgia', 'Helvetica', 'Impact',
+                'Symbol', 'Tahoma', 'Times New Roman', 'Trebuchet MS', 'Verdana'
+            ],
+            fontSizes: [
+                '12', '13', '14', '15', '16', '17', '18', '19', '20', '24',
+                '28', '32', '34', '36', '72'
+            ],
+            styleTags: ['p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+            callbacks: {
+                onInit: function() {
+                    // Untuk set font awal, biasanya dilakukan melalui CSS atau konfigurasi khusus.
+                    // Jika Anda ingin melakukan sesuatu setelah editor siap:
+                    console.log('Summernote is initialized');
+                }
+            },
+        });
+		// tinyMCE.init({
+		// 	selector: 'textarea#description',
+		// 	height: 430,
+		// 	menubar: false,
+		// 	pagebreak_separator: '<div style="page-break-after:always;clear:both"></div>',
+		// 	plugins: 'link code image table pagebreak media lists fullscreen',
+		// 	toolbar: 'fullscreen code | undo redo | bold italic underline strikethrough | fontsizeselect fontselect formatselect removeformat | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist checklist | insertfile image media pageembed template link anchor codesample | forecolor backcolor casechange permanentpen formatpainter | preview save print | pagebreak | charmap emoticons | a11ycheck ltr rtl  | table tabledelete ',
+		// 	font_formats: "Dosis=Dosis, san serif; Andale Mono=andale mono,times; Arial=arial,helvetica,sans-serif; Arial Black=arial black,avant garde; Book Antiqua=book antiqua,palatino; Comic Sans MS=comic sans ms,sans-serif; Courier New=courier new,courier; Georgia=georgia,palatino; Helvetica=helvetica; Impact=impact,chicago; Symbol=symbol; Tahoma=tahoma,arial,helvetica,sans-serif; Terminal=terminal,monaco; Times New Roman=times new roman,times; Trebuchet MS=trebuchet ms,geneva; Verdana=verdana,geneva; Webdings=webdings; Wingdings=wingdings,zapf dingbats",
+		// 	setup: function(editor) {
+		// 		editor.on('init', function(e) {
+		// 			editor.execCommand("fontName", true, "System Font");
+		// 			editor.setContent(content);
+		// 		});
+		// 	},
+		// 	fontsize_formats: "12pt 14pt 16pt 18pt 20pt 24pt 28pt 32pt",
+		// 	content_style: "body { font-size: 12pt;}",
+		// });
 	});
 </script>
 <?= $this->endSection('script'); ?>

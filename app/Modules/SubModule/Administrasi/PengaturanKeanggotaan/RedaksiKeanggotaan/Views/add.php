@@ -91,12 +91,46 @@ $slug = $request->getGet('slug');
 <?= $this->section('script') ?>
 <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
-	tinymce.init({
-		selector: '#yourTextareaId',
-		height: 300, // Adjust the height as needed
-		plugins: 'link image code', // Add any additional plugins you want to use
-		toolbar: 'undo redo | formatselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | code',
+	$(document).ready(function() {
+		$('#yourTextareaId').summernote({
+            height: 300,
+            minHeight: null,
+            maxHeight: null,
+            focus: true,
+            toolbar: [
+                ['style', ['style', 'undo', 'redo', 'codeview']],
+                ['font', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+                ['fontname', ['fontname']],
+                ['fontsize', ['fontsize']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph', 'table']],
+                ['insert', ['link', 'picture', 'video', 'hr']],
+            ],
+            fontNames: ['System Font',
+                'Dosis', 'Andale Mono', 'Arial', 'Arial Black', 'Book Antiqua',
+                'Comic Sans MS', 'Courier New', 'Georgia', 'Helvetica', 'Impact',
+                'Symbol', 'Tahoma', 'Times New Roman', 'Trebuchet MS', 'Verdana'
+            ],
+            fontSizes: [
+                '12', '13', '14', '15', '16', '17', '18', '19', '20', '24',
+                '28', '32', '34', '36', '72'
+            ],
+            styleTags: ['p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+            callbacks: {
+                onInit: function() {
+                    // Untuk set font awal, biasanya dilakukan melalui CSS atau konfigurasi khusus.
+                    // Jika Anda ingin melakukan sesuatu setelah editor siap:
+                    console.log('Summernote is initialized');
+                }
+            },
+        });
 	});
+	// tinymce.init({
+	// 	selector: '#yourTextareaId',
+	// 	height: 300, // Adjust the height as needed
+	// 	plugins: 'link image code', // Add any additional plugins you want to use
+	// 	toolbar: 'undo redo | formatselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | code',
+	// });
 </script>
 <script>
 	$(document).ready(function() {

@@ -6,12 +6,12 @@ $slug = $request->getGet('slug') ?? '';
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style') ?>
 <style>
-	.tox.tox-tinymce.tox-fullscreen {
+	/* .tox.tox-tinymce.tox-fullscreen {
 		z-index: 1050;
 		top: 60px !important;
 		left: 85px !important;
 		width: calc(100% - 85px) !important;
-	}
+	} */
 </style>
 <?= $this->endSection('style') ?>
 
@@ -122,75 +122,122 @@ $slug = $request->getGet('slug') ?? '';
 </script> -->
 <script>
 	function setDropzone(id, module, acceptedFiles, maxFiles, maxFileSize) {
-        let dropzone = new Dropzone("div#" + id, {
-            url: "<?= base_url('cms/berita/do_upload') ?>",
-            paramName: "file",
-            maxFiles: maxFiles,
-            maxFileSize: maxFileSize, // in MB
-            addRemoveLinks: true,
-            acceptedFiles: acceptedFiles,
-            init: function() {
-                // Event ketika file baru ditambahkan
-                this.on("addedfile", function(file) {
-                    // Jika maxFiles = 1, hapus file lama saat ada file baru
-                    if (maxFiles === 1 && this.files.length > 1) {
-                        this.removeFile(this.files[0]);
-                    }
-                });
+		let dropzone = new Dropzone("div#" + id, {
+			url: "<?= base_url('cms/berita/do_upload') ?>",
+			paramName: "file",
+			maxFiles: maxFiles,
+			maxFileSize: maxFileSize, // in MB
+			addRemoveLinks: true,
+			acceptedFiles: acceptedFiles,
+			init: function() {
+				// Event ketika file baru ditambahkan
+				this.on("addedfile", function(file) {
+					// Jika maxFiles = 1, hapus file lama saat ada file baru
+					if (maxFiles === 1 && this.files.length > 1) {
+						this.removeFile(this.files[0]);
+					}
+				});
 
-                // Event ketika file berhasil diunggah
-                this.on("success", function(file, response) {
-                    $('#' + id + '_listed').append('<input type="hidden" name="' + id + '[]" value="' + response.filename + '">');
-                });
+				// Event ketika file berhasil diunggah
+				this.on("success", function(file, response) {
+					$('#' + id + '_listed').append('<input type="hidden" name="' + id + '[]" value="' + response.filename + '">');
+				});
 
-                // Event ketika file dihapus
-                this.on("removedfile", function(file) {
-                    // Cari dan hapus input tersembunyi yang sesuai
-                    $('#' + id + '_listed').find('input[value="' + file.name + '"]').remove();
+				// Event ketika file dihapus
+				this.on("removedfile", function(file) {
+					// Cari dan hapus input tersembunyi yang sesuai
+					$('#' + id + '_listed').find('input[value="' + file.name + '"]').remove();
 
-                    // Pastikan Dropzone dapat menerima file baru
-                    if (this.files.length < maxFiles) {
-                        this.options.maxFiles = maxFiles;
-                    }
-                });
+					// Pastikan Dropzone dapat menerima file baru
+					if (this.files.length < maxFiles) {
+						this.options.maxFiles = maxFiles;
+					}
+				});
 
-                // Handle ketika jumlah file melebihi batas
-                this.on("maxfilesexceeded", function(file) {
-                    if (maxFiles === 1) {
-                        this.removeAllFiles(); // Hapus file lama
-                        this.addFile(file); // Tambahkan file yang baru
-                    } else {
-                        alert("Jumlah file melebihi batas: " + maxFiles);
-                        this.removeFile(file);
-                    }
-                });
-            }
-        });
-        return dropzone;
-    }
+				// Handle ketika jumlah file melebihi batas
+				this.on("maxfilesexceeded", function(file) {
+					if (maxFiles === 1) {
+						this.removeAllFiles(); // Hapus file lama
+						this.addFile(file); // Tambahkan file yang baru
+					} else {
+						alert("Jumlah file melebihi batas: " + maxFiles);
+						this.removeFile(file);
+					}
+				});
+			}
+		});
+		return dropzone;
+	}
 
 	$(document).ready(function() {
 		var file_cover = setDropzone('file_cover', 'page', '.png,.jpg,.jpeg', 1, 10);
 		var file_image = setDropzone('file_image', 'page', '.png,.jpg,.jpeg', 6, 10);
-	});
-	$(document).ready(function() {
-		tinyMCE.init({
-			selector: 'textarea#content',
+		$('#content').summernote({
 			height: 430,
-			menubar: false,
-			pagebreak_separator: '<div style="page-break-after:always;clear:both"></div>',
-			plugins: 'link code image table pagebreak media lists fullscreen',
-			toolbar: 'fullscreen code removeformat | bold italic underline strikethrough | fontsizeselect fontselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist checklist | insertfile image media pageembed link anchor codesample | forecolor backcolor casechange permanentpen formatpainter |  undo redo pagebreak | charmap emoticons | a11ycheck ltr rtl  | table tabledelete ',
-			font_formats: "System Font=Dosis, san serif; Andale Mono=andale mono,times; Arial=arial,helvetica,sans-serif; Arial Black=arial black,avant garde; Book Antiqua=book antiqua,palatino; Comic Sans MS=comic sans ms,sans-serif; Courier New=courier new,courier; Georgia=georgia,palatino; Helvetica=helvetica; Impact=impact,chicago; Symbol=symbol; Tahoma=tahoma,arial,helvetica,sans-serif; Terminal=terminal,monaco; Times New Roman=times new roman,times; Trebuchet MS=trebuchet ms,geneva; Verdana=verdana,geneva;",
-			setup: function(editor) {
-				// editor.on('init', function(e) {
-				// 	editor.execCommand("fontName", true, "System Font");
-				// 	editor.setContent(content);
-				// });
+			minHeight: null,
+			maxHeight: null,
+			focus: true,
+			toolbar: [
+				['style', ['style', 'undo', 'redo', 'codeview']],
+				['font', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+				['fontname', ['fontname']],
+				['fontsize', ['fontsize']],
+				['color', ['color']],
+				['para', ['ul', 'ol', 'paragraph', 'table']],
+				['insert', ['link', 'picture', 'video', 'hr']],
+			],
+			fontNames: ['System Font',
+				'Dosis', 'Andale Mono', 'Arial', 'Arial Black', 'Book Antiqua',
+				'Comic Sans MS', 'Courier New', 'Georgia', 'Helvetica', 'Impact',
+				'Symbol', 'Tahoma', 'Times New Roman', 'Trebuchet MS', 'Verdana'
+			],
+			fontSizes: [
+				'12', '13', '14', '15', '16', '17', '18', '19', '20', '24',
+				'28', '32', '34', '36', '72'
+			],
+			styleTags: ['p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+			callbacks: {
+				onInit: function() {
+					// Untuk set font awal, biasanya dilakukan melalui CSS atau konfigurasi khusus.
+					// Jika Anda ingin melakukan sesuatu setelah editor siap:
+					console.log('Summernote is initialized');
+				}
 			},
-			fontsize_formats: "12pt 13pt 14pt 15pt 16pt 17pt 18pt 19pt 20pt 24pt 28pt 32pt 34pt 36pt 72pt",
-			content_style: "body { font-size: 12pt;}",
+			// Anda bisa tambahkan setting B4-specific lainnya jika diperlukan
 		});
 	});
+	// $('#content').summernote({
+	//         height: 430,
+	//         minHeight: null,
+	//         maxHeight: null,
+	//         focus: true,
+	//         toolbar: [
+	//             ['style', ['style', 'undo', 'redo', 'codeview']],
+	//             ['font', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+	//             ['fontname', ['fontname']],
+	//             ['fontsize', ['fontsize']],
+	//             ['color', ['color']],
+	//             ['para', ['ul', 'ol', 'paragraph', 'table']],
+	//             ['insert', ['link', 'picture', 'video', 'hr']],
+	//         ],
+	//         fontNames: ['System Font',
+	//             'Dosis', 'Andale Mono', 'Arial', 'Arial Black', 'Book Antiqua',
+	//             'Comic Sans MS', 'Courier New', 'Georgia', 'Helvetica', 'Impact',
+	//             'Symbol', 'Tahoma', 'Times New Roman', 'Trebuchet MS', 'Verdana'
+	//         ],
+	//         fontSizes: [
+	//             '12', '13', '14', '15', '16', '17', '18', '19', '20', '24',
+	//             '28', '32', '34', '36', '72'
+	//         ],
+	//         styleTags: ['p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+	//         callbacks: {
+	//             onInit: function() {
+	//                 // Untuk set font awal, biasanya dilakukan melalui CSS atau konfigurasi khusus.
+	//                 // Jika Anda ingin melakukan sesuatu setelah editor siap:
+	//                 console.log('Summernote is initialized');
+	//             }
+	//         },
+	//         // Anda bisa tambahkan setting B4-specific lainnya jika diperlukan
+	//     });
 </script>
 <?= $this->endSection('script') ?>
