@@ -234,12 +234,7 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
             $html  =  '<badge class="badge badge-info badge-pill">' . $row->UpdateDate . '</badge>';
             return $html;
         })
-        ->edit('action', function ($row) {
-            // --- Blok ini tidak diubah, karena tidak memerlukan data $lateDays ---
-            $edit = '<a href="javascript:void(0);" data-href="' . base_url('api/sirkulasi-peminjaman/detail/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-            $delete = '<a href="javascript:void(0);" data-href="' . base_url('peminjaman/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
-            return $edit . ' ' . $delete;
-        })
+       
         ->toJson();
     return $dataTable;
 }

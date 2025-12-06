@@ -11,7 +11,8 @@ if (is_profiling()) {
 if ($request->getVar('fullscreen') == 1) {
     $container_header_class .= ' closed-sidebar';
 }
-
+$db=db_connect();
+$logo = $db->table('settingparameters')->where('Name', 'Logo')->get()->getRow()->Value;
 ?>
 
 <!doctype html>
@@ -20,7 +21,7 @@ if ($request->getVar('fullscreen') == 1) {
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <link rel="icon" href="<?= base_url(get_parameter('favicon')) ?>">
+    <link rel="icon" href="<?= !empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png')?>">
     <meta http-equiv="Content-Language" content="en">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title><?= $title ?? get_parameter('site-name'); ?></title>

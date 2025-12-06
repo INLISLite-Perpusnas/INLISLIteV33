@@ -71,7 +71,6 @@ $slug = $request->getGet('slug') ?? '';
 						<th class="text-center">Hari Terlambat</th>
 						<th class="text-center" width="120">Lokasi Perpustakaan</th>
 						<th class="text-center" width="100">Updated Date</th>
-						<th class="text-center" width="100">Aksi</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -133,11 +132,6 @@ $slug = $request->getGet('slug') ?? '';
 				},
 				{
 					data: 'UpdateDate'
-				},
-				{
-					data: 'action',
-					className: 'text-center',
-					orderable: false
 				},
 				{
 					data: 'CollectionLoan_id',
