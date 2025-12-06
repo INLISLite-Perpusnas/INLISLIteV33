@@ -36,12 +36,7 @@ class HariLibur extends \Base\Controllers\BaseResourceController
 		$db = db_connect();
 		$builder = $db->table('holidays as a')
 			->select('a.ID, a.ID as action,a.Dates,a.Names, a.UpdateDate')
-			->select('a.active')
-			->where('a.branch_id', 0);
-
-		if (is_profiling()) {
-			$builder->orWhere('a.Branch_ID', user()->branch_id);
-		}
+			->select('a.active');
     $search = $this->request->getPost('search')['value'] ?? null;
 
 if (!empty($search)) {
