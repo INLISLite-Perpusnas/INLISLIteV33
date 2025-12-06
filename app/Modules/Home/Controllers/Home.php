@@ -139,19 +139,21 @@ class Home extends \Base\Controllers\BaseController
     /**
      * Get news/announcements (dummy data)
      */
-    private function getNews()
-    {
-        try {
-            return $this->beritaModel
-                ->asArray()
-                ->where('active', 1)
-                ->orderBy('created_at', 'DESC')
-                ->findAll(4);
-        } catch (\Exception $e) {
-            return []; // Dummy data
-        }
-       
+  private function getNews()
+{
+    try {
+        return $this->beritaModel
+            ->asArray()
+            ->select('t_berita.*, users.username')         
+            ->join('users', 'users.id = t_berita.created_by', 'left')          
+            ->where('t_berita.active', 1)
+            ->orderBy('t_berita.created_at', 'DESC')
+            ->findAll(4);
+            
+    } catch (\Exception $e) {
+        return []; 
     }
+}
 
     /**
      * Get banner data (dummy data)

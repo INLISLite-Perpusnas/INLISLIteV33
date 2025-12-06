@@ -245,63 +245,92 @@
     }
 
     /* News Section */
-    .news-section {
-        padding: 5rem 0;
-    }
-
+    /* Pastikan kartu mengisi tinggi kolom sepenuhnya */
     .news-card {
-        background: white;
-        border-radius: 15px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
         overflow: hidden;
-        transition: all 0.3s ease;
-        border: 1px solid #e2e8f0;
         height: 100%;
+        /* Agar tinggi kartu sama rata dalam satu baris */
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.3s ease;
+        border: 1px solid #eee;
     }
 
     .news-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     }
 
+    /* Pengaturan Gambar */
     .news-image {
+        width: 100%;
         height: 200px;
+        /* Tinggi gambar fix agar seragam */
         background-size: cover;
         background-position: center;
+        background-repeat: no-repeat;
     }
 
+    /* Wrapper konten agar bisa diatur jaraknya */
     .news-content {
-        padding: 1.5rem;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        /* Mengisi sisa ruang agar footer ada di bawah */
     }
 
+    /* Membatasi Judul (PENTING) */
     .news-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 10px;
         line-height: 1.4;
-        max-height: 2.8em;
-        min-height: 2.8em;
-    }
 
-    .news-excerpt {
+        /* Teknik memotong teks judul max 2 baris */
         display: -webkit-box;
-        -webkit-line-clamp: 4;
+        -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-height: 6.4em;
-        min-height: 6.4em;
-        color: var(--secondary-color);
-        font-size: 0.95rem;
-        margin-bottom: 1rem;
-        line-height: 1.6;
+        height: 2.8em;
+        /* Menjaga tinggi area judul tetap konsisten */
     }
 
+    /* Membatasi Cuplikan Teks (Excerpt) */
+    .news-excerpt {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 20px;
+        line-height: 1.6;
+
+        /* Teknik memotong teks deskripsi max 3 baris */
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Footer Card (User & Tanggal) */
     .news-meta {
+        margin-top: auto;
+        /* Mendorong meta ke paling bawah */
+        padding-top: 15px;
+        border-top: 1px solid #f0f0f0;
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        font-size: 0.85rem;
-        color: var(--secondary-color);
+        font-size: 0.8rem;
+        color: #999;
+    }
+
+    .news-meta i {
+        color: #0d6efd;
+        /* Warna icon primary */
     }
 
     /* Footer */
@@ -517,38 +546,52 @@
     </section>
 
     <!-- News Section -->
-    <section class="news-section">
-        <div class="container">
-            <h2 class="section-title" data-aos="fade-up">Berita & Pengumuman</h2>
-            <div class="row">
-                <?php foreach ($news as $index => $article): ?>
-                    <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="<?= ($index + 1) * 100 ?>">
-                        <?php
-                        $coverPath = base_url('uploads/berita/' . ($article['file_cover'] ?: 'default-cover.jpg'));
-                        $defaultCover = base_url('assets/img/default-cover.png');
-                        ?>
-                        <div class="news-card">
-                            <div class="news-image" style="background-image: url('<?= $coverPath ?>')"></div>
-                            <div class="news-content">
+    <section class="news-section py-5">
+    <div class="container">
+        <h2 class="section-title text-center mb-5" data-aos="fade-up">Berita & Pengumuman</h2>
+
+        <div class="row g-4">
+            <?php foreach ($news as $index => $article): ?>
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="<?= ($index + 1) * 100 ?>">
+                    <?php
+                        $imgFile = $article['file_cover'] ?: 'default.jpg';
+                        $coverPath = base_url('uploads/berita/' . $imgFile);
+                    ?>
+
+                    <div class="news-card">
+                        <div class="news-image" style="background-image: url('<?= $coverPath ?>');" title="<?= esc($article['title']) ?>"></div>
+
+                        <div class="news-content">
+                            <a href="<?= base_url('news/detail/' . $article['id'] . '/' . $article['slug']) ?>">
                                 <h5 class="news-title"><?= esc($article['title']) ?></h5>
-                                <p class="news-excerpt"><?= esc(strip_tags($article['content'])) ?></p>
-                                <div class="news-meta">
-                                    <span><i class="fas fa-user me-1"></i><?= esc($article['description']) ?></span>
-                                    <span><i class="fas fa-calendar me-1"></i><?= date('d M Y', strtotime($article['created_at'])) ?></span>
-                                </div>
+                            </a>
+
+                            <div class="news-excerpt">
+                                <?= esc(strip_tags($article['content'])) ?>
+                            </div>
+
+                            <div class="news-meta">
+                                <span class="text-truncate" style="max-width: 50%;">
+                                    <i class="fas fa-user me-1"></i> <?= esc($article['username'] ?: 'Admin') ?>
+                                </span>
+                                <span>
+                                    <i class="fas fa-calendar me-1"></i> <?= date('d M Y', strtotime($article['created_at'])) ?>
+                                </span>
                             </div>
                         </div>
                     </div>
-                <?php endforeach; ?>
-            </div>
-            <div class="text-center mt-4" data-aos="fade-up">
-                <a href="<?= base_url('news') ?>" class="btn btn-outline-primary btn-lg">
-                    <i class="fas fa-newspaper me-2"></i>
-                    Lihat Semua Berita
-                </a>
-            </div>
+                </div>
+            <?php endforeach; ?>
         </div>
-    </section>
+
+        <div class="text-center mt-5" data-aos="fade-up">
+            <a href="<?= base_url('news') ?>" class="btn btn-primary px-4 py-2 rounded-pill shadow-sm">
+                <i class="fas fa-newspaper me-2"></i> Lihat Semua Berita
+            </a>
+        </div>
+    </div>
+</section>
+
 
 
 

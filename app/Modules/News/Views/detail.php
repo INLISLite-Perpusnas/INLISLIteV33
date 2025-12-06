@@ -25,7 +25,7 @@
                 <div>
                     <small> <?= date('d M Y', strtotime($news->created_at)) ?></small>
                     <span class="mx-2">•</span>
-                    <small> <strong><?= esc($news->description) ?></strong></small>
+                    <small> <strong><?= esc($news->username) ?></strong></small>
                 </div>
 
                 <div class="dropdown">
