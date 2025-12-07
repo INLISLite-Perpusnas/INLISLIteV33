@@ -280,7 +280,6 @@ $email=$db->table('settingparameters')->where('Name', 'EmailPerpustakaan')->get(
                      
                         <div class="logo-text">
                             <h1><?=$nama_perpustakaan?></h1>
-                            <p><?=$alamat?></p>
                         </div>
                     </div>
                 </div>
