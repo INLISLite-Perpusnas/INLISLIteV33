@@ -20,7 +20,7 @@
     .hero-banner {
         position: relative;
         overflow: hidden;
-        min-height: 800px;
+        min-height: 600px;
         display: flex;
         align-items: center;
     }
@@ -403,7 +403,7 @@
 
 <body>
     <!-- Hero Banner Section -->
- <section class="hero-banner position-relative" style="height: 500px;">
+ <section class="hero-banner position-relative">
     <img src="<?= base_url('uploads/banner/' . $banner['image']) ?>" 
          class="w-100 h-100 position-absolute"
          style="object-fit: cover; object-position: center; top:0; left:0;">
