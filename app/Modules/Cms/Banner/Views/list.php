@@ -36,10 +36,8 @@ $slug = $request->getGet('slug') ?? '';
 		<div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate">
 			</i>Tabel Banner <?= ucwords(unslugify($slug)) ?>
 			<div class="btn-actions-pane-right actions-icon-btn">
-				<?php if (is_allowed('banner/create')) : ?>
 					<a href="<?= base_url('cms/banner/create?slug=' . $slug) ?>" class=" btn btn-success" title=""><i class="fa fa-plus"></i>
 						Tambah Banner </a>
-				<?php endif; ?>
 			</div>
 		</div>
 		<div class="card-body">
@@ -66,7 +64,6 @@ $slug = $request->getGet('slug') ?? '';
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
-<?= $this->include('Banner\Views\upload_modal'); ?>
 <script>
 	var t;
 	$(document).ready(function() {

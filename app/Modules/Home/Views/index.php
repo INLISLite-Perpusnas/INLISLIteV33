@@ -18,10 +18,9 @@
 
     /* Hero Banner */
     .hero-banner {
-        background: var(--gradient-bg);
         position: relative;
         overflow: hidden;
-        min-height: 600px;
+        min-height: 800px;
         display: flex;
         align-items: center;
     }
@@ -33,7 +32,6 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6));
         z-index: 1;
     }
 
@@ -405,28 +403,20 @@
 
 <body>
     <!-- Hero Banner Section -->
-    <section class="hero-banner">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-6">
-                    <div class="hero-content" data-aos="fade-right">
-                        <h1 class="hero-title"><?= $banner['title'] ?></h1>
-                        <p class="hero-subtitle"><?= $banner['subtitle'] ?></p>
-                        <p class="mb-4"><?= $banner['description'] ?></p>
-                        <a href="<?= $banner['cta_link'] ?>" class="btn btn-warning hero-cta">
-                            <i class="fas fa-search me-2"></i>
-                            <?= $banner['cta_text'] ?>
-                        </a>
-                    </div>
-                </div>
-                <div class="col-lg-6" data-aos="fade-left">
-                    <div class="text-center">
-                        <i class="fas fa-book-open" style="font-size: 15rem; opacity: 0.3; color: white;"></i>
-                    </div>
-                </div>
+ <section class="hero-banner position-relative" style="height: 500px;">
+    <img src="<?= base_url('uploads/banner/' . $banner['image']) ?>" 
+         class="w-100 h-100 position-absolute"
+         style="object-fit: cover; object-position: center; top:0; left:0;">
+    
+    <div class="container position-relative d-flex justify-content-center align-items-center h-100">
+        <div class="col-lg-10 text-center">
+            <div class="hero-content" data-aos="fade-up">
+            
             </div>
         </div>
-    </section>
+    </div>
+</section>
+
 
     <!-- Search Section -->
     <section class="search-section">

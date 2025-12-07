@@ -18,10 +18,12 @@ class Home extends \Base\Controllers\BaseController
     public $beritaModel;
     public $settingModel;
     public $db;
+    public $bannerModel;
 
     function __construct()
     {
         $this->visitorModel = new \Opac\Models\VisitorModel();
+        $this->bannerModel = new \Banner\Models\BannerModel();
         $this->katalogModel = new \Katalog\Models\KatalogModel();
         $this->eksemplarModel = new \Eksemplar\Models\EksemplarModel();
         $this->settingModel = new \PenomoranKoleksi\Models\PenomoranKoleksiModel();
@@ -159,17 +161,34 @@ class Home extends \Base\Controllers\BaseController
      * Get banner data (dummy data)
      */
     private function getBannerData()
-    {
-        $title= $this->settingModel->where('Name', 'TulisanBanner')->first()->Value ?? '';
-        return [
-            'title' => $title,
-            'subtitle' => 'Jelajahi dunia pengetahuan dengan koleksi lengkap dan layanan modern',
-            'description' => 'Akses ribuan buku, jurnal, dan sumber daya digital untuk mendukung pembelajaran dan penelitian Anda.',
-            'image' => 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1200&h=600&fit=crop',
-            'cta_text' => 'Mulai Jelajahi',
-            'cta_link' => base_url('opac')
-        ];
+{
+    // 1. Ambil Judul
+    $title = $this->settingModel->where('Name', 'TulisanBanner')->first()->Value ?? '';
+    
+    // 2. Ambil File Cover Banner yang aktif
+    // (Sebaiknya tambahkan orderBy agar banner yang diambil konsisten, misal yang terbaru)
+    $banner = $this->bannerModel->where('active', 1)->orderBy('sort', 'ASC')->first()->file_cover ?? '';
+
+
+    // 3. Tentukan URL Gambar
+    // Default image (Unsplash)
+    $imageUrl = 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1200&h=600&fit=crop';
+
+    if (!empty($banner)) {
+        // Cek path folder Anda. Di snippet ini Anda tulis 'uploads/branch', 
+        // tapi di modul sebelumnya Anda pakai 'uploads/banner'. Sesuaikan di sini:
+        $imageUrl = $banner;
     }
+
+    return [
+        'title' => $title,
+        'subtitle' => 'Jelajahi dunia pengetahuan dengan koleksi lengkap dan layanan modern',
+        'description' => 'Akses ribuan buku, jurnal, dan sumber daya digital untuk mendukung pembelajaran dan penelitian Anda.',
+        'image' => $imageUrl, // <--- Gunakan variabel hasil pengecekan tadi
+        'cta_text' => 'Mulai Jelajahi',
+        'cta_link' => base_url('opac')
+    ];
+}
 
     /**
      * Get library modules
