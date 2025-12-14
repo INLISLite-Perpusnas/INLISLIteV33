@@ -5,11 +5,12 @@ $request = service('request');
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style') ?>
 <style>
-    .tox.tox-tinymce.tox-fullscreen {
+    /* .tox.tox-tinymce.tox-fullscreen {
         z-index: 1050;
         top: 60px !important;
         left: 85px !important;
         width: calc(100% - 85px) !important;
+<<<<<<< HEAD
     }
 
     /* Style untuk Preview Image */
@@ -70,6 +71,9 @@ $request = service('request');
         font-weight: bold;
         display: block;
     }
+=======
+    } */
+>>>>>>> 768fa1327effd041bd29d938a21825fda142d99e
 </style>
 <?= $this->endSection('style') ?>
 
@@ -249,6 +253,7 @@ $request = service('request');
                 reader.readAsDataURL(input.files[i]);
             }
         }
+<<<<<<< HEAD
     }
 
     $(document).ready(function() {
@@ -262,6 +267,40 @@ $request = service('request');
             font_formats: "System Font=Dosis, san serif; Andale Mono=andale mono,times; Arial=arial,helvetica,sans-serif; Arial Black=arial black,avant garde; Book Antiqua=book antiqua,palatino; Comic Sans MS=comic sans ms,sans-serif; Courier New=courier new,courier; Georgia=georgia,palatino; Helvetica=helvetica; Impact=impact,chicago; Symbol=symbol; Tahoma=tahoma,arial,helvetica,sans-serif; Terminal=terminal,monaco; Times New Roman=times new roman,times; Trebuchet MS=trebuchet ms,geneva; Verdana=verdana,geneva;",
             fontsize_formats: "12pt 13pt 14pt 15pt 16pt 17pt 18pt 19pt 20pt 24pt 28pt 32pt 34pt 36pt 72pt",
             content_style: "body { font-size: 12pt;}",
+=======
+        $('#content').summernote({
+            height: 430,
+            minHeight: null,
+            maxHeight: null,
+            focus: true,
+            toolbar: [
+                ['style', ['style', 'undo', 'redo', 'codeview']],
+                ['font', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+                ['fontname', ['fontname']],
+                ['fontsize', ['fontsize']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph', 'table']],
+                ['insert', ['link', 'picture', 'video', 'hr']],
+            ],
+            fontNames: ['System Font',
+                'Dosis', 'Andale Mono', 'Arial', 'Arial Black', 'Book Antiqua',
+                'Comic Sans MS', 'Courier New', 'Georgia', 'Helvetica', 'Impact',
+                'Symbol', 'Tahoma', 'Times New Roman', 'Trebuchet MS', 'Verdana'
+            ],
+            fontSizes: [
+                '12', '13', '14', '15', '16', '17', '18', '19', '20', '24',
+                '28', '32', '34', '36', '72'
+            ],
+            styleTags: ['p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+            callbacks: {
+                onInit: function() {
+                    // Untuk set font awal, biasanya dilakukan melalui CSS atau konfigurasi khusus.
+                    // Jika Anda ingin melakukan sesuatu setelah editor siap:
+                    console.log('Summernote is initialized');
+                }
+            },
+            // Anda bisa tambahkan setting B4-specific lainnya jika diperlukan
+>>>>>>> 768fa1327effd041bd29d938a21825fda142d99e
         });
     });
 </script>

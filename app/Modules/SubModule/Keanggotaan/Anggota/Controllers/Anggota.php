@@ -73,7 +73,7 @@ class Anggota extends \Base\Controllers\BaseController
 
 		// Simpan ke array data
 		$this->data['slug'] = $slug;
-		
+
 		$db = db_connect();
 
 		$jenisperpustakaan = $db->table('settingparameters')->where('Name', 'JenisPerpustakaan')->get()->getRow()->Value ?: "UMUM";
@@ -340,7 +340,7 @@ class Anggota extends \Base\Controllers\BaseController
 				$region = $this->regionModel->where('code', $kelurahanNow)->first();
 				$save_data['KelurahanNow'] = $region->name;
 			}
-			
+
 
 			// Logic Upload
 			$files = (array) $this->request->getPost('PhotoUrl');
@@ -497,7 +497,7 @@ class Anggota extends \Base\Controllers\BaseController
 		}
 
 		$anggota = $this->anggotaModel->find($ID);
-    $CreateBy = get_username($anggota->CreateBy ?? 0);
+		$CreateBy = get_username($anggota->CreateBy ?? 0);
 		$UpdateBy = get_username($anggota->UpdateBy ?? 0);
 		$this->data['title'] = 'Ubah Anggota';
 		$this->data['anggota'] = $anggota;
@@ -930,18 +930,249 @@ class Anggota extends \Base\Controllers\BaseController
 		echo view('Anggota\Views\import');
 	}
 
+	// public function import()
+	// {
+	// 	$db = db_connect();
+	// 	// Check if the request contains a file
+	// 	if (!$this->request->getFile('excel_file')) {
+	// 		// Ubah 'message' menjadi 'error'
+	// 		return redirect()->back()->with('error', 'No file selected for upload.');
+	// 	}
+
+	// 	$file = $this->request->getFile('excel_file');
+	// 	// dd($file);
+
+	// 	if ($file->isValid() && !$file->hasMoved()) {
+	// 		$filePath = $file->getTempName();
+	// 		$spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file);
+	// 		$data = $spreadsheet->getActiveSheet()->toArray();
+
+	// 		$memberModel = $this->anggotaModel;
+	// 		$branch_id = user()->branch_id;
+	// 		$importedCount = 0; // Counter untuk data yang berhasil diimport
+	// 		$skippedCount = 0; // Counter untuk data yang tidak diimport
+
+	// 		// Ambil header dari file Excel
+	// 		$header = array_map('strtolower', $data[0]);
+
+	// 		// Pemetaan kolom Excel ke kolom database
+	// 		$columnMap = [
+	// 			'no anggota' => 'MemberNo',
+	// 			'nama' => 'FullName',
+	// 			'tempat lahir' => 'PlaceOfBirth',
+	// 			'tanggal lahir' => 'DateOfBirth',
+	// 			'alamat sesuai ktp' => 'Address',
+	// 			'propinsi sesuai ktp' => 'Province',
+	// 			'kabupaten/kota sesuai ktp' => 'City',
+	// 			'kecamatan sesuai ktp' => 'Kecamatan',
+	// 			'kelurahan sesuai ktp' => 'Kelurahan',
+	// 			'rt sesuai ktp' => 'RT',
+	// 			'rw sesuai ktp' => 'RW',
+	// 			'alamat tempat tinggal sekarang' => 'AddressNow',
+	// 			'propinsi sekarang' => 'ProvinceNow',
+	// 			'kabupaten/kota sekarang' => 'CityNow',
+	// 			'kecamatan sekarang' => 'KecamatanNow',
+	// 			'kelurahan sekarang' => 'KelurahanNow',
+	// 			'rt sekarang' => 'RTNow',
+	// 			'rw sekarang' => 'RWNow',
+	// 			'jenis identitas' => 'IdentityType_id',
+	// 			'nomor identitas' => 'IdentityNo',
+	// 			'jenis kelamin' => 'Sex_id',
+	// 			'photo url' => 'PhotoUrl',
+	// 			'pekerjaan' => 'Job_id',
+	// 			'jenis anggota' => 'JenisAnggota_id',
+	// 			'pendidikan terakhir' => 'JenjangPendidikan_id',
+	// 			'status perkawinan' => 'MaritalStatus_id',
+	// 			'tanggal pendaftaran' => 'RegisterDate',
+	// 			'tanggal akhir berlaku' => 'EndDate',
+	// 			'jenis permohonan' => 'JenisPermohonan_id',
+	// 			'status anggota' => 'StatusAnggota_id',
+	// 		];
+
+	// 		foreach ($data as $key => $row) {
+	// 			// Skip header row
+	// 			if ($key == 0) {
+	// 				continue;
+	// 			}
+
+	// 			// Buat data yang akan dimasukkan ke database
+	// 			$memberData = ['Branch_id' => $branch_id];
+
+
+	// 			foreach ($header as $index => $columnName) {
+	// 				if (isset($columnMap[$columnName])) {
+	// 					$dbColumnName = $columnMap[$columnName];
+	// 					if ($dbColumnName == 'Sex_id') {
+	// 						$jenisKelaminValue = $row[$index];
+	// 						$jenisKelamin = $db->table('jenis_kelamin')
+	// 							->like('Name', $jenisKelaminValue)
+	// 							->get()
+	// 							->getRow();
+
+	// 						if ($jenisKelamin) {
+	// 							$memberData['Sex_id'] = $jenisKelamin->ID;
+	// 						} else {
+	// 							$memberData['Sex_id'] = null;
+	// 						}
+	// 					}
+
+	// 					if ($dbColumnName == 'Job_id') {
+	// 						$jobValue = $row[$index];
+	// 						$job = $db->table('master_pekerjaan')
+	// 							->like('Pekerjaan', $jobValue)
+	// 							->get()
+	// 							->getRow();
+
+	// 						if ($job) {
+	// 							$memberData['Job_id'] = $job->id;
+	// 						} else {
+	// 							$memberData['Job_id'] = null;
+	// 						}
+	// 					}
+
+	// 					if ($dbColumnName == 'JenisAnggota_id') {
+	// 						$jenisAnggotaValue = $row[$index];
+	// 						$jenisAnggota = $db->table('jenis_anggota')
+	// 							->like('jenisanggota', $jenisAnggotaValue)
+	// 							->get()
+	// 							->getRow();
+
+	// 						if ($jenisAnggota) {
+	// 							$memberData['JenisAnggota_id'] = $jenisAnggota->id;
+	// 						} else {
+	// 							$memberData['JenisAnggota_id'] = null;
+	// 						}
+	// 					}
+
+	// 					if ($dbColumnName == 'JenjangPendidikan_id') {
+	// 						$jenjangPendidikanValue = $row[$index];
+	// 						$jenjangPendidikan = $db->table('master_pendidikan')
+	// 							->like('Nama', $jenjangPendidikanValue)
+	// 							->get()
+	// 							->getRow();
+
+	// 						if ($jenjangPendidikan) {
+	// 							$memberData['JenjangPendidikan_id'] = $jenjangPendidikan->id;
+	// 						} else {
+	// 							$memberData['JenjangPendidikan_id'] = null;
+	// 						}
+	// 					}
+
+	// 					if ($dbColumnName == 'MaritalStatus_id') {
+	// 						$maritalStatusValue = $row[$index];
+	// 						$maritalStatus = $db->table('master_status_perkawinan')
+	// 							->like('Nama', $maritalStatusValue)
+	// 							->get()
+	// 							->getRow();
+
+	// 						if ($maritalStatus) {
+	// 							$memberData['MaritalStatus_id'] = $maritalStatus->id;
+	// 						} else {
+	// 							$memberData['MaritalStatus_id'] = null;
+	// 						}
+	// 					}
+
+	// 					if ($dbColumnName == 'JenisPermohonan_id') {
+	// 						$jenisPermohonanValue = $row[$index];
+	// 						$jenisPermohonan = $db->table('jenis_permohonan')
+	// 							->like('Name', $jenisPermohonanValue)
+	// 							->get()
+	// 							->getRow();
+
+	// 						if ($jenisPermohonan) {
+	// 							$memberData['JenisPermohonan_id'] = $jenisPermohonan->ID;
+	// 						} else {
+	// 							$memberData['JenisPermohonan_id'] = null;
+	// 						}
+	// 					}
+
+	// 					if ($dbColumnName == 'StatusAnggota_id') {
+	// 						$statusAnggotaValue = $row[$index];
+	// 						$statusAnggota = $db->table('status_anggota')
+	// 							->like('Nama', $statusAnggotaValue)
+	// 							->get()
+	// 							->getRow();
+
+	// 						if ($statusAnggota) {
+	// 							$memberData['StatusAnggota_id'] = $statusAnggota->id;
+	// 						} else {
+	// 							$memberData['StatusAnggota_id'] = null;
+	// 						}
+	// 					}
+
+	// 					// If column is 'IdentityType_id', we need to fetch the corresponding id
+	// 					if ($dbColumnName == 'IdentityType_id') {
+	// 						// Get the id from the master_jenis_identitas table
+	// 						$jenisIdentitasValue = $row[$index];
+
+	// 						$identityType = $db->table('master_jenis_identitas')
+	// 							->like('Nama', $jenisIdentitasValue)
+	// 							->get()
+	// 							->getRow();
+	// 						// dd($identityType);		
+
+	// 						// If found, assign the id to 'IdentityType_id'
+	// 						if ($identityType) {
+	// 							$memberData['IdentityType_id'] = $identityType->id;
+	// 						} else {
+	// 							// Handle case if jenis identitas value does not exist in master table
+	// 							$memberData['IdentityType_id'] = null; // or some default value
+	// 						}
+	// 					} else {
+	// 						$memberData[$dbColumnName] = $row[$index];
+	// 					}
+
+	// 				}
+	// 			}
+
+	// 			// Check if nomor_anggota already exists
+	// 			$existingMember = $memberModel->where('MemberNo', $memberData['MemberNo'])->first();
+	// 			if ($existingMember) {
+	// 				$skippedCount++;
+	// 				continue; // Skip this row if MemberNo already exists
+	// 			}
+
+	// 			// Insert the member data
+	// 			$memberModel->insert($memberData);
+	// 			$importedCount++;
+	// 		}
+
+	// 		set_message('toastr_msg', "Import berhasil! {$importedCount} data berhasil diimport, {$skippedCount} data dilewati (duplikat)");
+	// 		set_message('toastr_type', 'success');
+
+	// 		return redirect()->to('/anggota/import');
+	// 	}
+
+	// 	set_message('toastr_msg', 'File tidak valid atau gagal diupload');
+	// 	set_message('toastr_type', 'error');
+	// 	return redirect()->to('/anggota/import')->with('error', 'File tidak valid');
+	// }
+
 	public function import()
 	{
+		// Set header untuk JSON response
+		header('Content-Type: application/json');
+
 		$db = db_connect();
-		// Check if the request contains a file
+
+		// Validasi file upload
 		if (!$this->request->getFile('excel_file')) {
-			return redirect()->back()->with('message', 'No file selected for upload.');
+			return $this->response->setJSON([
+				'success' => false,
+				'message' => 'Tidak ada file yang dipilih untuk upload.'
+			]);
 		}
 
 		$file = $this->request->getFile('excel_file');
-		// dd($file);
 
-		if ($file->isValid() && !$file->hasMoved()) {
+		if (!$file->isValid() || $file->hasMoved()) {
+			return $this->response->setJSON([
+				'success' => false,
+				'message' => 'File tidak valid atau sudah dipindahkan.'
+			]);
+		}
+
+		try {
 			$filePath = $file->getTempName();
 			$spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file);
 			$data = $spreadsheet->getActiveSheet()->toArray();
@@ -954,18 +1185,43 @@ class Anggota extends \Base\Controllers\BaseController
 
 			// Pemetaan kolom Excel ke kolom database
 			$columnMap = [
-				'nomor anggota' => 'MemberNo',
+				'no anggota' => 'MemberNo',
 				'nama' => 'FullName',
 				'tempat lahir' => 'PlaceOfBirth',
 				'tanggal lahir' => 'DateOfBirth',
-				'alamat' => 'Address',
-				'provinsi sesuai ktp' => 'Province',
-				'kota sesuai ktp' => 'City',
+				'alamat sesuai ktp' => 'Address',
+				'propinsi sesuai ktp' => 'Province',
+				'kabupaten/kota sesuai ktp' => 'City',
 				'kecamatan sesuai ktp' => 'Kecamatan',
 				'kelurahan sesuai ktp' => 'Kelurahan',
+				'rt sesuai ktp' => 'RT',
+				'rw sesuai ktp' => 'RW',
+				'alamat tempat tinggal sekarang' => 'AddressNow',
+				'propinsi sekarang' => 'ProvinceNow',
+				'kabupaten/kota sekarang' => 'CityNow',
+				'kecamatan sekarang' => 'KecamatanNow',
+				'kelurahan sekarang' => 'KelurahanNow',
+				'rt sekarang' => 'RTNow',
+				'rw sekarang' => 'RWNow',
 				'jenis identitas' => 'IdentityType_id',
 				'nomor identitas' => 'IdentityNo',
+				'jenis kelamin' => 'Sex_id',
+				'photo url' => 'PhotoUrl',
+				'pekerjaan' => 'Job_id',
+				'jenis anggota' => 'JenisAnggota_id',
+				'pendidikan terakhir' => 'JenjangPendidikan_id',
+				'status perkawinan' => 'MaritalStatus_id',
+				'tanggal pendaftaran' => 'RegisterDate',
+				'tanggal akhir berlaku' => 'EndDate',
+				'jenis permohonan' => 'JenisPermohonan_id',
+				'status anggota' => 'StatusAnggota_id',
+				'email' => 'Email',
+				'phone' => 'Phone',
 			];
+
+			$importedCount = 0;
+			$skippedCount = 0;
+			$errorRows = [];
 
 			foreach ($data as $key => $row) {
 				// Skip header row
@@ -973,53 +1229,198 @@ class Anggota extends \Base\Controllers\BaseController
 					continue;
 				}
 
-				// Buat data yang akan dimasukkan ke database
-				$memberData = ['Branch_id' => $branch_id];
+				// Skip empty rows
+				if (empty(array_filter($row))) {
+					continue;
+				}
 
+				try {
+					// Buat data yang akan dimasukkan ke database
+					$memberData = ['Branch_id' => $branch_id];
 
-				foreach ($header as $index => $columnName) {
-					if (isset($columnMap[$columnName])) {
-						$dbColumnName = $columnMap[$columnName];
+					foreach ($header as $index => $columnName) {
+						if (isset($columnMap[$columnName])) {
+							$dbColumnName = $columnMap[$columnName];
+							$cellValue = $row[$index] ?? null;
 
-
-						// If column is 'IdentityType_id', we need to fetch the corresponding id
-						if ($dbColumnName == 'IdentityType_id') {
-							// Get the id from the master_jenis_identitas table
-							$jenisIdentitasValue = $row[$index];
-
-							$identityType = $db->table('master_jenis_identitas')
-								->like('Nama', $jenisIdentitasValue)
-								->get()
-								->getRow();
-							// dd($identityType);		
-
-							// If found, assign the id to 'IdentityType_id'
-							if ($identityType) {
-								$memberData['IdentityType_id'] = $identityType->id;
-							} else {
-								// Handle case if jenis identitas value does not exist in master table
-								$memberData['IdentityType_id'] = null; // or some default value
+							// Handle Sex_id
+							if ($dbColumnName == 'Sex_id') {
+								$jenisKelamin = $db->table('jenis_kelamin')
+									->like('Name', $cellValue)
+									->get()
+									->getRow();
+								$memberData['Sex_id'] = $jenisKelamin ? $jenisKelamin->ID : null;
 							}
-						} else {
-							$memberData[$dbColumnName] = $row[$index];
+							// Handle Job_id
+							elseif ($dbColumnName == 'Job_id') {
+								$job = $db->table('master_pekerjaan')
+									->like('Pekerjaan', $cellValue)
+									->get()
+									->getRow();
+								$memberData['Job_id'] = $job ? $job->id : null;
+							}
+							// Handle JenisAnggota_id
+							elseif ($dbColumnName == 'JenisAnggota_id') {
+								$jenisAnggota = $db->table('jenis_anggota')
+									->like('jenisanggota', $cellValue)
+									->get()
+									->getRow();
+								$memberData['JenisAnggota_id'] = $jenisAnggota ? $jenisAnggota->id : null;
+							}
+							// Handle JenjangPendidikan_id
+							elseif ($dbColumnName == 'JenjangPendidikan_id') {
+								$jenjangPendidikan = $db->table('master_pendidikan')
+									->like('Nama', $cellValue)
+									->get()
+									->getRow();
+								$memberData['JenjangPendidikan_id'] = $jenjangPendidikan ? $jenjangPendidikan->id : null;
+							}
+							// Handle MaritalStatus_id
+							elseif ($dbColumnName == 'MaritalStatus_id') {
+								$maritalStatus = $db->table('master_status_perkawinan')
+									->like('Nama', $cellValue)
+									->get()
+									->getRow();
+								$memberData['MaritalStatus_id'] = $maritalStatus ? $maritalStatus->id : null;
+							}
+							// Handle JenisPermohonan_id
+							elseif ($dbColumnName == 'JenisPermohonan_id') {
+								$jenisPermohonan = $db->table('jenis_permohonan')
+									->like('Name', $cellValue)
+									->get()
+									->getRow();
+								$memberData['JenisPermohonan_id'] = $jenisPermohonan ? $jenisPermohonan->ID : null;
+							}
+							// Handle StatusAnggota_id
+							elseif ($dbColumnName == 'StatusAnggota_id') {
+								$statusAnggota = $db->table('status_anggota')
+									->like('Nama', $cellValue)
+									->get()
+									->getRow();
+								$memberData['StatusAnggota_id'] = $statusAnggota ? $statusAnggota->id : null;
+							}
+							// Handle IdentityType_id
+							elseif ($dbColumnName == 'IdentityType_id') {
+								$identityType = $db->table('master_jenis_identitas')
+									->like('Nama', $cellValue)
+									->get()
+									->getRow();
+								$memberData['IdentityType_id'] = $identityType ? $identityType->id : null;
+							}
+							// Handle Date columns dengan perbaikan
+							elseif (in_array($dbColumnName, ['DateOfBirth', 'RegisterDate', 'EndDate'])) {
+								$memberData[$dbColumnName] = $this->parseExcelDate($cellValue);
+							}
+							// Handle kolom biasa
+							else {
+								$memberData[$dbColumnName] = $cellValue;
+							}
 						}
 					}
-				}
 
-				// Check if nomor_anggota already exists
-				$existingMember = $memberModel->where('MemberNo', $memberData['MemberNo'])->first();
-				if ($existingMember) {
-					continue; // Skip this row if MemberNo already exists
-				}
+					// Check if MemberNo already exists
+					$existingMember = $memberModel->where('MemberNo', $memberData['MemberNo'])->first();
+					if ($existingMember) {
+						$skippedCount++;
+						continue;
+					}
 
-				// Insert the member data
-				$memberModel->insert($memberData);
+					// Set default values jika diperlukan
+					if (empty($memberData['RegisterDate'])) {
+						$memberData['RegisterDate'] = date('Y-m-d');
+					}
+
+					// Insert the member data
+					$memberModel->insert($memberData);
+					$importedCount++;
+				} catch (\Exception $e) {
+					$errorRows[] = [
+						'row' => $key + 1,
+						'error' => $e->getMessage()
+					];
+				}
 			}
 
-			return redirect()->to('/anggota/import')->with('message', 'Import sukses');
+			// Prepare response
+			$message = "Import berhasil! {$importedCount} data berhasil diimport";
+			if ($skippedCount > 0) {
+				$message .= ", {$skippedCount} data dilewati (duplikat)";
+			}
+			if (count($errorRows) > 0) {
+				$message .= ", " . count($errorRows) . " data gagal diimport";
+			}
+
+			return $this->response->setJSON([
+				'success' => true,
+				'message' => $message,
+				'imported' => $importedCount,
+				'skipped' => $skippedCount,
+				'errors' => $errorRows
+			]);
+		} catch (\Exception $e) {
+			return $this->response->setJSON([
+				'success' => false,
+				'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+			]);
+		}
+	}
+
+	/**
+	 * Parse Excel date format ke MySQL date format
+	 * Menangani berbagai format tanggal dari Excel
+	 */
+	private function parseExcelDate($cellValue)
+	{
+		if (empty($cellValue)) {
+			return null;
 		}
 
-		return redirect()->to('/anggota/import')->with('message', 'File tidak valid');
+		// Jika sudah dalam format yang benar (YYYY-MM-DD), return aja
+		if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $cellValue)) {
+			return $cellValue;
+		}
+
+		// Cek apakah nilai adalah numerik (Excel date serial number)
+		if (is_numeric($cellValue) && $cellValue > 0) {
+			try {
+				// Convert Excel serial date ke DateTime object
+				$dateTimeObject = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($cellValue);
+				return $dateTimeObject->format('Y-m-d');
+			} catch (\Exception $e) {
+				// Jika gagal, return null
+				return null;
+			}
+		}
+
+		// Coba parse berbagai format tanggal string
+		try {
+			// Format Indonesia: dd/mm/yyyy atau dd-mm-yyyy
+			if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/', $cellValue, $matches)) {
+				$day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+				$month = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+				$year = $matches[3];
+				return "{$year}-{$month}-{$day}";
+			}
+
+			// Format Amerika: mm/dd/yyyy
+			if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/', $cellValue, $matches)) {
+				$month = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+				$day = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+				$year = $matches[3];
+				return "{$year}-{$month}-{$day}";
+			}
+
+			// Coba parse dengan strtotime sebagai last resort
+			$timestamp = strtotime($cellValue);
+			if ($timestamp !== false) {
+				return date('Y-m-d', $timestamp);
+			}
+		} catch (\Exception $e) {
+			// Jika semua gagal, return null
+			return null;
+		}
+
+		return null;
 	}
 
 	public function importold()

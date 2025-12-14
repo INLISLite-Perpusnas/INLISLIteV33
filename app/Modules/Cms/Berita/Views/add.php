@@ -6,6 +6,7 @@ $slug = $request->getGet('slug') ?? '';
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style') ?>
 <style>
+<<<<<<< HEAD
     .tox.tox-tinymce.tox-fullscreen {
         z-index: 1050;
         top: 60px !important;
@@ -35,6 +36,14 @@ $slug = $request->getGet('slug') ?? '';
         height: 100%;
         object-fit: cover; /* Agar gambar tidak gepeng */
     }
+=======
+	/* .tox.tox-tinymce.tox-fullscreen {
+		z-index: 1050;
+		top: 60px !important;
+		left: 85px !important;
+		width: calc(100% - 85px) !important;
+	} */
+>>>>>>> 768fa1327effd041bd29d938a21825fda142d99e
 </style>
 <?= $this->endSection('style') ?>
 
@@ -141,6 +150,7 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->section('script') ?>
 <script>
+<<<<<<< HEAD
     // 1. Fungsi Preview Single File (Cover)
     function previewFile(input, previewId) {
         var previewContainer = document.getElementById(previewId);
@@ -200,5 +210,125 @@ $slug = $request->getGet('slug') ?? '';
             content_style: "body { font-size: 12pt;}",
         });
     });
+=======
+	function setDropzone(id, module, acceptedFiles, maxFiles, maxFileSize) {
+		let dropzone = new Dropzone("div#" + id, {
+			url: "<?= base_url('cms/berita/do_upload') ?>",
+			paramName: "file",
+			maxFiles: maxFiles,
+			maxFileSize: maxFileSize, // in MB
+			addRemoveLinks: true,
+			acceptedFiles: acceptedFiles,
+			init: function() {
+				// Event ketika file baru ditambahkan
+				this.on("addedfile", function(file) {
+					// Jika maxFiles = 1, hapus file lama saat ada file baru
+					if (maxFiles === 1 && this.files.length > 1) {
+						this.removeFile(this.files[0]);
+					}
+				});
+
+				// Event ketika file berhasil diunggah
+				this.on("success", function(file, response) {
+					$('#' + id + '_listed').append('<input type="hidden" name="' + id + '[]" value="' + response.filename + '">');
+				});
+
+				// Event ketika file dihapus
+				this.on("removedfile", function(file) {
+					// Cari dan hapus input tersembunyi yang sesuai
+					$('#' + id + '_listed').find('input[value="' + file.name + '"]').remove();
+
+					// Pastikan Dropzone dapat menerima file baru
+					if (this.files.length < maxFiles) {
+						this.options.maxFiles = maxFiles;
+					}
+				});
+
+				// Handle ketika jumlah file melebihi batas
+				this.on("maxfilesexceeded", function(file) {
+					if (maxFiles === 1) {
+						this.removeAllFiles(); // Hapus file lama
+						this.addFile(file); // Tambahkan file yang baru
+					} else {
+						alert("Jumlah file melebihi batas: " + maxFiles);
+						this.removeFile(file);
+					}
+				});
+			}
+		});
+		return dropzone;
+	}
+
+	$(document).ready(function() {
+		var file_cover = setDropzone('file_cover', 'page', '.png,.jpg,.jpeg', 1, 10);
+		var file_image = setDropzone('file_image', 'page', '.png,.jpg,.jpeg', 6, 10);
+		$('#content').summernote({
+			height: 430,
+			minHeight: null,
+			maxHeight: null,
+			focus: true,
+			toolbar: [
+				['style', ['style', 'undo', 'redo', 'codeview']],
+				['font', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+				['fontname', ['fontname']],
+				['fontsize', ['fontsize']],
+				['color', ['color']],
+				['para', ['ul', 'ol', 'paragraph', 'table']],
+				['insert', ['link', 'picture', 'video', 'hr']],
+			],
+			fontNames: ['System Font',
+				'Dosis', 'Andale Mono', 'Arial', 'Arial Black', 'Book Antiqua',
+				'Comic Sans MS', 'Courier New', 'Georgia', 'Helvetica', 'Impact',
+				'Symbol', 'Tahoma', 'Times New Roman', 'Trebuchet MS', 'Verdana'
+			],
+			fontSizes: [
+				'12', '13', '14', '15', '16', '17', '18', '19', '20', '24',
+				'28', '32', '34', '36', '72'
+			],
+			styleTags: ['p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+			callbacks: {
+				onInit: function() {
+					// Untuk set font awal, biasanya dilakukan melalui CSS atau konfigurasi khusus.
+					// Jika Anda ingin melakukan sesuatu setelah editor siap:
+					console.log('Summernote is initialized');
+				}
+			},
+			// Anda bisa tambahkan setting B4-specific lainnya jika diperlukan
+		});
+	});
+	// $('#content').summernote({
+	//         height: 430,
+	//         minHeight: null,
+	//         maxHeight: null,
+	//         focus: true,
+	//         toolbar: [
+	//             ['style', ['style', 'undo', 'redo', 'codeview']],
+	//             ['font', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+	//             ['fontname', ['fontname']],
+	//             ['fontsize', ['fontsize']],
+	//             ['color', ['color']],
+	//             ['para', ['ul', 'ol', 'paragraph', 'table']],
+	//             ['insert', ['link', 'picture', 'video', 'hr']],
+	//         ],
+	//         fontNames: ['System Font',
+	//             'Dosis', 'Andale Mono', 'Arial', 'Arial Black', 'Book Antiqua',
+	//             'Comic Sans MS', 'Courier New', 'Georgia', 'Helvetica', 'Impact',
+	//             'Symbol', 'Tahoma', 'Times New Roman', 'Trebuchet MS', 'Verdana'
+	//         ],
+	//         fontSizes: [
+	//             '12', '13', '14', '15', '16', '17', '18', '19', '20', '24',
+	//             '28', '32', '34', '36', '72'
+	//         ],
+	//         styleTags: ['p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+	//         callbacks: {
+	//             onInit: function() {
+	//                 // Untuk set font awal, biasanya dilakukan melalui CSS atau konfigurasi khusus.
+	//                 // Jika Anda ingin melakukan sesuatu setelah editor siap:
+	//                 console.log('Summernote is initialized');
+	//             }
+	//         },
+	//         // Anda bisa tambahkan setting B4-specific lainnya jika diperlukan
+	//     });
+>>>>>>> 768fa1327effd041bd29d938a21825fda142d99e
 </script>
 <?= $this->endSection('script') ?>
