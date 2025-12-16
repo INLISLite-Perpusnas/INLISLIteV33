@@ -59,7 +59,6 @@ $request = service('request'); ?>
 		<div class="card-footer">
 			<div class="d-block">
 				<button type="button" id="pulihkan_keranjang" class="btn btn-warning" data-toggle="tooltip" data-placement="top" title="Semua anggota yang terpilih"><i class="fa fa-undo"></i> Pulihkan dari Keranjang</button> &nbsp;
-				<button type="button" id="hapus_permanen" class="btn btn-danger" data-toggle="tooltip" data-placement="top" title="Semua anggota yang terpilih"><i class="fa fa-trash"></i> Hapus Permanen</button>
 			</div>
 		</div>
 	</div>
@@ -232,29 +231,7 @@ $request = service('request'); ?>
 		return false;
 	});
 
-	$('#hapus_permanen').click(function() {
-		var form = $('#form_items');
-		var serialize_bulk = form.serialize();
-		var url = "<?= base_url('anggota/hapus_permanen') ?>" + '?' + serialize_bulk;
-		console.log(serialize_bulk);
-		console.log(url);
-
-		Swal.fire({
-			title: 'Anda yakin?',
-			html: "Semua anggota yang terpilih akan dihapus secara permanen",
-			type: 'warning',
-			showCancelButton: true,
-			confirmButtonColor: '#3085d6',
-			cancelButtonColor: '#dd6b55',
-			confirmButtonText: '<?= lang('App.btn.yes') ?>',
-			cancelButtonText: '<?= lang('App.btn.no') ?>'
-		}).then((result) => {
-			if (result.value) {
-				window.location.href = url;
-			}
-		});
-		return false;
-	});
+	
 
 	$("body").on("click", ".remove-data", function() {
 		var url = $(this).attr('data-href');
