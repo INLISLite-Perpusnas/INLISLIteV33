@@ -171,7 +171,7 @@ if (is_member('sa_kabkot')) {
 			"processing": true,
 			"serverSide": true,
 			"ajax": {
-				"url": '<?php echo site_url('api/anggota/datatable/0'); ?>',
+				"url": '<?php echo site_url('api/anggota/datatable/2'); ?>',
 			},
 			"dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
 				"<'row'<'col-md-12'tr>>" +

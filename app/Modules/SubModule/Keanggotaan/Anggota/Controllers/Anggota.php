@@ -1203,11 +1203,15 @@ class Anggota extends \Base\Controllers\BaseController
 				'kelurahan sekarang' => 'KelurahanNow',
 				'rt sekarang' => 'RTNow',
 				'rw sekarang' => 'RWNow',
+				'no. hp' => 'NoHp',
+				'agama' => 'Agama_id',
 				'jenis identitas' => 'IdentityType_id',
 				'nomor identitas' => 'IdentityNo',
 				'jenis kelamin' => 'Sex_id',
 				'photo url' => 'PhotoUrl',
 				'pekerjaan' => 'Job_id',
+				'ibu kandung' => 'MotherMaidenName',
+				'alamat email' => 'Email',
 				'jenis anggota' => 'JenisAnggota_id',
 				'pendidikan terakhir' => 'JenjangPendidikan_id',
 				'status perkawinan' => 'MaritalStatus_id',
@@ -1215,7 +1219,13 @@ class Anggota extends \Base\Controllers\BaseController
 				'tanggal akhir berlaku' => 'EndDate',
 				'jenis permohonan' => 'JenisPermohonan_id',
 				'status anggota' => 'StatusAnggota_id',
-				'email' => 'Email',
+				'nama institusi' => 'InstitutionName',
+				'alamat institusi' => 'InstitutionAddress',
+				'no telp institusi' => 'InstitutionPhone',
+				'unit kerja' => 'UnitKerja_id',
+				'tahun ajaran' => 'TahunAjaran',
+				'fakultas' => 'Fakultas_id',
+				'program studi' => 'ProgramStudi_id',
 				'phone' => 'Phone',
 			];
 
@@ -1241,15 +1251,20 @@ class Anggota extends \Base\Controllers\BaseController
 					foreach ($header as $index => $columnName) {
 						if (isset($columnMap[$columnName])) {
 							$dbColumnName = $columnMap[$columnName];
-							$cellValue = $row[$index] ?? null;
+							$cellValue = $row[$index] ?? '';
 
-							// Handle Sex_id
 							if ($dbColumnName == 'Sex_id') {
 								$jenisKelamin = $db->table('jenis_kelamin')
 									->like('Name', $cellValue)
 									->get()
 									->getRow();
 								$memberData['Sex_id'] = $jenisKelamin ? $jenisKelamin->ID : null;
+							} elseif ($dbColumnName == 'Agama_id') {
+								$agama = $db->table('agama')
+									->like('Name', $cellValue)
+									->get()
+									->getRow();
+								$memberData['Agama_id'] = $agama ? $agama->ID : null;
 							}
 							// Handle Job_id
 							elseif ($dbColumnName == 'Job_id') {
@@ -1306,6 +1321,24 @@ class Anggota extends \Base\Controllers\BaseController
 									->get()
 									->getRow();
 								$memberData['IdentityType_id'] = $identityType ? $identityType->id : null;
+							} elseif ($dbColumnName == 'UnitKerja_id') {
+								$unitKerja = $db->table('departments')
+									->like('Name', $cellValue)
+									->get()
+									->getRow();
+								$memberData['UnitKerja_id'] = $unitKerja ? $unitKerja->ID : null;
+							} elseif ($dbColumnName == 'Fakultas_id') {
+								$fakultas = $db->table('master_fakultas')
+									->like('Nama', $cellValue)
+									->get()
+									->getRow();
+								$memberData['Fakultas_id'] = $fakultas ? $fakultas->id : null;
+							} elseif ($dbColumnName == 'ProgramStudi_id') {
+								$programStudi = $db->table('master_program_studi')
+									->like('Nama', $cellValue)
+									->get()
+									->getRow();
+								$memberData['ProgramStudi_id'] = $programStudi ? $programStudi->id : null;
 							}
 							// Handle Date columns dengan perbaikan
 							elseif (in_array($dbColumnName, ['DateOfBirth', 'RegisterDate', 'EndDate'])) {
