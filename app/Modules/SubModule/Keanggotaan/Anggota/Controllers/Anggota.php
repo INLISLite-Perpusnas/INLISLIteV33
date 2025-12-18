@@ -462,6 +462,14 @@ class Anggota extends \Base\Controllers\BaseController
 	public function edit(int $ID = null, $is_anggota = false)
 	{
 		if (!is_allowed('anggota/edit')) {
+			// Jika AJAX request
+			if ($this->request->isAJAX()) {
+				return $this->response->setJSON([
+					'success' => false,
+					'message' => 'Maaf, Anda tidak memiliki akses'
+				]);
+			}
+
 			set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
 			set_message('toastr_type', 'error');
 			return redirect()->to('anggota');
@@ -515,11 +523,6 @@ class Anggota extends \Base\Controllers\BaseController
 				'errors' => [
 					'required' => 'Nama Tidak boleh kosong',
 				],
-			],
-			'Email' => [
-				'label'  => 'Email',
-				'rules'  => 'required',
-				'errors' => ['required'    => 'Email Tidak boleh Kosong',],
 			],
 			'JenisAnggota_id' => [
 				'label'  => 'Jenis Anggota',
@@ -692,6 +695,13 @@ class Anggota extends \Base\Controllers\BaseController
 						$this->anggotahakaksesModel->insertBatch($save_akses_lokasi);
 					}
 
+					if ($this->request->isAJAX()) {
+						return $this->response->setJSON([
+							'success' => true,
+							'message' => 'Data Anggota berhasil disimpan'
+						]);
+					}
+
 					if ($is_anggota) {
 						set_message('toastr_msg', 'Data Anggota berhasil disimpan');
 						set_message('toastr_type', 'success');
@@ -703,6 +713,12 @@ class Anggota extends \Base\Controllers\BaseController
 						return redirect()->to('/anggota');
 					}
 				} else {
+					if ($this->request->isAJAX()) {
+						return $this->response->setJSON([
+							'success' => false,
+							'message' => 'Anggota gagal disimpan'
+						]);
+					}
 					if ($is_anggota) {
 						set_message('toastr_msg', 'Anggota gagal disimpan');
 						set_message('toastr_type', 'warning');
@@ -716,6 +732,14 @@ class Anggota extends \Base\Controllers\BaseController
 
 						return redirect()->to('/anggota/edit/' . $ID);
 					}
+				}
+			} else {
+				if ($this->request->isAJAX()) {
+					return $this->response->setJSON([
+						'success' => false,
+						'message' => 'Validasi gagal',
+						'errors' => $this->validation->getErrors()
+					]);
 				}
 			}
 		}
