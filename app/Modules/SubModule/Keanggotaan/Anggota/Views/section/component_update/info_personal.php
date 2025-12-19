@@ -111,7 +111,7 @@
                                 <div class="position-relative form-group">
                                     <label for="name">Alamat Email*</label>
                                     <div>
-                                        <input type="email" class="form-control" id="Email" name="Email" placeholder="Alamat Email" value="<?= set_value('Email', $anggota->Email); ?>" />
+                                        <input type="email" class="form-control" id="Email" name="Email" placeholder="Alamat Email" value="<?= set_value('Email', $anggota->Email); ?>" required />
                                     </div>
                                 </div>
                             </div>

@@ -671,9 +671,9 @@ class Anggota extends \Base\Controllers\BaseController
 						];
 
 						array_push($save_akses_koleksi, $save_akses_koleksi_temp);
-						if (!empty($save_akses_koleksi)) {
-							$this->AksesKoleksiModel->insertBatch($save_akses_koleksi);
-						}
+					}
+          if (!empty($save_akses_koleksi)) {
+						$this->AksesKoleksiModel->insertBatch($save_akses_koleksi);
 					}
 
 					$Locations = $this->request->getPost('LocationLoan_id');
@@ -717,7 +717,11 @@ class Anggota extends \Base\Controllers\BaseController
 						return redirect()->to('/anggota/edit/' . $ID);
 					}
 				}
-			}
+			} 
+      // else {
+      //   // dd($this->validation->listErrors());
+      //   // TODO: show validation error
+      // }
 		}
 
 		$this->data['redirect'] = base_url('anggota/edit/' . $ID);
