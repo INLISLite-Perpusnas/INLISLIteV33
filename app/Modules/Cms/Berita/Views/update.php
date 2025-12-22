@@ -217,10 +217,12 @@ $request = service('request');
     // 1. Fungsi Preview Single File (Cover)
     function previewFile(input, previewId) {
         var previewContainer = document.getElementById(previewId);
-        previewContainer.innerHTML = ''; 
+        // Menggunakan jQuery untuk clearing, asumsikan jQuery tersedia
+        $(previewContainer).empty();
 
         if (input.files && input.files[0]) {
             var reader = new FileReader();
+
             reader.onload = function(e) {
                 var html = `
                     <div class="img-preview-box">
@@ -229,45 +231,42 @@ $request = service('request');
                     </div>`;
                 $(previewContainer).html(html);
             }
+
             reader.readAsDataURL(input.files[0]);
         }
     }
 
     // 2. Fungsi Preview Multiple Files (Gallery)
+    // Perbaikan: Menggunakan 'let' untuk 'i', 'reader', dan 'file' untuk fix closure/scope
     function previewMultipleFiles(input, previewId) {
         var previewContainer = document.getElementById(previewId);
-        previewContainer.innerHTML = ''; 
+        $(previewContainer).empty(); // Hapus preview sebelumnya
 
         if (input.files) {
             var filesAmount = input.files.length;
-            for (i = 0; i < filesAmount; i++) {
-                var reader = new FileReader();
+
+            for (let i = 0; i < filesAmount; i++) {
+                let reader = new FileReader();
+                let file = input.files[i]; // Tangkap file saat ini untuk closure yang benar
+
                 reader.onload = function(event) {
                     var html = `
                         <div class="img-preview-box">
                              <div class="text-center text-success mb-1" style="font-size:10px;"><b>Akan Diupload</b></div>
-                            <img src="${event.target.result}" title="Preview">
+                            <img src="${event.target.result}" title="${file.name}">
                         </div>`;
                     $(previewContainer).append(html);
                 }
-                reader.readAsDataURL(input.files[i]);
+
+                reader.readAsDataURL(file);
             }
         }
-<<<<<<< HEAD
     }
 
+    // Perbaikan Utama: Membungkus inisialisasi Summernote di dalam $(document).ready()
+    // dan memindahkannya keluar dari fungsi previewMultipleFiles
     $(document).ready(function() {
-        tinyMCE.init({
-            selector: 'textarea#content',
-            height: 430,
-            menubar: false,
-            pagebreak_separator: '<div style="page-break-after:always;clear:both"></div>',
-            plugins: 'link code image table pagebreak media lists fullscreen',
-            toolbar: 'fullscreen code removeformat | bold italic underline strikethrough | fontsizeselect fontselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist checklist | insertfile image media pageembed link anchor codesample | forecolor backcolor casechange permanentpen formatpainter |  undo redo pagebreak | charmap emoticons | a11ycheck ltr rtl  | table tabledelete ',
-            font_formats: "System Font=Dosis, san serif; Andale Mono=andale mono,times; Arial=arial,helvetica,sans-serif; Arial Black=arial black,avant garde; Book Antiqua=book antiqua,palatino; Comic Sans MS=comic sans ms,sans-serif; Courier New=courier new,courier; Georgia=georgia,palatino; Helvetica=helvetica; Impact=impact,chicago; Symbol=symbol; Tahoma=tahoma,arial,helvetica,sans-serif; Terminal=terminal,monaco; Times New Roman=times new roman,times; Trebuchet MS=trebuchet ms,geneva; Verdana=verdana,geneva;",
-            fontsize_formats: "12pt 13pt 14pt 15pt 16pt 17pt 18pt 19pt 20pt 24pt 28pt 32pt 34pt 36pt 72pt",
-            content_style: "body { font-size: 12pt;}",
-=======
+        // TinyMCE Init (Summernote)
         $('#content').summernote({
             height: 430,
             minHeight: null,
@@ -294,13 +293,9 @@ $request = service('request');
             styleTags: ['p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
             callbacks: {
                 onInit: function() {
-                    // Untuk set font awal, biasanya dilakukan melalui CSS atau konfigurasi khusus.
-                    // Jika Anda ingin melakukan sesuatu setelah editor siap:
-                    console.log('Summernote is initialized');
+                    console.log('Summernote is initialized on #content');
                 }
             },
-            // Anda bisa tambahkan setting B4-specific lainnya jika diperlukan
->>>>>>> 768fa1327effd041bd29d938a21825fda142d99e
         });
     });
 </script>
