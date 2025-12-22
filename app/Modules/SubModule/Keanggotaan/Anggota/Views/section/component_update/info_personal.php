@@ -39,7 +39,7 @@
                                 <div class="position-relative form-group">
                                     <label for="name">Nomor Identitas</label>
                                     <div>
-                                        <input type="text" class="form-control" id="frm_create_IdentityNo" name="IdentityNo" placeholder="Nomor identitas" value="<?= set_value('IdentityNo', $anggota->IdentityNo); ?>" maxlength="16" required />
+                                        <input type="text" class="form-control" id="frm_create_IdentityNo" name="IdentityNo" placeholder="Nomor identitas" value="<?= set_value('IdentityNo', $anggota->MemberNo); ?>" maxlength="16" required />
                                     </div>
                                 </div>
                             </div>

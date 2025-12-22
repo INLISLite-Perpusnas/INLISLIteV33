@@ -154,6 +154,7 @@ if (is_member('sa_kabkot')) {
 			<div class="d-block">
 				<button type="button" id="proses_keranjang" class="btn btn-warning" data-toggle="tooltip" data-placement="top" title="Semua anggota yang terpilih"><i class="fa fa-shopping-cart"></i> Pindahkan ke Keranjang</button>
 				<button type="button" id="print_kartu" class="btn btn-primary ml-2" data-toggle="tooltip" data-placement="top" title="Print kartu anggota yang terpilih"><i class="fa fa-print"></i> Print Kartu</button>
+				<button type="button" id="hapus_permanen" class="btn btn-danger" data-toggle="tooltip" data-placement="top" title="Semua anggota yang terpilih"><i class="fa fa-trash"></i> Hapus Permanen</button>
 			</div>
 		</div>
 	</div>
@@ -170,7 +171,7 @@ if (is_member('sa_kabkot')) {
 			"processing": true,
 			"serverSide": true,
 			"ajax": {
-				"url": '<?php echo site_url('api/anggota/datatable/0'); ?>',
+				"url": '<?php echo site_url('api/anggota/datatable/2'); ?>',
 			},
 			"dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
 				"<'row'<'col-md-12'tr>>" +
@@ -220,10 +221,10 @@ if (is_member('sa_kabkot')) {
 					orderable: false
 				},
 				{
-					data:'CreateDate',
+					data: 'CreateDate',
 					visible: false,
 				}
-			
+
 			],
 			"order": [
 				[8, "desc"]
@@ -261,7 +262,7 @@ if (is_member('sa_kabkot')) {
 				});
 			},
 			"initComplete": function(settings, json) {
-				
+
 			}
 		});
 	});
@@ -298,13 +299,13 @@ if (is_member('sa_kabkot')) {
 	$('#print_kartu').click(function() {
 		// Debug: cek semua checkbox yang ada
 		console.log('All checkboxes in table:', $('#tbl_data input[type="checkbox"]'));
-		
+
 		// Coba beberapa selector berbeda untuk menangkap checkbox
 		var checkedBoxes = $('#tbl_data input[type="checkbox"]:checked').not('.check_data');
-		
+
 		console.log('Checked boxes found:', checkedBoxes.length);
 		console.log('Checked boxes:', checkedBoxes);
-		
+
 		if (checkedBoxes.length === 0) {
 			Swal.fire({
 				title: 'Peringatan',
@@ -322,9 +323,9 @@ if (is_member('sa_kabkot')) {
 			var checkboxValue = $(this).val();
 			var checkboxName = $(this).attr('name');
 			var checkboxId = $(this).attr('id');
-			
+
 			console.log('Checkbox - Value:', checkboxValue, 'Name:', checkboxName, 'ID:', checkboxId);
-			
+
 			if (checkboxValue && checkboxValue !== 'on') {
 				selectedIds.push(checkboxValue);
 			}
@@ -348,7 +349,31 @@ if (is_member('sa_kabkot')) {
 				printKartuAnggota(selectedIds);
 			}
 		});
-		
+
+		return false;
+	});
+
+	$('#hapus_permanen').click(function() {
+		var form = $('#form_items');
+		var serialize_bulk = form.serialize();
+		var url = "<?= base_url('anggota/hapus_permanen') ?>" + '?' + serialize_bulk;
+		console.log(serialize_bulk);
+		console.log(url);
+
+		Swal.fire({
+			title: 'Anda yakin?',
+			html: "Semua anggota yang terpilih akan dihapus secara permanen",
+			type: 'warning',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#dd6b55',
+			confirmButtonText: '<?= lang('App.btn.yes') ?>',
+			cancelButtonText: '<?= lang('App.btn.no') ?>'
+		}).then((result) => {
+			if (result.value) {
+				window.location.href = url;
+			}
+		});
 		return false;
 	});
 
@@ -362,7 +387,7 @@ if (is_member('sa_kabkot')) {
 
 		// Tambahkan CSRF token jika ada
 		<?php if (csrf_token()): ?>
-		form.append('<input type="hidden" name="<?= csrf_token() ?>" value="<?= csrf_hash() ?>" />');
+			form.append('<input type="hidden" name="<?= csrf_token() ?>" value="<?= csrf_hash() ?>" />');
 		<?php endif; ?>
 
 		// Tambahkan IDs sebagai array
