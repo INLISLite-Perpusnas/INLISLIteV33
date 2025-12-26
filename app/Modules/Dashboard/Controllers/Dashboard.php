@@ -47,7 +47,7 @@ class Dashboard extends \Base\Controllers\BaseController
     // 3. Jika data tidak ditemukan di cache (Cache Miss) ATAU fitur cache dimatikan
     if ($cachedData === null) {
         
-        // --- Jalankan Query Database (Data Segar) ---
+        // --- Jalankan Query Database 
         
         // Group A: Pengaturan
         $cachedData['nama_perpustakaan']        = $this->settingModel->where('Name', 'NamaPerpustakaan')->first()->Value ?? 'Perpustakaan Mitra';
