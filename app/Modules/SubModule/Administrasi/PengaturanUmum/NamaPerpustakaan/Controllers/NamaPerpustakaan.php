@@ -49,6 +49,10 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 		$this->data['nama_lokasi_perpustakaan'] = $this->settingModel->where('Name', 'NamaLokasiPerpustakaan')->first()->Value ?? 'Alamat Perpustakaan Mitra';
 		$this->data['npp_perpustakaan'] = $this->settingModel->where('Name', 'NPPPerpustakaan')->first()->Value ?? 'NPP Perpustakaan Mitra';
 		$this->data['Branch_id'] = $this->settingModel->where('Name', 'Branch_id')->first()->Value ?? 'ID Perpustakaan Mitra';
+		$this->data['provinsi_id'] = $this->settingModel->where('Name', 'ProvinsiID')->first()->Value ?? '';
+        $this->data['kabkota_id'] = $this->settingModel->where('Name', 'KabKotaID')->first()->Value ?? '';
+        $this->data['kecamatan_id'] = $this->settingModel->where('Name', 'KecamatanID')->first()->Value ?? '';
+        $this->data['kelurahan_id'] = $this->settingModel->where('Name', 'KelurahanID')->first()->Value ?? '';
 		$this->data['lokasi_perpustakaan'] = $this->settingModel->where('Name', 'NamaLokasiPerpustakaan')->first()->Value ?? 'Lokasi Perpustakaan Mitra';
 		$this->data['email_perpustakaan'] = $this->settingModel->where('Name', 'EmailPerpustakaan')->first()->Value ?? 'email@perpustakaan.mitra';
 		$this->data['jam_operasional'] = $this->settingModel->where('Name', 'JamOperasional')->first()->Value ?? 'Jam Operasional Perpustakaan Mitra';
@@ -159,7 +163,11 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 				'IsUseKop' => $this->request->getPost('IsUseKop') ? 1 : 0,
 				'JamOperasional' => $LayananOperasionl_Str,
 				'JenisPerpustakaan' => trim($this->request->getPost('jenis_perpustakaan')),
-				'Branch_id' => trim($this->request->getPost('branch_id'))
+				'Branch_id' => trim($this->request->getPost('branch_id')),
+				'ProvinsiID' => trim($this->request->getPost('provinsi_id')),
+                'KabKotaID' => trim($this->request->getPost('kabkota_id')),
+                'KecamatanID' => trim($this->request->getPost('kecamatan_id')),
+                'KelurahanID' => trim($this->request->getPost('kelurahan_id')),
 			];
 
 			$success = true;

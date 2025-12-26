@@ -1,366 +1,38 @@
 <?= $this->extend('App\Views\layout\main');
 
-$userModel = new \Auth\Models\UserModel();
-
-$total_user_active = $userModel
-    ->where('users.active', 1)
-    ->countAllResults(false);
-$total_user_inactive = $userModel
-    ->where('users.active', 0)
-    ->countAllResults(false);
-
-$anggotaModel = new \Member\Models\MemberModel();
-$total_anggota = $anggotaModel
-    ->countAllResults(false);
-
-$total_anggota_baru = $anggotaModel
-    ->where('StatusAnggota_id', 1)
-    ->countAllResults(false);
-
-$memberguestModel = new \BukuTamu\Models\MemberGuestModel();
-
-$total_anggota_guest = $memberguestModel
-    ->where('NoAnggota !=', null)
-    ->countAllResults(false);
-
-$total_nonanggota_guest = $memberguestModel
-    ->where('NoAnggota', null)
-    ->countAllResults(false);
-
-$total_anggota_bebas_pustaka = $anggotaModel
-    ->where('StatusAnggota_id', 5)
-    ->countAllResults(false);
-
-$katalogModel = new \Katalog\Models\KatalogModel();
-$total_katalog = $katalogModel
-    ->countAllResults(false);
-
-$koleksiModel = new \Peminjaman\Models\CollectionModel();
-$total_koleksi = $koleksiModel
-    ->countAllResults(false);
-
-$peminjamanModel = new \Peminjaman\Models\CollectionLoanItemModel();
-$total_peminjaman = $peminjamanModel
-    ->countAllResults(false);
-
 ?>
 <?= $this->section('style') ?>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-<style>
-    .app-main__inner {
-        background: #ffffff;
-        min-height: 100vh;
-        padding: 20px;
-        margin: 0;
-    }
-
-    .dashboard-container {
-        max-width: 1400px;
-        margin: 0 auto;
-    }
-
-    .page-header {
-        background: rgba(255, 255, 255, 1);
-        border: 1px solid #e5e7eb;
-        border-radius: 16px;
-        padding: 24px 30px;
-        margin-bottom: 24px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        animation: slideDown 0.8s ease-out;
-    }
-
-    .page-title {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .page-icon {
-        width: 52px;
-        height: 52px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 22px;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
-    }
-
-    .page-title h1 {
-        font-size: 28px;
-        font-weight: 700;
-        color: #111827;
-        margin: 0;
-    }
-
-    .page-subtitle {
-        color: #6b7280;
-        font-size: 14px;
-        margin-top: 2px;
-    }
-
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
-        margin-bottom: 32px;
-    }
-
-    .stat-card {
-        border-radius: 16px;
-        padding: 24px;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        transition: all 0.3s ease;
-        cursor: pointer;
-        opacity: 0;
-        transform: translateY(20px);
-        animation: fadeInUp 0.6s ease-out forwards;
-        min-height: 140px;
-        color: white;
-    }
-
-    .stat-card:nth-child(1) { animation-delay: 0.1s; }
-    .stat-card:nth-child(2) { animation-delay: 0.2s; }
-    .stat-card:nth-child(3) { animation-delay: 0.3s; }
-    .stat-card:nth-child(4) { animation-delay: 0.4s; }
-    .stat-card:nth-child(5) { animation-delay: 0.5s; }
-    .stat-card:nth-child(6) { animation-delay: 0.6s; }
-
-    .stat-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
-    }
-
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 100%;
-        background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
-        border-radius: 16px;
-    }
-
-    .stat-card.info { 
-        background: linear-gradient(135deg, #06b6d4, #0891b2);
-    }
-    .stat-card.primary { 
-        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-    }
-    .stat-card.success { 
-        background: linear-gradient(135deg, #10b981, #059669);
-    }
-    .stat-card.warning { 
-        background: linear-gradient(135deg, #f59e0b, #d97706);
-    }
-    .stat-card.danger { 
-        background: linear-gradient(135deg, #ef4444, #dc2626);
-    }
-    .stat-card.dark { 
-        background: linear-gradient(135deg, #6366f1, #4f46e5);
-    }
-
-    .stat-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0;
-    }
-
-    .stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 20px;
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
-        flex-shrink: 0;
-    }
-
-    .stat-content h3 {
-        font-size: 13px;
-        color: rgba(255, 255, 255, 0.8);
-        font-weight: 500;
-        margin-bottom: 4px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .stat-number {
-        font-size: 24px;
-        font-weight: 700;
-        color: white;
-        line-height: 1;
-    }
-
-    .chart-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-    }
-
-    .chart-card {
-        border-radius: 16px;
-        padding: 24px;
-        position: relative;
-        overflow: hidden;
-        opacity: 0;
-        transform: translateY(20px);
-        animation: fadeInUp 0.6s ease-out forwards;
-        min-height: 140px;
-        color: white;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-
-    .chart-card:nth-child(1) { 
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        animation-delay: 0.7s; 
-    }
-    .chart-card:nth-child(2) { 
-        background: linear-gradient(135deg, #f093fb, #f5576c);
-        animation-delay: 0.8s; 
-    }
-    .chart-card:nth-child(3) { 
-        background: linear-gradient(135deg, #4facfe, #00f2fe);
-        animation-delay: 0.9s; 
-    }
-
-    .chart-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
-    }
-
-    .chart-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 16px;
-    }
-
-    .chart-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        color: white;
-        font-size: 18px;
-        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
-        flex-shrink: 0;
-    }
-
-    .chart-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: rgba(255, 255, 255, 0.9);
-    }
-
-    .chart-value {
-        font-size: 32px;
-        font-weight: 700;
-        color: white;
-        text-align: left;
-        margin: 12px 0 0 0;
-    }
-
-    @keyframes slideDown {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @media (max-width: 1200px) {
-        .stats-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
-    }
-
-    @media (max-width: 768px) {
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-        }
-        
-        .chart-grid {
-            grid-template-columns: 1fr;
-            gap: 16px;
-        }
-        
-        .page-header {
-            padding: 20px;
-        }
-        
-        .stat-card {
-            padding: 16px;
-            min-height: 100px;
-        }
-        
-        .chart-card {
-            padding: 20px;
-        }
-        
-        .stat-number {
-            font-size: 20px;
-        }
-        
-        .chart-value {
-            font-size: 28px;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
+<link rel="stylesheet" href="<?= base_url('assets'); ?>/css/dashboard.css">
 <?= $this->endSection('style') ?>
 
 <?= $this->section('page') ?>
 <div class="app-main__inner">
    <div class="dashboard-container">
        <!-- Page Header -->
-       <div class="page-header">
-           <div class="page-title">
-               <div class="page-icon">
-                   <i class="fas fa-tachometer-alt"></i>
+    <div class="page-header">
+           <div class="page-title" style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+               
+               <div style="display: flex; align-items: center; gap: 15px;">
+                   <div class="page-icon">
+                       <i class="fas fa-tachometer-alt"></i>
+                   </div>
+                   <div>
+                       <h1>Dashboard</h1>
+                       <div class="page-subtitle">Sistem Manajemen Perpustakaan Digital</div>
+                   </div>
                </div>
-               <div>
-                   <h1>Dashboard</h1>
-                   <div class="page-subtitle">Sistem Manajemen Perpustakaan Digital</div>
+               
+               <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 5px;">
+                 <button type="button" class="btn-send-api" id="btnKirimLaporan">
+                    <i class="fas fa-paper-plane"></i> Kirim Laporan
+                </button>
+                   
+                   <small style="color: #dc2626; font-weight: 600; font-size: 11px; background: #fee2e2; padding: 4px 8px; border-radius: 6px;">
+                       <i class="fas fa-exclamation-circle"></i> Setiap Perpustakaan Wajib mengirimkan laporan total data setiap bulan
+                   </small>
                </div>
+
            </div>
        </div>
 
@@ -575,5 +247,112 @@ $total_peminjaman = $peminjamanModel
        }
    `;
    document.head.appendChild(style);
+
+  
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // 1. Definisikan URL dan Tombol
+        const CONTROLLER_URL = "<?= base_url('dashboard/kirimlaporan') ?>";
+        const btn = document.getElementById('btnKirimLaporan');
+
+        console.log("Status Script: Ready (V8 Compatible)");
+        
+        if (!btn) {
+            console.error("FATAL ERROR: Tombol dengan ID 'btnKirimLaporan' tidak ditemukan!");
+            return;
+        }
+
+        // 2. Pasang Event Listener
+        btn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            console.log("Tombol diklik...");
+
+            const originalText = btn.innerHTML;
+            let isConfirmed = false;
+            
+            // --- TAHAP 1: KONFIRMASI (Syntax SweetAlert2 Versi 8) ---
+            if (typeof Swal !== 'undefined') {
+                const result = await Swal.fire({
+                    title: 'Kirim Laporan?',
+                    text: "Sistem akan menghitung data dan mengirim ke Pusat.",
+                    type: 'question', // PERBAIKAN 1: Ganti 'icon' menjadi 'type'
+                    showCancelButton: true,
+                    confirmButtonColor: '#10b981',
+                    confirmButtonText: 'Ya, Kirim'
+                });
+                
+                // PERBAIKAN 2: Versi 8 menggunakan .value untuk konfirmasi, bukan .isConfirmed
+                isConfirmed = result.value; 
+            } else {
+                isConfirmed = confirm("Kirim laporan ke pusat?");
+            }
+
+            // Jika user klik batal atau klik di luar area
+            if (!isConfirmed) {
+                console.log("Aksi dibatalkan user.");
+                return;
+            }
+
+            console.log("User mengonfirmasi. Memulai proses...");
+
+            // --- TAHAP 2: UI LOADING ---
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+
+                // --- TAHAP 3: FETCH DATA ---
+                console.log("Melakukan Fetch ke:", CONTROLLER_URL);
+
+                // Handling CSRF (Jika diperlukan)
+                let headers = {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                };
+                const csrfToken = document.querySelector('.txt_csrfname'); 
+                if(csrfToken) {
+                    headers['X-CSRF-TOKEN'] = csrfToken.value;
+                }
+
+                const response = await fetch(CONTROLLER_URL, {
+                    method: 'POST',
+                    headers: headers
+                });
+
+                const textResult = await response.text();
+                let result;
+                try {
+                    result = JSON.parse(textResult);
+                } catch (err) {
+                    throw new Error("Server error (Bukan JSON): " + textResult.substring(0, 50));
+                }
+
+                // --- TAHAP 4: HASIL (Syntax V8) ---
+                if (result.status === 'success') {
+                    if (typeof Swal !== 'undefined') Swal.fire('Berhasil!', result.message, 'success'); // V8 otomatis detect type dari argumen ke-3
+                    else alert(result.message);
+                } else if (result.status === 'warning') {
+                    if (typeof Swal !== 'undefined') Swal.fire('Info', result.message, 'info');
+                    else alert(result.message);
+                } else {
+                    throw new Error(result.message || "Terjadi kesalahan tidak diketahui.");
+                }
+
+            } catch (error) {
+                console.error('Error Occurred:', error);
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire('Gagal!', error.message || 'Koneksi Gagal.', 'error');
+                } else {
+                    alert("Gagal: " + error.message);
+                }
+            } finally {
+                // --- TAHAP 5: RESET TOMBOL ---
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                console.log("Proses selesai.");
+            }
+        });
+    });
 </script>
 <?= $this->endSection('script') ?>

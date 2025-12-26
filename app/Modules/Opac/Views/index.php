@@ -114,7 +114,7 @@
                                     </div>
                                     <div class="stat-info">
                                         <h6 class="stat-value"><?= isset($total_records) ? number_format($total_records) : '0' ?></h6>
-                                        <small class="text-muted">Total Koleksi</small>
+                                        <small class="text-muted">Total Katalog</small>
                                     </div>
                                 </div>
                             </div>

@@ -169,6 +169,10 @@ $slug = $request->getGet('slug') ?? '';
 					<form id="frm_create" method="post" action="<?= base_url('master-nama-perpustakaan/update') ?>">
 						<!-- Hidden fields for search data -->
 						<input type="hidden" id="branch_id" name="branch_id" value="<?= set_value('branch_id', $Branch_id) ?>">
+						<input type="hidden" id="provinsi_id" name="provinsi_id" value="<?= set_value('provinsi_id', $provinsi_id ?? '') ?>">
+						<input type="hidden" id="kabkota_id" name="kabkota_id" value="<?= set_value('kabkota_id', $kabkota_id ?? '') ?>">
+						<input type="hidden" id="kecamatan_id" name="kecamatan_id" value="<?= set_value('kecamatan_id', $kecamatan_id ?? '') ?>">
+						<input type="hidden" id="kelurahan_id" name="kelurahan_id" value="<?= set_value('kelurahan_id', $kelurahan_id ?? '') ?>">
 						
 						<div class="form-row">
 							<div class="col-md-6">
@@ -542,6 +546,10 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('nama_lokasi_perpustakaan').value = selectedData.alamat || '';
         document.getElementById('email_perpustakaan').value = selectedData.email || '';
         document.getElementById('branch_id').value = selectedData.id || '';
+		document.getElementById('provinsi_id').value = selectedData.provinsi_id || '';
+        document.getElementById('kabkota_id').value = selectedData.kabkota_id || '';
+        document.getElementById('kecamatan_id').value = selectedData.kecamatan_id || '';
+        document.getElementById('kelurahan_id').value = selectedData.kelurahan_id || '';
 
         // Hide preview
         selectedDataPreview.style.display = 'none';
