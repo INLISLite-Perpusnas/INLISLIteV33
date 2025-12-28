@@ -10,6 +10,11 @@
 		</a>
 	</li>
 	<li class="nav-item">
+		<a class="nav-link <?=($slug == 'reserve')?'active':''?>" href="<?=base_url('anggota/online?slug=violation')?>">
+			<span><i class="header-icon lnr-cart"></i> Daftar Pelanggaran</span>
+		</a>
+	</li>
+	<li class="nav-item">
 		<a class="nav-link <?=($slug == 'reserve')?'active':''?>" href="<?=base_url('anggota/online?slug=reserve')?>">
 			<span><i class="header-icon lnr-cart"></i> Daftar Pemesanan</span>
 		</a>

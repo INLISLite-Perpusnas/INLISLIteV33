@@ -7,7 +7,7 @@
 	</div>
 	<div class="card-body">
 		<div class="table-responsive">
-			<table style="width: 100%;" id="tbl_loans" class="table table-hover table-striped table-bordered">
+			<table style="width: 100%;" id="tbl_violations" class="table table-hover table-striped table-bordered">
 				<thead class="bg-night-sky text-light">
 					<tr>
 						<th class="text-center">
@@ -18,11 +18,12 @@
 						<th>Penerbitan</th>
 						<th>Tanggal Peminjaman</th>
 						<th>Jatuh Tempo</th>
+						<th>Jumlah Denda</th>
 					</tr>
 				</thead>
 				<tbody>
 					<?php $no = 1; ?>
-					<?php foreach ($peminjaman as $row) : ?>
+					<?php foreach ($pelanggaran as $row) : ?>
 						<tr>
 							<td class="text-center" width="5">
 								<?= $no++; ?>
@@ -34,6 +35,7 @@
 							<td><?= _spec($row->publisher); ?></td>
 							<td width="100"><?= _spec($row->LoanDate); ?></td>
 							<td width="100"><?= _spec($row->DueDate); ?></td>
+							<td><?= _spec($row->JumlahDenda) ?></td>
 						</tr>
 					<?php endforeach; ?>
 				</tbody>

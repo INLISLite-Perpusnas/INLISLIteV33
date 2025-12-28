@@ -36,6 +36,7 @@ $routes->group('anggota', ['namespace' => 'Anggota\Controllers'], function ($sub
 	$subroutes->add('D_perpanjangan', 'Anggota::D_perpanjangan');
 	$subroutes->add('D_sumbangan', 'Anggota::D_sumbangan');
 	$subroutes->add('import', 'Anggota::import');
+	$subroutes->add('aktifkan_online', 'Anggota::aktifkan_online');
 	$subroutes->add('uploadBackground', 'Anggota::uploadBackground');
 	$subroutes->add('import_view', 'Anggota::import_view');
 	$subroutes->add('cetak-kartu/(:any)', 'Anggota::print_card2/$1');

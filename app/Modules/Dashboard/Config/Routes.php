@@ -3,6 +3,6 @@
 }
 $routes->group('dashboard', ['namespace' => 'Dashboard\Controllers'], function ($subroutes) {
 	$subroutes->add('', 'Dashboard::index');
-	$subroutes->add('dashboard', 'Dashboard::index');
+	$subroutes->add('index', 'Dashboard::index');
 	$subroutes->post('kirimlaporan', 'Dashboard::kirimlaporan');
 });

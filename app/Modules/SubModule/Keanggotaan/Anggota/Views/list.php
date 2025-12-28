@@ -1,21 +1,6 @@
 <?php
 $regionModel = new \Region\Models\RegionModel();
 $request = service('request');
-$npp_provinsi = "";
-$npp_kabkota = "";
-if (is_member('sa_prov') || is_member('sa_kabkot')) {
-	$region = npp_region(user()->npp_provinsi_id, 1);
-	if (!empty($region)) {
-		$npp_provinsi = $region->name;
-	}
-}
-
-if (is_member('sa_kabkot')) {
-	$region = npp_region(user()->npp_kabkota_id, 2);
-	if (!empty($region)) {
-		$npp_kabkota = $region->name;
-	}
-}
 ?>
 
 <?= $this->extend('App\Views\layout\main'); ?>
@@ -47,83 +32,12 @@ if (is_member('sa_kabkot')) {
 			</div>
 		</div>
 	</div>
-	<?php if (is_profiling() && (branch_id() == 0)) : ?>
-		<div class="main-card mb-3 card">
-			<div class="card-header"><i class="header-icon lnr-search icon-gradient bg-plum-plate"> </i> Filter
-				<div class="btn-actions-pane-right actions-icon-btn">
-
-				</div>
-			</div>
-			<div class="card-body">
-				<form name="form_items" id="form_search" action="">
-					<div class="row">
-						<div class="col-md-6">
-							<div class="form-group">
-								<label>Provinsi</label>
-								<div class="select-wrapper">
-									<select class="form-control select2" id="provinsi_id" name="provinsi_id" style="width:100%"></select>
-								</div>
-								<small class="help-block with-errors"></small>
-							</div>
-						</div>
-
-						<div class="col-md-6">
-							<div class="form-group">
-								<label>Kota / Kabupaten</label>
-								<div class="select-wrapper">
-									<select class="form-control select2" id="kabkota_id" name="kabkota_id" style="width:100%">
-										<option value="">-</option>
-									</select>
-								</div>
-								<small class="help-block with-errors"></small>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="form-group">
-								<label>Kecamatan</label>
-								<div class="select-wrapper">
-									<select class="form-control select2" id="kecamatan_id" name="kecamatan_id" style="width:100%">
-										<option value="">-</option>
-									</select>
-								</div>
-								<small class="help-block with-errors"></small>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="form-group">
-								<label>Kelurahan / Desa</label>
-								<div class="select-wrapper">
-									<select class="form-control select2" id="kelurahan_id" name="kelurahan_id" style="width:100%">
-										<option value="">-</option>
-									</select>
-								</div>
-								<small class="help-block with-errors"></small>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<label for="groups">NPP (Mitra Perpustakaan)</label>
-							<div class="select-wrapper">
-								<select class="form-control selectx" id="npp" name="npp" tabindex="-1" aria-hidden="true" style="width:100%">
-									<option value="">-</option>
-								</select>
-							</div>
-						</div>
-					</div>
-				</form>
-			</div>
-		</div>
-	<?php endif; ?>
 
 	<div class="main-card mb-3 card">
 		<div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Anggota
 			<div class="btn-actions-pane-right actions-icon-btn">
-				<?php if (is_allowed('anggota/create')) : ?>
-					<a href="<?= base_url('anggota/create') ?>" class=" btn btn-success" title=""><i class="fa fa-plus"></i>
-						Tambah Anggota
-					</a>
-				<?php endif; ?>
-				<a href="<?= base_url('report/anggota') ?>" class="btn btn-secondary" title=""><i class="fa fa-file-excel"></i>
-					Ekspor Laporan
+				<a href="<?= base_url('anggota/create') ?>" class=" btn btn-success" title=""><i class="fa fa-plus"></i>
+					Tambah Anggota
 				</a>
 			</div>
 		</div>
@@ -154,7 +68,8 @@ if (is_member('sa_kabkot')) {
 			<div class="d-block">
 				<button type="button" id="proses_keranjang" class="btn btn-warning" data-toggle="tooltip" data-placement="top" title="Semua anggota yang terpilih"><i class="fa fa-shopping-cart"></i> Pindahkan ke Keranjang</button>
 				<button type="button" id="print_kartu" class="btn btn-primary ml-2" data-toggle="tooltip" data-placement="top" title="Print kartu anggota yang terpilih"><i class="fa fa-print"></i> Print Kartu</button>
-				<button type="button" id="hapus_permanen" class="btn btn-danger" data-toggle="tooltip" data-placement="top" title="Semua anggota yang terpilih"><i class="fa fa-trash"></i> Hapus Permanen</button>
+				<button type="button" id="aktifkan_online" class="btn btn-success ml-2" data-toggle="tooltip" data-placement="top" title="Aktifkan akses online untuk anggota yang terpilih"><i class="fa fa-globe"></i> Aktifkan Online</button>
+				<button type="button" id="hapus_permanen" class="btn btn-danger ml-2" data-toggle="tooltip" data-placement="top" title="Semua anggota yang terpilih"><i class="fa fa-trash"></i> Hapus Permanen</button>
 			</div>
 		</div>
 	</div>
@@ -171,7 +86,7 @@ if (is_member('sa_kabkot')) {
 			"processing": true,
 			"serverSide": true,
 			"ajax": {
-				"url": '<?php echo site_url('api/anggota/datatable/2'); ?>',
+				"url": '<?php echo site_url('api/anggota/datatable'); ?>',
 			},
 			"dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
 				"<'row'<'col-md-12'tr>>" +
@@ -399,52 +314,6 @@ if (is_member('sa_kabkot')) {
 		$('body').append(form);
 		form.submit();
 		form.remove();
-
-		// Method 2 Alternative: Kirim via AJAX jika ingin response JSON
-		/*
-		$.ajax({
-			url: '<?= base_url('anggota/print_kartu') ?>',
-			type: 'POST',
-			data: {
-				member_ids: ids,
-				<?= csrf_token() ?>: '<?= csrf_hash() ?>'
-			},
-			success: function(response) {
-				console.log('Response from controller:', response);
-				
-				if (response.error === false) {
-					// Jika controller mengembalikan URL file PDF
-					if (response.pdf_url) {
-						window.open(response.pdf_url, '_blank');
-					}
-					
-					Swal.fire({
-						title: 'Berhasil',
-						text: response.message || 'Kartu berhasil dicetak',
-						type: 'success',
-						showConfirmButton: false,
-						timer: 3000
-					});
-				} else {
-					Swal.fire({
-						title: 'Gagal',
-						text: response.message || 'Gagal mencetak kartu',
-						type: 'error',
-						showConfirmButton: true
-					});
-				}
-			},
-			error: function(xhr, status, error) {
-				console.error('AJAX Error:', error);
-				Swal.fire({
-					title: 'Error',
-					text: 'Terjadi kesalahan saat mengirim data ke server',
-					type: 'error',
-					showConfirmButton: true
-				});
-			}
-		});
-		*/
 	}
 
 	$("body").on("click", ".remove-data", function() {
@@ -506,6 +375,115 @@ if (is_member('sa_kabkot')) {
 				}).then(() => {});
 			});
 	}
+
+	// Event handler untuk tombol Aktifkan Online
+$('#aktifkan_online').click(function() {
+    var checkedBoxes = $('#tbl_data input[type="checkbox"]:checked').not('.check_data');
+    
+    console.log('Checked boxes found:', checkedBoxes.length);
+    
+    if (checkedBoxes.length === 0) {
+        Swal.fire({
+            title: 'Peringatan',
+            text: 'Silakan pilih minimal satu anggota untuk diaktifkan secara online',
+            type: 'warning',
+            showConfirmButton: true,
+            confirmButtonText: 'OK'
+        });
+        return false;
+    }
+    
+    // Collect all selected IDs
+    var selectedIds = [];
+    checkedBoxes.each(function() {
+        var checkboxValue = $(this).val();
+        if (checkboxValue && checkboxValue !== 'on') {
+            selectedIds.push(checkboxValue);
+        }
+    });
+    
+    console.log('Selected IDs for online activation:', selectedIds);
+    
+    // Konfirmasi sebelum aktifkan
+    Swal.fire({
+        title: 'Konfirmasi Aktivasi Online',
+        html: `Akan mengaktifkan akses online untuk <strong>${selectedIds.length}</strong> anggota yang dipilih.<br><br>
+               <small class="text-muted">Username akan sama dengan No. Anggota, dan password default sama dengan username.</small>`,
+        type: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#dd6b55',
+        confirmButtonText: 'Ya, Aktifkan',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.value) {
+            // Kirim data ke controller
+            aktifkanAnggotaOnline(selectedIds);
+        }
+    });
+    
+    return false;
+});
+
+// Fungsi untuk mengirim data aktivasi online ke controller
+function aktifkanAnggotaOnline(ids) {
+    // Tampilkan loading
+    Swal.fire({
+        title: 'Memproses...',
+        text: 'Sedang mengaktifkan anggota secara online',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        willOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    $.ajax({
+        url: '<?= base_url('anggota/aktifkan_online') ?>',
+        type: 'POST',
+        data: {
+            '<?= csrf_token() ?>': '<?= csrf_hash() ?>',
+            member_ids: ids
+        },
+        dataType: 'json'
+    })
+    .done(function(response) {
+        console.log('Response:', response);
+        
+        if (response.error === false) {
+            Swal.fire({
+                title: 'Berhasil!',
+                html: response.message,
+                type: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                // Reload datatable
+                t.ajax.reload(null, false);
+                // Uncheck all checkboxes
+                $('#tbl_data input:checkbox').prop('checked', false);
+            });
+        } else {
+            Swal.fire({
+                title: 'Gagal',
+                html: response.message,
+                type: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    })
+    .fail(function(jqXHR, textStatus, errorThrown) {
+        console.log('Error:', textStatus, errorThrown);
+        console.log('Response:', jqXHR.responseText);
+        
+        Swal.fire({
+            title: 'Oops!',
+            text: 'Terjadi kesalahan saat memproses data. Silakan coba lagi.',
+            type: 'error',
+            confirmButtonText: 'OK'
+        });
+    });
+}
 </script>
 
 <?= $this->endSection('script'); ?>

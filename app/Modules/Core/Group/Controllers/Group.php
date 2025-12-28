@@ -21,17 +21,24 @@ class Group extends \Base\Controllers\BaseController
 
 		$this->auth = \Myth\Auth\Config\Services::authentication();
 		$this->authorize = \Myth\Auth\Config\Services::authorization();
+		helper('app');
 	}
 
-	public function index()
-	{
-		
-		$groups = $this->groupModel->orderBy('id', 'asc')->findAll();
-	
-		$this->data['title'] = 'Role';
-		$this->data['groups'] = $groups;
-		echo view('Group\Views\list', $this->data);
-	}
+public function index()
+{
+    
+    $groups = $this->groupModel->orderBy('id', 'asc')->findAll();
+    
+    $this->data['title'] = 'Role';
+    $this->data['groups'] = $groups;
+    
+    return view('Group\Views\list', $this->data);
+}
+
+/**
+ * Method terpisah untuk mengecek authorization
+ */
+
 
 	public function detail(int $id)
 	{

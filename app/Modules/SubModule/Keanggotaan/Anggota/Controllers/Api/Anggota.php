@@ -50,8 +50,7 @@ class Anggota extends \Base\Controllers\BaseResourceController
 	public function datatable($isKeranjang = 0)
 	{
 		/**
-		 * Query builder to get data from database
-		 * @var \CodeIgniter\Database\BaseBuilder $builder
+		
 		 */
 		$db = db_connect();
 		$builder = $db->table('members as a');

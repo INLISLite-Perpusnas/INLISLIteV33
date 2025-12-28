@@ -17,6 +17,7 @@ class Dashboard extends \Base\Controllers\BaseController
 	function __construct()
 	{
 		helper('app');
+        helper('anggota');
 		$this->userModel = new \Auth\Models\UserModel();
 		$this->anggotaModel= new \Member\Models\MemberModel();
 		$this->memberguestModel = new \BukuTamu\Models\MemberGuestModel();
@@ -28,60 +29,53 @@ class Dashboard extends \Base\Controllers\BaseController
 
 	public function index()
 {
-    $page = 'index';
-    
-    // 1. Cek konfigurasi dari .env
-    // Jika nilai 'is_dashboard_cache' adalah 1, maka $useCache bernilai true.
-    $useCache = env('is_dashboard_cache') == 1;
-    
-    $cacheKey = 'dashboard_stats_data';
-    $cacheTTL = 3600; // 1 Jam
+    if(is_member('anggota')){
+        $page = 'anggota';
+        $member_no = user()->username;
+        $member = get_member($member_no);
+        $peminjaman = get_peminjaman($member->ID);
+        $pelanggaran = get_pelanggaran($member->ID);
 
-    $cachedData = null;
+        $this->data['total_peminjaman'] = count($peminjaman);
+        $this->data['total_pelanggaran'] = count($pelanggaran);
 
-    // 2. Cek Cache HANYA jika fitur diaktifkan di .env
-    if ($useCache) {
+        echo view('Dashboard\Views\\' . $page, $this->data);
+    }else{
+        $page = 'index';
+
+        $useCache = env('is_dashboard_cache') == 1;
+        $cacheKey = 'dashboard_stats_data';
+        $cacheTTL = 3600; // 1 Jam
+
         $cachedData = cache($cacheKey);
-    }
 
-    // 3. Jika data tidak ditemukan di cache (Cache Miss) ATAU fitur cache dimatikan
-    if ($cachedData === null) {
-        
-        // --- Jalankan Query Database 
-        
-        // Group A: Pengaturan
-        $cachedData['nama_perpustakaan']        = $this->settingModel->where('Name', 'NamaPerpustakaan')->first()->Value ?? 'Perpustakaan Mitra';
-        $cachedData['nama_lokasi_perpustakaan'] = $this->settingModel->where('Name', 'NamaLokasiPerpustakaan')->first()->Value ?? 'Alamat Perpustakaan Mitra';
-        $cachedData['npp_perpustakaan']         = $this->settingModel->where('Name', 'NPPPerpustakaan')->first()->Value ?? 'NPP Perpustakaan Mitra';
-        
-        // Group B: Statistik User & Anggota
-        $cachedData['total_user_active']            = $this->userModel->where('active', 1)->countAllResults();
-        $cachedData['total_user_inactive']          = $this->userModel->where('active', 0)->countAllResults();
-        $cachedData['total_anggota']                = $this->anggotaModel->countAllResults();
-        $cachedData['total_anggota_guest']          = $this->memberguestModel->where('NoAnggota !=', null)->countAllResults();
-        $cachedData['total_nonanggota_guest']       = $this->memberguestModel->where('NoAnggota', null)->countAllResults();
-        $cachedData['total_anggota_bebas_pustaka']  = $this->anggotaModel->where('StatusAnggota_id', 5)->countAllResults();
-        
-        // Group C: Statistik Koleksi
-        $cachedData['total_katalog']    = $this->katalogModel->countAllResults();
-        $cachedData['total_koleksi']    = $this->koleksiModel->countAllResults();
-        $cachedData['total_peminjaman'] = $this->peminjamanModel->countAllResults();
+        if ($cachedData === null) {
+            $cachedData = [
+                'nama_perpustakaan' => $this->settingModel->where('Name', 'NamaPerpustakaan')->first()->Value ?? 'Perpustakaan Mitra',
+                'nama_lokasi_perpustakaan' => $this->settingModel->where('Name', 'NamaLokasiPerpustakaan')->first()->Value ?? 'Alamat Perpustakaan Mitra',
+                'npp_perpustakaan' => $this->settingModel->where('Name', 'NPPPerpustakaan')->first()->Value ?? 'NPP Perpustakaan Mitra',
+                'total_user_active' => $this->userModel->where('active', 1)->countAllResults(),
+                'total_user_inactive' => $this->userModel->where('active', 0)->countAllResults(),
+                'total_anggota' => $this->anggotaModel->countAllResults(),
+                'total_anggota_guest' => $this->memberguestModel->where('NoAnggota !=', null)->countAllResults(),
+                'total_nonanggota_guest' => $this->memberguestModel->where('NoAnggota', null)->countAllResults(),
+                'total_anggota_bebas_pustaka' => $this->anggotaModel->where('StatusAnggota_id', 5)->countAllResults(),
+                'total_katalog' => $this->katalogModel->countAllResults(),
+                'total_koleksi' => $this->koleksiModel->countAllResults(),
+                'total_peminjaman' => $this->peminjamanModel->countAllResults(),
+            ];
 
-        // 4. Simpan ke cache HANYA jika fitur diaktifkan
-        if ($useCache) {
-            cache()->save($cacheKey, $cachedData, $cacheTTL);
+            if ($useCache) {
+                cache()->save($cacheKey, $cachedData, $cacheTTL);
+            }
         }
+
+        $this->data = array_merge($this->data, $cachedData);
+
+        $this->data['title'] = 'Dashboard';
+
+        echo view('Dashboard\Views\\' . $page, $this->data);
     }
-
-    // 5. Gabungkan data
-    if (!isset($this->data)) {
-        $this->data = [];
-    }
-    $this->data = array_merge($this->data, $cachedData);
-
-    $this->data['title'] = 'Dashboard';
-
-    echo view('Dashboard\Views\\' . $page, $this->data);
 }
 
 	public function kirimlaporan()
@@ -115,7 +109,7 @@ class Dashboard extends \Base\Controllers\BaseController
     ];
 
     // 3. Kirim ke Flask menggunakan CURL / CI4 HTTP Client
-    $flaskUrl = 'http://127.0.0.1:4000/api/dashboard/rekap';
+    $flaskUrl = env('FLASK_API_BASEURL') . '/rekap';
     $apiKey   = env('API_KEY'); // Simpan ini di .env lebih aman
 
     $client = \Config\Services::curlrequest();

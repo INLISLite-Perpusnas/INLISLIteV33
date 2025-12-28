@@ -16,6 +16,11 @@ if ($slug == 'loan') {
 	$label_title = 'Daftar Peminjaman';
 }
 
+if ($slug == 'violation') {
+	$label = 'Pelanggaran';
+	$label_title = 'Daftar Pelanggaran';
+}
+
 if ($slug == 'reserve') {
 	$label = 'Pemesanan';
 	$label_title = 'Daftar Pemesanan';

@@ -1,5 +1,5 @@
 <?php
-
+use Myth\Auth\Config\Services as MythServices;
 
 if (!function_exists('get_username')) {
     /**
@@ -1118,5 +1118,59 @@ if (!function_exists('unformatRupiah')) {
         $result = str_replace(".", "", $result);
 
         return $result;
+    }
+}
+
+if (!function_exists('checkAuthorization')) {
+    function checkAuthorization(string $uri, $user_id): bool
+    {
+        // Profiling Mode → Permission menggunakan session auth_permissions
+        if (function_exists('is_profiling') && is_profiling()) {
+            
+            $auth_permissions = (array) session()->get('auth_permissions');
+            $terpilih = [];
+
+            // Cari exact match dulu
+            if (!isset($auth_permissions[$uri])) {
+                // Coba dengan tambahan "/index"
+                $uri_variants = [
+                    $uri . (str_ends_with($uri, '/') ? 'index' : '/index')
+                ];
+
+                foreach ($uri_variants as $variant) {
+                    if (isset($auth_permissions[$variant])) {
+                        $terpilih = $auth_permissions[$variant];
+                        break;
+                    }
+                }
+            } else {
+                $terpilih = $auth_permissions[$uri];
+            }
+
+            // Cek apakah user punya akses
+            if (in_array($user_id, $terpilih)) {
+                return true;
+            }
+
+            // Fallback → URI prefix match
+            foreach ($auth_permissions as $key => $auth_permission) {
+                if (in_array($user_id, $auth_permission) && str_starts_with($uri, $key)) {
+                    return true;
+                }
+            }
+        }
+
+        // Non-profiling Mode → Gunakan Myth\Auth Permission System
+        $auth = MythServices::authentication();
+        $authorize = MythServices::authorization();
+
+        if ($auth->check()) {
+            if (function_exists('is_member') && is_member('admin')) {
+                return true;
+            }
+            return $authorize->hasPermission($uri, $user_id);
+        }
+
+        return false;
     }
 }

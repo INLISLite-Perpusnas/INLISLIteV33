@@ -32,35 +32,29 @@ class User extends \Base\Controllers\BaseController
 
     public function index()
     {
+        $uri = str_replace('index.php/', '', uri_string());
+        $user_id = $user_id ?? login_id();
+
+        // Cek authorization terlebih dahulu
+        if (!checkAuthorization($uri, $user_id)) {
+            // Redirect atau tampilkan error jika tidak memiliki akses
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Access Denied');
+            // atau: return redirect()->to('/access-denied');
+        }
         $groups = $this->groupModel->findAll();
         $slug = $this->request->getGet('slug') ?? '';
         $branch_id = $this->request->getGet('branch_id') ?? '';
         $this->data['title'] = 'User';
         $this->data['groups'] = $groups;
         $this->data['slug'] = $slug;
-        // $this->data['branch_id'] = $branch_id;
-
-      
-            // $branchModel = new \MitraPerpustakaan\Models\MitraPerpustakaanModel();
-            // $branchBuilder = $branchModel
-            //     ->select('ID as code,  concat(Code, " - ", Name) as name')
-            //     ->where('Code <>', '')
-            //     ->orderBy('Name', 'ASC');
-
-      
-
-            // $branchs = $branchBuilder->findAll();
-            // foreach ($branchs as &$branch) {
-            //     $branch->name = preg_replace('/\s+/', ' ', $branch->name);
-            // }
-            // $this->data['branchs'] = $branchs;
-        
+       
 
         echo view('User\Views\list', $this->data);
     }
 
     public function profile()
     {
+      
         $this->detail(user_id(), true);
     }
     public function detail(int $id, $is_profile = false)
@@ -169,48 +163,6 @@ class User extends \Base\Controllers\BaseController
         }
     }
 
-    public function change_avatar()
-    {
-        try {
-            $user = user();
-            $this->data['title'] = 'Change Avatar';
-            $this->data['user'] = $user;
-            $this->validation->setRule('file_image', 'Gambar', 'required');
-            if (!$this->request->getPost() || $this->validation->withRequest($this->request)->run() === false) {
-                $this->data['message'] = ($this->validation->getErrors()) ? $this->validation->listErrors($this->validationListTemplate) : $this->session->getFlashdata('message');
-                echo view('User\Views\profile\change', $this->data);
-            } else {
-                $update_data = array();
-                $files = (array) $this->request->getPost('file_image');
-                if (count($files)) {
-                    $listed_file = array();
-                    foreach ($files as $uuid => $name) {
-                        if (file_exists($this->modulePath . $name)) {
-                            $listed_file[] = $name;
-                        } else {
-                            if (file_exists($this->uploadPath . $name)) {
-                                $file = new File($this->uploadPath . $name);
-                                $newFileName = $file->getFileName(); //$file->getRandomName();
-                                $file->move($this->modulePath, $newFileName);
-                                $listed_file[] = $newFileName;
-                            }
-                        }
-                    }
-                    $update_data['file_image'] = implode(',', $listed_file);
-                }
-                $change = $this->userModel->update($user->id, $update_data);
-                if ($change) {
-                    reloadPermission();
-                    set_message('toastr_msg', 'Avatar berhasil diubah');
-                    set_message('toastr_type', 'success');
-                    return redirect()->to('/user/change_avatar');
-                }
-            }
-        } catch (\Exception $ex) {
-            $this->data['message'] = $ex->getMessage();
-            echo view('User\Views\profile\change', $this->data);
-        }
-    }
 
     public function apply_status($id)
     {

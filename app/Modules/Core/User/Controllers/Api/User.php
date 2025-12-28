@@ -328,54 +328,183 @@ class User extends \Base\Controllers\BaseResourceController
 	}
 
 	public function upload_file()
-	{
-		$upload_id = $this->request->getPost('upload_id');
-		$upload_field = $this->request->getPost('upload_field');
-		$upload_title = $this->request->getPost('upload_title');
+{
+    $upload_id = $this->request->getPost('upload_id');
+    $upload_field = $this->request->getPost('upload_field');
+    $upload_title = $this->request->getPost('upload_title');
 
-		$update_data = [];
+    // Validasi input
+    $validation = \Config\Services::validation();
+    
+    $validation->setRules([
+        'upload_id' => [
+            'label' => 'Upload ID',
+            'rules' => 'required',
+        ],
+        'upload_field' => [
+            'label' => 'Upload Field',
+            'rules' => 'required',
+        ],
+        'file_pendukung' => [
+            'label' => 'File',
+            'rules' => [
+                'uploaded[file_pendukung]',
+                'max_size[file_pendukung,2048]', // Maksimal 2MB
+                'is_image[file_pendukung]',
+                'mime_in[file_pendukung,image/jpg,image/jpeg,image/png,image/gif]',
+                'ext_in[file_pendukung,jpg,jpeg,png,gif]'
+            ],
+        ],
+    ]);
 
-		$files = (array) $this->request->getPost('file_pendukung');
-		if (count($files)) {
-			$listed_file = array();
-			foreach ($files as $uuid => $name) {
-				if (file_exists($this->uploadPath . $name)) {
-					$file = new File($this->uploadPath . $name);
-					$newFileName = $file->getRandomName();
-					$file->move($this->modulePath, $newFileName);
-					$listed_file[] = $newFileName;
-				}
-			}
-			$update_data[$upload_field] = implode(',', $listed_file);
-		}
+    // Jalankan validasi
+    if (!$validation->withRequest($this->request)->run()) {
+        $response = [
+            'status'   => 400,
+            'error'    => true,
+            'messages' => [
+                'error' => implode('<br>', $validation->getErrors())
+            ]
+        ];
+        return $this->fail($response);
+    }
 
-		// print_r($update_data);
-		// dd('');
+    $update_data = [];
+    
+    // Ambil file yang diupload
+    $files = $this->request->getFiles();
+    
+    if (isset($files['file_pendukung'])) {
+        $listed_file = array();
+        
+        foreach ($files['file_pendukung'] as $file) {
+            // Cek apakah file valid
+            if ($file->isValid() && !$file->hasMoved()) {
+                
+                // Validasi tambahan untuk ukuran gambar
+                $imageInfo = getimagesize($file->getTempName());
+                
+                if ($imageInfo === false) {
+                    $response = [
+                        'status'   => 400,
+                        'error'    => true,
+                        'messages' => [
+                            'error' => 'File ' . $file->getName() . ' bukan file gambar yang valid'
+                        ]
+                    ];
+                    return $this->fail($response);
+                }
+                
+                // Validasi ukuran file (2MB = 2097152 bytes)
+                if ($file->getSize() > 2097152) {
+                    $response = [
+                        'status'   => 400,
+                        'error'    => true,
+                        'messages' => [
+                            'error' => 'File ' . $file->getName() . ' melebihi ukuran maksimal 2MB'
+                        ]
+                    ];
+                    return $this->fail($response);
+                }
+                
+                // Validasi dimensi gambar (opsional - sesuaikan dengan kebutuhan)
+                $maxWidth = 5000;  // Maksimal lebar 5000px
+                $maxHeight = 5000; // Maksimal tinggi 5000px
+                
+                if ($imageInfo[0] > $maxWidth || $imageInfo[1] > $maxHeight) {
+                    $response = [
+                        'status'   => 400,
+                        'error'    => true,
+                        'messages' => [
+                            'error' => 'Dimensi gambar ' . $file->getName() . ' terlalu besar. Maksimal ' . $maxWidth . 'x' . $maxHeight . ' pixels'
+                        ]
+                    ];
+                    return $this->fail($response);
+                }
+                
+                // Validasi tipe MIME secara manual
+                $allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                $fileMime = $file->getMimeType();
+                
+                if (!in_array($fileMime, $allowedMimes)) {
+                    $response = [
+                        'status'   => 400,
+                        'error'    => true,
+                        'messages' => [
+                            'error' => 'Tipe file ' . $file->getName() . ' tidak diperbolehkan. Hanya JPG, JPEG, PNG, dan GIF yang diperbolehkan'
+                        ]
+                    ];
+                    return $this->fail($response);
+                }
+                
+                // Generate nama file random
+                $newFileName = $file->getRandomName();
+                
+                // Pindahkan file ke folder tujuan
+                if ($file->move($this->modulePath, $newFileName)) {
+                    $listed_file[] = $newFileName;
+                } else {
+                    $response = [
+                        'status'   => 500,
+                        'error'    => true,
+                        'messages' => [
+                            'error' => 'Gagal memindahkan file ' . $file->getName()
+                        ]
+                    ];
+                    return $this->fail($response);
+                }
+            }
+        }
+        
+        // Jika ada file yang berhasil diupload
+        if (count($listed_file) > 0) {
+            $update_data[$upload_field] = implode(',', $listed_file);
+        } else {
+            $response = [
+                'status'   => 400,
+                'error'    => true,
+                'messages' => [
+                    'error' => 'Tidak ada file yang valid untuk diupload'
+                ]
+            ];
+            return $this->fail($response);
+        }
+    }
 
-		$userModel = new \user\Models\userModel();
-		$updateuser = $userModel->update($upload_id, $update_data);
-		if ($updateuser) {
-			$this->session->setFlashdata('toastr_msg', 'Upload file berhasil');
-			$this->session->setFlashdata('toastr_type', 'success');
-			$response = [
-				'status'   => 201,
-				'error'    => null,
-				'messages' => [
-					'success' => 'Upload file berhasil'
-				]
-			];
-			return $this->respondCreated($response);
-		} else {
-			$response = [
-				'status'   => 400,
-				'error'    => null,
-				'messages' => [
-					'error' => 'Upload file gagal'
-				]
-			];
-			return $this->fail($response);
-		}
-	}
+    // Update data ke database
+    $userModel = new \user\Models\userModel();
+    $updateuser = $userModel->update($upload_id, $update_data);
+    
+    if ($updateuser) {
+        $this->session->setFlashdata('toastr_msg', 'Upload file berhasil');
+        $this->session->setFlashdata('toastr_type', 'success');
+        
+        $response = [
+            'status'   => 201,
+            'error'    => null,
+            'messages' => [
+                'success' => 'Upload file berhasil. Total ' . count($listed_file) . ' file diupload.'
+            ]
+        ];
+        return $this->respondCreated($response);
+    } else {
+        // Hapus file yang sudah diupload jika gagal update database
+        foreach ($listed_file as $fileName) {
+            if (file_exists($this->modulePath . $fileName)) {
+                unlink($this->modulePath . $fileName);
+            }
+        }
+        
+        $response = [
+            'status'   => 400,
+            'error'    => true,
+            'messages' => [
+                'error' => 'Upload file gagal. Data tidak dapat disimpan ke database.'
+            ]
+        ];
+        return $this->fail($response);
+    }
+}
 
 	public function delete($id = null)
 	{

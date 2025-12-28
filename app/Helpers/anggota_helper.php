@@ -96,36 +96,56 @@ if (!function_exists('get_perpanjangan')) {
 }
 
 if (!function_exists('get_peminjaman')) {
-    function get_peminjaman($member_id = null,$DBGroup='data')
-    {        
-		$model = new \Peminjaman\Models\CollectionLoanItemModel();
+    function get_peminjaman($member_id = null, $DBGroup='data')
+    {
+        $model = new \Peminjaman\Models\CollectionLoanItemModel();
+
         $query = $model
-            ->select('collectionloanitems.*');
+            ->select("
+                collectionloanitems.*,
+                collections.NomorBarcode AS barcode_no,
+                catalogs.Title AS title,
+                catalogs.Publisher AS publisher
+            ")
+            ->join('collections', 'collections.ID = collectionloanitems.Collection_id', 'left')
+            ->join('catalogs', 'catalogs.ID = collections.Catalog_id', 'left');
 
-		if(!empty($member_id)){
-			$query->where('Member_id',$member_id);
-		}
+        if (!empty($member_id)) {
+            $query->where('collectionloanitems.member_id', $member_id);
+        }
 
-		$data = $query->get()->getResult();
+        $data = $query->findAll();
         return $data;
     }
 }
+
 
 if (!function_exists('get_pelanggaran')) {
-    function get_pelanggaran($member_id = null,$DBGroup='data')
-    {        
-		$baseModel = new \Anggota\Models\pelanggaranModel();
-		$query = $baseModel;
-        // dd($query);
+    function get_pelanggaran($member_id = null, $DBGroup='data')
+    {
+        $model = new \Anggota\Models\PelanggaranModel();
 
-		if(!empty($member_id)){
-			$query->where('Member_id',$member_id);
-		}
+        $query = $model
+            ->select("
+                pelanggaran.*,
+                collections.NomorBarcode AS barcode_no,
+                catalogs.Title AS title,
+                catalogs.Publisher AS publisher,
+                collectionloanitems.LoanDate AS loan_date,
+                collectionloanitems.DueDate AS due_date
+            ")
+            ->join('collectionloanitems', 'collectionloanitems.ID = pelanggaran.CollectionLoanItem_id', 'left')
+            ->join('collections', 'collections.ID = pelanggaran.Collection_id', 'left')
+            ->join('catalogs', 'catalogs.ID = collections.Catalog_id', 'left');
 
-		$data = $query->get()->getResult();
-        return $data;
+        if (!empty($member_id)) {
+            $query->where('pelanggaran.Member_id', $member_id);
+        }
+
+        return $query->findAll();
     }
 }
+
 
 if (!function_exists('tgl_indonesia')) {
 function tgl_indonesia($tgl){ 

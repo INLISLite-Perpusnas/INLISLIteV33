@@ -246,7 +246,16 @@ function is_allowed($uri, $user_id = null)
 	if (is_ajax()) {
 		return true;
 	}
-	$uri     = str_replace('index.php/', '', $uri); // Ternyata uri bawa index.php, jadi harus di remove terlebih dahulu
+	// $uri = uri_string();   
+		
+		// Jika $uri tidak dikirim, ambil dari current request
+	if ($uri === null) {
+		$uri = uri_string();
+	}
+	
+	$uri = str_replace('index.php/', '', $uri);
+	// dd($uri);
+	
 	$user_id = $user_id ?? login_id();
 
 	if (is_profiling()) {
@@ -281,7 +290,7 @@ function is_allowed($uri, $user_id = null)
 		$authorize = \Myth\Auth\Config\Services::authorization();
 
 		if ($auth->check()) {
-			if (is_member('admin') || is_member('sa_pus')) {
+			if (is_member('admin')) {
 				return true;
 			} else {
 				return $authorize->hasPermission($uri, $user_id);
