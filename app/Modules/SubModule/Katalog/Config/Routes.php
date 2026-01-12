@@ -11,7 +11,6 @@ $routes->group('katalog', ['namespace' => 'Katalog\Controllers'], function ($sub
 	$subroutes->add('index', 'Katalog::index');
 	$subroutes->add('create', 'Katalog::create');
 	$subroutes->add('create_marc', 'Katalog::create_marc');
-	$subroutes->add('create_marc2', 'Katalog::create_marc2');
 	$subroutes->add('add_marc', 'Katalog::add_marc');
 	$subroutes->add('edit/(:any)', 'Katalog::edit/$1');
 	$subroutes->add('edit_marc/(:any)', 'Katalog::edit_marc/$1');
