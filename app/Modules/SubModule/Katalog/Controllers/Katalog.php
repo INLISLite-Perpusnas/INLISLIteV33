@@ -1095,6 +1095,8 @@ class Katalog extends \Base\Controllers\BaseController
             ->first();
 
         if (!$loan) {
+			set_message('toastr_msg', 'Perpanjangan Masa Berlaku Anggota gagal');
+			set_message('toastr_type', 'error');
             return redirect()->back()
                 ->with('error', 'Anda tidak memiliki akses. Masa pinjam telah habis atau belum meminjam.');
         }
