@@ -30,6 +30,7 @@ class Katalog extends \Base\Controllers\BaseController
 	public $db;
 	public $eksemplarModel;
 	public $edisiSerialModel;
+	public $loanDigitalModel;
 
 	function __construct()
 	{
@@ -46,6 +47,7 @@ class Katalog extends \Base\Controllers\BaseController
 		$this->modulePath = ROOTPATH . 'public/uploads/katalog/';
 		$this->validation = \Config\Services::validation();
 		$this->db = \Config\Database::connect('data');
+	    $this->loanDigitalModel=new \Peminjaman\Models\LoanDigitalModel();
 
 		if (!file_exists($this->uploadPath)) {
 			mkdir($this->uploadPath);
@@ -324,11 +326,7 @@ class Katalog extends \Base\Controllers\BaseController
 	}
 	public function create_marc()
 	{
-		if (!is_allowed('katalog/create')) {
-			set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
-			set_message('toastr_type', 'error');
-			return redirect()->to('katalog');
-		}
+		
 
 		$data['title'] = 'Tambah Katalog Form MARC';
 		$this->validation->setRule('Worksheet_id', 'Jenis Bahan', 'required');
@@ -617,12 +615,7 @@ class Katalog extends \Base\Controllers\BaseController
 
 	public function create()
 	{
-		if (!is_allowed('katalog/create')) {
-			set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
-			set_message('toastr_type', 'error');
-			return redirect()->to('katalog');
-		}
-
+		
 		$data['title'] = 'Tambah Katalog Form Sederhana';
 
 		$branch_id = user()->branch_id ?? $this->request->getGet('branch_id');
@@ -1081,23 +1074,55 @@ class Katalog extends \Base\Controllers\BaseController
 
 
 	public function view_decrypted($ID)
-	{
-		// Load the file model
+{
+    $id = decData($ID);
+	$catalog_id = $this->fileModel->find($id)->Catalog_id;
+    session()->set('one_key', $id);
 
-        $id = decData($ID);
-	   	session()->set('one_key', $id);
-		// Get the file record
-		$file = $this->fileModel->find($id);
-		if (!$file || !file_exists($this->modulePath . $file->FileURL)) {
-			return $this->response->setStatusCode(404)->setBody('File not found');
-		}
+    // ===============================
+    // CEK KHUSUS ANGGOTA
+    // ===============================
+    if (is_member('anggota')) {
 
-		// Instead of serving the file directly, we'll render a view with our custom PDF viewer
-		return view('Katalog\Views\slug\pdf_viewer', ['fileId' => $id, 'fileName' => $file->FileURL]);
-	}
+        $userId = user()->id;
+	
+
+        $loan = $this->loanDigitalModel
+            ->where('user_id', $userId)
+            ->where('catalog_id', $catalog_id)
+            ->where('status', 'LOAN')
+            ->where('due_date >=', date('Y-m-d H:i:s'))
+            ->first();
+
+        if (!$loan) {
+            return redirect()->back()
+                ->with('error', 'Anda tidak memiliki akses. Masa pinjam telah habis atau belum meminjam.');
+        }
+    }
+
+    // ===============================
+    // AMBIL FILE
+    // ===============================
+    $file = $this->fileModel->find($id);
+    if (!$file || !file_exists($this->modulePath . $file->FileURL)) {
+        return $this->response
+            ->setStatusCode(404)
+            ->setBody('File not found');
+    }
+
+    return view(
+        'Katalog\Views\slug\pdf_viewer',
+        [
+            'fileId'   => $id,
+            'fileName' => $file->FileURL
+        ]
+    );
+}
+
 
 	public function view_decrypted_article($ID)
 	{
+		
 		// Get the file record
 		$file = $this->serialArticleFilesModel->find($ID);
 		if (!$file || !file_exists($this->modulePath . $file->FileURL)) {
