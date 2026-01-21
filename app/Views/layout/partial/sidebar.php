@@ -1,91 +1,255 @@
 <?php
+$db=db_connect();
+$logo = $db->table('settingparameters')->where('Name', 'Logo')->get()->getRow()->Value;
+use Dompdf\Css\Style;
+
 $request = service('request');
 helper('menu');
-$group=user()->category??'admin';
-
+$group = user()->category ?? 'admin';
 ?>
-<div class="app-sidebar <?= get_parameter('sidebar-cs-class'); ?>">
-	<div class="app-header__logo <?= get_parameter('sidebar-cs-class'); ?>">
-		<div class="logo-src">
-			<?php if (get_parameter('show-logo-sidebar') == 0) : ?>
-				<div class="site-name">
-					<a style="text-decoration: none; padding-right:9px; padding-bottom:3px;" href="<?= base_url() ?>" class="<?= get_parameter('text-cs-class', 'text-white'); ?>"><?= get_parameter('site-name', 'Backoffice') ?> </a>
-				</div>
-			<?php endif; ?>
-		</div>
-		<div class="header__pane ml-auto">
-			<div>
-				<button type="button" class="hamburger close-sidebar-btn hamburger--elastic" data-class="closed-sidebar">
-					<span class="hamburger-box">
-						<span class="hamburger-inner"></span>
-					</span>
-				</button>
-			</div>
-		</div>
-	</div>
-	<div class="app-header__mobile-menu">
-		<div>
-			<button type="button" class="hamburger hamburger--elastic mobile-toggle-nav">
-				<span class="hamburger-box">
-					<span class="hamburger-inner"></span>
-				</span>
-			</button>
-		</div>
-	</div>
-	<div class="app-header__menu">
-		<span>
-			<button type="button" class="btn-icon btn-icon-only btn btn-primary btn-sm mobile-toggle-header-nav">
-				<span class="btn-icon-wrapper">
-					<i class="fa fa-ellipsis-v fa-w-6"></i>
-				</span>
-			</button>
-		</span>
-	</div>
-	<div class="scrollbar-sidebar">
-		<div class="app-sidebar__inner">
-			<?php if (get_parameter('branch') == '1') : ?>
-				<div class="user-profile" style="text-transform: none !important;">
-					<div class="text-center info pt-3">
-						<ul class="list-group">
-							<a href="javascript:void(0);" class="list-group-item-secondary list-group-item">
-								<div class="text-center image pt-3 mb-2">
-									<?php
-									$default = base_url('themes/uigniter/images/avatars/2.jpg');
-									$image = base_url('uploads/user/' . user()->avatar);
-									if (empty(user()->avatar)) {
-										$image = $default;
-									}
-									?>
 
-									<img width="100" class="rounded-circle" src="<?= $image ?>" onerror="this.onerror=null;this.src='<?= $default ?>';" alt="">
-								</div>
+<style>
+    .sidebar-argon {
+        width: 250px;
+        background: white;
+        height: calc(100vh - 40px);
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px 0 rgba(0,0,0,0.05);
+        z-index: 1000;
+        overflow-y: auto;
+        padding: 20px;
+    }
 
-								<p class="font-weight-bold"><?= user()->username ?></p>
-							</a>
-							<a href="<?= base_url('user/profile') ?>" class="list-group-item-info list-group-item">
-								Profil Saya
-							</a>
-							<a href="<?= base_url('user/change_password') ?>" class="list-group-item-info list-group-item">
-								Ubah Password
-							</a>
-							<a href="<?= base_url('logout') ?>" class="list-group-item-info list-group-item">
-								Logout
-							</a>
-						</ul>
-					</div>
-				</div>
-			<?php endif; ?>
+    .sidebar-brand {
+        padding: 10px 15px;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 700;
+        color: #344767;
+        font-size: 16px;
+    }
 
-			<ul class="vertical-nav-menu">
-				<?php set_parameter('sidebar-mode', 'auto'); ?>
-				<?php if (get_parameter('sidebar-mode') == 'auto') : ?>
-					<?php
-					$display_menu_backend = display_menu_backend(0, 1, $group);
-					echo $display_menu_backend;
-					?>
-				
-				<?php endif; ?>
-			</ul>
-		</div>
-	</div>
+    .brand-icon {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #5e72e4, #825ee4);
+        border-radius: 8px;
+    }
+
+    .nav-menu-argon {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .nav-label-argon {
+        font-size: 11px;
+        font-weight: 700;
+        color: #8392ab;
+        text-transform: uppercase;
+        margin: 20px 0 10px 10px;
+        letter-spacing: 0.5px;
+    }
+
+    .nav-menu-argon li a {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        color: #67748e;
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s;
+        margin-bottom: 4px;
+    }
+
+    .nav-menu-argon li a:hover, .nav-menu-argon li a.active {
+        background-color: #f6f9fc;
+        color: #344767;
+    }
+
+    .nav-menu-argon li a.active {
+        background: #f6f9fc;
+        font-weight: 600;
+    }
+
+    .nav-menu-argon li a i {
+        width: 30px;
+        height: 30px;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        color: #5e72e4;
+        font-size: 12px;
+    }
+
+    .nav-menu-argon li a.active i {
+        background: linear-gradient(135deg, #5e72e4, #825ee4);
+        color: white;
+    }
+
+    /* Sidebar */
+.sidebar-argon {
+    width: 250px;
+    background: #fff;
+    height: calc(100vh - 40px);
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    border-radius: 15px;
+    padding: 20px;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+/* Menu */
+.nav-menu-argon,
+.submenu-argon {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-menu-argon li a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    border-radius: 8px;
+    color: #67748e;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.nav-menu-argon li a:hover,
+.nav-menu-argon li a.active {
+    background: #f6f9fc;
+    color: #344767;
+    font-weight: 600;
+}
+
+/* Icons */
+.nav-menu-argon i {
+    width: 30px;
+    height: 30px;
+    background: #fff;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #5e72e4;
+    box-shadow: 0 2px 4px rgba(0,0,0,.05);
+}
+
+/* Submenu */
+.submenu-argon {
+    display: none;
+    padding-left: 20px;
+    margin-top: 5px;
+}
+
+.submenu-argon li a {
+    font-size: 13px;
+    padding: 8px 15px;
+}
+
+/* Open state */
+.has-submenu.open > .submenu-argon {
+    display: block;
+}
+
+/* Caret */
+.caret {
+    margin-left: auto;
+    font-size: 12px;
+    transition: transform .3s;
+}
+
+.has-submenu.open .caret {
+    transform: rotate(180deg);
+}
+/* ===== Layout ===== */
+.app-container {
+    padding-left: 250px; /* RAPAT */
+    transition: padding-left 0.3s ease;
+}
+
+/* Sidebar */
+.sidebar-argon {
+    width: 250px;
+    transition: width 0.3s ease;
+}
+
+/* ===== Collapsed State ===== */
+body.sidebar-collapsed .sidebar-argon {
+    width: 80px;
+}
+
+body.sidebar-collapsed .app-container {
+    padding-left: 110px;
+}
+
+/* Hide text */
+body.sidebar-collapsed .nav-menu-argon span,
+body.sidebar-collapsed .brand-text {
+    display: none;
+}
+
+/* Center icons */
+body.sidebar-collapsed .nav-menu-argon a {
+    justify-content: center;
+}
+
+body.sidebar-collapsed .nav-menu-argon i {
+    margin-right: 0;
+}
+
+/* Submenu behavior */
+body.sidebar-collapsed .submenu-argon {
+    display: none !important;
+}
+
+/* Toggle button */
+.sidebar-toggle {
+    margin-left: auto;
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: #5e72e4;
+}
+
+</style>
+
+<aside class="sidebar-argon">
+   <div class="sidebar-brand">
+    <div>
+        <img src="<?= !empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png') ?>" style="width: 80px; height: 80px; object-fit: contain; border-radius: 16px; margin-bottom: 20px;">
+    </div>
+    <span class="brand-text">INLISLite</span>
+
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
 </div>
+
+
+    <?= display_menu_backend(0, 1, user()->category ?? 'admin'); ?>
+
+    <div class="sidebar-footer">
+        <img src="<?= base_url('themes/uigniter/images/avatars/2.jpg') ?>" width="35">
+        <div>
+            <strong><?= user()->username ?></strong><br>
+            <a href="<?= base_url('logout') ?>" class="text-danger">Logout</a>
+        </div>
+    </div>
+</aside>

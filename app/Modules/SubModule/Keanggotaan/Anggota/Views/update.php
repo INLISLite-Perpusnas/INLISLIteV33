@@ -316,38 +316,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 <?= $this->section('page'); ?>
 
 <div class="app-main__inner">
-	<div class="app-page-title">
-		<div class="page-title-wrapper">
-			<div class="page-title-heading">
-				<div class="page-title-icon">
-					<i class="pe-7s-id icon-gradient bg-strong-bliss"></i>
-				</div>
-				<div>
-					<?php if (!$is_anggota) : ?>
-						<?= lang('Anggota.action.update') ?> <?= lang('Anggota.module') ?>
-						<div class="page-title-subheading"><?= lang('Anggota.form.complete_the_data') ?>.</div>
-					<?php else : ?>
-						Profil <?= lang('Anggota.module') ?>
-						<div class="page-title-subheading"><?= lang('Anggota.form.complete_the_data') ?>.</div>
-					<?php endif; ?>
-				</div>
-			</div>
-			<div class="page-title-actions">
-				<?php if (!$is_anggota) : ?>
-					<nav class="" aria-label="breadcrumb">
-						<ol class="breadcrumb">
-							<li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i>
-									<?= lang('Anggota.label.home') ?></a></li>
-							<li class="breadcrumb-item"><a href="<?= base_url('anggota') ?>"><?= lang('Anggota.module') ?></a>
-							</li>
-							<li class="active breadcrumb-item" aria-current="page"><?= lang('Anggota.action.update') ?>
-								<?= lang('Anggota.module') ?></li>
-						</ol>
-					</nav>
-				<?php endif; ?>
-			</div>
-		</div>
-	</div>
+
 
 	<div class="row">
 		<div class="col-lg-12">

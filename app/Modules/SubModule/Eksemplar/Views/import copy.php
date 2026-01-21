@@ -54,17 +54,39 @@
     margin: 10px 0;
 }
 
-body.import-page .app-main__inner {
-    max-width: 100%;
+.app-main__inner {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding-left: 20px;
+    padding-right: 20px;
 }
-
 
 </style>
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
 <div class="app-main__inner">
- 
+    <div class="app-page-title">
+        <div class="page-title-wrapper">
+            <div class="page-title-heading">
+                <div class="page-title-icon">
+                    <i class="pe-7s-cloud-upload icon-gradient bg-strong-bliss"></i>
+                </div>
+                <div>Import Eksemplar Excel
+                    <div class="page-title-subheading">Import data katalog, MARC fields, dan collections dari file Excel</div>
+                </div>
+            </div>
+            <div class="page-title-actions">
+                <nav class="" aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="<?= base_url('eksemplar/import') ?>"><i class="fa fa-home"></i> Home</a></li>
+                        <li class="breadcrumb-item"><a href="<?= base_url('eksemplar/import') ?>">Katalog</a></li>
+                        <li class="active breadcrumb-item" aria-current="page">Import Excel</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
 
     <div class="main-card mb-3 card">
         <div class="card-header">

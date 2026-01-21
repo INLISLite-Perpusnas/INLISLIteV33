@@ -2,9 +2,8 @@
 $request = service('request');
 ?>
 
-<?php $core = config('Core');
-$layout = (!empty($core->layout_backend)) ? $core->layout_backend : 'hamkamannan\adminigniter\Views\layout\backend\main'; ?>
-<?= $this->extend($layout); ?>
+<?= $this->extend('App\Views\layout\main'); ?>
+
 <?= $this->section('style'); ?>
 <style>
     .select2-container--default .select2-selection--single {
@@ -20,29 +19,7 @@ $layout = (!empty($core->layout_backend)) ? $core->layout_backend : 'hamkamannan
 
 
 <div class="app-main__inner">
-    <div class="app-page-title">
-        <div class="page-title-wrapper">
-            <div class="page-title-heading">
-                <div class="page-title-icon">
-                    <i class="pe-7s-photo icon-gradient bg-strong-bliss"></i>
-                </div>
-                <div><?= lang('Sumbangan.action.add') ?> <?= lang('Sumbangan.module') ?>
-                    <div class="page-title-subheading"><?= lang('Sumbangan.form.complete_the_data') ?>.</div>
-                </div>
-            </div>
-            <div class="page-title-actions">
-                <nav class="" aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i>
-                                Home</a></li>
-                        <li class="breadcrumb-item"><a href="<?= base_url('sumbangan') ?>"><?= lang('Sumbangan.module') ?></a></li>
-                        <li class="active breadcrumb-item" aria-current="page"><?= lang('Sumbangan.action.add') ?>
-                            <?= lang('Sumbangan.module') ?></li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
-    </div>
+   
     <div class="main-card mb-3 card">
         <div class="card-header">
             <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Form
@@ -67,13 +44,13 @@ $layout = (!empty($core->layout_backend)) ? $core->layout_backend : 'hamkamannan
 
                                 </select>
                             </div>
-                        </div>
+                        </div>x
                     </div>
                     <div class="col-md-6">
                         <div class="position-relative form-group">
-                            <label for="name"><?= lang('Sumbangan.field.total') ?></label>
+                            <label for="name">Jumlah Sumbangan</label>
                             <div>
-                                <input type="text" class="form-control" id="frm_create_jumlah" name="Jumlah" placeholder="<?= lang('Sumbangan.field.total') ?> " value="<?= set_value('Jumlah'); ?>" />
+                                <input type="text" class="form-control" id="frm_create_jumlah" name="Jumlah" placeholder="Jumlah Sumbangan " value="<?= set_value('Jumlah'); ?>" />
 
                             </div>
                         </div>

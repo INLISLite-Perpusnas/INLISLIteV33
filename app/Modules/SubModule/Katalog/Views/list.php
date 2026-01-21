@@ -9,34 +9,12 @@ $request = service('request');
 
 <?= $this->section('page'); ?>
 <div class="app-main__inner">
-	<div class="app-page-title">
-		<div class="page-title-wrapper">
-			<div class="page-title-heading">
-				<div class="page-title-icon">
-					<i class="pe-7s-server icon-gradient bg-strong-bliss"></i>
-				</div>
-				<div>Katalog
-					<div class="page-title-subheading">Daftar semua Katalog</div>
-				</div>
-			</div>
-			<div class="page-title-actions">
-				<nav class="" aria-label="breadcrumb">
-					<ol class="breadcrumb">
-						<li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
-						<li class="active breadcrumb-item" aria-current="page">Katalog</li>
-					</ol>
-				</nav>
-			</div>
-		</div>
-	</div>
-
-
 	<div class="main-card mb-3 card">
 		<div class="card-header d-flex justify-content-between align-items-center flex-wrap">
 			<div><i class="header-icon lnr-list icon-gradient bg-plum-plate"></i> Tabel Daftar Katalog</div>
 
 			<div class="d-flex align-items-center flex-wrap">
-				<?php if (is_allowed('katalog/create')) : ?>
+				
 					<?php if (get_setting_parameter('FormEntriKatalog', is_profiling()) == 'Simple') : ?>
 						<a href="<?= base_url('katalog/create?rda=1') ?>" class="btn btn-primary btn-sm mr-2">
 							<i class="fa fa-plus"></i> Tambah Katalog RDA
@@ -45,11 +23,11 @@ $request = service('request');
 							<i class="fa fa-plus"></i> Tambah Katalog AACR
 						</a>
 					<?php else : ?>
-						<a href="<?= base_url('katalog/create_marc') ?>" class="btn btn-success btn-sm mr-2">
-							<i class="fa fa-plus"></i> Tambah Katalog
+						<a href="<?= base_url('katalog/create_marc?worksheet_id=1&fullscreen=1') ?>" class="btn btn-success btn-sm mr-2">
+							<i class="fa fa-plus"></i> Tambah Katalog MARC
 						</a>
 					<?php endif; ?>
-				<?php endif; ?>
+			
 
 				<div class="dropdown">
 					<button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button"

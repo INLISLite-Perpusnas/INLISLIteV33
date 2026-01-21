@@ -20,26 +20,7 @@ $actions = array(
 <?= $this->section('page'); ?>
 
 <div class="app-main__inner">
-	<div class="app-page-title">
-		<div class="page-title-wrapper">
-			<div class="page-title-heading">
-				<div class="page-title-icon">
-					<i class="pe-7s-server icon-gradient bg-strong-bliss"></i>
-				</div>
-				<div>Eksemplar
-					<div class="page-title-subheading">Daftar semua Eksemplar</div>
-				</div>
-			</div>
-			<div class="page-title-actions">
-				<nav class="" aria-label="breadcrumb">
-					<ol class="breadcrumb">
-						<li class="breadcrumb-item"><a href="<?= base_url('Eksemplar') ?>"><i class="fa fa-home"></i> Home</a></li>
-						<li class="active breadcrumb-item" aria-current="page">Eksemplar</li>
-					</ol>
-				</nav>
-			</div>
-		</div>
-	</div>
+	
 
 
 	<div class="main-card mb-3 card">

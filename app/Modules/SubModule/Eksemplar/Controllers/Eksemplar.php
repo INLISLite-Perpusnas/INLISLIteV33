@@ -690,7 +690,7 @@ class Eksemplar extends \Base\Controllers\BaseController
     // bagian import eksemplar
     public function importviews()
     {
-        $this->data['title'] = 'Import eksemplar Excel';
+        $this->data['title'] = 'Import eksemplar';
         return view('Eksemplar\Views\import', $this->data);
     }
 

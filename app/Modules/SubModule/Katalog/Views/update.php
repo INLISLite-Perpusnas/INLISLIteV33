@@ -15,61 +15,69 @@ $actions = array(
 
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
+<style>
+.btn-header-argon {
+    margin-left: 8px; /* jarak antar tombol */
+}
+.btn-header-argon.active {
+    color: #182d52;
+    font-weight: 600;
+}
+
+.btn-header-argon.active::after {
+    content: "";
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: -4px;
+    height: 3px;
+    background: #5e72e4;
+    border-radius: 3px;
+}
+</style>
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
 <div class="app-main__inner">
-	<div class="app-page-title">
-		<div class="page-title-wrapper">
-			<div class="page-title-heading">
-				<div class="page-title-icon">
-					<i class="pe-7s-note icon-gradient bg-strong-bliss"></i>
-				</div>
-				<div><?= ($is_allowed ? 'Edit' : 'Detail') ?> Katalog
-					<div class="page-title-subheading">Mohon lengkapi data pada form berikut.</div>
-				</div>
-			</div>
-			<div class="page-title-actions">
-				<nav class="" aria-label="breadcrumb">
-					<ol class="breadcrumb">
-						<li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
-						<li class="breadcrumb-item"><a href="<?= base_url('katalog') ?>">Katalog</a></li>
-						<li class="active breadcrumb-item" aria-current="page">Edit</li>
-					</ol>
-				</nav>
-			</div>
-		</div>
-	</div>
+
 
 	<ul class="body-tabs body-tabs-layout tabs-animated body-tabs-animated nav mb-3 flex-nowrap">
 		<li class="nav-item">
-			<?php if ($catalog->Worksheet_id == 4): ?> 
-				<a class="nav-link <?= ($slug == 'katalog_edit') ? 'active' : '' ?>" href="<?= base_url('katalog/edit/' . $catalog->ID . '?rda=0') ?>">
-					<span>KATALOG</span>
-				</a>
-			<?php else: ?>
-				<a class="nav-link <?= ($slug == 'katalog_edit') ? 'active' : '' ?>" href="<?= base_url('katalog/edit/' . $catalog->ID ) ?>">
-					<span>KATALOG</span>
-				</a>
-			<?php endif; ?>
-		</li>
-		<?php foreach (array('eksemplar', 'cover', 'konten_digital') as $group) : ?>
-			<li class="nav-item">
-				<a class="nav-link <?= ($slug == trim($group)) ? 'active' : '' ?>" href="<?= base_url('katalog/edit/' . $catalog->ID . '?slug=' . $group) ?>">
-					<span><?= strtoupper(unslugify($group)) ?></span>
-				</a>
-			</li>
-		<?php endforeach; ?>
-    
+	<div class="d-flex flex-wrap gap-2 mb-3">
+
+    <!-- KATALOG -->
     <?php if ($catalog->Worksheet_id == 4): ?> 
-      <?php foreach (array('edisi_serial', 'artikel', 'konten_digital_artikel') as $group) : ?>
-		  	<li class="nav-item">
-		  		<a class="nav-link <?= ($slug == trim($group)) ? 'active' : '' ?>" href="<?= base_url('katalog/edit/' . $catalog->ID . '?slug=' . $group) ?>">
-		  			<span><?= strtoupper(unslugify($group)) ?></span>
-		  		</a>
-		  	</li>
-		  <?php endforeach; ?>
+        <a href="<?= base_url('katalog/edit/' . $catalog->ID . '?rda=0') ?>"
+           class="btn-header-argon <?= ($slug == 'katalog_edit') ? 'active' : '' ?>">
+            <span>KATALOG</span>
+        </a>
+    <?php else: ?>
+        <a style="padding-left: 10px;" href="<?= base_url('katalog/edit/' . $catalog->ID) ?>"
+           class="btn-header-argon <?= ($slug == 'katalog_edit') ? 'active' : '' ?>">
+            <span>KATALOG</span>
+        </a>
     <?php endif; ?>
+
+    <!-- TAB UMUM -->
+    <?php foreach (['eksemplar', 'cover', 'konten_digital'] as $group): ?>
+        <a href="<?= base_url('katalog/edit/' . $catalog->ID . '?slug=' . $group) ?>"
+           class="btn-header-argon <?= ($slug == $group) ? 'active' : '' ?>">
+            <span><?= strtoupper(unslugify($group)) ?></span>
+        </a>
+    <?php endforeach; ?>
+
+    <!-- TAB KHUSUS WORKSHEET 4 -->
+    <?php if ($catalog->Worksheet_id == 4): ?>
+        <?php foreach (['edisi_serial', 'artikel', 'konten_digital_artikel'] as $group): ?>
+            <a href="<?= base_url('katalog/edit/' . $catalog->ID . '?slug=' . $group) ?>"
+               class="btn-header-argon <?= ($slug == $group) ? 'active' : '' ?>">
+                <span><?= strtoupper(unslugify($group)) ?></span>
+            </a>
+        <?php endforeach; ?>
+    <?php endif; ?>
+
+</div>
+
 	</ul>
 
   <?php if ($slug !== 'edisi_serial'): ?>

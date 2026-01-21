@@ -9,27 +9,7 @@ $slug = $request->getGet('slug') ?? 'katalog_add';
 
 <?= $this->section('page'); ?>
 <div class="app-main__inner">
-	<div class="app-page-title">
-		<div class="page-title-wrapper">
-			<div class="page-title-heading">
-				<div class="page-title-icon">
-					<i class="pe-7s-note icon-gradient bg-strong-bliss"></i>
-				</div>
-				<div>Tambah Katalog
-					<div class="page-title-subheading">Mohon lengkapi data pada form berikut.</div>
-				</div>
-			</div>
-			<div class="page-title-actions">
-				<nav class="" aria-label="breadcrumb">
-					<ol class="breadcrumb">
-						<li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
-						<li class="breadcrumb-item"><a href="<?= base_url('katalog') ?>">Katalog</a></li>
-						<li class="active breadcrumb-item" aria-current="page">Tambah</li>
-					</ol>
-				</nav>
-			</div>
-		</div>
-	</div>
+
 
 	<form id="frm_create" class="main-card mb-3 card" method="post" action="<?= base_url('katalog/create'); ?>">
 		<?= $this->include("Katalog\Views\slug\\$slug"); ?>

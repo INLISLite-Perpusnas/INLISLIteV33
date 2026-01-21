@@ -66,35 +66,7 @@
 <?= $this->section('page'); ?>
 
 <div class="app-main__inner">
-    <div class="app-page-title">
-        <div class="page-title-wrapper">
-            <div class="page-title-heading">
-                <div class="page-title-icon">
-                    <i class="pe-7s-note icon-gradient bg-strong-bliss"></i>
-                </div>
-                <div>
-                    <h2>Stock Opname</h2>
-                    <div class="page-title-subheading">
-                        Kelola data stock opname perusahaan
-                    </div>
-                </div>
-            </div>
-            <div class="page-title-actions">
-                <nav class="" aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item">
-                            <a href="<?= base_url('dashboard') ?>">
-                                <i class="fa fa-home"></i> Home
-                            </a>
-                        </li>
-                        <li class="breadcrumb-item active" aria-current="page">
-                            Stock Opname
-                        </li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
-    </div>
+  
 
     <!-- Filter and Search Card -->
     <div class="card search-filter-card mb-3">

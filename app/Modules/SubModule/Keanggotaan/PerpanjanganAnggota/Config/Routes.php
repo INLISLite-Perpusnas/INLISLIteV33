@@ -1,7 +1,7 @@
 <?php if (!isset($routes)) {
 	$routes = \Config\Services::routes(true);
 }
-$routes->group('perpanjangananggota', ['namespace' => 'PerpanjanganAnggota\Controllers'], function ($subroutes) {
+$routes->group('perpanjangan-anggota', ['namespace' => 'PerpanjanganAnggota\Controllers'], function ($subroutes) {
 	$subroutes->add('', 'PerpanjanganAnggota::index');
 	$subroutes->add('index', 'PerpanjanganAnggota::index');
 	$subroutes->add('detail/(:any)', 'PerpanjanganAnggota::detail/$1');

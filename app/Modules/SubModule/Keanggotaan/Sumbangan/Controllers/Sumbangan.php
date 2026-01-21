@@ -9,9 +9,10 @@ class Sumbangan extends \Base\Controllers\BaseController
     public $auth;
     public $authorize;
     public $sumbanganModel;
-    public $AnggotaModel;
+    public $anggotaModel;
     public $uploadPath;
     public $modulePath;
+   
 
     function __construct()
     {
@@ -32,14 +33,9 @@ class Sumbangan extends \Base\Controllers\BaseController
     {
         $query = $this->sumbanganModel
             ->select('sumbangan.*')
-            // ->select('created.username as created_name')
-            // ->select('updated.username as updated_name')
             ->select('Member_id.Fullname as nama')
             ->select('Member_id.MemberNo as MembersNo')
-            // ->join('users created','created.id = t_sumbangan.created_by','left')
-            // ->join('users updated','updated.id = t_sumbangan.updated_by','left')
             ->join('members Member_id', 'Member_id.ID = sumbangan.Member_id', 'left');
-        // ->join('t_anggota t_member_id','t_member_id.id = t_sumbangan.t_member_id','left');
 
         $sumbangans = $query->findAll();
 
@@ -63,9 +59,6 @@ class Sumbangan extends \Base\Controllers\BaseController
         if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
 
             $save_data = [
-                // 'name' => $this->request->getPost('name'),
-                // 'slug' => $slug,
-                // 'sort' => $this->request->getPost('sort'),
                 'Member_id' => $this->request->getPost('Member_id'),
                 'Jumlah' => $this->request->getPost('Jumlah'),
                 'Keterangan' => $this->request->getPost('Keterangan'),
@@ -89,43 +82,56 @@ class Sumbangan extends \Base\Controllers\BaseController
         }
     }
 
-    public function edit(int $id = null)
+    public function edit(int $id = 0)
     {
-        $this->data['title'] = 'Ubah Sumbangan';
+        // 1. Ambil data sumbangan yang akan diedit
         $sumbangan = $this->sumbanganModel->find($id);
-        $this->data['sumbangan'] = $sumbangan;
+     
+        if (!$sumbangan) {
+        throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+    }
 
-        $this->validation->setRule('name', 'Nama', 'required');
-        if ($this->request->getPost()) {
-            if ($this->validation->withRequest($this->request)->run()) {
-                $slug = url_title($this->request->getPost('name'), '-', TRUE);
-                $update_data = [
-                    'name' => $this->request->getPost('name'),
-                    'slug' => $slug,
-                    'sort' => $this->request->getPost('sort'),
-                    'description' => $this->request->getPost('description'),
-                    'updated_by' => user_id(),
-                ];
+        // 2. Ambil data members untuk dropdown (sama seperti fungsi create)
+        $db = db_connect($DBGroup = 'data');
+        $anggotas = $db->table('members')
+                       ->select('ID,Fullname,MemberNo')
+                       ->get()
+                       ->getResult();
+    $this->data['title'] = 'Ubah Sumbangan';
+    $this->data['sumbangan'] = $sumbangan;
+    $this->data['anggotas'] = $anggotas;
 
-                $sumbanganUpdate = $this->sumbanganModel->update($id, $update_data);
+    // 3. Set Rules (Samakan dengan create)
+    $this->validation->setRule('Member_id', 'Nama Anggota', 'required');
+    
+    if ($this->request->getPost()) {
+        if ($this->validation->withRequest($this->request)->run()) {
+            
+            $update_data = [
+                'Member_id'  => $this->request->getPost('Member_id'),
+                'Jumlah'     => $this->request->getPost('Jumlah'),
+                'Keterangan' => $this->request->getPost('Keterangan'), // pastikan huruf kecil/besar sesuai DB
+                // 'UpdatedBy' => user_id(), // Jika ada field updated_by
+            ];
 
-                if ($sumbanganUpdate) {
-                    set_message('toastr_msg', 'Sumbangan berhasil diubah');
-                    set_message('toastr_type', 'success');
-                    return redirect()->to('/sumbangan');
-                } else {
-                    set_message('toastr_msg', 'Sumbangan gagal diubah');
-                    set_message('toastr_type', 'warning');
-                    set_message('message', 'Sumbangan gagal diubah');
-                    return redirect()->to('/sumbangan/edit/' . $id);
-                }
+            $sumbanganUpdate = $this->sumbanganModel->update($id, $update_data);
+
+            if ($sumbanganUpdate) {
+                set_message('toastr_msg', lang('Sumbangan.info.successfully_saved'));
+                set_message('toastr_type', 'success');
+                return redirect()->to('/sumbangan');
+            } else {
+                set_message('message', lang('Sumbangan.info.failed_saved'));
+                // Lanjut ke view di bawah
             }
         }
-
-
-        $this->data['redirect'] = base_url('sumbangan/edit/' . $id);
-        echo view('Sumbangan\Views\update', $this->data);
     }
+
+    $this->data['redirect'] = base_url('sumbangan/edit/' . $id);
+    set_message('message', $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message'));
+    
+    echo view('Sumbangan\Views\update', $this->data);
+}
 
     public function delete(int $id = 0)
     {

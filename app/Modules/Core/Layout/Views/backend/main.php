@@ -70,11 +70,6 @@ $cart_total = 0;
 <body>
     <div class="app-container app-theme-white body-tabs-shadow <?= $fullscreen ?> <?= get_parameter('container-header-class') ?> <?= get_parameter('container-sidebar-class') ?> <?= get_parameter('container-footer-class') ?>">
         <?= $this->include('Layout\Views\backend\partial\header'); ?>
-        <?php if (is_member('admin')) : ?>
-            <?php if (get_parameter('show-layout-setting') == '1') : ?>
-                <?= $this->include('Layout\Views\backend\partial\setting'); ?>
-            <?php endif; ?>
-        <?php endif; ?>
         <div class="app-main">
             <?= $this->include('Layout\Views\backend\partial\sidebar'); ?>
             <div class="app-main__outer">

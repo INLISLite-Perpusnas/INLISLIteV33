@@ -212,84 +212,86 @@ if (!function_exists('is_accessed')) {
 }
 
 if (!function_exists('display_menu_backend')) {
-    function display_menu_backend($parent, $level = 1, $group = null) {
+    function display_menu_backend($parent = 0, $level = 1, $group = null)
+    {
         $request = \Config\Services::request();
-        $request->uri->setSilent();
         $baseModel = new \App\Models\BaseModel();
 
-        // 1. Siapkan SQL dengan placeholder (?)
         $sql = "
             SELECT 
-                cm.id, 
-                cm.icon, 
-                cm.name, 
-                cm.controller, 
-                cm.type, 
-                deriv.childs
+                cm.id,
+                cm.icon,
+                cm.name,
+                cm.controller,
+                cm.type,
+                (
+                    SELECT COUNT(*) 
+                    FROM c_menus c2 
+                    WHERE c2.parent = cm.id 
+                    AND c2.active = 1
+                ) AS childs
             FROM c_menus cm
-            LEFT OUTER JOIN (
-                SELECT parent, COUNT(*) AS childs 
-                FROM c_menus 
-                WHERE active=1 AND category_id='1'
-                GROUP BY parent
-            ) deriv ON cm.id = deriv.parent
-            INNER JOIN auth_permissions ap ON cm.controller = REPLACE(ap.name, '/access', '')
-            INNER JOIN auth_groups_permissions agp ON ap.id = agp.permission_id
-            INNER JOIN auth_groups ag ON ag.id = agp.group_id
+            INNER JOIN auth_permissions ap 
+                ON cm.controller = REPLACE(ap.name, '/access', '')
+            INNER JOIN auth_groups_permissions agp 
+                ON ap.id = agp.permission_id
+            INNER JOIN auth_groups ag 
+                ON ag.id = agp.group_id
             WHERE 
                 cm.parent = ?
                 AND cm.active = 1
                 AND cm.category_id = '1'
                 AND ag.name = ?
                 AND ap.name LIKE '%/access%'
-            GROUP BY cm.id
             ORDER BY cm.sort ASC
         ";
 
-        // 2. Eksekusi query dengan mengirimkan variabel sebagai array
-        $query = $baseModel->query($sql, [$parent, $group]);
-        $result = $query->getResult();
+        $result = $baseModel->query($sql, [$parent, $group])->getResult();
 
-        $ret = '';
-        if ($result) {
-            if (($level > 1) && ($parent > 0)) {
-                $ret .= '<ul>';
+        if (!$result) return '';
+
+        $html = '<ul class="' . ($level === 1 ? 'nav-menu-argon' : 'submenu-argon') . '">';
+
+        foreach ($result as $row) {
+
+            if ($row->type === 'label') {
+                $html .= '<li class="nav-label-argon">' . esc($row->name) . '</li>';
+                continue;
             }
 
-            foreach ($result as $row) {
-                // Pastikan fungsi ini ada atau hapus jika tidak diperlukan lagi
-                if (function_exists('is_accessed') && !is_accessed($row->controller)) {
-                    continue;
-                }
+            $url = $row->controller ? base_url($row->controller) : '#';
+            $isActive = (trim((string)$request->uri, '/') === trim($row->controller, '/'));
+            $activeClass = $isActive ? 'active' : '';
 
-                $active = (strtolower((string) $request->uri) == strtolower(base_url($row->controller))) ? 'mm-active' : '';
-                $link = base_url($row->controller);
-                $style = (substr($row->icon, 0, 2) == 'fa') ? 'font-size:20px' : '';
+            if ($row->childs > 0) {
+                $html .= '
+                <li class="has-submenu ' . $activeClass . '">
+                    <a href="#" class="submenu-toggle">
+                        <i class="' . esc($row->icon) . '"></i>
+                        <span>' . esc($row->name) . '</span>
+                        <i class="fas fa-chevron-down caret"></i>
+                    </a>';
 
-                if ($row->type == 'label') {
-                    $ret .= '<li class="app-sidebar__heading">' . htmlspecialchars($row->name) . '</li>';
-                } else {
-                    if ($row->childs > 0) {
-                        $ret .= '<li class="' . $active . '">';
-                        $ret .= '<a href="#" class="' . $active . '"><i class="metismenu-icon ' . $row->icon . '" style="' . $style . '"></i>' . htmlspecialchars($row->name) . ' <i class="metismenu-state-icon pe-7s-angle-down caret-left"></i></a>';
-                        $ret .= display_menu_backend($row->id, $level + 1, $group); // Teruskan $group ke panggilan rekursif
-                        $ret .= '</li>';
-                    } else {
-                        $ret .= '<li class="' . $active . '">';
-                        $ret .= '<a href="' . $link . '" class="' . $active . '"><i class="metismenu-icon ' . $row->icon . '" style="' . $style . '"></i>' . htmlspecialchars($row->name) . '</a>';
-                        $ret .= '</li>';
-                    }
-                }
-            }
+                $html .= display_menu_backend($row->id, $level + 1, $group);
 
-            if ($level > 1) {
-                $ret .= '</ul>';
+                $html .= '</li>';
+            } else {
+                $html .= '
+                <li>
+                    <a href="' . $url . '" class="' . $activeClass . '">
+                        <i class="' . esc($row->icon) . '"></i>
+                        <span>' . esc($row->name) . '</span>
+                    </a>
+                </li>';
             }
         }
 
-        return $ret;
+        $html .= '</ul>';
+
+        return $html;
     }
 }
+
 
 
 if (!function_exists('config_menu_frontend')) {

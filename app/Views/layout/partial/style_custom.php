@@ -56,6 +56,80 @@ div.dataTables_wrapper div.dataTables_paginate {
     left: 85px!important;
     width: calc(100% - 90px) !important;
 }
+
+/* Reset & Clean Up */
+.app-sidebar {
+    width: 250px !important;
+    background: white !important;
+    border-radius: 1rem !important;
+    margin: 1.5rem 0 1.5rem 1.5rem !important;
+    height: calc(100vh - 3rem) !important;
+    position: fixed !important;
+    box-shadow: 0 20px 27px 0 rgba(0, 0, 0, 0.05) !important;
+    border: none !important;
+    z-index: 1000;
+}
+
+/* Hilangkan bullet points dari metisMenu */
+.vertical-nav-menu, .vertical-nav-menu ul {
+    list-style-type: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Link Menu Utama */
+.vertical-nav-menu li a {
+    display: flex !important;
+    align-items: center !important;
+    padding: 0.675rem 1rem !important;
+    color: #67748e !important;
+    font-weight: 500;
+    font-size: 0.875rem;
+    border-radius: 0.5rem;
+    margin: 0 1rem !important;
+    transition: all 0.2s ease;
+    text-decoration: none !important;
+}
+
+.vertical-nav-menu li a:hover, 
+.vertical-nav-menu li a.mm-active {
+    background-color: #f6f9fc !important;
+    color: #344767 !important;
+}
+
+/* Container Icon (Kotak Putih di belakang Icon) */
+.vertical-nav-menu i.menu-icon {
+    width: 32px;
+    height: 32px;
+    background: #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.75rem;
+    color: #5e72e4; /* Warna Biru Argon */
+    font-size: 0.8rem;
+}
+
+/* Meratakan Sub-menu (Dropdown) */
+.vertical-nav-menu ul li a {
+    margin-left: 2.5rem !important;
+    font-size: 0.8rem !important;
+    padding: 0.5rem 1rem !important;
+}
+
+/* Section Title (NAVIGASI, PAGES) */
+.nav-title-argon {
+    padding: 1.5rem 1.5rem 0.5rem 1.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #8392ab;
+    letter-spacing: 0.05rem;
+}
+
+
 </style>
 
 <style>

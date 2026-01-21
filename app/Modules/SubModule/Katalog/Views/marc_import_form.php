@@ -1,19 +1,6 @@
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('page'); ?>
 <div class="app-main__inner">
-    <div class="app-page-title">
-        <div class="page-title-wrapper">
-            <div class="page-title-heading">
-                <div class="page-title-icon">
-                    <i class="pe-7s-cloud-upload icon-gradient bg-strong-bliss"></i>
-                </div>
-                <div>Impor Katalog dari File MARC
-                    <div class="page-title-subheading">Upload file dengan ekstensi .mrc untuk membuat katalog baru.</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="row">
         <div class="col-md-12">
             <div class="main-card mb-3 card">

@@ -7,7 +7,10 @@
             <?php endforeach; ?>
         </select>
         <div class="input-group-append">
-            <button class="btn btn-shadow btn bg-corporate-primary2 text-white" type="submit"><i class="fa fa-check-circle"></i> Pilih</button>
+        <button class="btn btn-shadow bg-white text-dark" type="submit">
+            <i class="fa fa-check-circle"></i> Pilih
+        </button>
+
         </div>
     </div> 
 </form>

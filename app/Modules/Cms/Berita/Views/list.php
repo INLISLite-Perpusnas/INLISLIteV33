@@ -9,32 +9,7 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->section('page') ?>
 <div class="app-main__inner">
-    <div class="app-page-title">
-        <div class="page-title-wrapper">
-            <div class="page-title-heading">
-                <div class="page-title-icon">
-                    <i class="pe-7s-network icon-gradient bg-strong-bliss"></i>
-                </div>
-                <div>Berita <?= ucwords(unslugify($slug)) ?>
-                    <div class="page-title-subheading">Daftar semua Berita
-                    </div>
-                </div>
-            </div>
-            <div class="page-title-actions">
-                <nav class="" aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="<?= base_url(
-                                                                    'dashboard'
-                                                                ) ?>"><i class="fa fa-home"></i> Beranda</a></li>
-                        <li class="breadcrumb-item">Berita </li>
-                        <li class="active breadcrumb-item" aria-current="page"><?= ucwords(
-                                                                                    unslugify($slug)
-                                                                                ) ?> </li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
-    </div>
+  
 
     <div class="main-card mb-3 card">
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate">

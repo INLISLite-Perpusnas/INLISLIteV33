@@ -6,7 +6,6 @@ $slug = $request->getGet('slug') ?? '';
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style') ?>
 <style>
-<<<<<<< HEAD
     .tox.tox-tinymce.tox-fullscreen {
         z-index: 1050;
         top: 60px !important;
@@ -36,41 +35,13 @@ $slug = $request->getGet('slug') ?? '';
         height: 100%;
         object-fit: cover; /* Agar gambar tidak gepeng */
     }
-=======
-	/* .tox.tox-tinymce.tox-fullscreen {
-		z-index: 1050;
-		top: 60px !important;
-		left: 85px !important;
-		width: calc(100% - 85px) !important;
-	} */
->>>>>>> 768fa1327effd041bd29d938a21825fda142d99e
 </style>
 <?= $this->endSection('style') ?>
 
 <?= $this->section('page') ?>
 
 <div class="app-main__inner">
-    <div class="app-page-title">
-        <div class="page-title-wrapper">
-            <div class="page-title-heading">
-                <div class="page-title-icon">
-                    <i class="pe-7s-network icon-gradient bg-strong-bliss"></i>
-                </div>
-                <div>Berita <?= ucwords(unslugify($slug)) ?>
-                    <div class="page-title-subheading">Mohon lengkapi data pada form berikut.</div>
-                </div>
-            </div>
-            <div class="page-title-actions">
-                <nav class="" aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
-                        <li class="breadcrumb-item"><a href="<?= base_url('cms/berita') ?>"><?= lang('Berita') ?></a></li>
-                        <li class="active breadcrumb-item" aria-current="page">Tambah Berita</li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
-    </div>
+   
 
     <div class="main-card mb-3 card">
         <div class="card-header">
