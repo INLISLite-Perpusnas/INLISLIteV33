@@ -39,24 +39,19 @@ $request = service('request'); ?>
 <?= $this->section('page'); ?>
 <div class="app-main__inner">
 	<div class="app-page-title">
-		<div class="page-title-actions">
-				<form method="get" action="">
-					<div class="select-wrapper input-group mb-3">
-						<select class="form-control select2" name="member_no" id="member_no" style="min-width:360px">
-							<option value="">Nomor Anggota</option>
-							<?php foreach (get_ref_table('members', 'MemberNo, Fullname', 'MemberNo IS NOT NULL', 'data') as $row) : ?>
-								<option value="<?= $row->MemberNo ?>" <?= $member_no == $row->MemberNo ? 'selected' : '' ?>><?= $row->MemberNo ?> <?= $row->Fullname ?></option>
-							<?php endforeach; ?>
-						</select>
-						<div class="input-group-append">
-							<button class="btn btn-shadow btn-success" type="submit">
-								<i class="fa fa-check-circle"></i> Pilih
-							</button>
-
-						</div>
-					</div>
-				</form>
+		<div class="page-title-wrapper">
+			<div class="page-title-heading">
+				<div class="page-title-icon">
+					<i class="pe-7s-refresh-2 icon-gradient bg-strong-bliss"></i>
+				</div>
+				<div>Sirkulasi
+					<div class="page-title-subheading">Pengembalian</div>
+				</div>
 			</div>
+			<div class="page-title-actions">
+				<?= view('Member\Views\member_no', array('member_no' => $member_no, 'action' => base_url('sirkulasi-pengembalian/create'))) ?>
+			</div>
+		</div>
 	</div>
 
 	<?php if (empty($member_no)) : ?>

@@ -3,8 +3,12 @@ helper(['parameter']);
 $request = service('request');
 
 $container_header_class = get_parameter('container-header-class') . " " . get_parameter('container-sidebar-class') . " " . get_parameter('container-footer-class');
-if (is_profiling()) { $container_header_class = 'fixed-header'; }
-if ($request->getVar('fullscreen') == 1) { $container_header_class .= ' closed-sidebar'; }
+if (is_profiling()) {
+    $container_header_class = 'fixed-header';
+}
+if ($request->getVar('fullscreen') == 1) {
+    $container_header_class .= ' closed-sidebar';
+}
 
 $db = db_connect();
 $logo = $db->table('settingparameters')->where('Name', 'Logo')->get()->getRow()->Value;
@@ -18,26 +22,31 @@ $page_title = ucfirst($segment2 ?: $segment1);
 
 <!doctype html>
 <html lang="id">
+
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title><?= $title ?? $page_title . ' - ' . $nama_perpustakaan; ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no" />
-    
+
     <link rel="stylesheet" href="<?= base_url('themes/uigniter'); ?>/css/base.css">
     <?= $this->include('App\Views\layout\partial\style'); ?>
     <?= $this->include('App\Views\layout\partial\style_custom'); ?>
 
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body { 
-            background-color: #f8f9fa; 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f8f9fa;
             font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
             overflow-x: hidden;
         }
-        
+
         /* Background Gradient Top */
         .argon-bg-gradient {
             position: fixed;
@@ -49,15 +58,15 @@ $page_title = ucfirst($segment2 ?: $segment1);
             z-index: 0;
         }
 
-        .app-container { 
-            position: relative; 
-            z-index: 1; 
+        .app-container {
+            position: relative;
+            z-index: 1;
             min-height: 100vh;
             padding-left: 290px;
             transition: padding-left 0.3s;
         }
 
-       
+
         /* Header Content Area */
         .argon-header {
             display: flex;
@@ -74,8 +83,8 @@ $page_title = ucfirst($segment2 ?: $segment1);
             min-width: 200px;
         }
 
-        .breadcrumb-argon { 
-            font-size: 14px; 
+        .breadcrumb-argon {
+            font-size: 14px;
             opacity: 0.9;
             margin-bottom: 8px;
             font-weight: 400;
@@ -97,9 +106,9 @@ $page_title = ucfirst($segment2 ?: $segment1);
             opacity: 0.6;
         }
 
-        .page-title-argon { 
-            font-size: 32px; 
-            font-weight: 700; 
+        .page-title-argon {
+            font-size: 32px;
+            font-weight: 700;
             margin: 0;
             line-height: 1.2;
         }
@@ -186,18 +195,18 @@ $page_title = ucfirst($segment2 ?: $segment1);
             background: transparent;
             position: relative;
             z-index: 1;
-               
-    padding-left: 50px;
-    padding-right: 30px;
-    min-height: 100vh;
-    transition: padding-left 0.3s ease;
+
+            padding-left: 50px;
+            padding-right: 30px;
+            min-height: 100vh;
+            transition: padding-left 0.3s ease;
         }
 
         .card-argon {
             background: white;
             border-radius: 15px;
             padding: 25px;
-            box-shadow: 0 4px 20px 0 rgba(0,0,0,0.05);
+            box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.05);
             margin-bottom: 25px;
         }
 
@@ -248,7 +257,7 @@ $page_title = ucfirst($segment2 ?: $segment1);
             width: 40px;
             height: 40px;
             border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             cursor: pointer;
             color: #344767;
             font-size: 18px;
@@ -266,7 +275,7 @@ $page_title = ucfirst($segment2 ?: $segment1);
             background: white;
             border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 4px 20px 0 rgba(0,0,0,0.05);
+            box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.05);
             display: flex;
             align-items: center;
             gap: 15px;
@@ -283,10 +292,21 @@ $page_title = ucfirst($segment2 ?: $segment1);
             color: white;
         }
 
-        .stat-icon.blue { background: linear-gradient(135deg, #5e72e4, #825ee4); }
-        .stat-icon.green { background: linear-gradient(135deg, #2dce89, #2dcecc); }
-        .stat-icon.orange { background: linear-gradient(135deg, #fb6340, #fbb140); }
-        .stat-icon.red { background: linear-gradient(135deg, #f5365c, #f56036); }
+        .stat-icon.blue {
+            background: linear-gradient(135deg, #5e72e4, #825ee4);
+        }
+
+        .stat-icon.green {
+            background: linear-gradient(135deg, #2dce89, #2dcecc);
+        }
+
+        .stat-icon.orange {
+            background: linear-gradient(135deg, #fb6340, #fbb140);
+        }
+
+        .stat-icon.red {
+            background: linear-gradient(135deg, #f5365c, #f56036);
+        }
 
         .stat-content {
             flex: 1;
@@ -309,7 +329,7 @@ $page_title = ucfirst($segment2 ?: $segment1);
 
         /* Responsive Design */
         @media (max-width: 992px) {
-            .app-container { 
+            .app-container {
                 padding-left: 0;
             }
 
@@ -350,40 +370,48 @@ $page_title = ucfirst($segment2 ?: $segment1);
                 grid-template-columns: 1fr;
             }
         }
+
+        .app-page-title {
+            color: #fff;
+        }
+
+        .breadcrumb-item a {
+            color: #fff !important;
+        }
     </style>
     <?= $this->renderSection('style'); ?>
 </head>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.submenu-toggle').forEach(function (toggle) {
-        toggle.addEventListener('click', function (e) {
-            e.preventDefault();
-            this.closest('.has-submenu').classList.toggle('open');
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.submenu-toggle').forEach(function(toggle) {
+            toggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                this.closest('.has-submenu').classList.toggle('open');
+            });
         });
     });
-});
 </script>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const toggleBtn = document.getElementById('sidebarToggle');
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleBtn = document.getElementById('sidebarToggle');
 
-    // Restore state
-    if (localStorage.getItem('sidebar') === 'collapsed') {
-        document.body.classList.add('sidebar-collapsed');
-    }
+        // Restore state
+        if (localStorage.getItem('sidebar') === 'collapsed') {
+            document.body.classList.add('sidebar-collapsed');
+        }
 
-    toggleBtn.addEventListener('click', function () {
-        document.body.classList.toggle('sidebar-collapsed');
+        toggleBtn.addEventListener('click', function() {
+            document.body.classList.toggle('sidebar-collapsed');
 
-        // Save state
-        localStorage.setItem(
-            'sidebar',
-            document.body.classList.contains('sidebar-collapsed') 
-                ? 'collapsed' 
-                : 'expanded'
-        );
+            // Save state
+            localStorage.setItem(
+                'sidebar',
+                document.body.classList.contains('sidebar-collapsed') ?
+                'collapsed' :
+                'expanded'
+            );
+        });
     });
-});
 </script>
 
 
@@ -405,24 +433,19 @@ document.addEventListener('DOMContentLoaded', function () {
             <!-- Header -->
             <header class="argon-header" style="padding-left: 60px;">
                 <div class="header-left">
-                    <div class="breadcrumb-argon">
-                        <a href="<?= base_url() ?>">Home</a>
-                        <span>/</span>
-                        <span><?= ucfirst($segment1) ?></span>
-                        <?php if ($segment2): ?>
-                            <span>/</span>
-                            <span><?= ucfirst($segment2) ?></span>
-                        <?php endif; ?>
-                    </div>
-                    <h1 class="page-title-argon"><?= $page_title ?></h1>
-                    <p class="page-subtitle-argon"><?= $nama_perpustakaan ?></p>
+
+
+                    <h4 class="page-title-argon"><?= $nama_perpustakaan ?></h4>
                 </div>
-                
+
                 <div class="header-actions" style="padding-right: 50px;">
-                    <div class="search-container-argon">
-                        <i class="fas fa-search search-icon-argon"></i>
-                        <input type="text" class="search-input-argon" placeholder="Cari sesuatu...">
+                    <div id="clock-wrapper" style="display: flex; align-items: center; color: #fff; margin-right: 20px; font-size: 14px;">
+                        <i class="fas fa-clock" style="margin-right: 10px;"></i>
+                        <span id="live-clock" style="font-weight: 600; white-space: nowrap;">
+                            Memuat waktu...
+                        </span>
                     </div>
+
                     <a href="<?= base_url('user/profile') ?>" class="btn-header-argon">
                         <i class="fas fa-user"></i>
                         <span>Profile</span>
@@ -438,7 +461,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <!-- Footer -->
             <footer class="footer-argon">
                 <p>
-                    © <?= date('Y') ?> Made with <i class="fas fa-heart text-danger"></i> by 
+                    © <?= date('Y') ?> Made with <i class="fas fa-heart text-danger"></i> by
                     <a href="#"><?= $nama_perpustakaan ?></a>
                 </p>
             </footer>
@@ -452,7 +475,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Initialize tooltips
         $(document).ready(function() {
             $('[data-toggle="tooltip"]').tooltip();
-            
+
             // Initialize DataTable if exists
             if ($('.datatable-argon').length) {
                 $('.datatable-argon').DataTable({
@@ -473,8 +496,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     },
                     "dom": '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
-                           '<"row"<"col-sm-12"tr>>' +
-                           '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>'
+                        '<"row"<"col-sm-12"tr>>' +
+                        '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>'
                 });
             }
 
@@ -482,7 +505,7 @@ document.addEventListener('DOMContentLoaded', function () {
             $('a[href^="#"]').on('click', function(e) {
                 e.preventDefault();
                 var target = $(this.getAttribute('href'));
-                if(target.length) {
+                if (target.length) {
                     $('html, body').animate({
                         scrollTop: target.offset().top - 80
                     }, 500);
@@ -494,7 +517,7 @@ document.addEventListener('DOMContentLoaded', function () {
         function toggleSidebar() {
             const sidebar = document.querySelector('.sidebar-argon');
             const overlay = document.querySelector('.mobile-overlay');
-            
+
             if (sidebar && overlay) {
                 sidebar.classList.toggle('open');
                 overlay.classList.toggle('active');
@@ -506,9 +529,9 @@ document.addEventListener('DOMContentLoaded', function () {
             if (window.innerWidth <= 992) {
                 const sidebar = document.querySelector('.sidebar-argon');
                 const toggle = document.querySelector('.mobile-menu-toggle');
-                
-                if (sidebar && toggle && 
-                    !sidebar.contains(e.target) && 
+
+                if (sidebar && toggle &&
+                    !sidebar.contains(e.target) &&
                     !toggle.contains(e.target) &&
                     sidebar.classList.contains('open')) {
                     toggleSidebar();
@@ -516,6 +539,38 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     </script>
+    <script>
+        function updateClock() {
+            const now = new Date();
+
+            // Pengaturan format untuk zona waktu Jakarta
+            const dateOptions = {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+                timeZone: 'Asia/Jakarta'
+            };
+
+            const timeOptions = {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+                timeZone: 'Asia/Jakarta'
+            };
+
+            const dateString = now.toLocaleDateString('id-ID', dateOptions);
+            const timeString = now.toLocaleTimeString('id-ID', timeOptions);
+
+            // Update elemen teks
+            document.getElementById('live-clock').innerHTML = `${dateString} | ${timeString.replace(/\./g, ':')} WIB`;
+        }
+
+        // Update setiap 1 detik
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
     <?= $this->renderSection('script'); ?>
 </body>
+
 </html>

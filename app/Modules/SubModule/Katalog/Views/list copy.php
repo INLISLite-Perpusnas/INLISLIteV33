@@ -1,6 +1,14 @@
 <?php
 $request = service('request');
-
+$slug = $request->getGet('slug');
+$get_provinsi = user()->npp_provinsi_id ?? 0;
+$branch_id = branch_id();
+$branch_code = $request->getGet('branch_id');
+$provinsi = $request->getGet('Province');
+$kabkota = str_replace(".", "", $request->getGet('City'));
+$kecamatan = str_replace(".", "", $request->getGet('Kecamatan'));
+$kelurahan = str_replace(".", "", $request->getGet('Kelurahan'));
+// set_setting_parameter('Branch_id',0);
 ?>
 
 <?= $this->extend('App\Views\layout\main'); ?>
@@ -22,7 +30,7 @@ $request = service('request');
 			<div class="page-title-actions">
 				<nav class="" aria-label="breadcrumb">
 					<ol class="breadcrumb">
-						<li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
+						<li class="breadcrumb-item"><a href="<?= base_url('Katalog') ?>"><i class="fa fa-home"></i> Home</a></li>
 						<li class="active breadcrumb-item" aria-current="page">Katalog</li>
 					</ol>
 				</nav>
@@ -30,41 +38,108 @@ $request = service('request');
 		</div>
 	</div>
 
+	<?php if (is_member('admin') || is_member('sa_prov') || is_member('sa_kabkot') || is_member('sa_psm')) : ?>
+
+		<div class="main-card mb-3 card">
+			<div class="card-header"><i class="header-icon lnr-search icon-gradient bg-plum-plate"> </i> Filter
+				<div class="btn-actions-pane-right actions-icon-btn">
+
+				</div>
+			</div>
+			<div class="card-body">
+				<form name="form_items" id="form_search" action="">
+					<div class="row">
+						<?php if (is_member('admin')) : ?>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label>Provinsi*</label>
+									<div class="select-wrapper">
+										<select required data-error="Pilih Provinsi" class="form-control select2" id="Province" name="Province" style="width:100%"></select>
+									</div>
+									<small class="help-block with-errors"></small>
+								</div>
+							</div>
+						<?php endif; ?>
+
+						<?php if (is_member('sa_prov')) : ?>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label>Provinsi*</label>
+									<div class="select-wrapper">
+										<select required data-error="Pilih Provinsi" class="form-control select2" name="Province" style="width:100%">
+											<?php foreach (get_ref_table('t_region', 'id, code, name', 'code=' . $get_provinsi, 'data') as $row) : ?>
+												<option value="<?= $row->code ?>"><?= $row->name ?></option>
+											<?php endforeach; ?>
+										</select>
+									</div>
+									<small class="help-block with-errors"></small>
+								</div>
+							</div>
+						<?php endif; ?>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label>Kota*</label>
+								<div class="select-wrapper">
+									<select class="form-control select2" id="City" name="City" style="width:100%">
+										<option value="">-Select-</option>
+									</select>
+								</div>
+								<small class="help-block with-errors"></small>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label>Kecamatan*</label>
+								<div class="select-wrapper">
+									<select class="form-control select2" id="District" name="Kecamatan" style="width:100%">
+										<option value="">-Select-</option>
+									</select>
+								</div>
+								<small class="help-block with-errors"></small>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label>Kelurahan*</label>
+								<div class="select-wrapper">
+									<select class="form-control select2" id="SubDistrict" name="Kelurahan" style="width:100%">
+										<option value="">-Select-</option>
+									</select>
+								</div>
+								<small class="help-block with-errors"></small>
+							</div>
+						</div>
+					</div>
+					<div class="position-relative form-group">
+						<label for="groups">Perpustakaan Mitra*</label>
+						<div class="select-wrapper">
+							<select class="form-control selectx" name="branch_id" id="Branch" tabindex="-1" aria-hidden="true" style="width:100%">
+								<option value="">-Select-</option>
+							</select>
+						</div>
+					</div>
+					<div class="form-group">
+						<button type="submit" class="btn btn-primary">Apply</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	<?php endif; ?>
 
 	<div class="main-card mb-3 card">
-		<div class="card-header d-flex justify-content-between align-items-center flex-wrap">
-			<div><i class="header-icon lnr-list icon-gradient bg-plum-plate"></i> Tabel Daftar Katalog</div>
-
-			<div class="d-flex align-items-center flex-wrap">
+		<div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Daftar Katalog
+			<div class="btn-actions-pane-right actions-icon-btn">
 				<?php if (is_allowed('katalog/create')) : ?>
 					<?php if (get_setting_parameter('FormEntriKatalog', is_profiling()) == 'Simple') : ?>
-						<a href="<?= base_url('katalog/create?rda=1') ?>" class="btn btn-primary btn-sm mr-2">
-							<i class="fa fa-plus"></i> Tambah Katalog RDA
-						</a>
-						<a href="<?= base_url('katalog/create?rda=0') ?>" class="btn btn-success btn-sm mr-2">
-							<i class="fa fa-plus"></i> Tambah Katalog AACR
+						<a href="<?= base_url('katalog/create') ?>" class=" btn btn-success" title=""><i class="fa fa-plus"></i>
+							Tambah Katalog
 						</a>
 					<?php else : ?>
-						<a href="<?= base_url('katalog/create_marc') ?>" class="btn btn-success btn-sm mr-2">
-							<i class="fa fa-plus"></i> Tambah Katalog
+						<a href="<?= base_url('katalog/create_marc') ?>" class=" btn btn-success" title=""><i class="fa fa-plus"></i>
+							Tambah Katalog
 						</a>
 					<?php endif; ?>
 				<?php endif; ?>
-
-				<div class="dropdown">
-					<button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button"
-						id="downloadMarcDropdownKatalog" data-toggle="dropdown" aria-expanded="false">
-						<i class="fas fa-download"></i> Ekspor Katalog MARC
-					</button>
-					<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="downloadMarcDropdownKatalog">
-						<!-- <li><a class="dropdown-item" href="#" onclick="submitExport('mrc')">Export MARC (.mrc)</a></li> -->
-						<!-- <li><a class="dropdown-item" href="#" onclick="submitExport('json')">Export JSON</a></li> -->
-						<li><a class="dropdown-item" href="#" onclick="submitExport('txt')">Export TXT</a></li>
-						<!-- <li><a class="dropdown-item" href="#" onclick="submitExport('xml')">Export XML</a></li> -->
-						<!-- <li><a class="dropdown-item" href="#" onclick="submitExport('csv')">Export CSV</a></li> -->
-						<li><a class="dropdown-item" href="#" onclick="submitExport('xlsx')">Export Excel</a></li>
-					</ul>
-				</div>
 			</div>
 		</div>
 		<div class="card-body">
@@ -76,16 +151,16 @@ $request = service('request');
 								<th class="text-center" width="35">
 									<input type="checkbox" class="check_data" title="Pilih Semua">
 								</th>
-
-								<th class="text-center">BIBID</th>
+								<th class="text-center" width="100">Nama Perpustakaan</th>
+								<th class="text-center" width="100">NPP Perpustakaan</th>
+								<th class="text-center" width="100">BIBID</th>
 								<th class="text-center">Judul</th>
-								<th class="text-center">Edisi</th>
-								<th class="text-center">Publisher</th>
-								<th class="text-center">Deskripsi Fisik</th>
-								<th class="text-center">No. Panggil</th>
-								<th class="text-center">Eksemplar</th>
-								<th class="text-center">OPAC</th>
-								<th class="text-center">Pedoman Katalog</th>
+								<th class="text-center" width="">Edisi</th>
+								<th class="text-center" width="">Publisher</th>
+								<th class="text-center" width="">Deskripsi Fisik</th>
+								<th class="text-center" width="">No. Panggil</th>
+								<th class="text-center" width="">Eksemplar</th>
+								<th class="text-center" width="">OPAC</th>
 								<th class="text-center" width="80">Aksi</th>
 							</tr>
 						</thead>
@@ -107,14 +182,82 @@ $request = service('request');
 
 <?= $this->section('script'); ?>
 <script>
+	let is_profiling = `<?= is_profiling() ?>`;
+	if (<?= is_member('sa_prov') ?>) {
+		code = '<?php echo $get_provinsi ?>';
+
+		getData(`<?= base_url('api/region/city') ?>/${code}.`, `#City`);
+	}
+
+	let branch_id = `<?= branch_id() ?>`
+
+
+
+
+
+	if (is_profiling) {
+
+		getData(`<?= base_url('api/region/province') ?>`, `#Province`);
+
+		// code = code.replace(".", "");
+
+
+		getData(`<?= base_url('api-mitra-perpustakaan/branch') ?>/${code}`, `#Branch`);
+		$('#Province').change(function(e) {
+			var code = $(this).val();
+
+			getData(`<?= base_url('api/region/city') ?>/${code}.`, `#City`);
+
+			code = code.replace(".", "");
+			// code = code.replace(".", "");
+
+
+			getData(`<?= base_url('api-mitra-perpustakaan/branch') ?>/${code}`, `#Branch`);
+
+		});
+
+		$('#City').change(function(e) {
+			var code = $(this).val();
+			getData(`<?= base_url('api/region/district') ?>/${code}`, `#District`);
+
+			code = code.replace(".", "");
+			code = code.replace(".", "");
+
+			getData(`<?= base_url('api-mitra-perpustakaan/branch') ?>/${code}/NPP_KabKota_id`, `#Branch`);
+		});
+		$('#District').change(function(e) {
+			var code = $(this).val();
+			getData(`<?= base_url('api/region/sub_district') ?>/${code}`, `#SubDistrict`);
+
+			code = code.replace(".", "");
+			code = code.replace(".", "");
+
+			getData(`<?= base_url('api-mitra-perpustakaan/branch') ?>/${code}/NPP_Kecamatan_id`, `#Branch`);
+		});
+		$('#SubDistrict').change(function(e) {
+			var name = $("#SubDistrict option:selected").text();
+			var code = $(this).val();
+
+			code = code.replace(".", "");
+			code = code.replace(".", "");
+			code = code.replace(".", "");
+
+			getData(`<?= base_url('api-mitra-perpustakaan/branch') ?>/${code}/NPP_Kelurahan_id`, `#Branch`);
+		});
+
+		$('#branch_id').select2({
+			maximumInputLength: 3
+		});
+	}
+</script>
+<script>
 	var t;
 	$(document).ready(function() {
 		t = $('#tbl_data').DataTable({
 			"processing": true,
 			"serverSide": true,
 			"ajax": {
-				"url": "<?php echo site_url('api/katalog/datatable') ?>",
-				"type": "POST",
+				"url": "<?php echo site_url('api/katalog/datatable?branch_code=' . $branch_code . '&provinsi_id=' . $provinsi) . '&kabkota_id=' . $kabkota . '&kecamatan_id=' . $kecamatan . '&kelurahan_id=' . $kelurahan ?>",
 
 			},
 			"dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
@@ -135,6 +278,14 @@ $request = service('request');
 					data: 'ID',
 					className: 'text-center',
 					orderable: false
+				},
+				{
+					data: 'Nama Perpustakaan',
+					className: 'text-left'
+				},
+				{
+					data: 'NPP Perpustakaan',
+					className: 'text-left'
 				},
 				{
 					data: 'BIBID',
@@ -165,18 +316,13 @@ $request = service('request');
 					orderable: false
 				},
 				{
-					data: 'IsRDA',
-					className: 'text-center',
-					orderable: true
-				},
-				{
 					data: 'action',
 					className: 'text-center',
 					orderable: false
 				},
 			],
 			"order": [
-				[0, "asc"]
+				[1, "desc"]
 			],
 			"drawCallback": function(data, type, full, meta) {
 				var api = this.api();
@@ -302,13 +448,5 @@ $request = service('request');
 		});
 		return false;
 	});
-
-	function submitExport(format) {
-		var form = $('#form_items');
-		var serialize_bulk = form.serialize() + '&format=' + format;
-		var url = "<?= base_url('katalog/ekspor_marc') ?>" + '?' + serialize_bulk;
-		window.location.href = url;
-	}
 </script>
-
 <?= $this->endSection('script'); ?>

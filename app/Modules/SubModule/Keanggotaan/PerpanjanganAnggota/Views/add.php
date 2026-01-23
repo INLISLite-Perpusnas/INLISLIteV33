@@ -16,7 +16,29 @@ $anggotas = $builder->where('Branch_id',branch_id())->get()->getResult();
 
 
 <div class="app-main__inner">
-   
+    <div class="app-page-title">
+        <div class="page-title-wrapper">
+			<div class="page-title-heading">
+				<div class="page-title-icon">
+					<i class="pe-7s-id icon-gradient bg-strong-bliss"></i>
+				</div>
+				<div>Anggota
+					<div class="page-title-subheading">Perpanjangan semua Anggota
+					</div>
+				</div>
+			</div>
+			<div class="page-title-actions">
+				<nav class="" aria-label="breadcrumb">
+					<ol class="breadcrumb">
+						<li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i></a></li>
+						<li class="breadcrumb-item">Keanggotaan</li>
+						<li class="breadcrumb-item active">Perpanjangan Anggota</li>
+					</ol>
+				</nav>
+			</div>
+		</div>
+    
+    </div>
     <div class="main-card mb-3 card">
         <div class="card-header">
             <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Form
@@ -26,7 +48,7 @@ $anggotas = $builder->where('Branch_id',branch_id())->get()->getResult();
             <div id="infoMessage"><?= $message ?? ''; ?></div>
             <?= get_message('message'); ?>
 
-            <form id="frm_create" class="col-md-12 mx-auto" method="post" action="<?= base_url('perpanjangan-anggota/create'); ?>">
+            <form id="frm_create" class="col-md-12 mx-auto" method="post" action="<?= base_url('perpanjangananggota/create'); ?>">
                 <div class="form-row">
 
 

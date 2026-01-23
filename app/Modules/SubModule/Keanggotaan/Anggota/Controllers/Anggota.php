@@ -957,7 +957,7 @@ class Anggota extends \Base\Controllers\BaseController
 	}
 	// Import Data dari EXCEL
 
-	public function import_anggota()
+	public function import_view()
 	{
 		$this->data['title'] = 'Import Data Anggota';
 		echo view('Anggota\Views\import');

@@ -30,7 +30,6 @@ class Katalog extends \Base\Controllers\BaseController
 	public $db;
 	public $eksemplarModel;
 	public $edisiSerialModel;
-	public $loanDigitalModel;
 
 	function __construct()
 	{
@@ -47,7 +46,6 @@ class Katalog extends \Base\Controllers\BaseController
 		$this->modulePath = ROOTPATH . 'public/uploads/katalog/';
 		$this->validation = \Config\Services::validation();
 		$this->db = \Config\Database::connect('data');
-	    $this->loanDigitalModel=new \Peminjaman\Models\LoanDigitalModel();
 
 		if (!file_exists($this->uploadPath)) {
 			mkdir($this->uploadPath);
@@ -326,7 +324,11 @@ class Katalog extends \Base\Controllers\BaseController
 	}
 	public function create_marc()
 	{
-		
+		if (!is_allowed('katalog/create')) {
+			set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
+			set_message('toastr_type', 'error');
+			return redirect()->to('katalog');
+		}
 
 		$data['title'] = 'Tambah Katalog Form MARC';
 		$this->validation->setRule('Worksheet_id', 'Jenis Bahan', 'required');
@@ -615,7 +617,12 @@ class Katalog extends \Base\Controllers\BaseController
 
 	public function create()
 	{
-		
+		if (!is_allowed('katalog/create')) {
+			set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
+			set_message('toastr_type', 'error');
+			return redirect()->to('katalog');
+		}
+
 		$data['title'] = 'Tambah Katalog Form Sederhana';
 
 		$branch_id = user()->branch_id ?? $this->request->getGet('branch_id');
@@ -1071,60 +1078,110 @@ class Katalog extends \Base\Controllers\BaseController
 		return redirect()->to('katalog');
 	}
 
+	public function report()
+	{
+		$db = db_connect();
+		$builder = $db->table('catalogs as a')
+			->select('a.ID, a.BIBID, a.Title,  a.Edition, a. Publisher, a.PhysicalDescription, a.ControlNumber, a.IsOPAC, a.IsRDA')
+			->select('a.ID as action, 0 as Eksemplar')
+			->select('b.ID as Branch_id, b.Name as Perpustakaan, b.Name, b.Code, b.NPP_Provinsi_id, b.NPP_KabKota_id, b.NPP_Kecamatan_id, b.NPP_Kelurahan_id, b.NPP_id')
+			->join('branchs b', 'b.ID = a.Branch_id', 'inner')
+			->where('a.IsQUARANTINE', 0);
 
+
+
+		$results = $builder->get()->getResult();
+
+		$spreadsheet = new Spreadsheet();
+		$sheet = $spreadsheet->getActiveSheet();
+
+		$sheet->mergeCells('A1:M1');
+		$sheet->setCellValue("A1", "Laporan Katalog");
+		$sheet->getStyle('A1:M1')->getFont()->setBold(true)->setSize(12);
+
+		$sheet->setCellValue("A2", "Branch ID");
+		$sheet->setCellValue("B2", "NPP");
+		$sheet->setCellValue("C2", "Mitra Perpustakaan");
+		$sheet->setCellValue("D2", "Catalog ID");
+		$sheet->setCellValue("E2", "BIBID");
+		$sheet->setCellValue("F2", "Judul");
+		$sheet->setCellValue("G2", "Edisi");
+		$sheet->setCellValue("H2", "Publisher");
+		$sheet->setCellValue("I2", "Deskripsi Fisik");
+		$sheet->setCellValue("J2", "No. Panggil");
+		$sheet->setCellValue("K2", "Eksemplar");
+		$sheet->setCellValue("L2", "OPAC");
+		$sheet->setCellValue("M2", "Pedoman Katalog");
+
+		$sheet->getColumnDimension('A')->setWidth(10);
+		$sheet->getColumnDimension('B')->setWidth(10);
+		$sheet->getColumnDimension('C')->setWidth(75);
+		$sheet->getColumnDimension('D')->setWidth(10);
+		$sheet->getColumnDimension('E')->setWidth(20);
+		$sheet->getColumnDimension('F')->setWidth(50);
+		$sheet->getColumnDimension('G')->setWidth(10);
+		$sheet->getColumnDimension('H')->setWidth(20);
+		$sheet->getColumnDimension('I')->setWidth(15);
+		$sheet->getColumnDimension('J')->setWidth(20);
+		$sheet->getColumnDimension('K')->setWidth(10);
+		$sheet->getColumnDimension('L')->setWidth(10);
+		$sheet->getColumnDimension('M')->setWidth(20);
+
+		$sheet->getStyle('A2:M2')->getFont()->setBold(true)->setSize(12);
+
+		$col = 3;
+		$no = 1;
+		$i = 1;
+		foreach ($results as $row) {
+			$collections = count_all('collections', 'Catalog_id = ' . $row->ID, 'data');
+			$sheet->setCellValue("A" . $col, $row->Branch_id);
+			$sheet->setCellValue("B" . $col, $row->Code);
+			$sheet->setCellValue("C" . $col, $row->Perpustakaan);
+			$sheet->setCellValue("D" . $col, $row->ID);
+			$sheet->setCellValue("E" . $col, $row->BIBID);
+			$sheet->setCellValue("F" . $col, $row->Title);
+			$sheet->setCellValue("G" . $col, $row->Edition);
+			$sheet->setCellValue("H" . $col, $row->Publisher);
+			$sheet->setCellValue("I" . $col, $row->PhysicalDescription);
+			$sheet->setCellValue("J" . $col, $row->ControlNumber);
+			$sheet->setCellValue("K" . $col, $collections ?? 0);
+			$sheet->setCellValue("L" . $col, $row->IsOPAC);
+			$sheet->setCellValue("M" . $col, $row->IsRDA);
+
+			$col++;
+			$no++;
+			$i++;
+		}
+
+		$writer = new Xlsx($spreadsheet);
+		$subject = 'Laporan Katalog';
+		$filename = ucwords($subject) . '-' . date('Y-m-d');
+
+		header('Content-Type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+		header('Cache-Control: max-age=0');
+
+		$writer->save('php://output');
+	}
 
 	public function view_decrypted($ID)
-{
-    $id = decData($ID);
-	$catalog_id = $this->fileModel->find($id)->Catalog_id;
-    session()->set('one_key', $id);
+	{
+		// Load the file model
 
-    // ===============================
-    // CEK KHUSUS ANGGOTA
-    // ===============================
-    if (is_member('anggota')) {
+        $id = decData($ID);
+	   	session()->set('one_key', $id);
+		// Get the file record
+		$file = $this->fileModel->find($id);
+		if (!$file || !file_exists($this->modulePath . $file->FileURL)) {
+			return $this->response->setStatusCode(404)->setBody('File not found');
+		}
 
-        $userId = user()->id;
-	
-
-        $loan = $this->loanDigitalModel
-            ->where('user_id', $userId)
-            ->where('catalog_id', $catalog_id)
-            ->where('status', 'LOAN')
-            ->where('due_date >=', date('Y-m-d H:i:s'))
-            ->first();
-
-        if (!$loan) {
-			set_message('toastr_msg', 'Perpanjangan Masa Berlaku Anggota gagal');
-			set_message('toastr_type', 'error');
-            return redirect()->back()
-                ->with('error', 'Anda tidak memiliki akses. Masa pinjam telah habis atau belum meminjam.');
-        }
-    }
-
-    // ===============================
-    // AMBIL FILE
-    // ===============================
-    $file = $this->fileModel->find($id);
-    if (!$file || !file_exists($this->modulePath . $file->FileURL)) {
-        return $this->response
-            ->setStatusCode(404)
-            ->setBody('File not found');
-    }
-
-    return view(
-        'Katalog\Views\slug\pdf_viewer',
-        [
-            'fileId'   => $id,
-            'fileName' => $file->FileURL
-        ]
-    );
-}
-
+		// Instead of serving the file directly, we'll render a view with our custom PDF viewer
+		return view('Katalog\Views\slug\pdf_viewer', ['fileId' => $id, 'fileName' => $file->FileURL]);
+	}
 
 	public function view_decrypted_article($ID)
 	{
-		
 		// Get the file record
 		$file = $this->serialArticleFilesModel->find($ID);
 		if (!$file || !file_exists($this->modulePath . $file->FileURL)) {
@@ -1396,9 +1453,7 @@ public function get_decrypted_content($ID)
 			$this->edisiSerialModel->delete($id);
 			return redirect()->to('/katalog/edit/' . $catalog_id . '?slug=edisi_serial');
 		} else {
-			 set_message('toastr_msg', ' Berita gagal dihapus');
-            set_message('toastr_type', 'warning');
-            return redirect()->to('/katalog/edit/' . $catalog_id . '?slug=edisi_serial');
+			return $this->failNotFound('Data edisi serial not found (' . $id . ")");
 		}
 	}
 

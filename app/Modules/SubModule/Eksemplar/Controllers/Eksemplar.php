@@ -33,7 +33,7 @@ class Eksemplar extends \Base\Controllers\BaseController
 
     public function index()
     {
-        if (!is_allowed('eksemplar/index')) {
+         if (!is_allowed('eksemplar/index')) {
             set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
             set_message('toastr_type', 'error');
             return redirect()->to('eksemplar');
@@ -57,17 +57,25 @@ class Eksemplar extends \Base\Controllers\BaseController
 
     public function create()
     {
-       
+        if (!is_allowed('eksemplar/create')) {
+            set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
+            set_message('toastr_type', 'error');
+            return redirect()->to('eksemplar');
+        }
 
         $this->data['title'] = 'Tambah Eksemplar';
         $slug = $this->request->getGet('slug');
 
         $NomorInduk = $this->db->table('settingparameters')->where('Name', 'NomorInduk')->get()->getRow()->Value ?: "Otomatis";
-
+        //$identityNo = $this->request->getPost('IdentityNo');
         if ($NomorInduk == "Manual") {
+            // UBAH BAGIAN INI - Generate MemberNo berdasarkan setting
             $this->data['NomorInduk'] = "True";
+            //dd($this->data['NomorInduk']); //$MemberNo = generateMemberNumber($identityNo);
+
         } else {
             $this->data['NomorInduk'] = "False";
+            //$MemberNo = $this->request->getPost('MemberNo');
         }
 
         $this->validation->setRule('Catalog_id', 'Judul Katalog', 'required');
@@ -88,37 +96,29 @@ class Eksemplar extends \Base\Controllers\BaseController
             $collections = [];
             $total = $post['JumlahEksemplar'];
             $Catalog_id = $post['Catalog_id'] ?? null;
-
             if (empty($Catalog_id)) {
                 set_message('message', 'Judul Katalog tidak boleh kosong');
                 return redirect()->back()->withInput();
             }
-
             $worksheet_id = $this->db->table('catalogs')->where('ID', $Catalog_id)->get()->getRow()->Worksheet_id ?? '';
 
             for ($i = 1; $i <= $total; $i++) {
-                // Jika NomorInduk Manual (True), ambil dari input view
-                if ($NomorInduk == "Manual") {
-                    // Ambil nilai dari form input
-                    $nomorBarcode = $post['NomorBarcode' . ($i - 1)] ?? '';
-                    $noInduk = $post['NoInduk' . ($i - 1)] ?? '';
-                    $rfid = $post['RFID' . ($i - 1)] ?? '';
-                } else {
-                    // Generate otomatis
-                    // Prepare data untuk generate barcode
-                    $collectionData = [
-                        'worksheet_id' => $worksheet_id ?? null,
-                        'category_id' => $post['Category_id'] ?? null,
-                        'media_id' => $post['Media_id'] ?? null,
-                        'source_id' => $post['Source_id'] ?? null,
-                        'partner_id' => $post['Partner_id'] ?? null
-                    ];
+                // Prepare data untuk generate barcode
+                $collectionData = [
+                    'worksheet_id' => $worksheet_id ?? null,
+                    'category_id' => $post['Category_id'] ?? null,
+                    'media_id' => $post['Media_id'] ?? null,
+                    'source_id' => $post['Source_id'] ?? null,
+                    'partner_id' => $post['Partner_id'] ?? null
+                ];
 
-                    // Generate NomorBarcode menggunakan logic yang benar
-                    $nomorBarcode = $this->generateNomorBarcode($collectionData, $i);
-                    $noInduk = $nomorBarcode;
-                    $rfid = $nomorBarcode;
-                }
+
+
+
+                // Generate NomorBarcode menggunakan logic yang benar
+                $nomorBarcode = $this->generateNomorBarcode($collectionData, $i);
+
+
 
                 $save = [
                     'Catalog_id' => $post['Catalog_id'],
@@ -126,17 +126,18 @@ class Eksemplar extends \Base\Controllers\BaseController
                     'ISDRM' => $post['ISDRM'],
                     'Location_Library_id' => $post['Location_Library_id'],
                     'Location_id' => $post['Location_id'],
-                    'NomorBarcode' => $nomorBarcode,
-                    'NoInduk' => $noInduk,
-                    'RFID' => $rfid,
+                    'NomorBarcode' => $nomorBarcode, // Generated barcode
+                    'NoInduk' => $nomorBarcode,
+                    'RFID' => $nomorBarcode,
                     'CallNumber' => $post['CallNumber'],
                     'IsQUARANTINE' => '0',
                     'CreateBy' => user_id(),
-                    'CreateDate' => date("Y-m-d H:i:s"),
-                    'UpdateBy' => user_id(),
-                    'UpdateDate' => date("Y-m-d H:i:s")
+				            'CreateDate' => date("Y-m-d H:i:s"),
+				            'UpdateBy' => user_id(),
+				            'UpdateDate' => date("Y-m-d H:i:s")
                 ];
 
+                // ... rest of the save logic remains the same ...
                 if (!empty($post['TanggalPengadaan'])) {
                     $save['TanggalPengadaan'] = $post['TanggalPengadaan'];
                 }
@@ -170,29 +171,16 @@ class Eksemplar extends \Base\Controllers\BaseController
 
                 array_push($collections, $save);
             }
-   
+
             if (!empty($collections)) {
                 try {
-                    // Insert eksemplar
                     $this->eksemplarModel->insertBatch($collections);
-
-                    // Update ISDRM di tabel catalogs jika ISDRM = 1
-                    if (isset($post['ISDRM']) && $post['ISDRM'] == '1') {
-                        $this->db->table('catalogs')
-                            ->where('ID', $Catalog_id)
-                            ->update([
-                                'ISDRM' => '1',
-                                'UpdateBy' => user_id(),
-                                'UpdateDate' => date("Y-m-d H:i:s")
-                            ]);
-                    }
-
                     set_message('toastr_msg', 'Eksemplar berhasil ditambah');
                     set_message('toastr_type', 'success');
                 } catch (\Throwable $e) {
                     set_message('toastr_msg', 'Eksemplar gagal ditambah');
                     set_message('toastr_type', 'warning');
-                    set_message('message', 'Eksemplar gagal ditambah: ' . $e->getMessage());
+                    set_message('message', 'Eksemplar gagal ditambah');
                 }
 
                 $IsRedirect = $this->request->getPost('IsRedirect');
@@ -358,7 +346,11 @@ class Eksemplar extends \Base\Controllers\BaseController
 
     public function edit($id)
     {
-       
+        if (!is_allowed('eksemplar/edit')) {
+            set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
+            set_message('toastr_type', 'error');
+            return redirect()->to('eksemplar');
+        }
 
         $this->data['title'] = 'Ubah Eksemplar';
         $slug = $this->request->getGet('slug');
@@ -370,10 +362,10 @@ class Eksemplar extends \Base\Controllers\BaseController
         } else {
             return redirect()->to('/eksemplar');
         }
-        $CreateBy = get_username($eksemplar->CreateBy ?? 0);
-        $UpdateBy = get_username($eksemplar->UpdateBy ?? 0);
-        $this->data['CreateBy'] = $CreateBy;
-        $this->data['UpdateBy'] = $UpdateBy;
+		    $CreateBy = get_username($eksemplar->CreateBy ?? 0);
+		    $UpdateBy = get_username($eksemplar->UpdateBy ?? 0);
+		    $this->data['CreateBy'] = $CreateBy;
+		    $this->data['UpdateBy'] = $UpdateBy;
 
         $this->validation->setRule('Catalog_id', 'Judul Katalog', 'required');
         if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
@@ -387,9 +379,8 @@ class Eksemplar extends \Base\Controllers\BaseController
                 'NomorBarcode' => $post['NomorBarcode0'],
                 'NoInduk' => $post['NoInduk0'],
                 'RFID' => $post['RFID0'],
-                'ISDRM' => $post['ISDRM'],
                 'UpdateBy' => user_id(),
-                'UpdateDate' => date("Y-m-d H:i:s")
+				        'UpdateDate' => date("Y-m-d H:i:s")
             ];
 
             if (!empty($post['TanggalPengadaan'])) {
@@ -449,7 +440,72 @@ class Eksemplar extends \Base\Controllers\BaseController
         }
     }
 
-   
+    public function create_action()
+    {
+        // echo '<pre>';
+        helper('form');
+        $model = new AkuisisiModel;
+        $post = $this->request->getPost();
+        $branch_id = user()->branch_id ?? $this->request->getGet('branch_id');
+        $BarcodeNumber = (int)preg_replace('/[^0-9]/', '', BarcodeNumber_helper());
+        $NoInduk = (int)substr(NoInduk_helper(), strpos(NoInduk_helper(), "-") + 1);
+        $RFID = (int)preg_replace('/[^0-9]/', '', RFID_helper());
+        $validation = \Config\Services::validation();
+        if ($validation->run($post, 'input_koleksi') == FALSE) {
+            // session()->setFlashdata('inputs', $post);			
+            session()->setFlashdata('errors', ['Harap Pilih Judul.']);
+            return redirect()->to(base_url('/backend/collections/create'));
+        }
+        // print_r($post);
+        // die;
+
+        for ($i = 0; $i < (int)$post['jml_eksemplar']; $i++) {
+            // echo RFID_helper() . "<br />";		
+            // echo str_pad((int)$BarcodeNumber + $i, 11, '0', STR_PAD_LEFT) . "<br />";
+            $save = [
+                'NomorBarcode' => 'BRCD' . str_pad((int)$BarcodeNumber + $i, 11, '0', STR_PAD_LEFT),
+                'NoInduk' => date("Y") . "-" . str_pad((int)$NoInduk + $i, 5, '0', STR_PAD_LEFT),
+                'Currency' => $post['Currency'],
+                'RFID' => 'RFID' . str_pad((int)$RFID + $i, 11, '0', STR_PAD_LEFT),
+                'Price' => $post['Price'],
+                'ISDRM' => $post['ISDRM'],
+                'PriceType' => $post['PriceType'],
+                'TanggalPengadaan' => $post['TANGGAL_PENGADAAN'],
+                'CallNumber' => $post['CallNumber'],
+                'Branch_id' => $branch_id,
+                'Catalog_id' => $post['Catalog_id'],
+                'Partner_id' => $post['Partner_id'],
+                'Location_id' => $post['Location_id'],
+                'Rule_id' => $post['Rule_id'],
+                'Category_id' => $post['Category_id'],
+                'Media_id' => $post['Media_id'],
+                'Source_id' => $post['Source_id'],
+                'Status_id' => $post['Status_id'],
+                'Location_Library_id' => $post['Location_Library_id'],
+                'Keterangan_Sumber' => null,
+                'CreateBy' => 2,
+                'CreateDate' => date("Y-m-d H:i:s"),
+                'CreateTerminal' => null,
+                'UpdateBy' => 2,
+                'UpdateDate' => date("Y-m-d H:i:s"),
+                'UpdateTerminal' => null,
+                'IsVerified' => '',
+                'IsQUARANTINE' => null,
+                'QUARANTINEDBY' => null,
+                'QUARANTINEDDATE' => null,
+                'QUARANTINEDTERMINAL' => null,
+                'ISREFERENSI' => null,
+                'EDISISERIAL' => $post['EDISISERIAL'],
+                // 'NOJILID' => $post['NOJILID'],
+                'TANGGAL_TERBIT_EDISI_SERIAL' => $post['TANGGAL_TERBIT_EDISI_SERIAL'],
+                'BAHAN_SERTAAN' => $post['BAHAN_SERTAAN'],
+                'KETERANGAN_LAIN' => $post['KETERANGAN_LAIN'],
+                'ISOPAC' => $post['IsOPAC'],
+            ];
+            $model->save($save);
+        }
+        return redirect()->to(base_url() . '/backend/collections');
+    }
 
     public function update($id)
     {
@@ -530,7 +586,7 @@ class Eksemplar extends \Base\Controllers\BaseController
             $nama_perpustakaan = $db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value ?: "Perpustakaan Mitra";
 
             $LabelData = [];
-
+          
             foreach ($eksemplar_data as $row) {
 
                 // ===================================================================
@@ -563,7 +619,84 @@ class Eksemplar extends \Base\Controllers\BaseController
         }
     }
 
-  
+    public function report()
+    {
+        helper('reference');
+
+        $db = db_connect();
+        $builder = $db->table('collections as a')
+            ->select('a.ID, a.ID as action, a.ID as Collection_id')
+            ->select('a.NomorBarcode, a.TanggalPengadaan, a.NoInduk, a.Catalog_id, a.IsOPAC')
+            ->select('a.Branch_id, a.Location_id')
+            ->join('branchs b', 'b.ID = a.Branch_id', 'inner')
+            ->where('a.IsQUARANTINE', 0);
+
+        if (user()->category == 'admin') {
+        } elseif (user()->category == 'sa_prov' && user()->branch_id === null) {
+            $npp_provinsi_id = preg_replace('/\./', '', user()->npp_provinsi_id);
+            $builder->where('b.NPP_Provinsi_id', $npp_provinsi_id);
+        } elseif (user()->category == 'sa_prov' && user()->branch_id !== null) {
+            $builder->where('a.Branch_id', branch_id());
+        } elseif (user()->category == 'sa_kabkot' && user()->branch_id === null) {
+            $npp_kabkota_id = preg_replace('/\./', '', user()->npp_kabkota_id);
+            $builder->where('b.NPP_KabKota_id', $npp_kabkota_id);
+        } elseif (user()->category == 'sa_kabkot' && user()->branch_id !== null) {
+            $builder->where('a.Branch_id', branch_id());
+        } else {
+            $builder->where('a.Branch_id', branch_id());
+        }
+
+        $results = $builder->get()->getResult();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $sheet->mergeCells('A1:E1');
+        $sheet->setCellValue("A1", "Laporan Eksemplar");
+        $sheet->getStyle('A1:E1')->getFont()->setBold(true)->setSize(12);
+
+        $sheet->setCellValue("A2", "Nomor Barcode");
+        $sheet->setCellValue("B2", "Tanggal Pengadaan");
+        $sheet->setCellValue("C2", "Nomor Induk");
+        $sheet->setCellValue("D2", "Data Bibliografis");
+        $sheet->setCellValue("E2", "OPAC");
+
+        $sheet->getColumnDimension('A')->setWidth(20);
+        $sheet->getColumnDimension('B')->setWidth(40);
+        $sheet->getColumnDimension('C')->setWidth(20);
+        $sheet->getColumnDimension('D')->setWidth(100);
+        $sheet->getColumnDimension('E')->setWidth(10);
+
+        $sheet->getStyle('A2:E2')->getFont()->setBold(true)->setSize(12);
+
+        $col = 3;
+        $no = 1;
+        $i = 1;
+        foreach ($results as $row) {
+            $catalog = get_ref_single('catalogs', 'ID=' . $row->Catalog_id, 'data');
+            $bibliography  = ($catalog->Title ?? "") . '\n' . ($catalog->Publikasi ?? "");
+
+            $sheet->setCellValue("A" . $col, $row->NomorBarcode);
+            $sheet->setCellValue("B" . $col, $row->TanggalPengadaan);
+            $sheet->setCellValue("C" . $col, $row->NoInduk);
+            $sheet->setCellValue("D" . $col, $bibliography);
+            $sheet->setCellValue("E" . $col, $row->IsOPAC);
+
+            $col++;
+            $no++;
+            $i++;
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        $subject = 'Laporan Eksemplar';
+        $filename = ucwords($subject) . '-' . date('Y-m-d');
+
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+        header('Cache-Control: max-age=0');
+
+        $writer->save('php://output');
+    }
 
 
     public function proses_karantina()
@@ -690,7 +823,7 @@ class Eksemplar extends \Base\Controllers\BaseController
     // bagian import eksemplar
     public function importviews()
     {
-        $this->data['title'] = 'Import eksemplar';
+        $this->data['title'] = 'Import eksemplar Excel';
         return view('Eksemplar\Views\import', $this->data);
     }
 
@@ -1088,7 +1221,7 @@ class Eksemplar extends \Base\Controllers\BaseController
             'BIBID' => $this->generateBibId($controlNumber), // Generate BIBID based on ControlNumber
             'Title' => $title,
             'Author' => $author,
-            'Worksheet_id' => 1,
+            'Worksheet_id'=>1,
             'Edition' => $this->getValue($row, $headerMap, 'EDISI'),
             'Publisher' => $publisher,
             'PublishLocation' => $publishLocation,
@@ -1412,342 +1545,343 @@ class Eksemplar extends \Base\Controllers\BaseController
         }
     }
 
-    public function downloadTemplate()
-    {
-        // Clear any previous output and increase memory limit
-        ob_clean();
-        ini_set('memory_limit', '1024M');
+   public function downloadTemplate()
+{
+    // Clear any previous output and increase memory limit
+    ob_clean();
+    ini_set('memory_limit', '1024M');
+    
+    try {
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
 
-        try {
-            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-            $sheet = $spreadsheet->getActiveSheet();
+        // Set headers sesuai format yang diminta
+        $headers = [
+            'NO',
+            'TGL_PENGADAAN',
+            'NO_INDUK',
+            'NO_BARCODE',
+            'NO_RFID',
+            'JENIS_SUMBER',
+            'NAMA_SUMBER',
+            'MATA_UANG',
+            'HARGA',
+            'KODE_LOKASI_PERPUSTAKAAN',
+            'KODE_LOKASI_RUANG',
+            'AKSES',
+            'KATEGORI',
+            'MEDIA',
+            'KETERSEDIAAN',
+            'NOMOR_PANGGIL_EKSEMPLAR',
+            'JENIS_BAHAN',
+            'JUDUL_UTAMA',
+            'ANAK_JUDUL',
+            'PERNYATAAN_TANGGUNGJAWAB',
+            'TAJUK_PENGARANG',
+            'TAJUK_PENGARANG_BADAN_KOOPERASI',
+            'PENGARANG_TAMBAHAN_NAMA_ORANG',
+            'PENGARANG_TAMBAHAN_NAMA_BADAN',
+            'EDISI',
+            'KOTA_TERBIT',
+            'PENERBIT',
+            'TAHUN_TERBIT',
+            'JUMLAH_HALAMAN',
+            'DIMENSI',
+            'ISBN',
+            'ISSN',
+            'ISMN',
+            'NO_DDC',
+            'NOMOR_PANGGIL_KATALOG',
+            'ABSTRAK',
+            'BAHASA',
+            'SUBJEK_TOPIK',
+            'EDISI_SERIAL',
+            'TGL_TERBIT_EDISI_SERIAL',
+            'BAHAN_SERTAAN_SERIAL',
+            'KETERANGAN_LAIN_SERIAL'
+        ];
 
-            // Set headers sesuai format yang diminta
-            $headers = [
-                'NO',
-                'TGL_PENGADAAN',
-                'NO_INDUK',
-                'NO_BARCODE',
-                'NO_RFID',
-                'JENIS_SUMBER',
-                'NAMA_SUMBER',
-                'MATA_UANG',
-                'HARGA',
-                'KODE_LOKASI_PERPUSTAKAAN',
-                'KODE_LOKASI_RUANG',
-                'AKSES',
-                'KATEGORI',
-                'MEDIA',
-                'KETERSEDIAAN',
-                'NOMOR_PANGGIL_EKSEMPLAR',
-                'JENIS_BAHAN',
-                'JUDUL_UTAMA',
-                'ANAK_JUDUL',
-                'PERNYATAAN_TANGGUNGJAWAB',
-                'TAJUK_PENGARANG',
-                'TAJUK_PENGARANG_BADAN_KOOPERASI',
-                'PENGARANG_TAMBAHAN_NAMA_ORANG',
-                'PENGARANG_TAMBAHAN_NAMA_BADAN',
-                'EDISI',
-                'KOTA_TERBIT',
-                'PENERBIT',
-                'TAHUN_TERBIT',
-                'JUMLAH_HALAMAN',
-                'DIMENSI',
-                'ISBN',
-                'ISSN',
-                'ISMN',
-                'NO_DDC',
-                'NOMOR_PANGGIL_KATALOG',
-                'ABSTRAK',
-                'BAHASA',
-                'SUBJEK_TOPIK',
-                'EDISI_SERIAL',
-                'TGL_TERBIT_EDISI_SERIAL',
-                'BAHAN_SERTAAN_SERIAL',
-                'KETERANGAN_LAIN_SERIAL'
-            ];
+        $sheet->fromArray([$headers], null, 'A1');
 
-            $sheet->fromArray([$headers], null, 'A1');
-
-            // Style header
-            $headerRange = 'A1:' . \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($headers)) . '1';
-            $sheet->getStyle($headerRange)->applyFromArray([
-                'font' => ['bold' => true, 'size' => 10],
-                'fill' => [
-                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => 'E3F2FD']
-                ],
-                'borders' => [
-                    'allBorders' => [
-                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                    ]
+        // Style header
+        $headerRange = 'A1:' . \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($headers)) . '1';
+        $sheet->getStyle($headerRange)->applyFromArray([
+            'font' => ['bold' => true, 'size' => 10],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => 'E3F2FD']
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
                 ]
-            ]);
+            ]
+        ]);
 
-            // Add sample data (5 rows)
-            $sampleData = [
-                [
-                    1,
-                    '14-02-2015',
-                    'X0022/2016',
-                    'X0022/2016',
-                    'X0022/2016',
-                    'Hadiah/Hibah',
-                    '---Belum ditentukan---',
-                    'IDR',
-                    0,
-                    'Pusat',
-                    '0101',
-                    'Dapat dipinjam',
-                    'Koleksi Umum',
-                    'Buku',
-                    'Tersedia',
-                    '123 PRA m',
-                    'Monograf',
-                    'Mahligai Biru',
-                    '',
-                    'Mamik Pradana',
-                    'Pradana, Mamik',
-                    '',
-                    '',
-                    '',
-                    '',
-                    'Jakarta',
-                    'Grafika',
-                    '2015',
-                    '120 hlm.',
-                    '25 cm.',
-                    '978-222-666-444',
-                    '',
-                    '',
-                    '123',
-                    '123 PRA m',
-                    '',
-                    'ind',
-                    'Rumah Tangga',
-                    '',
-                    '',
-                    '',
-                    ''
-                ],
-                [
-                    2,
-                    '15-02-2015',
-                    'X0023/2016',
-                    'X0023/2016',
-                    'X0023/2016',
-                    'Pembelian',
-                    '---Belum ditentukan---',
-                    'IDR',
-                    0,
-                    'Pusat',
-                    '0101',
-                    'Dapat dipinjam',
-                    'Koleksi Umum',
-                    'Buku',
-                    'Tersedia',
-                    '201 SAM k',
-                    'Monograf',
-                    'Kancil dan Kerbau',
-                    '',
-                    'Deni Saman',
-                    'Saman, Deni',
-                    '',
-                    '',
-                    '',
-                    '',
-                    'Jakarta',
-                    'Prabu',
-                    '2015',
-                    '68 hlm.',
-                    '21 cm.',
-                    '856-225-456-78',
-                    '',
-                    '',
-                    '201',
-                    '201 SAM k',
-                    '',
-                    'ind',
-                    'Fiksi',
-                    '',
-                    '',
-                    '',
-                    ''
-                ],
-                [
-                    3,
-                    '16-03-2015',
-                    'X0024/2016',
-                    'X0024/2016',
-                    'X0024/2016',
-                    'Pembelian',
-                    'Toko Buku Mandiri',
-                    'IDR',
-                    75000,
-                    'Pusat',
-                    '0102',
-                    'Dapat dipinjam',
-                    'Koleksi Umum',
-                    'Buku',
-                    'Tersedia',
-                    '004.678 BUD p',
-                    'Monograf',
-                    'Pemrograman Web dengan PHP',
-                    'Panduan Lengkap untuk Pemula',
-                    'Budi Raharjo',
-                    'Raharjo, Budi',
-                    '',
-                    '',
-                    '',
-                    'Edisi 2',
-                    'Bandung',
-                    'Informatika',
-                    '2015',
-                    '350 hlm.',
-                    '24 cm.',
-                    '978-602-1234-567-8',
-                    '',
-                    '',
-                    '004.678',
-                    '004.678 BUD p',
-                    'Buku panduan pemrograman web menggunakan PHP',
-                    'ind',
-                    'Teknologi Informasi; Pemrograman',
-                    '',
-                    '',
-                    '',
-                    ''
-                ],
-                [
-                    4,
-                    '20-03-2015',
-                    'X0025/2016',
-                    'X0025/2016',
-                    'X0025/2016',
-                    'Hadiah/Hibah',
-                    'Dinas Pendidikan',
-                    'IDR',
-                    0,
-                    'Pusat',
-                    '0103',
-                    'Dapat dipinjam',
-                    'Koleksi Umum',
-                    'Buku',
-                    'Tersedia',
-                    '899.221 DEW s',
-                    'Monograf',
-                    'Sastra Indonesia Kontemporer',
-                    'Analisis dan Apresiasi',
-                    'Dewi Lestari',
-                    'Lestari, Dewi',
-                    '',
-                    'Pusat Bahasa',
-                    '',
-                    'Edisi 3',
-                    'Jakarta',
-                    'Gramedia Pustaka Utama',
-                    '2015',
-                    '320 hlm.',
-                    '20 cm.',
-                    '978-602-0307-456-7',
-                    '',
-                    '',
-                    '899.221',
-                    '899.221 DEW s',
-                    'Kumpulan analisis sastra Indonesia modern',
-                    'ind',
-                    'Sastra Indonesia; Literatur',
-                    '',
-                    '',
-                    '',
-                    ''
-                ],
-                [
-                    5,
-                    '25-03-2015',
-                    'X0026/2016',
-                    'X0026/2016',
-                    'X0026/2016',
-                    'Pembelian',
-                    'CV. Pustaka Ilmu',
-                    'IDR',
-                    85000,
-                    'Pusat',
-                    '0104',
-                    'Dapat dipinjam',
-                    'Koleksi Referensi',
-                    'Buku',
-                    'Tersedia',
-                    '904.598 BAM s',
-                    'Monograf',
-                    'Sejarah Perkembangan Teknologi Digital di Indonesia',
-                    '',
-                    'Prof. Dr. Bambang Sutrisno; Dr. Maya Sari',
-                    'Sutrisno, Bambang',
-                    '',
-                    '',
-                    'Sari, Maya',
-                    'Edisi 1',
-                    'Jakarta',
-                    'Erlangga',
-                    '2015',
-                    '500 hlm.',
-                    '24 cm.',
-                    '978-602-2989-345-6',
-                    '',
-                    '',
-                    '904.598',
-                    '904.598 BAM s',
-                    'Dokumentasi lengkap perkembangan teknologi digital di Indonesia',
-                    'ind',
-                    'Sejarah; Teknologi; Indonesia',
-                    '',
-                    '',
-                    '',
-                    ''
-                ]
-            ];
+        // Add sample data (5 rows)
+        $sampleData = [
+            [
+                1,
+                '14-02-2015',
+                'X0022/2016',
+                'X0022/2016',
+                'X0022/2016',
+                'Hadiah/Hibah',
+                '---Belum ditentukan---',
+                'IDR',
+                0,
+                'Pusat',
+                '0101',
+                'Dapat dipinjam',
+                'Koleksi Umum',
+                'Buku',
+                'Tersedia',
+                '123 PRA m',
+                'Monograf',
+                'Mahligai Biru',
+                '',
+                'Mamik Pradana',
+                'Pradana, Mamik',
+                '',
+                '',
+                '',
+                '',
+                'Jakarta',
+                'Grafika',
+                '2015',
+                '120 hlm.',
+                '25 cm.',
+                '978-222-666-444',
+                '',
+                '',
+                '123',
+                '123 PRA m',
+                '',
+                'ind',
+                'Rumah Tangga',
+                '',
+                '',
+                '',
+                ''
+            ],
+            [
+                2,
+                '15-02-2015',
+                'X0023/2016',
+                'X0023/2016',
+                'X0023/2016',
+                'Pembelian',
+                '---Belum ditentukan---',
+                'IDR',
+                0,
+                'Pusat',
+                '0101',
+                'Dapat dipinjam',
+                'Koleksi Umum',
+                'Buku',
+                'Tersedia',
+                '201 SAM k',
+                'Monograf',
+                'Kancil dan Kerbau',
+                '',
+                'Deni Saman',
+                'Saman, Deni',
+                '',
+                '',
+                '',
+                '',
+                'Jakarta',
+                'Prabu',
+                '2015',
+                '68 hlm.',
+                '21 cm.',
+                '856-225-456-78',
+                '',
+                '',
+                '201',
+                '201 SAM k',
+                '',
+                'ind',
+                'Fiksi',
+                '',
+                '',
+                '',
+                ''
+            ],
+            [
+                3,
+                '16-03-2015',
+                'X0024/2016',
+                'X0024/2016',
+                'X0024/2016',
+                'Pembelian',
+                'Toko Buku Mandiri',
+                'IDR',
+                75000,
+                'Pusat',
+                '0102',
+                'Dapat dipinjam',
+                'Koleksi Umum',
+                'Buku',
+                'Tersedia',
+                '004.678 BUD p',
+                'Monograf',
+                'Pemrograman Web dengan PHP',
+                'Panduan Lengkap untuk Pemula',
+                'Budi Raharjo',
+                'Raharjo, Budi',
+                '',
+                '',
+                '',
+                'Edisi 2',
+                'Bandung',
+                'Informatika',
+                '2015',
+                '350 hlm.',
+                '24 cm.',
+                '978-602-1234-567-8',
+                '',
+                '',
+                '004.678',
+                '004.678 BUD p',
+                'Buku panduan pemrograman web menggunakan PHP',
+                'ind',
+                'Teknologi Informasi; Pemrograman',
+                '',
+                '',
+                '',
+                ''
+            ],
+            [
+                4,
+                '20-03-2015',
+                'X0025/2016',
+                'X0025/2016',
+                'X0025/2016',
+                'Hadiah/Hibah',
+                'Dinas Pendidikan',
+                'IDR',
+                0,
+                'Pusat',
+                '0103',
+                'Dapat dipinjam',
+                'Koleksi Umum',
+                'Buku',
+                'Tersedia',
+                '899.221 DEW s',
+                'Monograf',
+                'Sastra Indonesia Kontemporer',
+                'Analisis dan Apresiasi',
+                'Dewi Lestari',
+                'Lestari, Dewi',
+                '',
+                'Pusat Bahasa',
+                '',
+                'Edisi 3',
+                'Jakarta',
+                'Gramedia Pustaka Utama',
+                '2015',
+                '320 hlm.',
+                '20 cm.',
+                '978-602-0307-456-7',
+                '',
+                '',
+                '899.221',
+                '899.221 DEW s',
+                'Kumpulan analisis sastra Indonesia modern',
+                'ind',
+                'Sastra Indonesia; Literatur',
+                '',
+                '',
+                '',
+                ''
+            ],
+            [
+                5,
+                '25-03-2015',
+                'X0026/2016',
+                'X0026/2016',
+                'X0026/2016',
+                'Pembelian',
+                'CV. Pustaka Ilmu',
+                'IDR',
+                85000,
+                'Pusat',
+                '0104',
+                'Dapat dipinjam',
+                'Koleksi Referensi',
+                'Buku',
+                'Tersedia',
+                '904.598 BAM s',
+                'Monograf',
+                'Sejarah Perkembangan Teknologi Digital di Indonesia',
+                '',
+                'Prof. Dr. Bambang Sutrisno; Dr. Maya Sari',
+                'Sutrisno, Bambang',
+                '',
+                '',
+                'Sari, Maya',
+                'Edisi 1',
+                'Jakarta',
+                'Erlangga',
+                '2015',
+                '500 hlm.',
+                '24 cm.',
+                '978-602-2989-345-6',
+                '',
+                '',
+                '904.598',
+                '904.598 BAM s',
+                'Dokumentasi lengkap perkembangan teknologi digital di Indonesia',
+                'ind',
+                'Sejarah; Teknologi; Indonesia',
+                '',
+                '',
+                '',
+                ''
+            ]
+        ];
 
-            $sheet->fromArray($sampleData, null, 'A2');
+        $sheet->fromArray($sampleData, null, 'A2');
 
-            // Auto-size columns
-            for ($col = 1; $col <= count($headers); $col++) {
-                $columnID = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
-                $sheet->getColumnDimension($columnID)->setAutoSize(true);
-            }
-
-            // Set border untuk semua data
-            $dataRange = 'A2:' . \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($headers)) . (count($sampleData) + 1);
-            $sheet->getStyle($dataRange)->applyFromArray([
-                'borders' => [
-                    'allBorders' => [
-                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                    ]
-                ]
-            ]);
-
-            // Set response headers
-            $filename = 'template_import_katalog_' . date('Y-m-d') . '.xlsx';
-
-            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            header('Content-Disposition: attachment;filename="' . $filename . '"');
-            header('Cache-Control: max-age=0');
-            header('Cache-Control: max-age=1'); //IE
-            header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-            header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always modified
-            header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
-            header('Pragma: public'); // HTTP/1.0
-
-            $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
-            $writer->save('php://output');
-        } catch (\Exception $e) {
-            log_message('error', 'Download template error: ' . $e->getMessage());
-            echo 'Error: ' . $e->getMessage();
+        // Auto-size columns
+        for ($col = 1; $col <= count($headers); $col++) {
+            $columnID = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+            $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 
-        exit;
+        // Set border untuk semua data
+        $dataRange = 'A2:' . \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($headers)) . (count($sampleData) + 1);
+        $sheet->getStyle($dataRange)->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ]
+            ]
+        ]);
+
+        // Set response headers
+        $filename = 'template_import_katalog_' . date('Y-m-d') . '.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        header('Cache-Control: max-age=1'); //IE
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always modified
+        header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+        header('Pragma: public'); // HTTP/1.0
+
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $writer->save('php://output');
+        
+    } catch (\Exception $e) {
+        log_message('error', 'Download template error: ' . $e->getMessage());
+        echo 'Error: ' . $e->getMessage();
     }
+    
+    exit;
+}
 
     // generate controlnumber
     private function generateControlNumber()

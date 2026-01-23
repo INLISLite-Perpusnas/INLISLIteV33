@@ -396,31 +396,13 @@
                                                     <tr>
                                                         <td><code><?= esc($eksemplar_drm->NomorBarcode) ?></code></td>
                                                         <td><code><?= esc($eksemplar_drm->CallNumber) ?></code></td>
+                                                        <td><span class="badge bg-primary"><?= esc($eksemplar_drm->RuleName) ?></span></td>
+                                                        <td><i class="fas fa-cloud me-1"></i><?= esc($eksemplar_drm->LocationName) ?></td>
+                                                        <td><span class="badge bg-success"><?= esc($eksemplar_drm->StatusName) ?></span></td>
                                                         <td>
-                                                            <span class="badge bg-primary">
-                                                                <?= esc($eksemplar_drm->RuleName) ?>
-                                                            </span>
-                                                        </td>
-                                                        <td>
-                                                            <i class="fas fa-cloud me-1"></i>
-                                                            <?= esc($eksemplar_drm->LocationName) ?>
-                                                        </td>
-                                                        <td>
-                                                            <span class="badge bg-success">
-                                                                <?= esc($eksemplar_drm->StatusName) ?>
-                                                            </span>
-                                                        </td>
-                                                        <td>
-                                                            <?php if ($eksemplar_drm->StatusName === 'Tersedia'): ?>
-                                                                <form action="<?= base_url('sirkulasi-peminjaman/loan_digital_store') ?>" method="POST" style="display:inline;">
-                                                                    <?= csrf_field() ?>
-                                                                    <input type="hidden" name="eksemplar_id" value="<?= esc($eksemplar_drm->ID) ?>">
-                                                                    <input type="hidden" name="catalog_id" value="<?= esc($eksemplar_drm->Catalog_id) ?>">
-                                                                    <button type="submit" class="btn btn-primary btn-sm">
-                                                                        <i class="fas fa-file-pdf me-1"></i>Pinjam Buku Digital
-                                                                    </button>
-                                                                </form>
-                                                            <?php endif; ?>
+                                                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#pdfModal<?= $catalog['ID'] ?>">
+                                                                <i class="fas fa-file-pdf me-1"></i>Baca PDF
+                                                            </button>
                                                         </td>
                                                     </tr>
                                                 <?php endforeach; ?>
@@ -429,7 +411,6 @@
                                     </div>
                                 </div>
                             <?php endif; ?>
-
 
                             <!-- MARC -->
                             <?php if (!empty($marc)): ?>
@@ -563,7 +544,7 @@
                         <?php endif; ?>
 
                         <?php if (!empty($catalog['Publisher'])): ?>
-                            <a href="<?= base_url('opac?search=' . urlencode($catalog['Publisher']) . '&search_by=Publisher') ?>"
+                                <a href="<?= base_url('opac?search=' . urlencode($catalog['Publisher']) . '&search_by=Publisher') ?>"
                                 class="btn btn-outline-success btn-sm">
                                 <i class="fas fa-building me-1"></i>
                                 Dari <?= esc($catalog['Publisher']) ?>
@@ -636,14 +617,14 @@
                         <i class="fas fa-file-pdf fa-4x text-primary mb-3"></i>
                         <h5>PDF Viewer</h5>
                         <iframe
-                            src="<?= base_url('katalog/view_decrypted/' . encData($catalog['ID'])) ?>"
+                            src="<?= base_url('katalog/view_decrypted/' . $ID) ?>"
                             width="100%" height="500px" style="border: none;"></iframe>
                     </div>
 
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-
+                  
                 </div>
             </div>
         </div>

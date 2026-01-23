@@ -9,28 +9,48 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->section('page'); ?>
 <div class="app-main__inner">
-  
+    <div class="app-page-title">
+        <div class="page-title-wrapper">
+            <div class="page-title-heading">
+                <div class="page-title-icon">
+                    <i class="pe-7s-note icon-gradient bg-strong-bliss"></i>
+                </div>
+                <div>Buku Tamu - Anggota
+                    <div class="page-title-subheading">Daftar semua Buku Tamu Anggota</div>
+                </div>
+            </div>
+            <div class="page-title-actions">
+                <nav class="" aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="<?= base_url('bukutamu') ?>"><i class="fa fa-home"></i> Home</a></li>
+                        <li class="breadcrumb-item" aria-current="page">Buku Tamu</li>
+                        <li class="active breadcrumb-item" aria-current="page">Anggota</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
 
     <ul class="body-tabs body-tabs-layout tabs-animated body-tabs-animated nav">
         <li class="nav-item">
-            <a class="nav-link active" href="<?= base_url('bukutamu') ?>">
+            <a class="btn-header-argon" href="<?= base_url('bukutamu') ?>">
                 <span>Anggota</span>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="<?= base_url('bukutamu/non_anggota') ?>">
+            <a style="padding-left: 10px !important;" class="btn-header-argon" href="<?= base_url('bukutamu/non_anggota') ?>">
                 <span>Bukan Anggota </span>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="<?= base_url('bukutamu/rombongan') ?>">
+            <a style="padding-left: 10px !important;" class="btn-header-argon" href="<?= base_url('bukutamu/rombongan') ?>">
                 <span>Rombongan</span>
             </a>
         </li>
     </ul>
 
     <div class="main-card mb-3 card">
-        <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Buku Tamu Anggota
+        <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Buku Tamu
             <div class="btn-actions-pane-right actions-icon-btn">
 
             </div>

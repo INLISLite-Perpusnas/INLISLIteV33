@@ -30,25 +30,23 @@ $slug = $request->getGet('slug') ?? '';
             </div>
         </div>
     </div>
-
-    <ul class="body-tabs body-tabs-layout tabs-animated body-tabs-animated nav">
+  <ul class="body-tabs body-tabs-layout tabs-animated body-tabs-animated nav">
         <li class="nav-item">
-            <a class="nav-link" href="<?= base_url('bukutamu') ?>">
+            <a class="btn-header-argon" href="<?= base_url('bukutamu') ?>">
                 <span>Anggota</span>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link active" href="<?= base_url('bukutamu/non_anggota') ?>">
+            <a style="padding-left: 10px !important;" class="btn-header-argon" href="<?= base_url('bukutamu/non_anggota') ?>">
                 <span>Bukan Anggota </span>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="<?= base_url('bukutamu/rombongan') ?>">
+            <a style="padding-left: 10px !important;" class="btn-header-argon" href="<?= base_url('bukutamu/rombongan') ?>">
                 <span>Rombongan</span>
             </a>
         </li>
     </ul>
-
     <div class="main-card mb-3 card">
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Buku Tamu
             <div class="btn-actions-pane-right actions-icon-btn">

@@ -4,13 +4,34 @@
 
 <?= $this->section('page'); ?>
 <div class="app-main__inner">
-
+    <div class="app-page-title">
+    <div class="page-title-wrapper">
+			<div class="page-title-heading">
+				<div class="page-title-icon">
+					<i class="pe-7s-id icon-gradient bg-strong-bliss"></i>
+				</div>
+				<div>Anggota
+					<div class="page-title-subheading">Perpanjangan semua Anggota
+					</div>
+				</div>
+			</div>
+			<div class="page-title-actions">
+				<nav class="" aria-label="breadcrumb">
+					<ol class="breadcrumb">
+						<li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i></a></li>
+						<li class="breadcrumb-item">Keanggotaan</li>
+						<li class="breadcrumb-item active">Perpanjangan Anggota</li>
+					</ol>
+				</nav>
+			</div>
+		</div>
+    </div>
 
     <div class="main-card mb-3 card">
-    <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Perpanjangan Anggota
+    <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Anggota
 			<div class="btn-actions-pane-right actions-icon-btn">
-				<?php if (is_allowed('perpanjangan-anggota/create')) : ?>
-					<a href="<?= base_url('perpanjangan-anggota/create') ?>" class=" btn btn-success" title=""><i class="fa fa-plus"></i>
+				<?php if (is_allowed('perpanjangananggota/create')) : ?>
+					<a href="<?= base_url('perpanjangananggota/create') ?>" class=" btn btn-success" title=""><i class="fa fa-plus"></i>
 						Tambah Perpanjagan Anggota
 					</a>
 				<?php endif; ?>
@@ -48,15 +69,15 @@
                           
                             <td width="50">
                             <input type="checkbox" class="apply-status"
-                                data-href="<?=base_url('perpanjangan-anggota/apply_status');?>" data-field="is_lunas"
+                                data-href="<?=base_url('perpanjangananggota/apply_status');?>" data-field="is_lunas"
                                 data-id="<?=$row->ID?>" <?=($row->IsLunas == 1) ? 'checked' : ''?> data-toggle="toggle"
                                 data-onstyle="success">
                         </td>
                             </td>
                             <td width="35">
                                 
-                                <?php if(is_allowed('perpanjangan-anggota/delete')):?>
-                                    <a href="javascript:void(0);" data-href="<?= base_url('perpanjangan-anggota/delete/' . $row->ID); ?>" data-toggle="tooltip" data-placement="top" title="Hapus  rud" class="btn btn-xs btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>
+                                <?php if(is_allowed('perpanjangananggota/delete')):?>
+                                    <a href="javascript:void(0);" data-href="<?= base_url('perpanjangananggota/delete/' . $row->ID); ?>" data-toggle="tooltip" data-placement="top" title="Hapus  rud" class="btn btn-xs btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>
                                 <?php endif;?>
                             </td>
                         </tr>

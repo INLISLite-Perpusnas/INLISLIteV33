@@ -293,7 +293,6 @@ if (!function_exists('display_menu_backend')) {
 }
 
 
-
 if (!function_exists('config_menu_frontend')) {
     function config_menu_frontend($parent, $level = 1)
     {

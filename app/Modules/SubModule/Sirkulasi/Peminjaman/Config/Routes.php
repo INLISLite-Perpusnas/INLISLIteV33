@@ -14,7 +14,6 @@ $routes->group('sirkulasi-peminjaman', ['namespace' => 'Peminjaman\Controllers']
 	$subroutes->add('do_upload', 'Peminjaman::do_upload');
 	$subroutes->add('do_delete', 'Peminjaman::do_delete');
 	$subroutes->add('flip', 'Peminjaman::flip');
-	$subroutes->post('loan_digital_store', 'Peminjaman::loan_digital_store');
 
 	//custom
 	$subroutes->add('cart_insert/(:any)', 'Peminjaman::cart_insert/$1');

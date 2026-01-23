@@ -38,7 +38,7 @@ $routes->group('anggota', ['namespace' => 'Anggota\Controllers'], function ($sub
 	$subroutes->add('import', 'Anggota::import');
 	$subroutes->add('aktifkan_online', 'Anggota::aktifkan_online');
 	$subroutes->add('uploadBackground', 'Anggota::uploadBackground');
-	$subroutes->add('import_anggota', 'Anggota::import_anggota');
+	$subroutes->add('import_view', 'Anggota::import_view');
 	$subroutes->add('cetak-kartu/(:any)', 'Anggota::print_card2/$1');
 	$subroutes->add('cetak-kartu2/(:any)', 'Anggota::print_card/$1');
 	$subroutes->add('print_card/(:any)', 'Anggota::print_card/$1');

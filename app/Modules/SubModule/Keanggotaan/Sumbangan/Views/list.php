@@ -1,12 +1,31 @@
 
-<?= $this->extend('App\Views\layout\main'); ?>
-
+<?php $core = config('Core'); $layout = (!empty($core->layout_backend)) ? $core->layout_backend : 'hamkamannan\adminigniter\Views\layout\backend\main';?>
+<?=$this->extend($layout);?>
 <?= $this->section('style'); ?>
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
 <div class="app-main__inner">
-
+    <div class="app-page-title">
+        <div class="page-title-wrapper">
+            <div class="page-title-heading">
+                <div class="page-title-icon">
+                    <i class="pe-7s-photo icon-gradient bg-strong-bliss"></i>
+                </div>
+                <div><?= lang('Sumbangan.module') ?> 
+                    <div class="page-title-subheading"><?= lang('Sumbangan.info.list_all') ?>  <?= lang('Sumbangan.module') ?> </div>
+                </div>
+            </div>
+            <div class="page-title-actions">
+                <nav class="" aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="<?= base_url('sumbangan') ?>"><i class="fa fa-home"></i> <?= lang('Sumbangan.label.home') ?></a></li>
+                        <li class="active breadcrumb-item" aria-current="page"><?= lang('Sumbangan.module') ?> </li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
 
     <div class="main-card mb-3 card">
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i><?= lang('Sumbangan.label.table') ?> <?= lang('Sumbangan.module') ?> 
@@ -21,14 +40,14 @@
             <table style="width: 100%;" id="tbl_sumbangans" class="table table-hover table-striped table-bordered">
                 <thead>
                     <tr>
-                        <th>No </th>
-                        <th>Nama</th>
-                        <th>Nomor Anggota</th>
-                        <th>Jumlah Sumbangan</th>
+                        <th><?= lang('Sumbangan.field.no') ?> </th>
+                        <th><?= lang('Sumbangan.field.name') ?></th>
+                        <th><?= lang('Sumbangan.field.MemberNo') ?></th>
+                        <th><?= lang('Sumbangan.field.description') ?></th>
                   
-                        <th>Created By</th>
-                        <th>Updated By</th>
-                        <th>Aksi</th>
+                        <th><?= lang('Sumbangan.field.created_by') ?></th>
+                        <th><?= lang('Sumbangan.field.updated_by') ?></th>
+                        <th><?= lang('Sumbangan.label.action') ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,7 +60,7 @@
                             <td width="200">
                                 <?= _spec($row->MembersNo); ?> <br>
                             </td>
-                            <td><?= _spec($row->Jumlah); ?></td>
+                            <td><?= _spec($row->Keterangan); ?></td>
                            
                            
                             <td width="100">

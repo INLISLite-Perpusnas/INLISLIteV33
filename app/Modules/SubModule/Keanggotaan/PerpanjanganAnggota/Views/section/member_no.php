@@ -2,7 +2,7 @@
 $request = service('request');
 $slug = $request->getGet('slug') ?? 'peminjaman';
 ?>
-<form method="get" action="<?= base_url('perpanjangan-anggota/create') ?>">
+<form method="get" action="<?= base_url('perpanjangananggota/create') ?>">
 	<input type="hidden" name="slug" value="<?= $slug ?>">
 	<div class="form-row">
 		<div class="col-md-9 col-sm-8">

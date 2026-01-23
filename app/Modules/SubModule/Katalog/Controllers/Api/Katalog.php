@@ -413,9 +413,9 @@ class Katalog extends \Base\Controllers\BaseResourceController
 						$file = new File($this->uploadPath . $name);
 
 						// === Tambahan cek ukuran file ===
-						$maxSize = 3 * 1024 * 1024; // 3MB
+						$maxSize = 2 * 1024 * 1024; // 2MB
 						if ($file->getSize() > $maxSize) {
-							throw new \RuntimeException("Ukuran file '{$name}' melebihi batas 3MB.");
+							throw new \RuntimeException("Ukuran file '{$name}' melebihi batas 2MB.");
 						}
 						// === Akhir tambahan ===
 

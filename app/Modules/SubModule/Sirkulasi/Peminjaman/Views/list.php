@@ -85,205 +85,93 @@ $slug = $request->getGet('slug') ?? '';
 <?= $this->include('Peminjaman\Views\add_modal'); ?>
 <?= $this->include('Peminjaman\Views\update_modal'); ?>
 <script>
-	var groupColumn = 8;
-	var t;
-	$(document).ready(function() {
-		t = $('#tbl_data').DataTable({
-			"processing": true,
-			"serverSide": true,
-			"ajax": {
-				"url": '<?php echo site_url('api/sirkulasi-peminjaman/datatable/' . $slug) ?>',
-			},
-			"dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
-				"<'row'<'col-md-12'tr>>" +
-				"<'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12 text-right'i>>",
-			"pagingType": "full_numbers",
-			"oLanguage": {
-				"sSearch": "<i class='fa fa-search'></i> _INPUT_",
-				"sLengthMenu": "_MENU_",
-				"oPaginate": {
-					"sNext": "<i class='fa fa-chevron-right'></i>",
-					"sPrevious": "<i class='fa fa-chevron-left'></i>",
-					"sLast": "<i class='fa fa-chevron-double-right'></i>",
-					"sFirst": "<i class='fa fa-chevron-double-left'></i>",
-				}
-			},
-			"columns": [{
-					data: 'no',
-					className: 'text-center',
-					orderable: false
-				},
-				{
-					data: 'NomorBarcode'
-				},
-				{
-					data: 'Title'
-				},
-				{
-					data: 'LoanDate',
-					className: 'text-center'
-				},
-				{
-					data: 'LateDays',
-					className: 'text-center'
-				},
-				{
-					data: 'LocationLibrary'
-				},
-				{
-					data: 'UpdateDate'
-				},
-				{
-					data: 'CollectionLoan_id',
-					visible: false
-				},
-				{
-					data: 'ID',
-					visible: false
-				},
-				{
-					data: 'Fullname',
-					visible: false
-				},
-				{
-					data: 'DueDate',
-					visible: false
-				},
-				{
-					data: 'Publisher',
-					visible: false
-				},
-			],
-			"columnDefs": [{
-					targets: [0, 7],
-					searchable: false
-				},
-				{
-					targets: [0, 2, 3, 4, 5, 7],
-					orderable: false
-				},
-				{
-					targets: groupColumn,
-					visible: false
-				},
-			],
-			"order": [
-				[9, "desc"]
-			],
-			"drawCallback": function(data, type, full, meta) {
-				var api = this.api();
-				var data = api.rows().data();
-				var rows = api.rows({
-					page: 'current'
-				}).nodes();
-				var last = null;
+    // Group berdasarkan kolom CollectionLoan_id (yang sudah di-edit di controller berisi info member)
+    var groupColumn = 7; 
+    var t;
+    $(document).ready(function() {
+        t = $('#tbl_data').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "ajax": {
+                "url": '<?php echo site_url('api/sirkulasi-peminjaman/datatable/' . $slug) ?>',
+            },
+            "dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
+                "<'row'<'col-md-12'tr>>" +
+                "<'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12 text-right'i>>",
+            "pagingType": "full_numbers",
+            "oLanguage": {
+                "sSearch": "<i class='fa fa-search'></i> _INPUT_",
+                "sLengthMenu": "_MENU_",
+                "oPaginate": {
+                    "sNext": "<i class='fa fa-chevron-right'></i>",
+                    "sPrevious": "<i class='fa fa-chevron-left'></i>",
+                    "sLast": "<i class='fa fa-chevron-double-right'></i>",
+                    "sFirst": "<i class='fa fa-chevron-double-left'></i>",
+                }
+            },
+            "columns": [
+                { data: 'no', className: 'text-center', orderable: false }, // 0
+                { data: 'NomorBarcode' },                                  // 1
+                { data: 'Title' },                                         // 2
+                { data: 'LoanDate', className: 'text-center' },            // 3
+                { data: 'LateDays', className: 'text-center' },            // 4
+                { data: 'LocationLibrary' },                               // 5
+                { data: 'UpdateDate', className: 'text-center' },          // 6
+                { data: 'CollectionLoan_id', visible: false },             // 7 (Untuk Grouping)
+                { data: 'ID', visible: false },                            // 8
+                { data: 'Fullname', visible: false },                      // 9
+                { data: 'DueDate', visible: false },                       // 10
+                { data: 'Publisher', visible: false },                     // 11
+            ],
+            "columnDefs": [
+                {
+                    targets: [0, 7, 8, 9, 10, 11],
+                    searchable: false
+                },
+                {
+                    targets: [0, 2, 3, 4, 7],
+                    orderable: false
+                }
+            ],
+            "order": [
+                [7, "desc"] // Urutkan berdasarkan grup ID transaksi terbaru
+            ],
+            "drawCallback": function(settings) {
+                var api = this.api();
+                var rows = api.rows({ page: 'current' }).nodes();
+                var last = null;
 
-				api
-					.column(groupColumn, {
-						page: 'current'
-					})
-					.data()
-					.each(function(group, i) {
-						if (last !== group) {
-							$(rows)
-								.eq(i)
-								.before('<tr class="group"><td colspan="10">' + group + '</td></tr>');
-							last = group;
-						}
-					});
+                api.column(groupColumn, { page: 'current' })
+                    .data()
+                    .each(function(group, i) {
+                        if (last !== group) {
+                            $(rows).eq(i).before(
+                                '<tr class="group"><td colspan="7">' + group + '</td></tr>'
+                            );
+                            last = group;
+                        }
+                    });
+            },
+            "initComplete": function(settings, json) {
+                var $searchInput = $('div.dataTables_filter input');
+                $searchInput.unbind();
+                $searchInput.bind('keyup', function(e) {
+                    if (e.keyCode == 13) {
+                        t.search(this.value).draw();
+                    }
+                });
+            }
+        });
+    });
 
-				$('.apply-status').bootstrapToggle();
-
-				$(".apply-status").on('change', function() {
-					var url = $(this).attr('data-href');
-					var field = $(this).attr('data-field');
-					var value = $(this).is(':checked');
-					var data_post = 'field=' + field + '&value=' + value;
-
-					$.ajax({
-							url: url,
-							type: 'POST',
-							data: data_post,
-						})
-						.done(function(res) {
-							console.log(res)
-
-							if (res.error == false) {
-								Swal.fire({
-									title: 'Berhasil',
-									html: res.message,
-									type: 'success',
-									showConfirmButton: false,
-									timer: 5000,
-								}).then(() => {});
-							} else {
-								Swal.fire({
-									title: 'Gagal',
-									text: res.message,
-									type: 'error',
-									showConfirmButton: false,
-									timer: 5000
-								}).then(() => {});
-							}
-						})
-						.fail(function(res) {
-							console.log(res);
-
-							Swal.fire({
-								title: 'Oups',
-								text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
-								type: 'error',
-								showConfirmButton: false,
-								timer: 5000
-							}).then(() => {});
-						});
-				});
-			},
-			"initComplete": function(settings, json) {
-				var $searchInput = $('div.dataTables_filter input');
-				$searchInput.unbind();
-				$searchInput.bind('keyup', function(e) {
-					if (e.keyCode == 13) {
-						if (this.value.length == 0) {
-							t.search('').draw();
-						}
-
-						if (this.value.length >= 3) {
-							t.search(this.value).draw();
-						}
-					}
-				});
-			}
-		});
-	});
-
-	$('#tbl_data tbody').on('click', 'tr.group', function() {
-		var currentOrder = table.order()[0];
-		if (currentOrder[0] === groupColumn && currentOrder[1] === 'asc') {
-			table.order([groupColumn, 'desc']).draw();
-		} else {
-			table.order([groupColumn, 'asc']).draw();
-		}
-	});
-
-	$("body").on("click", ".remove-data", function() {
-		var url = $(this).attr('data-href');
-		console.log(url);
-		Swal.fire({
-			title: '<?= lang('App.swal.are_you_sure') ?>',
-			text: "<?= lang('App.swal.can_not_be_restored') ?>",
-			type: 'warning',
-			showCancelButton: true,
-			confirmButtonColor: '#3085d6',
-			cancelButtonColor: '#dd6b55',
-			confirmButtonText: '<?= lang('App.btn.yes') ?>',
-			cancelButtonText: '<?= lang('App.btn.no') ?>'
-		}).then((result) => {
-			if (result.value) {
-				window.location.href = url;
-			}
-		});
-		return false;
-	});
+    // Fungsi klik pada grup untuk sorting (Opsional)
+    $('#tbl_data tbody').on('click', 'tr.group', function() {
+        var currentOrder = t.order()[0];
+        if (currentOrder[0] === groupColumn && currentOrder[1] === 'asc') {
+            t.order([groupColumn, 'desc']).draw();
+        } else {
+            t.order([groupColumn, 'asc']).draw();
+        }
+    });
 </script>
 <?= $this->endSection('script'); ?>

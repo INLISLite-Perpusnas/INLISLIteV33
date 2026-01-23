@@ -345,13 +345,13 @@ private function loadRegularCatalogscache()
 
         // Get digital books (DRM)
         $roweksemplar_drm = $EksemplarModel
-            ->select('collections.ID,collections.Catalog_id, collections.NomorBarcode, collections.CallNumber, collectionrules.Name as RuleName, locations.Name as LocationName, collectionstatus.Name as StatusName')
+            ->select('collections.NomorBarcode, collections.CallNumber, collectionrules.Name as RuleName, locations.Name as LocationName, collectionstatus.Name as StatusName')
             ->join('collectionrules', 'collectionrules.id = collections.Rule_id', 'left')
             ->join('locations', 'locations.id = collections.Location_id', 'left')
             ->join('collectionstatus', 'collectionstatus.id = collections.Status_id', 'left')
             ->where('collections.catalog_id', $id)
             ->where('collections.ISDRM', 1)
-        
+
             ->findAll();
 
         $marc = $this->katalogRuasModel
