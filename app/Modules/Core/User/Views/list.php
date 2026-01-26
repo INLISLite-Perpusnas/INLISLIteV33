@@ -51,7 +51,7 @@ $slug = $request->getGet('slug');
 	<ul class="body-tabs body-tabs-layout tabs-animated body-tabs-animated nav">
 		<?php foreach (get_groups() as $group) : ?>
 			<li class="nav-item">
-				<a class="nav-link <?= ($slug == $group->name) ? 'active' : '' ?>" href="<?= base_url('user/index?slug=' . $group->name) ?>">
+				<a class="btn-header-argon <?= ($slug == $group->name) ? 'active' : '' ?>" href="<?= base_url('user/index?slug=' . $group->name) ?>">
 					<span><?= strtoupper($group->name) ?></span>
 				</a>
 			</li>

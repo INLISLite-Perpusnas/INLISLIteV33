@@ -176,6 +176,8 @@ $page_title = ucfirst($segment2 ?: $segment1);
             display: inline-flex;
             align-items: center;
             gap: 8px;
+             margin-right: 10px;
+             margin-bottom: 5px;
             text-decoration: none;
         }
 
