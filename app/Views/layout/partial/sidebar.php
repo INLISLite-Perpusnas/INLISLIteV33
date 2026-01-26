@@ -235,13 +235,11 @@ body.sidebar-collapsed .submenu-argon {
     <div>
         <img src="<?= !empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png') ?>" style="width: 80px; height: 80px; object-fit: contain; border-radius: 16px; margin-bottom: 20px;">
     </div>
-    <span class="brand-text">INLISLite</span>
-
+    <span class="brand-text">INLISLite</span><br>
     <button class="sidebar-toggle" id="sidebarToggle">
         <i class="fas fa-bars"></i>
     </button>
 </div>
-
 
     <?= display_menu_backend(0, 1, user()->category ?? 'admin'); ?>
 

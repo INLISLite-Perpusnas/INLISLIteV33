@@ -13,6 +13,7 @@ if ($request->getVar('fullscreen') == 1) {
 $db = db_connect();
 $logo = $db->table('settingparameters')->where('Name', 'Logo')->get()->getRow()->Value;
 $nama_perpustakaan = $db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value ?: "Perpustakaan";
+$npp_perpustakaan=$db->table('settingparameters')->where('Name', 'NPPPerpustakaan')->get()->getRow()->Value?:"NPP Perpustakaan Mitra";
 
 // Get breadcrumb info
 $segment1 = $request->uri->getSegment(1) ?: 'dashboard';
@@ -363,7 +364,7 @@ $page_title = ucfirst($segment2 ?: $segment1);
             }
 
             .page-title-argon {
-                font-size: 24px;
+                font-size: 18px;
             }
         }
 
@@ -437,7 +438,7 @@ $page_title = ucfirst($segment2 ?: $segment1);
                 <div class="header-left">
 
 
-                    <h4 class="page-title-argon"><?= $nama_perpustakaan ?></h4>
+                    <h7 class="page-title-argon"><?= $nama_perpustakaan ?></h7>
                 </div>
 
                 <div class="header-actions" style="padding-right: 50px;">
