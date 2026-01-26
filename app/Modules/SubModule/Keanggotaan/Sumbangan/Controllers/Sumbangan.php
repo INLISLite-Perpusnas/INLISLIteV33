@@ -63,9 +63,6 @@ class Sumbangan extends \Base\Controllers\BaseController
         if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
 
             $save_data = [
-                // 'name' => $this->request->getPost('name'),
-                // 'slug' => $slug,
-                // 'sort' => $this->request->getPost('sort'),
                 'Member_id' => $this->request->getPost('Member_id'),
                 'Jumlah' => $this->request->getPost('Jumlah'),
                 'Keterangan' => $this->request->getPost('Keterangan'),
@@ -95,15 +92,14 @@ class Sumbangan extends \Base\Controllers\BaseController
         $sumbangan = $this->sumbanganModel->find($id);
         $this->data['sumbangan'] = $sumbangan;
 
-        $this->validation->setRule('name', 'Nama', 'required');
+        $this->validation->setRule('Member_id', 'Member_id', 'required');
         if ($this->request->getPost()) {
             if ($this->validation->withRequest($this->request)->run()) {
-                $slug = url_title($this->request->getPost('name'), '-', TRUE);
                 $update_data = [
-                    'name' => $this->request->getPost('name'),
-                    'slug' => $slug,
-                    'sort' => $this->request->getPost('sort'),
-                    'description' => $this->request->getPost('description'),
+                    'Member_id' => $this->request->getPost('Member_id'),
+                    'Jumlah' => $this->request->getPost('Jumlah'),
+                    'Keterangan' => $this->request->getPost('Keterangan'),
+                    'CreateBy' => user_id(),
                     'updated_by' => user_id(),
                 ];
 

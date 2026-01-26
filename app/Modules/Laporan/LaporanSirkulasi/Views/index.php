@@ -1,30 +1,49 @@
 <?php
 $request = service('request');
-$date_from = $request->getGet('date_from') ?? '';
-$date_to = $request->getGet('date_to') ?? '';
 ?>
 
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
 <style>
-    .preview-container {
-        margin-top: 20px;
-        border-top: 1px solid #dee2e6;
-        padding-top: 20px;
+.preview-container {
+    margin-top: 20px;
+    border-top: 1px solid #dee2e6;
+    padding-top: 20px;
+}
+.preview-table {
+    max-height: 500px;
+    overflow-y: auto;
+}
+.filter-section {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+    background-color: #f8f9fa;
+}
+.filter-section h6 {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+.columns-section {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+.filters-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+@media (max-width: 768px) {
+    .filters-container {
+        grid-template-columns: 1fr;
     }
-
-    .preview-table {
-        max-height: 500px;
-        overflow-y: auto;
-    }
-
-    .filter-section {
-        border: 1px solid #dee2e6;
-        border-radius: 5px;
-        padding: 15px;
-        margin-bottom: 15px;
-        background-color: #f8f9fa;
-    }
+}
 </style>
 <?= $this->endSection('style'); ?>
 
@@ -34,10 +53,10 @@ $date_to = $request->getGet('date_to') ?? '';
         <div class="page-title-wrapper">
             <div class="page-title-heading">
                 <div class="page-title-icon">
-                    <i class="pe-7s-graph2 icon-gradient bg-strong-bliss"></i>
+                    <i class="pe-7s-note2 icon-gradient bg-strong-bliss"></i>
                 </div>
-                <div>Laporan Sirkulasi
-                    <div class="page-title-subheading">Daftar Semua Peminjaman</div>
+                <div>Laporan Peminjaman Buku
+                    <div class="page-title-subheading">Export Data Peminjaman dengan Multiple Filter</div>
                 </div>
             </div>
             <div class="page-title-actions">
@@ -45,7 +64,7 @@ $date_to = $request->getGet('date_to') ?? '';
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('auth') ?>"><i class="fa fa-home"></i> Home</a></li>
                         <li class="breadcrumb-item"><a href="#">Laporan</a></li>
-                        <li class="active breadcrumb-item" aria-current="page">Laporan Sirkulasi </li>
+                        <li class="active breadcrumb-item" aria-current="page">Laporan Peminjaman</li>
                     </ol>
                 </nav>
             </div>
@@ -54,7 +73,8 @@ $date_to = $request->getGet('date_to') ?? '';
 
     <div class="card">
         <div class="card-header">
-            <h5><strong>Export Data Peminjaman</strong></h5>
+            <h5><strong>Export Data Peminjaman Buku</strong></h5>
+            <p class="text-muted mb-0">Pilih kolom dan filter yang diinginkan. Anda dapat mengkombinasikan beberapa filter sekaligus.</p>
         </div>
         <div class="card-body">
             <?php if (session('errors')) : ?>
@@ -65,177 +85,192 @@ $date_to = $request->getGet('date_to') ?? '';
                 </div>
             <?php endif ?>
 
-            <form action="<?= base_url('laporan-sirkulasi/export') ?>" method="post">
+            <?php if (session('error')) : ?>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> <?= session('error') ?>
+                </div>
+            <?php endif ?>
+
+            <form id="filterForm">
                 <?= csrf_field() ?>
-                <div class="form-group mb-3">
-                    <label><b>Pilih Jenis Laporan</b></label>
-                    <select class="form-control" name="report_type" id="report_type">
-                        <option value="peminjaman">Laporan Peminjaman</option>
-                        <option value="anggota">Laporan Anggota Sering Meminjam</option>
-                        <option value="koleksi">Laporan Koleksi Sering Dipinjam</option>
-                    </select>
-                </div>
-
-                <div class="form-group mb-3">
-                    <label><b>Pilih Kolom yang akan diekspor</b></label>
-                    <div class="row" id="columns_container">
+                
+                <!-- Columns Selection -->
+                <div class="columns-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0"><i class="fas fa-columns"></i> Pilih Kolom yang akan diekspor</h6>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="select_all_columns">
+                            <label class="form-check-label font-weight-bold text-primary" for="select_all_columns">
+                                <i class="fas fa-check-double"></i> Pilih Semua Kolom
+                            </label>
+                        </div>
                     </div>
-                </div>
-
-                <div class="form-group mb-3">
-                    <label><b>Filter Berdasarkan</b></label>
-                    <select class="form-control" name="filter_type" id="filter_type">
-                        <option value="date">Tanggal</option>
-                        <option value="month">Bulan</option>
-                        <option value="year">Tahun</option>
-                    </select>
-                </div>
-
-                <div id="date_filter" class="filter-section mb-3">
-                    <h6 class="mb-3"><i class="fas fa-calendar-alt"></i> Filter Berdasarkan Tanggal</h6>
                     <div class="row">
-                        <div class="col-md-6">
-                            <label>Tanggal Mulai</label>
-                            <input type="date" name="start_date" class="form-control">
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input column-checkbox" type="checkbox" name="columns[]" value="nama_anggota" id="nama_anggota" checked>
+                                <label class="form-check-label" for="nama_anggota">
+                                    Nama Anggota
+                                </label>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label>Tanggal Akhir</label>
-                            <input type="date" name="end_date" class="form-control">
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input column-checkbox" type="checkbox" name="columns[]" value="MemberNo" id="MemberNo">
+                                <label class="form-check-label" for="MemberNo">
+                                    Nomor Anggota
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input column-checkbox" type="checkbox" name="columns[]" value="NomorBarcode" id="NomorBarcode" checked>
+                                <label class="form-check-label" for="NomorBarcode">
+                                    Nomor Barcode
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input column-checkbox" type="checkbox" name="columns[]" value="judul_buku" id="judul_buku" checked>
+                                <label class="form-check-label" for="judul_buku">
+                                    Judul Buku
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input column-checkbox" type="checkbox" name="columns[]" value="tanggal_peminjaman" id="tanggal_peminjaman" checked>
+                                <label class="form-check-label" for="tanggal_peminjaman">
+                                    Tanggal Peminjaman
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input column-checkbox" type="checkbox" name="columns[]" value="tanggal_jatuh_tempo" id="tanggal_jatuh_tempo">
+                                <label class="form-check-label" for="tanggal_jatuh_tempo">
+                                    Tanggal Jatuh Tempo
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input column-checkbox" type="checkbox" name="columns[]" value="tanggal_pengembalian" id="tanggal_pengembalian" checked>
+                                <label class="form-check-label" for="tanggal_pengembalian">
+                                    Tanggal Pengembalian
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input column-checkbox" type="checkbox" name="columns[]" value="petugas_peminjaman" id="petugas_peminjaman">
+                                <label class="form-check-label" for="petugas_peminjaman">
+                                    Petugas Peminjaman
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input column-checkbox" type="checkbox" name="columns[]" value="petugas_pengembalian" id="petugas_pengembalian" checked>
+                                <label class="form-check-label" for="petugas_pengembalian">
+                                    Petugas Pengembalian
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input column-checkbox" type="checkbox" name="columns[]" value="jenis_kelamin" id="jenis_kelamin" checked>
+                                <label class="form-check-label" for="jenis_kelamin">
+                                    Jenis Kelamin
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input column-checkbox" type="checkbox" name="columns[]" value="status_peminjaman" id="status_peminjaman">
+                                <label class="form-check-label" for="status_peminjaman">
+                                    Status Peminjaman
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div id="month_filter" class="filter-section mb-3" style="display: none;">
-                    <h6 class="mb-3"><i class="fas fa-calendar-alt"></i> Filter Berdasarkan Bulan</h6>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label>Bulan</label>
-                            <select name="month" class="form-control">
-                                <?php for ($i = 1; $i <= 12; $i++) : ?>
-                                    <option value="<?= $i ?>"><?= date('F', mktime(0, 0, 0, $i, 1)) ?></option>
-                                <?php endfor ?>
-                            </select>
+                <!-- Multiple Filters Container -->
+                <div class="filters-container">
+                    <!-- Filter Tanggal Peminjaman -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-calendar-alt"></i> Filter Berdasarkan Tanggal Peminjaman</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Tanggal Mulai</label>
+                                <input type="date" name="start_date" id="start_date" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label>Tanggal Akhir</label>
+                                <input type="date" name="end_date" id="end_date" class="form-control">
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label>Tahun</label>
-                            <select name="year" class="form-control">
-                                <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
-                                    <option value="<?= $i ?>"><?= $i ?></option>
-                                <?php endfor ?>
-                            </select>
-                        </div>
+                    </div>
+
+                    <!-- Filter Status Peminjaman -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-info-circle"></i> Filter Berdasarkan Status Peminjaman</h6>
+                        <label>Status Peminjaman</label>
+                        <select name="loan_status" id="loan_status" class="form-control">
+                            <option value="">-- Semua Status --</option>
+                            <option value="">Dipinjam</option>
+                            <option value="Return">Dikembalikan</option>
+                        </select>
+                    </div>
+
+                    <!-- Filter Nama Anggota -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-user"></i> Filter Berdasarkan Nama Anggota</h6>
+                        <label>Nama Anggota</label>
+                        <input type="text" name="member_name" id="member_name" class="form-control" placeholder="Masukkan nama anggota...">
+                    </div>
+
+                    <!-- Filter Judul Buku -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-book"></i> Filter Berdasarkan Judul Buku</h6>
+                        <label>Judul Buku</label>
+                        <input type="text" name="book_title" id="book_title" class="form-control" placeholder="Masukkan judul buku...">
                     </div>
                 </div>
 
-                <div id="year_filter" class="filter-section mb-3" style="display: none;">
-                    <h6 class="mb-3"><i class="fas fa-calendar-alt"></i> Filter Berdasarkan Tahun</h6>
-                    <label>Tahun</label>
-                    <select name="year" class="form-control">
-                        <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
-                            <option value="<?= $i ?>"><?= $i ?></option>
-                        <?php endfor ?>
-                    </select>
-                </div>
-
-                <!-- <div class="form-group mb-3">
-                    <label><strong>Filter Berdasarkan Petugas</strong></label>
-                    <select class="form-control" name="petugas" id="petugas">
-                        <option value="">-- Semua Petugas --</option>
-                        <?php if (isset($petugas)) : ?>
-                            <?php foreach ($petugas as $orang) : ?>
-                                <option value="<?= $orang->FullName ?>"><?= $orang->FullName ?></option>
-                            <?php endforeach ?>
-                        <?php endif ?>
-                    </select>
-                </div> -->
-
-                <!-- Gender Filter Section -->
-                <!-- <div class="form-group mb-3">
-                    <label><strong>Filter Berdasarkan Jenis Kelamin</strong></label>
-                    <select class="form-control" name="gender_id" id="gender_id">
-                        <option value="">-- Semua Jenis Kelamin --</option>
-                        <?php if (isset($genderOptions)) : ?>
-                            <?php foreach ($genderOptions as $gender) : ?>
-                                <option value="<?= $gender->Name ?>"><?= $gender->Name ?></option>
-                            <?php endforeach ?>
-                        <?php endif ?>
-                    </select>
-                </div> -->
-
-                <!-- Type Filter Section -->
-                <!-- <div class="form-group mb-3">
-                    <label><strong>Filter Berdasarkan Kriteria Pengunjung</strong></label>
-                    <select class="form-control" name="visitor_type" id="visitor_type">
-                        <option value="">-- Semua Kriteria Pengunjung --</option>
-                        <option value="anggota">Anggota</option>
-                        <option value="non anggota">Non Anggota</option>
-                        <option value="rombongan">Rombongan</option>
-                    </select>
-                </div> -->
-
-                <!-- Location Filter Section -->
-                <!-- <div class="form-group mb-3">
-                    <label><strong>Filter Berdasarkan Lokasi Perpustakaan</strong></label>
-                    <select class="form-control" name="location" id="location">
-                        <option value="">-- Semua Lokasi Perpustakaan --</option>
-                        <?php if (isset($locationOptions)) : ?>
-                            <?php foreach ($locationOptions as $location) : ?>
-                                <option value="<?= $location->code ?>"><?= $location->name ?></option>
-                            <?php endforeach ?>
-                        <?php endif ?>
-                    </select>
-                </div> -->
-
-                <!-- Room Filter Section -->
-                <!-- <div class="form-group mb-3">
-                    <label><strong>Filter Berdasarkan Ruang Perpustakaan</strong></label>
-                    <select class="form-control" name="room" id="room">
-                        <option value="">-- Semua Ruang Perpustakaan --</option>
-                        <?php if (isset($roomOptions)) : ?>
-                            <?php foreach ($roomOptions as $room) : ?>
-                                <option value="<?= $room->Name ?>"><?= $room->Name ?></option>
-                            <?php endforeach ?>
-                        <?php endif ?>
-                    </select>
-                </div> -->
-
-                <!-- Destinatiom Filter Section -->
-                <!-- <div class="form-group mb-3">
-                    <label><strong>Filter Berdasarkan Tujuan Kunjungan</strong></label>
-                    <select class="form-control" name="destination" id="destination">
-                        <option value="">-- Semua Tujuan Kunjungan --</option>
-                        <?php if (isset($destinationOptions)) : ?>
-                            <?php foreach ($destinationOptions as $destination) : ?>
-                                <option value="<?= $destination->name ?>"><?= $destination->name ?></option>
-                            <?php endforeach ?>
-                        <?php endif ?>
-                    </select>
-                </div> -->
-
-                <div class="form-group mb-3">
-                    <label><strong>Tampilkan Kop Laporan</strong></label>
-                    <select class="form-control" name="kop" id="kop">
-                        <option value="">-- Pilih Kop Laporan --</option>
-                        <option value="Ya">Ya</option>
-                        <option value="Tidak">Tidak</option>
-                    </select>
-                </div>
-
-                <div class="text-center mb-3">
-                    <button type="submit" class="btn btn-success btn-lg">
-                        <i class="fas fa-download"></i> Export to Excel
+                <!-- Export Button -->
+                <div class="text-center mb-4">
+                    <button type="button" class="btn btn-primary btn-lg px-5" id="btnPreview">
+                        <i class="fas fa-eye"></i> Preview Data (100 Baris Pertama)
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-lg px-5 ml-2" onclick="clearAllFilters()">
+                        <i class="fas fa-eraser"></i> Clear All Filters
                     </button>
                 </div>
-
             </form>
 
             <!-- Preview Section -->
-            <div class="preview-container">
-                <h5><i class="fas fa-eye"></i> Preview Data (20 Baris Pertama)</h5>
+            <div class="preview-container" id="previewSection" style="display: none;">
+                <h5><i class="fas fa-eye"></i> Preview Data (100 Baris Pertama)</h5>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Menampilkan <strong>100 baris pertama</strong> dari data yang akan diexport. 
+                    Jika sudah sesuai, klik tombol Export ke Excel untuk mengunduh semua data.
+                    <div class="mt-2">
+                        <strong>Perhatian:</strong> Export data dalam jumlah besar membutuhkan waktu lebih lama.
+                    </div>
+                </div>
                 <div class="preview-table" id="preview-table">
                     <div class="text-center">
-                        <p>Pilih kolom dan filter untuk melihat preview data</p>
+                        <p>Pilih kolom untuk melihat preview data</p>
                     </div>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <button type="button" class="btn btn-success btn-lg px-5" id="btnExport">
+                        <i class="fas fa-file-excel"></i> Export ke Excel (Semua Data)
+                    </button>
                 </div>
             </div>
         </div>
@@ -244,136 +279,243 @@ $date_to = $request->getGet('date_to') ?? '';
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
-
 <script>
-    const allColumns = {
-        peminjaman: <?= json_encode($columns) ?>,
-        anggota: <?= json_encode($columnsAnggota) ?>,
-        koleksi: <?= json_encode($columnsKoleksi) ?>
-    };
-
-
-    $('#location').change(function(e) {
-        var Location_Library_id = $("#location option:selected").val();
-        getData(`<?= base_url('api/eksemplar/locations') ?>/${Location_Library_id}`, `#room`, false,
-            `-- Semua Ruang Perpustakaan --`);
+$(document).ready(function() {
+    let currentColumns = [];
+    
+    // Handle Select All Columns
+    $('#select_all_columns').change(function() {
+        const isChecked = $(this).is(':checked');
+        $('.column-checkbox').prop('checked', isChecked);
+        updateSelectAllStatus();
     });
 
-    $(document).ready(function() {
-        // Panggil fungsi saat dropdown jenis laporan berubah
-        $('#report_type').change(function() {
-            const selectedReport = $(this).val();
-            updateColumns(selectedReport);
-            updatePreview(); // Perbarui juga preview data
-        });
+    // Handle individual column checkboxes
+    $('.column-checkbox').change(function() {
+        updateSelectAllStatus();
+    });
 
-        function updateColumns(reportType) {
-            const columnsContainer = $('#columns_container');
-            columnsContainer.empty(); // Hapus opsi kolom yang sudah ada
-
-            const columns = allColumns[reportType];
-            if (columns) {
-                $.each(columns, function(key, label) {
-                    const columnHtml = `
-                <div class="col-md-4">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="columns[]" value="${key}" id="${key}">
-                        <label class="form-check-label" for="${key}">
-                            ${label}
-                        </label>
-                    </div>
-                </div>
-            `;
-                    columnsContainer.append(columnHtml);
-                });
-            }
-            // Tambahkan kembali event listener ke checkbox yang baru
-            $('input[name="columns[]"]').change(updatePreview);
+    // Function to update select all checkbox status
+    function updateSelectAllStatus() {
+        const totalColumns = $('.column-checkbox').length;
+        const checkedColumns = $('.column-checkbox:checked').length;
+        
+        if (checkedColumns === 0) {
+            $('#select_all_columns').prop('indeterminate', false).prop('checked', false);
+        } else if (checkedColumns === totalColumns) {
+            $('#select_all_columns').prop('indeterminate', false).prop('checked', true);
+        } else {
+            $('#select_all_columns').prop('indeterminate', true);
         }
+    }
 
-        // Function to update preview table
-        function updatePreview() {
-            const selectedColumns = [];
-            $('input[name="columns[]"]:checked').each(function() {
-                selectedColumns.push($(this).val());
-            });
-
-            const filterType = $('#filter_type').val();
-            const reportType = $('#report_type').val();
-            // const petugas = $('#petugas').val();
-            //const genderId = $('#gender_id').val(); 
-            // const visitor_type = $('#visitor_type').val();
-            // const location = $('#location').val();
-            // const room = $('#room').val();
-            // const destination = $('#destination').val();
-            const kop = $('#kop').val();
-            const formData = new FormData();
-
-            formData.append('report_type', reportType);
-            formData.append('columns', JSON.stringify(selectedColumns));
-            formData.append('filter_type', filterType);
-            // formData.append('petugas', petugas);
-            // formData.append('gender_id', genderId); 
-            // formData.append('visitor_type', visitor_type); 
-            // formData.append('location', location); 
-            // formData.append('room', room);
-            // formData.append('destination', destination);
-            formData.append('kop', kop);
-
-            // Add appropriate date filters based on filter type
-            if (filterType === 'date') {
-                formData.append('start_date', $('input[name="start_date"]').val());
-                formData.append('end_date', $('input[name="end_date"]').val());
-            } else if (filterType === 'month') {
-                formData.append('month', $('select[name="month"]').val());
-                formData.append('year', $('#month_filter select[name="year"]').val());
-            } else if (filterType === 'year') {
-                formData.append('year', $('#year_filter select[name="year"]').val());
-            }
-
-            // Show loading indicator
-            $('#preview-table').html('<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Memuat preview data...</p></div>');
-
-            // Make AJAX call to get preview data
-            $.ajax({
-                url: '<?= base_url('laporan-sirkulasi/preview') ?>',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    $('#preview-table').html(response);
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching preview:', error);
+    // Preview Data
+    $('#btnPreview').click(function() {
+        // Ambil kolom yang dipilih
+        const selectedColumns = [];
+        $('.column-checkbox:checked').each(function() {
+            selectedColumns.push($(this).val());
+        });
+        
+        if (selectedColumns.length === 0) {
+            alert('Pilih minimal satu kolom untuk ditampilkan!');
+            return;
+        }
+        
+        // Show loading
+        $(this).html('<i class="fas fa-spinner fa-spin"></i> Loading...').prop('disabled', true);
+        $('#preview-table').html('<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i><p>Memuat preview data...</p></div>');
+        
+        // AJAX Request
+        $.ajax({
+            url: '<?= base_url('laporan-sirkulasi/preview') ?>',
+            type: 'POST',
+            data: {
+                columns: selectedColumns,
+                start_date: $('#start_date').val(),
+                end_date: $('#end_date').val(),
+                loan_status: $('#loan_status').val(),
+                member_name: $('#member_name').val(),
+                book_title: $('#book_title').val()
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.status === 'success') {
+                    currentColumns = response.columns;
+                    displayPreview(response.data, response.columns, response.total);
+                    $('#previewSection').show();
+                } else {
+                    alert(response.message);
                 }
-            });
-        }
-
-        // Event listeners for form changes
-        $('#filter_type, #gender_id, #visitor_type, #location, #room, #destination, input[name="start_date"], input[name="end_date"], select[name="month"], select[name="year"]').change(updatePreview);
-        // Delegasi event untuk checkbox kolom yang dibuat secara dinamis
-        $('#columns_container').on('change', 'input[name="columns[]"]', updatePreview);
-        $('input[name="start_date"], input[name="end_date"]').change(updatePreview);
-        $('select[name="month"], select[name="year"]').change(updatePreview);
-
-        // Event listeners for form changes
-        $('#report_type').change(function() {
-            const selectedReport = $(this).val();
-            updateColumns(selectedReport);
-            updatePreview();
-        });
-
-        // Panggil saat halaman dimuat pertama kali
-        updateColumns($('#report_type').val());
-        // Initial preview load
-        updatePreview();
-
-        // Show/hide filter sections
-        $('#filter_type').change(function() {
-            $('.filter-section').hide();
-            $('#' + $(this).val() + '_filter').show();
+            },
+            error: function() {
+                alert('Terjadi kesalahan saat mengambil data');
+                $('#preview-table').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Terjadi kesalahan saat memuat preview data. Silakan coba lagi.</div>');
+            },
+            complete: function() {
+                $('#btnPreview').html('<i class="fas fa-eye"></i> Preview Data (100 Baris Pertama)').prop('disabled', false);
+            }
         });
     });
+    
+    // Export Excel
+    $('#btnExport').click(function() {
+        // Ambil kolom yang dipilih
+        const selectedColumns = [];
+        $('.column-checkbox:checked').each(function() {
+            selectedColumns.push($(this).val());
+        });
+        
+        if (selectedColumns.length === 0) {
+            alert('Pilih minimal satu kolom untuk diexport!');
+            return;
+        }
+        
+        // Show loading
+        $(this).html('<i class="fas fa-spinner fa-spin"></i> Mengexport...').prop('disabled', true);
+        
+        // Buat form untuk submit
+        const form = $('<form>', {
+            'method': 'POST',
+            'action': '<?= base_url('laporan-sirkulasi/export') ?>'
+        });
+        
+        // Tambahkan CSRF token
+        form.append($('<input>', {
+            'type': 'hidden',
+            'name': '<?= csrf_token() ?>',
+            'value': '<?= csrf_hash() ?>'
+        }));
+        
+        // Tambahkan kolom
+        selectedColumns.forEach(function(col) {
+            form.append($('<input>', {
+                'type': 'hidden',
+                'name': 'columns[]',
+                'value': col
+            }));
+        });
+        
+        // Tambahkan filter
+        form.append($('<input>', {
+            'type': 'hidden',
+            'name': 'start_date',
+            'value': $('#start_date').val()
+        }));
+        
+        form.append($('<input>', {
+            'type': 'hidden',
+            'name': 'end_date',
+            'value': $('#end_date').val()
+        }));
+        
+        form.append($('<input>', {
+            'type': 'hidden',
+            'name': 'loan_status',
+            'value': $('#loan_status').val()
+        }));
+        
+        form.append($('<input>', {
+            'type': 'hidden',
+            'name': 'member_name',
+            'value': $('#member_name').val()
+        }));
+        
+        form.append($('<input>', {
+            'type': 'hidden',
+            'name': 'book_title',
+            'value': $('#book_title').val()
+        }));
+        
+        // Submit form
+        $('body').append(form);
+        form.submit();
+        form.remove();
+        
+        // Reset button
+        setTimeout(function() {
+            $('#btnExport').html('<i class="fas fa-file-excel"></i> Export ke Excel (Semua Data)').prop('disabled', false);
+        }, 2000);
+    });
+    
+    // Function to display preview
+    function displayPreview(data, columns, total) {
+        // Mapping nama kolom
+        const columnNames = {
+            'nama_anggota': 'Nama Anggota',
+            'MemberNo': 'Nomor Anggota',
+            'NomorBarcode': 'Nomor Barcode',
+            'judul_buku': 'Judul Buku',
+            'tanggal_peminjaman': 'Tanggal Peminjaman',
+            'tanggal_jatuh_tempo': 'Tanggal Jatuh Tempo',
+            'tanggal_pengembalian': 'Tanggal Pengembalian',
+            'petugas_peminjaman': 'Petugas Peminjaman',
+            'petugas_pengembalian': 'Petugas Pengembalian',
+            'jenis_kelamin': 'Jenis Kelamin',
+            'status_peminjaman': 'Status Peminjaman'
+        };
+        
+        // Build table
+        let tableHtml = '<div class="table-responsive"><table class="table table-striped table-hover table-bordered">';
+        tableHtml += '<thead class="thead-dark"><tr>';
+        
+        // Header
+        columns.forEach(function(col) {
+            tableHtml += '<th>' + (columnNames[col] || col) + '</th>';
+        });
+        tableHtml += '</tr></thead><tbody>';
+        
+        // Body
+        if (data.length === 0) {
+            tableHtml += '<tr><td colspan="' + columns.length + '" class="text-center">Tidak ada data</td></tr>';
+        } else {
+            data.forEach(function(row) {
+                tableHtml += '<tr>';
+                columns.forEach(function(col) {
+                    let value = row[col] || '-';
+                    
+                    // Format tanggal
+                    if (col.includes('tanggal_') && value !== '-' && value !== null) {
+                        const date = new Date(value);
+                        if (!isNaN(date.getTime())) {
+                            value = date.toLocaleString('id-ID', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                        }
+                    }
+                    
+                    tableHtml += '<td>' + value + '</td>';
+                });
+                tableHtml += '</tr>';
+            });
+        }
+        
+        tableHtml += '</tbody></table></div>';
+        tableHtml += '<p class="text-muted mt-2"><strong>Total data preview:</strong> ' + total + ' baris (dari 100 baris pertama)</p>';
+        
+        $('#preview-table').html(tableHtml);
+        
+        // Scroll to preview
+        $('html, body').animate({
+            scrollTop: $('#previewSection').offset().top - 100
+        }, 500);
+    }
+    
+    // Initial setup
+    updateSelectAllStatus();
+});
+
+// Function to clear all filters
+function clearAllFilters() {
+    if (confirm('Apakah Anda yakin ingin menghapus semua filter?')) {
+        // Clear all input fields
+        $('input[type="date"], input[type="text"]').val('');
+        $('select').prop('selectedIndex', 0);
+    }
+}
 </script>
 <?= $this->endSection('script'); ?>

@@ -2,9 +2,10 @@
 $request = service('request');
 ?>
 
-<?php $core = config('Core');
-$layout = (!empty($core->layout_backend)) ? $core->layout_backend : 'hamkamannan\adminigniter\Views\layout\backend\main'; ?>
-<?= $this->extend($layout); ?>
+<?= $this->extend('App\Views\layout\main'); ?>
+
+
+<?= $this->section('page'); ?>
 <?= $this->section('style'); ?>
 <style>
     .select2-container--default .select2-selection--single {

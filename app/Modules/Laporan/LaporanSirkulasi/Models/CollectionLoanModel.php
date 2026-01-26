@@ -31,12 +31,12 @@ class CollectionLoanModel extends \App\Models\BaseModel
                         '<br/>', catalogs.`PublishLocation`, ' ', catalogs.`Publisher`, ' ', catalogs.`PublishYear`, 
                         '<br/>', catalogs.`Subject`, '<br/>', catalogs.`DeweyNo`) AS DataBib,
                         members.`MemberNo` AS NoAnggota,
-                        members.`FullName` AS NamaAnggota,
+                        members.`Fullname` AS NamaAnggota,
                         jenis_kelamin.`Name` AS J_kelamin,
                         master_range_umur.`Keterangan` AS umur,
                         master_kelas_besar.`namakelas` AS nomor_klass,
-                        u1.`FullName` AS PetugasPeminjaman,
-                        u2.`FullName` AS PetugasPengembalian
+                        u1.`username` AS PetugasPeminjaman,
+                        u2.`username` AS PetugasPengembalian
                         FROM collectionloanitems
                         INNER JOIN collections ON collections.ID = collectionloanitems.Collection_id
                         LEFT JOIN catalogs ON catalogs.ID = collections.Catalog_id
@@ -69,7 +69,7 @@ class CollectionLoanModel extends \App\Models\BaseModel
             $subquery = "
                         SELECT
                               members.`MemberNo` AS NoAnggota,
-                              members.`FullName` AS NamaAnggota,
+                              members.`Fullname` AS NamaAnggota,
                               members.`Address` AS Alamat,
                               members.`Phone` AS Phone,
                               members.`Email` AS Email,
@@ -79,7 +79,7 @@ class CollectionLoanModel extends \App\Models\BaseModel
                         INNER JOIN
                               members ON members.ID = collectionloanitems.member_id
                        GROUP BY
-                              members.`MemberNo`, members.`FullName`, members.`Address`, members.`Phone`, members.`Email`
+                              members.`MemberNo`, members.`Fullname`, members.`Address`, members.`Phone`, members.`Email`
                         ";
 
             $builder = $this->db->table("($subquery) as anggota_peminjam");
