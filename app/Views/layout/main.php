@@ -463,8 +463,8 @@ $page_title = ucfirst($segment2 ?: $segment1);
             <!-- Footer -->
             <footer class="footer-argon">
                 <p>
-                    © <?= date('Y') ?> Made with <i class="fas fa-heart text-danger"></i> by
-                    <a href="#"><?= $nama_perpustakaan ?></a>
+                    © <?= date('Y') ?> Licency By <a href="https://www.perpusnas.go.id">Perpustakaan Nasional RI</a>. All rights reserved.
+                   
                 </p>
             </footer>
         </div>
