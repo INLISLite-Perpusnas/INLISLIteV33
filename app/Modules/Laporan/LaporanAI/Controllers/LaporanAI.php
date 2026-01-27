@@ -360,7 +360,7 @@ SQL Query:";
      */
     private function callGeminiAPI($prompt)
     {
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . $this->geminiApiKey;
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=" . $this->geminiApiKey;
         
         $data = [
             'contents' => [

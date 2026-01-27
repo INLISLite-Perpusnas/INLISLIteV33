@@ -169,8 +169,8 @@
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col-12">
-            <h2>Database Explorer - AI SQL Assistant</h2>
-            <p class="text-muted">Explore your database with natural language queries powered by AI</p>
+            <h2 style="color: #f6f7f8;">Database Explorer - AI SQL Assistant</h2>
+            <p  style="color: #f6f7f8;">Explore your database with natural language queries powered by AI</p>
         </div>
     </div>
     
