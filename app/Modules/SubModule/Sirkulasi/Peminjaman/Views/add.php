@@ -49,17 +49,17 @@ $request = service('request'); ?>
 				</div>
 			</div>
 			<div class="page-title-actions">
-				<form method="get" action="<?= base_url('sirkulasi-peminjaman/create') ?>">
+				<form id="form-pilih-member" method="get" action="<?= base_url('sirkulasi-peminjaman/create') ?>">
 					<div class="select-wrapper input-group mb-3">
-						<select class="form-control select2" name="member_no" id="member_no" style="min-width:360px">
+						<select class="form-control select2" name="member_no" id="member_no"
+							style="min-width:360px" onchange="this.form.submit()">
 							<option value="">Nomor Anggota</option>
 							<?php foreach (get_ref_table('members', 'MemberNo, Fullname', 'MemberNo IS NOT NULL', 'data') as $row) : ?>
-								<option value="<?= $row->MemberNo ?>" <?= $member_no == $row->MemberNo ? 'selected' : '' ?>><?= $row->MemberNo ?> <?= $row->Fullname ?></option>
+								<option value="<?= $row->MemberNo ?>" <?= $member_no == $row->MemberNo ? 'selected' : '' ?>>
+									<?= $row->MemberNo ?> <?= $row->Fullname ?>
+								</option>
 							<?php endforeach; ?>
 						</select>
-						<div class="input-group-append">
-							<button class="btn btn-shadow btn bg-corporate-primary2 text-white" type="submit"><i class="fa fa-check-circle"></i> Pilih</button>
-						</div>
 					</div>
 				</form>
 			</div>
@@ -119,8 +119,14 @@ $request = service('request'); ?>
 
 <?= $this->section('script'); ?>
 <script>
+	// Inisialisasi Select2
 	$('.select2').select2({
 		theme: "bootstrap4"
+	});
+
+	// Otomatis submit saat pilihan berubah (untuk Select2)
+	$('#member_no').on('select2:select', function(e) {
+		$('#form-pilih-member').submit();
 	});
 	$('#empty_cart').click(function() {
 		var url = "<?= base_url('sirkulasi-peminjaman/cart_destroy') ?>";

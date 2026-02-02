@@ -60,7 +60,7 @@ class Filters extends BaseConfig
                 'news*',
                 'apply_status*',
                 'dashboard*',
-                'api/*',
+                // 'api/*',
                 'cetak-kartu/*',
                 'template/*',
                 'api/template/*',
