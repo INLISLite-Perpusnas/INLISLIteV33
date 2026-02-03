@@ -289,7 +289,8 @@ $email=$db->table('settingparameters')->where('Name', 'EmailPerpustakaan')->get(
                             <li><a href="<?= base_url('home') ?>"><i class="fas fa-home me-2"></i>Beranda</a></li>
                             <li><a href="<?= base_url('buku-tamu') ?>"><i class="fas fa-address-book"></i>Buku Tamu</a></li>
                             <li><a href="<?= base_url('opac/browse') ?>"><i class="fas fa-list me-2"></i>Browse</a></li>
-                            <li><a href="<?= base_url('opac/statistics') ?>"><i class="fas fa-chart-bar me-2"></i>Statistik</a></li>
+                            <li><a href="<?= base_url('opac/statistics') ?>"><i class="fas fa-chart-bar me-2"></i>Statistik Katalog</a></li>
+                            <li><a href="<?= base_url('opac/statistics_anggota') ?>"><i class="fas fa-chart-bar me-2"></i>Statistik Anggota</a></li>
                             <li><a href="<?= base_url('login') ?>"><i class="fas fa-sign-in-alt me-2"></i>Login</a></li>
                         </ul>
                     </nav>

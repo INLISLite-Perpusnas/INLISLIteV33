@@ -6,6 +6,7 @@ $routes->group('opac', ['namespace' => 'Opac\Controllers'], function ($subroutes
 	$subroutes->add('', 'Opac::index');
 	$subroutes->add('index', 'Opac::index');
 	$subroutes->add('statistics', 'Opac::statistics');
+	$subroutes->add('statistics_anggota', 'Opac::statistics_anggota');
 	$subroutes->add('browse', 'Opac::browse');
 	$subroutes->add('detail/(:any)', 'Opac::detail/$1');
 	$subroutes->add('visitor_export', 'Opac::visitor_export');

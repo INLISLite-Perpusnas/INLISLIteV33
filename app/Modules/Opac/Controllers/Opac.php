@@ -602,12 +602,12 @@ private function loadRegularCatalogscache()
 
         // Katalog per tahun
         $this->data['by_year'] = $this->katalogModel
-            ->select('PublishYear, COUNT(*) as total')
-            ->where('PublishYear IS NOT NULL')
-            ->where('PublishYear !=', '')
-            ->groupBy('PublishYear')
-            ->orderBy('PublishYear', 'DESC')
-            ->findAll();
+        ->select('PublishYear, COUNT(*) as total')
+        ->where("PublishYear REGEXP '^[0-9]{4}$'")
+        ->groupBy('PublishYear')
+        ->orderBy('PublishYear', 'DESC')
+        ->findAll();
+
 
         // Katalog per bahasa
         $this->data['by_language'] = $this->katalogModel
@@ -633,6 +633,226 @@ private function loadRegularCatalogscache()
 
         return view('Opac\Views\statistics', $this->data);
     }
+
+    public function statistics_anggota()
+    {
+        $this->data['title'] = 'Statistik Anggota';
+
+        // 1. Total anggota
+        $this->data['total_members'] = $this->memberModel
+            ->where('active', 1)
+            ->countAllResults();
+
+        // 2. Anggota aktif (IsOnlineActive = 1)
+        $this->data['active_members'] = $this->memberModel
+            ->where('active', 1)
+            ->where('IsOnlineActive', 1)
+            ->countAllResults();
+
+        // 3. Anggota baru bulan ini
+        $this->data['new_members_this_month'] = $this->memberModel
+            ->where('active', 1)
+            ->where('MONTH(RegisterDate)', date('m'))
+            ->where('YEAR(RegisterDate)', date('Y'))
+            ->countAllResults();
+
+        // 4. Distribusi berdasarkan jenis kelamin
+        $this->data['by_gender'] = $this->db->query("
+            SELECT 
+                CASE 
+                    WHEN Sex_id = 1 THEN 'Laki-laki'
+                    WHEN Sex_id = 2 THEN 'Perempuan'
+                    ELSE 'Tidak Diketahui'
+                END as gender,
+                COUNT(*) as total
+            FROM members
+            WHERE active = 1
+            GROUP BY Sex_id
+            ORDER BY total DESC
+        ")->getResult();
+
+        // 5. Distribusi berdasarkan jenjang pendidikan
+        $this->data['by_education'] = $this->db->query("
+            SELECT 
+                mp.Nama as education_level,
+                COUNT(m.ID) as total
+            FROM members m
+            LEFT JOIN master_pendidikan mp ON m.EducationLevel_id = mp.id
+            WHERE m.active = 1
+            GROUP BY m.EducationLevel_id, mp.Nama
+            ORDER BY total DESC
+            LIMIT 10
+        ")->getResult();
+
+        // 6. Distribusi berdasarkan pekerjaan
+        // Di Controller (Bagian 6)
+        $this->data['by_job'] = $this->db->query("
+            SELECT 
+                COALESCE(mpk.Pekerjaan, 'Lainnya/Tidak Diisi') as job_name,
+                COUNT(m.ID) as total
+            FROM members m
+            LEFT JOIN master_pekerjaan mpk ON m.Job_id = mpk.id
+            WHERE m.active = 1
+            GROUP BY m.Job_id, mpk.Pekerjaan
+            ORDER BY total DESC
+            LIMIT 10
+        ")->getResult();
+    
+       
+
+        // 7. Registrasi anggota per bulan (12 bulan terakhir)
+        $this->data['by_month'] = $this->db->query("
+            SELECT 
+                DATE_FORMAT(RegisterDate, '%Y-%m') as month,
+                DATE_FORMAT(RegisterDate, '%b %Y') as month_name,
+                COUNT(*) as total
+            FROM members
+            WHERE active = 1
+            AND RegisterDate >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+            GROUP BY DATE_FORMAT(RegisterDate, '%Y-%m'), DATE_FORMAT(RegisterDate, '%b %Y')
+            ORDER BY month DESC
+        ")->getResult();
+
+        // 8. Distribusi berdasarkan tahun registrasi
+        $this->data['by_year'] = $this->db->query("
+            SELECT 
+                YEAR(RegisterDate) as year,
+                COUNT(*) as total
+            FROM members
+            WHERE active = 1
+            AND RegisterDate IS NOT NULL
+            GROUP BY YEAR(RegisterDate)
+            ORDER BY year DESC
+            LIMIT 10
+        ")->getResult();
+
+        // 9. Distribusi berdasarkan rentang usia
+        $this->data['by_age_range'] = $this->db->query("
+            SELECT 
+                CASE 
+                    WHEN TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE()) < 13 THEN '< 13 tahun'
+                    WHEN TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE()) BETWEEN 13 AND 17 THEN '13-17 tahun'
+                    WHEN TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE()) BETWEEN 18 AND 25 THEN '18-25 tahun'
+                    WHEN TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE()) BETWEEN 26 AND 35 THEN '26-35 tahun'
+                    WHEN TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE()) BETWEEN 36 AND 45 THEN '36-45 tahun'
+                    WHEN TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE()) BETWEEN 46 AND 55 THEN '46-55 tahun'
+                    WHEN TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE()) > 55 THEN '> 55 tahun'
+                    ELSE 'Tidak Diketahui'
+                END as age_range,
+                COUNT(*) as total
+            FROM members
+            WHERE active = 1
+            AND DateOfBirth IS NOT NULL
+            GROUP BY age_range
+            ORDER BY 
+                CASE age_range
+                    WHEN '< 13 tahun' THEN 1
+                    WHEN '13-17 tahun' THEN 2
+                    WHEN '18-25 tahun' THEN 3
+                    WHEN '26-35 tahun' THEN 4
+                    WHEN '36-45 tahun' THEN 5
+                    WHEN '46-55 tahun' THEN 6
+                    WHEN '> 55 tahun' THEN 7
+                    ELSE 8
+                END
+        ")->getResult();
+
+        // 10. Distribusi berdasarkan kota/provinsi (top 10)
+        $this->data['by_province'] = $this->db->query("
+            SELECT 
+                COALESCE(Province, 'Tidak Diketahui') as province,
+                COUNT(*) as total
+            FROM members
+            WHERE active = 1
+            GROUP BY Province
+            ORDER BY total DESC
+            LIMIT 10
+        ")->getResult();
+
+        // 11. Distribusi berdasarkan status perkawinan
+        $this->data['by_marital_status'] = $this->db->query("
+            SELECT 
+                CASE 
+                    WHEN MaritalStatus_id = 1 THEN 'Belum Menikah'
+                    WHEN MaritalStatus_id = 2 THEN 'Menikah'
+                    WHEN MaritalStatus_id = 3 THEN 'Cerai'
+                    ELSE 'Tidak Diketahui'
+                END as marital_status,
+                COUNT(*) as total
+            FROM members
+            WHERE active = 1
+            GROUP BY MaritalStatus_id
+            ORDER BY total DESC
+        ")->getResult();
+
+        // 12. Anggota dengan keterlambatan pengembalian
+        $this->data['late_return_stats'] = $this->db->query("
+            SELECT 
+                CASE 
+                    WHEN LoanReturnLateCount = 0 THEN 'Tidak Pernah'
+                    WHEN LoanReturnLateCount BETWEEN 1 AND 3 THEN '1-3 kali'
+                    WHEN LoanReturnLateCount BETWEEN 4 AND 6 THEN '4-6 kali'
+                    WHEN LoanReturnLateCount > 6 THEN '> 6 kali'
+                END as late_category,
+                COUNT(*) as total
+            FROM members
+            WHERE active = 1
+            GROUP BY late_category
+            ORDER BY 
+                CASE late_category
+                    WHEN 'Tidak Pernah' THEN 1
+                    WHEN '1-3 kali' THEN 2
+                    WHEN '4-6 kali' THEN 3
+                    WHEN '> 6 kali' THEN 4
+                END
+        ")->getResult();
+
+        // 13. Distribusi berdasarkan jenis identitas
+        $this->data['by_identity_type'] = $this->db->query("
+            SELECT 
+                mji.Nama as identity_type,
+                COUNT(m.ID) as total
+            FROM members m
+            LEFT JOIN master_jenis_identitas mji ON m.IdentityType_id = mji.id
+            WHERE m.active = 1
+            GROUP BY m.IdentityType_id, mji.Nama
+            ORDER BY total DESC
+        ")->getResult();
+
+        // 14. Statistik tambahan
+        $this->data['avg_age'] = $this->db->query("
+            SELECT 
+                ROUND(AVG(TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE())), 1) as avg_age
+            FROM members
+            WHERE active = 1 
+            AND DateOfBirth IS NOT NULL
+        ")->getRow()->avg_age ?? 0;
+
+        // 15. Anggota terdaftar hari ini
+        $this->data['today_registrations'] = $this->memberModel
+            ->where('active', 1)
+            ->where('DATE(RegisterDate)', date('Y-m-d'))
+            ->countAllResults();
+
+        // 16. Growth rate (perbandingan dengan tahun lalu)
+        $currentYearMembers = $this->memberModel
+            ->where('active', 1)
+            ->where('YEAR(RegisterDate)', date('Y'))
+            ->countAllResults();
+
+        $lastYearMembers = $this->memberModel
+            ->where('active', 1)
+            ->where('YEAR(RegisterDate)', date('Y') - 1)
+            ->countAllResults();
+
+        $this->data['growth_rate'] = $lastYearMembers > 0 
+            ? (($currentYearMembers - $lastYearMembers) / $lastYearMembers) * 100 
+            : 0;
+
+        return view('Opac\Views\statistics_anggota', $this->data);
+    }  
+
+        // Anggota peminjam per jenis kelamin
 
 
   
