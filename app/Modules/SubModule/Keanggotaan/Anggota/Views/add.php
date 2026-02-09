@@ -233,4 +233,57 @@ $request = service('request');
     });
   });
 </script>
+
+<script>
+  $('#package').on('change', function() {
+    // --- Logika Lama (Hitung Tanggal) ---
+    const date = $('#package option:selected').data('date');
+    var today = moment().format('YYYY-MM-DD');
+    
+    // Pastikan library moment.js sudah di-load, jika error ganti logika date native JS
+    var newDate = moment().add(date, 'days').format('YYYY-MM-DD');
+    
+    // Ambil ID Jenis Anggota
+    const id = $(this).val(); // Mengambil value dari select itu sendiri
+    
+    $('#anggota_id').val(id); // Jika ada hidden input anggota_id
+    $('#EndDate').val(newDate);
+
+    // --- Logika Baru (Ambil Default Koleksi & Lokasi) ---
+    if(id) {
+        $.ajax({
+            url: '<?= base_url('anggota/get_defaults') ?>/' + id,
+            type: 'GET',
+            dataType: 'json',
+            beforeSend: function() {
+                // Opsional: Tampilkan loading atau disable input sementara
+                $('select[name="CategoryLoan_id[]"]').prop('disabled', true);
+                $('select[name="LocationLoan_id[]"]').prop('disabled', true);
+            },
+            success: function(response) {
+                if (response.success) {
+                    // 1. Update Select2 Koleksi
+                    // .val() untuk set nilai, .trigger('change') agar Select2 me-render ulang UI-nya
+                    $('select[name="CategoryLoan_id[]"]').val(response.collections).trigger('change');
+
+                    // 2. Update Select2 Lokasi
+                    $('select[name="LocationLoan_id[]"]').val(response.locations).trigger('change');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Gagal mengambil data default: " + error);
+            },
+            complete: function() {
+                // Aktifkan kembali input
+                $('select[name="CategoryLoan_id[]"]').prop('disabled', false);
+                $('select[name="LocationLoan_id[]"]').prop('disabled', false);
+            }
+        });
+    } else {
+        // Jika user memilih opsi kosong/reset, kosongkan juga select2 nya
+        $('select[name="CategoryLoan_id[]"]').val(null).trigger('change');
+        $('select[name="LocationLoan_id[]"]').val(null).trigger('change');
+    }
+  });
+</script>
 <?= $this->endSection('script'); ?>

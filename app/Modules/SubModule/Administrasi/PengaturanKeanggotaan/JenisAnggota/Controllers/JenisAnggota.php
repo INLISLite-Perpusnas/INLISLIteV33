@@ -112,26 +112,59 @@ class JenisAnggota extends \Base\Controllers\BaseController
 
       
         $JenisAnggota_id = $id;
-        $this->data['joinedData'] = $joinedData;
-        $this->data['locations'] = $locations;
-        // $this->data['locationslibrary'] = $locationslibrary;
-        $this->data['JenisAnggota_id'] = $JenisAnggota_id;
+            $this->data['joinedData'] = $joinedData;
+            $this->data['locations'] = $locations;
+            // $this->data['locationslibrary'] = $locationslibrary;
+            $this->data['JenisAnggota_id'] = $JenisAnggota_id;
 
 
-        return view('JenisAnggota\Views\defaultlokasi', $this->data);
-    }
+            return view('JenisAnggota\Views\defaultlokasi', $this->data);
+        }
 
     public function save()
     {
-        $locationID = $this->request->getPost('Location_Library_id');
-        // dd($locationID);
-        $jenisAnggotaID = $this->request->getPost('JenisAnggota_id');
+    
+        $locationID = $this->request->getVar('Location_Library_id');
+        $jenisAnggotaID = $this->request->getVar('JenisAnggota_id');
 
-        // Insert the checked item into the location_library_default table
-        // You'll need to modify this to match your model and table structure
-        $InsertDefaultlokasi = $this->defaultlokasi->insert(['JenisAnggota_id' => $jenisAnggotaID, 'Location_Library_id' => $locationID]);
-        return json_encode(['success' => true]);
+        // Validasi sederhana
+        if (empty($locationID) || empty($jenisAnggotaID)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Data ID Lokasi atau ID Anggota kosong/tidak terbaca.'
+            ]);
+        }
+
+        try {
+        
+            $dataToInsert = [
+                'JenisAnggota_id'     => $jenisAnggotaID,
+                'Location_Library_id' => $locationID
+            ];
+
+        
+            $insert = $this->defaultlokasi->insert($dataToInsert);
+
+            if ($insert) {
+                return $this->response->setJSON([
+                    'success' => true,
+                    'message' => 'Data berhasil disimpan'
+                ]);
+            } else {
+                // Tangkap error dari model jika ada
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Gagal insert database. Cek log atau nama kolom.'
+                ]);
+            }
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Exception: ' . $e->getMessage()
+            ]);
+        }
     }
+
 
     public function deletedefaultlokasi($id)
     {

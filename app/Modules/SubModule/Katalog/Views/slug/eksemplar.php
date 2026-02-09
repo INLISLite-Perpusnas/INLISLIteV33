@@ -3,7 +3,7 @@ $request = service('request');
 $slug = $request->getGet('slug');
 $branch_id = $request->getGet('branch_id');
 $actions = array(
-	'cetak-label-a4-1' => 'Cetak Label A4-1 (Barcode + No. Panggil)',
+	'cetak-label-a4-4-qrcode' => 'Cetak Label A4-1 (Qrcode + No. Panggil)',
 	'cetak-label-a4-2' => 'Cetak Label A4-2 (Barcode + No. Panggil)',
 	'cetak-label-a4-3' => 'Cetak Label A4-3 (Barcode + No. Panggil + 1 Warna)',
 	'cetak-label-a4-4' => 'Cetak Label A4-4 (Barcode + No. Panggil + 1 Warna)',
@@ -255,7 +255,7 @@ $(document).ready(function() {
             });
             return false;
         }
-		alert(checkedItems);
+		
         
         if (checkedItems.length === 0) {
             Swal.fire({
@@ -348,8 +348,30 @@ $(document).ready(function() {
     }
     
     // Handle "select all" checkbox
-    $('.check_data').on('click', function() {
-        $('.item-checkbox').prop('checked', $(this).prop('checked'));
+   // 1. Handle klik pada checkbox "Pilih Semua" di header
+    $(document).on('change', '.check_data', function() {
+        var isChecked = $(this).prop('checked');
+        // Kita targetkan class '.check' agar sesuai dengan logika tombol Proses
+        $('#tbl_data tbody .check').prop('checked', isChecked);
+    });
+
+    // 2. (Opsional tapi Penting) Uncheck header jika salah satu item di-uncheck manual
+    $('#tbl_data tbody').on('change', '.check', function() {
+        if (!$(this).prop('checked')) {
+            $('.check_data').prop('checked', false);
+        } else {
+            // Cek apakah semua sudah tercentang
+            var totalCheckbox = $('#tbl_data tbody .check').length;
+            var totalChecked = $('#tbl_data tbody .check:checked').length;
+            if(totalCheckbox == totalChecked) {
+                $('.check_data').prop('checked', true);
+            }
+        }
+    });
+
+    // 3. Reset checkbox header ketika pindah halaman (paging)
+    t.on('draw', function() {
+        $('.check_data').prop('checked', false);
     });
 });
  

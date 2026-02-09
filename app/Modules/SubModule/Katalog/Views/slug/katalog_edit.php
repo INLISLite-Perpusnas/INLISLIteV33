@@ -352,68 +352,75 @@ $rda = $request->getGet('rda') ?? 1;
 	</div>
 
 	<div class="card card-shadow mb-3">
-		<div class="card-header">
-			<div class="custom-title-wrap bar-primary">
-				<div class="custom-title">Penerbitan</div>
-			</div>
-		</div>
-		<div class="card-body">
-			<div class="row">
-				<div class="col-md-6">
-					<div class="form-group">
-						<label for="varchar">Tempat Terbit</label>
-						<input type="text" class="form-control" name="penerbit[a]" id="PublishLocation" placeholder="" value="<?= trim($str_260['a'] ?? '') ?>" />
-					</div>
-				</div>
-				<div class=" col-md-6">
-					<div class="form-group">
-						<label for="varchar">Penerbit</label>
-						<input type="text" class="form-control" name="penerbit[b]" id="Publisher" placeholder="" value="<?= trim($str_260['b'] ?? '') ?>" />
-					</div>
-				</div>
-				<div class=" col-md-6">
-					<div class="form-group">
-						<label for="varchar">Tahun Terbit</label>
-						<input type="text" class="form-control" name="penerbit[c]" id="PublishYear" placeholder="" value="<?= trim($str_260['c'] ?? '') ?>" />
-					</div>
-				</div>
-				<?php if ($catalog->Worksheet_id == 4) : ?>
-					<div class=" col-md-6 terbitanBerkala" style="display: block;">
-						<div class="form-group">
-							<label for="frekuensi">Frekuensi Saat Ini</label>
-							<input type="text" class="form-control" name="frekuensi" id="frekuensi" placeholder="" value="<?= trim($str_310['a'] ?? '') ?>" />
-						</div>
-					</div>
-					<div class=" col-md-12 terbitanBerkala" style="display: block;">
-						<div class="form-group">
-							<label for="frekuensiSebelumnya">Frekuensi Publikasi Sebelumnya</label>
-							<div id="frekuensiSebelumnya">
-								<?php if (get_catalog_ruas_tag($catalog->ID, '321')) : ?>
-									<?php $idx_321 = 0; ?>
-									<?php foreach (get_catalog_ruas_tag($catalog->ID, '321') as $row) : ?>
-										<div id="frekuensiSebelumnya<?= $row->ID ?>" class="form input-group mb-2" title="">
-											<input type="text" class="form-control" name="frekuensiSebelumnya[]" placeholder="" value="<?= trim(preg_replace('/\$a /', '', $row->Value)) ?>" />
-											<div class="input-group-append">
-												<span data-id="<?= $row->ID ?>" class="<?= ($idx_321 == 0) ? 'add-frekuensiSebelumnya' : 'remove-frekuensiSebelumnya' ?> btn btn-outline-secondary"><i class="fa fa-<?= ($idx_321 == 0) ? 'plus' : 'minus' ?>"></i></span>
-											</div>
-										</div>
-										<?php $idx_321++; ?>
-									<?php endforeach; ?>
-								<?php else : ?>
-									<div id="frekuensiSebelumnya0" class="form input-group mb-2" title="">
-										<input type="text" class="form-control" name="frekuensiSebelumnya[]" placeholder="" value="" />
-										<div class="input-group-append">
-											<span data-id="0" class="add-frekuensiSebelumnya btn btn-outline-secondary"><i class="fa fa-plus" i></span>
-										</div>
-									</div>
-								<?php endif; ?>
-							</div>
-						</div>
-					</div>
-				<?php endif; ?>
-			</div>
-		</div>
-	</div>
+        <div class="card-header">
+            <div class="custom-title-wrap bar-primary">
+                <div class="custom-title">Penerbitan</div>
+            </div>
+        </div>
+        <div class="card-body">
+            <?php 
+                // Jika RDA (1) gunakan str_264, jika AACR (0) gunakan str_260
+                // Kita gunakan operator null coalescing (??) untuk mencegah error jika variabel tidak ada
+                $pubData = ($catalog->IsRDA == 1) ? ($str_264 ?? []) : ($str_260 ?? []);
+            ?>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="varchar">Tempat Terbit</label>
+                        <input type="text" class="form-control" name="penerbit[a]" id="PublishLocation" placeholder="" value="<?= trim($pubData['a'] ?? '') ?>" />
+                    </div>
+                </div>
+                <div class=" col-md-6">
+                    <div class="form-group">
+                        <label for="varchar">Penerbit</label>
+                        <input type="text" class="form-control" name="penerbit[b]" id="Publisher" placeholder="" value="<?= trim($pubData['b'] ?? '') ?>" />
+                    </div>
+                </div>
+                <div class=" col-md-6">
+                    <div class="form-group">
+                        <label for="varchar">Tahun Terbit</label>
+                        <input type="text" class="form-control" name="penerbit[c]" id="PublishYear" placeholder="" value="<?= trim($pubData['c'] ?? '') ?>" />
+                    </div>
+                </div>
+
+                <?php if ($catalog->Worksheet_id == 4) : ?>
+                    <div class=" col-md-6 terbitanBerkala" style="display: block;">
+                        <div class="form-group">
+                            <label for="frekuensi">Frekuensi Saat Ini</label>
+                            <input type="text" class="form-control" name="frekuensi" id="frekuensi" placeholder="" value="<?= trim($str_310['a'] ?? '') ?>" />
+                        </div>
+                    </div>
+                    <div class=" col-md-12 terbitanBerkala" style="display: block;">
+                        <div class="form-group">
+                            <label for="frekuensiSebelumnya">Frekuensi Publikasi Sebelumnya</label>
+                            <div id="frekuensiSebelumnya">
+                                <?php if (get_catalog_ruas_tag($catalog->ID, '321')) : ?>
+                                    <?php $idx_321 = 0; ?>
+                                    <?php foreach (get_catalog_ruas_tag($catalog->ID, '321') as $row) : ?>
+                                        <div id="frekuensiSebelumnya<?= $row->ID ?>" class="form input-group mb-2" title="">
+                                            <input type="text" class="form-control" name="frekuensiSebelumnya[]" placeholder="" value="<?= trim(preg_replace('/\$a /', '', $row->Value)) ?>" />
+                                            <div class="input-group-append">
+                                                <span data-id="<?= $row->ID ?>" class="<?= ($idx_321 == 0) ? 'add-frekuensiSebelumnya' : 'remove-frekuensiSebelumnya' ?> btn btn-outline-secondary"><i class="fa fa-<?= ($idx_321 == 0) ? 'plus' : 'minus' ?>"></i></span>
+                                            </div>
+                                        </div>
+                                        <?php $idx_321++; ?>
+                                    <?php endforeach; ?>
+                                <?php else : ?>
+                                    <div id="frekuensiSebelumnya0" class="form input-group mb-2" title="">
+                                        <input type="text" class="form-control" name="frekuensiSebelumnya[]" placeholder="" value="" />
+                                        <div class="input-group-append">
+                                            <span data-id="0" class="add-frekuensiSebelumnya btn btn-outline-secondary"><i class="fa fa-plus"></i></span>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
 
 	<div class="card card-shadow mb-3">
 		<div class="card-header">

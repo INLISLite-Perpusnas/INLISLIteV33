@@ -40,14 +40,12 @@ $routes->group('anggota', ['namespace' => 'Anggota\Controllers'], function ($sub
 	$subroutes->add('uploadBackground', 'Anggota::uploadBackground');
 	$subroutes->add('import_view', 'Anggota::import_view');
 	$subroutes->add('cetak-kartu/(:any)', 'Anggota::print_card2/$1');
-	$subroutes->add('cetak-kartu2/(:any)', 'Anggota::print_card/$1');
 	$subroutes->add('print_card/(:any)', 'Anggota::print_card/$1');
 	$subroutes->add('printanggota/(:any)', 'Anggota::printanggota/$1');
 	$subroutes->add('printkartubelakang/(:any)', 'Anggota::printkartubelakang/$1');
 	$subroutes->add('multipleprint', 'Anggota::multipleprint');
 	$subroutes->add('bebaspustaka/(:any)', 'Anggota::bebaspustaka/$1');
-
-	//custom
+	$subroutes->add('get_defaults/(:num)', 'Anggota::getDefaults/$1');
 	$subroutes->add('proses_keranjang', 'Anggota::proses_keranjang');
 	$subroutes->add('pulihkan_keranjang', 'Anggota::pulihkan_keranjang');
 	$subroutes->add('hapus_permanen', 'Anggota::hapus_permanen');

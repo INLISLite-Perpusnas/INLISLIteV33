@@ -617,11 +617,7 @@ class Katalog extends \Base\Controllers\BaseController
 
 	public function create()
 	{
-		if (!is_allowed('katalog/create')) {
-			set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
-			set_message('toastr_type', 'error');
-			return redirect()->to('katalog');
-		}
+		
 
 		$data['title'] = 'Tambah Katalog Form Sederhana';
 
@@ -805,11 +801,7 @@ class Katalog extends \Base\Controllers\BaseController
 
 	public function edit(int $catalog_id = null)
 	{
-		if (!is_allowed('katalog/edit')) {
-			set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
-			set_message('toastr_type', 'error');
-			return redirect()->to('katalog');
-		}
+		
 
 		$data['title'] = 'Edit Katalog Form Sederhana';
 		$data['is_allowed'] = !is_member('admin') && !is_member('sa_prov') && !is_member('sa_kabkota');
@@ -835,6 +827,7 @@ class Katalog extends \Base\Controllers\BaseController
 
 		$data['str_245'] = get_array_tag($catalog_id, '245');
 		$data['str_260'] = get_array_tag($catalog_id, '260');
+		$data['str_264'] = get_array_tag($catalog_id, '264');
 		$data['str_300'] = get_array_tag($catalog_id, '300');
 		$data['str_240'] = get_array_tag($catalog_id, '240');
 		$data['str_247'] = get_array_tag($catalog_id, '247');
@@ -1262,189 +1255,322 @@ public function get_decrypted_content($ID)
 	{
 		echo view('Katalog\Views\marc_import_form');
 	}
+
 	public function createFromMarcFile()
-	{
-		if ($this->request->getMethod() !== 'post') {
-			return $this->response->setStatusCode(405)->setJSON(['success' => false, 'message' => 'Metode tidak diizinkan']);
-		}
+    {
+        // 1. Validasi Request
+        if ($this->request->getMethod() !== 'post') {
+            return $this->response->setStatusCode(405)->setJSON(['success' => false, 'message' => 'Metode tidak diizinkan']);
+        }
 
-		$file = $this->request->getFile('marc_file');
+        $file = $this->request->getFile('marc_file');
+        
+        // 2. Baca File & Normalisasi Karakter (Logic INLISLite Text vs Binary)
+        $marcContent = file_get_contents($file->getTempName());
 
-		$this->db->transStart();
+        if (strpos($marcContent, '^') !== false && strpos($marcContent, '$') !== false) {
+            $marcContent = str_replace('^', chr(30), $marcContent);
+            $marcContent = str_replace('$', chr(31), $marcContent);
+        } elseif (strpos($marcContent, '▲') !== false) {
+            $marcContent = str_replace('▲', chr(30), $marcContent);
+            $marcContent = str_replace('▼', chr(31), $marcContent);
+            $marcContent = str_replace('↔', chr(29), $marcContent);
+        }
 
-		try {
-			// Baca file MARC menggunakan File_MARC langsung
-			$marcContent = file_get_contents($file->getTempName());
-			$marc = new \File_MARC($marcContent, \File_MARC::SOURCE_STRING);
+        $this->db->transStart();
 
-			$record = $marc->next(); // Ambil record pertama
+        try {
+            // 3. Parse MARC
+            $marc = new \File_MARC($marcContent, \File_MARC::SOURCE_STRING);
+            $record = $marc->next();
 
-			if (!$record) {
-				throw new \Exception("Tidak ada record MARC yang valid ditemukan");
-			}
+            if (!$record) {
+                throw new \Exception("Record MARC tidak valid.");
+            }
 
-			$catalogData = [];
+            // ---------------------------------------------------------
+            // TAHAP 1: SIAPKAN DATA "TAGLIST"
+            // Kita ubah object MARC menjadi Array agar mudah diproses oleh logic mapping Anda
+            // ---------------------------------------------------------
+            $taglistData = [];
+            
+            foreach ($record->getFields() as $field) {
+                $tag = $field->getTag();
+                $row = [
+                    'tag' => $tag,
+                    'ind1' => ' ',
+                    'ind2' => ' ',
+                    'value' => ''
+                ];
 
-			// Mapping data MARC menggunakan File_MARC
-			$field001 = $record->getField('001');
-			$catalogData['ControlNumber'] = $field001 ? $field001->getData() : null;
+                if ($tag < '010') {
+                    // Control Field
+                    $row['value'] = $field->getData();
+                } else {
+                    // Data Field
+                    $row['ind1'] = $field->getIndicator(1);
+                    $row['ind2'] = $field->getIndicator(2);
+                    
+                    // Kita susun string value dengan format: $a Isi $b Isi
+                    // Ini penting agar nanti bisa dibaca ulang
+                    $subfields = $field->getSubfields();
+                    $tempVal = [];
+                    foreach($subfields as $subfield) {
+                        $tempVal[] = '$' . $subfield->getCode() . ' ' . $subfield->getData();
+                    }
+                    $row['value'] = implode(' ', $tempVal); 
+                }
+                $taglistData[] = $row;
+            }
 
-			$field035 = $record->getField('035');
-			$catalogData['BIBID'] = ($field035 && $field035->getSubfield('a')) ? $field035->getSubfield('a')->getData() : null;
+            // ---------------------------------------------------------
+            // TAHAP 2: MAPPING KE TABEL UTAMA (CATALOGS)
+            // Menggunakan helper _mapTagsToCatalogData (adaptasi dari convertToCatalogFields2)
+            // ---------------------------------------------------------
+            $catalogData = $this->_mapTagsToCatalogData($taglistData);
+			$CreateBy = user_id();
+			$CreateDate = date("Y-m-d H:i:s");
+			$UpdateBy = user_id();
+			$UpdateDate = date("Y-m-d H:i:s");
+            // Set Default Values
+            $catalogData['Worksheet_id'] = 1;
+            $catalogData['Branch_id'] = 2522; // Sesuaikan dengan session
+            $catalogData['CreateBy'] = $CreateBy;
+            $catalogData['CreateDate'] = $CreateDate;
+            $catalogData['UpdateBy'] = $UpdateBy;
+            $catalogData['UpdateDate'] = $UpdateDate;
+            $catalogData['CreateTerminal'] = $this->request->getIPAddress();
+            $catalogData['active'] = 1;
 
-			$field100 = $record->getField('100');
-			$catalogData['Author'] = ($field100 && $field100->getSubfield('a')) ? $field100->getSubfield('a')->getData() : null;
+            // Filter kolom agar sesuai tabel database
+            $tableFields = $this->db->getFieldNames('catalogs');
+            $filteredData = array_intersect_key($catalogData, array_flip($tableFields));
 
-			// Title (245)
-			$field245 = $record->getField('245');
-			$title_a = ($field245 && $field245->getSubfield('a')) ? $field245->getSubfield('a')->getData() : '';
-			$subtitle = ($field245 && $field245->getSubfield('b')) ? $field245->getSubfield('b')->getData() : '';
-			$authorResp = ($field245 && $field245->getSubfield('c')) ? $field245->getSubfield('c')->getData() : '';
-			$catalogData['Title'] = trim(rtrim(trim("{$title_a} {$subtitle}"), ':') . " / {$authorResp}");
+            // Insert ke Tabel Catalogs
+            $this->db->table('catalogs')->insert($filteredData);
+            $newCatalogId = $this->db->insertID();
 
-			// Edition (250)
-			$field250 = $record->getField('250');
-			$catalogData['Edition'] = ($field250 && $field250->getSubfield('a')) ? $field250->getSubfield('a')->getData() : null;
+            if (!$newCatalogId) throw new \Exception("Gagal menyimpan data katalog utama.");
 
-			// Publication (260)
-			$field260 = $record->getField('260');
+            // ---------------------------------------------------------
+            // TAHAP 3: SIMPAN KE TABEL DETAIL (CATALOG_RUAS)
+            // Tanpa menyimpan Catalog_Subruas
+            // ---------------------------------------------------------
+            
+            // A. Simpan BIBID Manual (Tag 035) - Sesuai referensi kode lama Anda
+            if (!empty($catalogData['BIBID'])) {
+                $this->db->table('catalog_ruas')->insert([
+                    'CatalogId' => $newCatalogId,
+                    'Tag' => '035',
+                    'Indicator1' => '#',
+                    'Indicator2' => '#',
+                    'Value' => '$a ' . $catalogData['BIBID'],
+                    'Sequence' => 0
+                ]);
+            }
 
-			$pub_a = ($field260 && $field260->getSubfield('a')) ? $field260->getSubfield('a')->getData() : '';
+            // B. Simpan Ruas Lainnya
+            $ruasBatch = [];
+            $seq = 1;
 
-			$pub_b = ($field260 && $field260->getSubfield('b')) ? $field260->getSubfield('b')->getData() : '';
-			$pub_c = ($field260 && $field260->getSubfield('c')) ? $field260->getSubfield('c')->getData() : '';
+            foreach ($taglistData as $dataruas) {
+                // Skip leader dan 035 (karena 035 sudah dihandle manual diatas)
+                if ($dataruas['tag'] == '035' || strtolower($dataruas['tag']) == 'leader') {
+                    continue;
+                }
 
-			$catalogData['PublishLocation'] = $pub_a;
-			$catalogData['Publisher'] = $pub_b;
-			$catalogData['PublishYear'] = $pub_c;
-			$catalogData['Publikasi'] = trim("{$catalogData['PublishLocation']}: {$catalogData['Publisher']}, {$catalogData['PublishYear']}");
+                // Normalisasi Indikator (null/spasi jadi #)
+                $ind1 = ($dataruas['ind1'] === ' ' || $dataruas['ind1'] === null) ? '#' : $dataruas['ind1'];
+                $ind2 = ($dataruas['ind2'] === ' ' || $dataruas['ind2'] === null) ? '#' : $dataruas['ind2'];
 
+                $ruasBatch[] = [
+                    'CatalogId' => $newCatalogId,
+                    'Tag' => $dataruas['tag'],
+                    'Indicator1' => $ind1,
+                    'Indicator2' => $ind2,
+                    'Value' => $dataruas['value'], // Format: $a Isi $b Isi
+                    'Sequence' => $seq++
+                ];
+            }
 
-			// Physical Description (300)
-			$field300 = $record->getField('300');
-			$catalogData['PhysicalDescription'] = ($field300 && $field300->getSubfield('a')) ? $field300->getSubfield('a')->getData() : null;
+            // Insert Batch (Lebih cepat daripada loop insert satu-satu)
+            if (!empty($ruasBatch)) {
+                $this->db->table('catalog_ruas')->insertBatch($ruasBatch);
+            }
 
-			// Subject (650)
-			$field650 = $record->getField('650');
-			$catalogData['Subject'] = ($field650 && $field650->getSubfield('a')) ? $field650->getSubfield('a')->getData() : null;
+            // Commit Transaksi
+            $this->db->transCommit();
 
-			// ISBN (020)
-			$field020 = $record->getField('020');
-			$catalogData['ISBN'] = ($field020 && $field020->getSubfield('a')) ? $field020->getSubfield('a')->getData() : null;
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Berhasil submit data pada judul: ' . ($catalogData['Title'] ?? 'Tanpa Judul'),
+                'catalog_id' => $newCatalogId
+            ]);
 
-			// Dewey (082)
-			$field082 = $record->getField('082');
-			$catalogData['DeweyNo'] = ($field082 && $field082->getSubfield('a')) ? $field082->getSubfield('a')->getData() : null;
+        } catch (\Exception $e) {
+            $this->db->transRollback();
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage() . ' | Line: ' . $e->getLine()
+            ]);
+        }
+    }
 
-			// Call Number (084)
-			$field084 = $record->getField('084');
-			$catalogData['CallNumber'] = ($field084 && $field084->getSubfield('a')) ? $field084->getSubfield('a')->getData() : null;
+    // -------------------------------------------------------------
+    // HELPER: ADAPTASI LOGIC convertToCatalogFields2 (Yii2 -> CI4)
+    // Fungsi ini memetakan Tag MARC ke kolom tabel Catalogs
+    // -------------------------------------------------------------
+    private function _mapTagsToCatalogData($taglist) {
+        $result = [];
+        $delimiter = ' ; '; 
+        
+        // Inisialisasi key default null
+        $keys = ['ControlNumber', 'Title', 'Author', 'Edition', 'Publisher', 'PublishLocation', 'PublishYear', 'Publikasi', 'Subject', 'PhysicalDescription', 'ISBN', 'CallNumber', 'Note', 'Languages', 'DeweyNo', 'BIBID', 'IsRDA'];
+        foreach($keys as $k) $result[$k] = null;
 
-			// Default values
-			$catalogData['IsOPAC'] = 1;
-			$catalogData['Worksheet_id'] = 1;
-			$catalogData['Branch_id'] = 2522;
-			$catalogData['CreateBy'] = 33;
-			$catalogData['CreateDate'] = date('Y-m-d H:i:s');
-			$catalogData['CreateTerminal'] = $this->request->getIPAddress();
-			$catalogData['active'] = 1;
+        foreach ($taglist as $tags) {
+            $tagcode = $tags['tag'];
+            $tagvalue = $tags['value']; // Format: $a Isi $b Isi
 
-			// Filter data sesuai field tabel
-			$tableFields = $this->db->getFieldNames('catalogs');
-			$filteredData = [];
-			foreach ($catalogData as $key => $value) {
-				if (in_array($key, $tableFields)) {
-					$filteredData[$key] = $value;
-				}
-			}
+            // Fungsi cleaning: menghapus kode subfield ($a, $b) dan menyisakan isinya
+            // Contoh: "$a Judul $b Sub" menjadi "Judul Sub"
+            $cleanValue = function($val) {
+                // Hapus $a, $b, dll lalu trim spasi berlebih
+                $cleaned = trim(preg_replace('/(\$\w)/', ' ', $val));
+                // Hapus spasi ganda
+                return preg_replace('/\s+/', ' ', $cleaned);
+            };
 
-			// Insert ke catalogs
-			$insertResult = $this->db->table('catalogs')->insert($filteredData);
+            switch ($tagcode) {
+                case '001':
+                    $val = $cleanValue($tagvalue);
+                    $result['ControlNumber'] = ($result['ControlNumber']) ? $result['ControlNumber'] . $delimiter . $val : $val;
+                    break;
+                
+                case '035':
+                     // Ambil BIBID (biasanya ada di subfield $a)
+                     if (preg_match('/\$a\s?(.*?)(?:\$|$)/', $tagvalue, $matches)) {
+                        $result['BIBID'] = trim($matches[1]);
+                     }
+                     break;
 
-			if (!$insertResult) {
-				throw new \Exception("Gagal menyimpan data ke tabel catalogs: " . $this->db->error()['message']);
-			}
+                case '245':
+                    $val = $cleanValue($tagvalue);
+                    $result['Title'] = ($result['Title']) ? $result['Title'] . $delimiter . $val : $val;
+                    break;
 
-			$newCatalogId = $this->db->insertID();
+                case '100':
+                case '700':
+                case '710':
+                case '711':
+                    $val = $cleanValue($tagvalue);
+                    if ($val != '') {
+                        $result['Author'] = ($result['Author']) ? $result['Author'] . $delimiter . $val : $val;
+                    }
+                    break;
 
-			if (!$newCatalogId) {
-				throw new \Exception("Gagal mendapatkan ID catalog yang baru diinsert");
-			}
+                case '250':
+                    $val = $cleanValue($tagvalue);
+                    if ($val != '') {
+                        $result['Edition'] = ($result['Edition']) ? $result['Edition'] . $delimiter . $val : $val;
+                    }
+                    break;
 
-			// Insert ke catalog_ruas dengan parsing yang benar
-			$ruasBatchData = [];
-			$sequence = 1;
+                case '260':
+                case '264':
+                    $result['IsRDA'] = ($tagcode == '264') ? 1 : 0;
+                    
+                    // Logika Publikasi (Kota : Penerbit, Tahun)
+                    // Kita pecah manual berdasarkan $
+                    $parts = explode('$', $tagvalue);
+                    $locs = []; $pubs = []; $years = []; $fullPub = [];
 
-			// Ambil semua fields menggunakan File_MARC
-			$fields = $record->getFields();
-			foreach ($fields as $field) {
-				$tag = $field->getTag();
+                    foreach($parts as $part) {
+                        if(empty($part)) continue;
+                        $code = substr($part, 0, 1); // Huruf pertama (a, b, c)
+                        $val = trim(substr($part, 1)); // Isinya
+                        
+                        // Bersihkan tanda baca di akhir string (/, :, ;)
+                        $valClean = trim($val, " :,;/");
+                        
+                        if ($val != '') {
+                            switch($code) {
+                                case 'a': $locs[] = $valClean; break;
+                                case 'b': $pubs[] = $valClean; break;
+                                case 'c': $years[] = $valClean; break;
+                            }
+                            $fullPub[] = $val; 
+                        }
+                    }
 
-				// Jika control field (001, 003, 005, 006, 007, 008, 009)
-				if ($tag < '010') {
-					$ruasBatchData[] = [
-						'CatalogId' => $newCatalogId,
-						'Tag' => $tag,
-						'Indicator1' => null,
-						'Indicator2' => null,
-						'Value' => $field->getData(),
-						'Sequence' => $sequence++,
-					];
-				} else {
-					// Data field dengan indicator dan subfield
-					$indicator1 = $field->getIndicator(1);
-					$indicator2 = $field->getIndicator(2);
+                    if (!empty($locs)) $result['PublishLocation'] = implode('; ', $locs);
+                    if (!empty($pubs)) $result['Publisher'] = implode('; ', $pubs);
+                    if (!empty($years)) $result['PublishYear'] = implode('; ', $years);
+                    if (!empty($fullPub)) $result['Publikasi'] = implode(' ', $fullPub);
+                    break;
 
-					// Convert space atau null ke #
-					$indicator1 = ($indicator1 === ' ' || $indicator1 === null) ? '#' : $indicator1;
-					$indicator2 = ($indicator2 === ' ' || $indicator2 === null) ? '#' : $indicator2;
+                case '650':
+                case '600':
+                case '651':
+                    $val = $cleanValue($tagvalue);
+                    if ($val != '') {
+                        $result['Subject'] = ($result['Subject']) ? $result['Subject'] . ' -- ' . $val : $val;
+                    }
+                    break;
 
-					// Ambil semua subfield
-					$subfields = $field->getSubfields();
-					if (!empty($subfields)) {
-						foreach ($subfields as $subfield) {
-							$ruasBatchData[] = [
-								'CatalogId' => $newCatalogId,
-								'Tag' => $tag,
-								'Indicator1' => $indicator1,
-								'Indicator2' => $indicator2,
-								'Value' => '$' . $subfield->getCode() . ' ' . $subfield->getData(),
-								'Sequence' => $sequence++,
-							];
-						}
-					} else {
-						// Jika tidak ada subfield, simpan sebagai field kosong
-						$ruasBatchData[] = [
-							'CatalogId' => $newCatalogId,
-							'Tag' => $tag,
-							'Indicator1' => $indicator1,
-							'Indicator2' => $indicator2,
-							'Value' => '',
-							'Sequence' => $sequence++,
-						];
-					}
-				}
-			}
+                case '300':
+                    $val = $cleanValue($tagvalue);
+                    if ($val != '') {
+                        $result['PhysicalDescription'] = $val;
+                    }
+                    break;
 
-			if (!empty($ruasBatchData)) {
-				$this->db->table('catalog_ruas')->insertBatch($ruasBatchData);
-			}
+                case '020':
+                case '022':
+                case '024':
+                    $val = $cleanValue($tagvalue);
+                    if ($val != '') {
+                        $result['ISBN'] = ($result['ISBN']) ? $result['ISBN'] . $delimiter . $val : $val;
+                    }
+                    break;
 
-			$this->db->transCommit();
+                case '084': 
+                    $val = $cleanValue($tagvalue);
+                    if ($val != '') {
+                        $result['CallNumber'] = ($result['CallNumber']) ? $result['CallNumber'] . $delimiter . $val : $val;
+                    }
+                    break;
 
-			return $this->response->setJSON([
-				'success' => true,
-				'catalog_id' => $newCatalogId,
-				'title' => $catalogData['Title']
-			]);
-		} catch (\Exception $e) {
-			$this->db->transRollback();
-			return $this->response->setJSON([
-				'success' => false,
-				'message' => 'Error: ' . $e->getMessage()
-			]);
-		}
-	}
+                case '500':
+                case '502':
+                case '504':
+                case '505':
+                case '520':
+                case '542':
+                    $val = $cleanValue($tagvalue);
+                    if ($val != '') {
+                        $result['Note'] = ($result['Note']) ? $result['Note'] . $delimiter . $val : $val;
+                    }
+                    break;
+                
+                case '082':
+                     $val = $cleanValue($tagvalue);
+                     if ($val != '') {
+                        $result['DeweyNo'] = ($result['DeweyNo']) ? $result['DeweyNo'] . $delimiter . $val : $val;
+                     }
+                     break;
+                
+                case '008':
+                     // Logika Bahasa dari Tag 008 (posisi 35, panjang 3)
+                     if(strlen($tagvalue) >= 38) {
+                         $lang = substr($tagvalue, 35, 3);
+                         $result['Languages'] = ($result['Languages']) ? $result['Languages'] . $delimiter . $lang : $lang;
+                     }
+                     break;
+            }
+        }
+        return $result;
+    }
 	
 	public function deleteEdisiSerial(int $id, int $catalog_id)
 	{

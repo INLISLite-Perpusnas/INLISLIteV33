@@ -146,12 +146,7 @@ class Anggota extends \Base\Controllers\BaseController
 
 	public function index()
 	{
-		// is_allowed('anggota/index');
-		if (!is_allowed('anggota/index')) {
-			set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
-			set_message('toastr_type', 'error');
-			return redirect()->to('dashboard');
-		}
+		
 		$this->data['title'] = ' Anggota';
 		$this->data['message'] = $this->validation->getErrors()
 			? $this->validation->listErrors()
@@ -1441,76 +1436,6 @@ class Anggota extends \Base\Controllers\BaseController
 	}
 
 
-	public function print_card2(int $id = null)
-	{
-		$templateModel = new BaseModel('t_template');
-		$template = $templateModel->where('active', 1)->first();
-
-
-
-		if (empty($template)) {
-			echo "Tidak ada template untuk di cetak";
-			exit;
-		}
-
-		$anggota = $this->anggotaModel->find($id);
-		$options = new QROptions([
-			'version'      => 5,
-			'cssClass'     => 'barcode',
-		]);
-
-		$bg = file_get_contents(ROOTPATH . 'public/uploads/master-template/' . $template->file_image);
-		$bg_base64 = 'data:image/png;base64,' . base64_encode($bg);
-		$photo = file_get_contents(ROOTPATH . 'public/uploads/anggota/' . $anggota->PhotoUrl);
-		$photo_base64 = 'data:image/png;base64,' . base64_encode($photo);
-		if ($template->layout == 'Landscape') {
-			$photo_html = '<img src="' . $photo_base64 . '" width="200" height="200" style="background-color: #ffffff; margin-left: 10px; padding: 5px; margin-top:7px"/>';
-		} else {
-			$photo_html = '<img src="' . $photo_base64 . '" width="225px" height="250px" style="background-color: #ffffff; padding: 5px; margin-bottom: 15px"/>';
-		}
-		$db = db_connect();
-		$nama_perpustakaan = $db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value ?: "Perpustakaan Mitra";
-		// Corrected line 6
-		$logo = $db->table('settingparameters')->where('Name', 'Logo')->get()->getRow()->Value ?: "Perpustakaan Mitra";
-		$perpus_logo = file_get_contents(ROOTPATH . 'public/uploads/branch/' . $logo);
-		$perpus_logo_base64 = 'data:image/png;base64,' . base64_encode($perpus_logo);
-		$photo_html2 = '<img src="' . $perpus_logo_base64 . '" width="100" height="100" style="background-color: #ffffff; padding: 5px; margin-bottom: 15px"/>';
-
-		$barcode = new \Picqer\Barcode\BarcodeGeneratorPNG();
-		$barcode_base64 = 'data:image/png;base64,' . base64_encode($barcode->getBarcode($anggota->MemberNo ?? '0000000000000', $barcode::TYPE_CODE_39, 2, 100, [0, 0, 0]));
-		$barcode_html = '<img src="' . $barcode_base64 . '" alt="Barcode" style="background-color: #ffffff; padding: 5px;"/>';
-		$qrcode_base64 = (new QRCode($options))->render($anggota->MemberNo);
-		$qrcode_html = '<img src="' . $qrcode_base64 . '" alt="Qrcode" style="background-color: #ffffff; padding: 2px; margin-top: 20px" width="150px" height="150px"/>';
-
-		$content = $template->content ?? '';
-		$jenis_anggota_id = $anggota->JenisAnggota_id;
-		$jenis_anggota = $this->jenisanggotaModel->find($jenis_anggota_id);
-		$content = str_replace('{perpus_bg}', $bg_base64, $content);
-		$content = str_replace('{perpus_logo}', $photo_html2, $content);
-		$content = str_replace('{perpus_nama}', $nama_perpustakaan, $content);
-		$content = str_replace('{perpus_kartu}', 'KARTU ANGGOTA', $content);
-		$content = str_replace('{perpus_nama}', 'Perpustakaan Mitra Perpusnas', $content);
-		$content = str_replace('{perpus_alamat}', 'Jl. Medan Merdeka Selatan, No. 11A', $content);
-		$content = str_replace('{anggota_nomor}', $anggota->MemberNo ?? '', $content);
-		$content = str_replace('{anggota_nama}', strtoupper($anggota->Fullname ?? ''), $content);
-		$content = str_replace('{anggota_jenis}', strtoupper($jenis_anggota->jenisanggota ?? ''), $content);
-		$content = str_replace('{anggota_foto}', $photo_html, $content);
-		$content = str_replace('{anggota_qrcode}', $qrcode_html, $content);
-		$content = str_replace('{anggota_barcode}', $barcode_html, $content);
-		$this->data['content'] = $content;
-
-		$dompdf = new \Dompdf\Dompdf();
-		$options = new \Dompdf\Options();
-		$options->setIsRemoteEnabled(true);
-		$dompdf->setOptions($options);
-
-		$html = view('KartuAnggota\Views\card_' . strtolower($template->layout ?? 'landscape'), $this->data);
-		$dompdf->loadHtml($html);
-		$dompdf->setPaper('A4', strtolower($template->layout ?? 'landscape'));
-		$dompdf->render();
-		$dompdf->stream('Kartu_Anggota.pdf', array("Attachment" => false));
-		exit();
-	}
 
 	public function bebaspustaka(int $id = null)
 	{
@@ -1858,5 +1783,40 @@ public function aktifkan_online()
     ]);
 }
 
+// File: app/Controllers/Anggota.php
+
+public function getDefaults($jenisAnggotaId)
+{
+        $db = \Config\Database::connect();
+
+        // 1. Ambil Default Koleksi (CollectionCategory)
+        $collections = $db->table('collectioncategorysdefault')
+            ->select('CollectionCategory_id')
+            ->where('JenisAnggota_id', $jenisAnggotaId)
+            ->get()
+            ->getResultArray();
+        
+        // Convert ke simple array: [1, 2, 5]
+        $collectionIds = array_column($collections, 'CollectionCategory_id');
+
+        // 2. Ambil Default Lokasi (LocationLibrary)
+        $locations = $db->table('location_library_default')
+            ->select('Location_Library_id')
+            ->where('JenisAnggota_id', $jenisAnggotaId)
+            ->get()
+            ->getResultArray();
+            
+        // Convert ke simple array: [3, 4]
+        $locationIds = array_column($locations, 'Location_Library_id');
+
+        return $this->response->setJSON([
+            'success' => true,
+            'collections' => $collectionIds,
+            'locations' => $locationIds
+        ]);
+    
+    
+    return $this->response->setStatusCode(404);
+}
 
 }
