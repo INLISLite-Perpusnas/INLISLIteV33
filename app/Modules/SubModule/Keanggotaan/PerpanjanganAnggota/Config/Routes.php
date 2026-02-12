@@ -1,7 +1,7 @@
 <?php if (!isset($routes)) {
 	$routes = \Config\Services::routes(true);
 }
-$routes->group('perpanjangananggota', ['namespace' => 'PerpanjanganAnggota\Controllers'], function ($subroutes) {
+$routes->group('perpanjangan-anggota', ['namespace' => 'PerpanjanganAnggota\Controllers'], function ($subroutes) {
 	$subroutes->add('', 'PerpanjanganAnggota::index');
 	$subroutes->add('index', 'PerpanjanganAnggota::index');
 	$subroutes->add('detail/(:any)', 'PerpanjanganAnggota::detail/$1');
@@ -15,7 +15,7 @@ $routes->group('perpanjangananggota', ['namespace' => 'PerpanjanganAnggota\Contr
 	$subroutes->add('flip', 'PerpanjanganAnggota::flip');
 });
 
-$routes->group('api/perpanjangananggota', ['namespace' => 'PerpanjanganAnggota\Controllers\Api'], function ($subroutes) {
+$routes->group('api/perpanjangan-anggota', ['namespace' => 'PerpanjanganAnggota\Controllers\Api'], function ($subroutes) {
 	$subroutes->add('detail/(:any)', 'PerpanjanganAnggota::detail/$1');
 	$subroutes->add('create', 'PerpanjanganAnggota::create');
 	$subroutes->add('edit/(:any)', 'PerpanjanganAnggota::edit/$1');
