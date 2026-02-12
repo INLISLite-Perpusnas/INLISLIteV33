@@ -24,7 +24,7 @@ $slug = $request->getGet('slug') ?? '';
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('jenispelanggaran') ?>"><i class="fa fa-home"></i> Home</a></li>
                         <li class="breadcrumb-item">Administrasi</li>
-						<li class="breadcrumb-item">Pengaturan Umum</li>
+                        <li class="breadcrumb-item">Pengaturan Umum</li>
                         <li class="active breadcrumb-item" aria-current="page">Jenis Perpustakaan</li>
                     </ol>
                 </nav>
@@ -34,13 +34,12 @@ $slug = $request->getGet('slug') ?? '';
 
     <div class="main-card mb-3 card">
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Jenis Perpustakaan
-            <!-- <div class="btn-actions-pane-right actions-icon-btn">
-                <?php if (is_member('admin')) : ?>
-                    <?php if (is_allowed('jenisperpustakaan/create')) : ?>
-                        <a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Jenis Perpustakaan</a>
-                    <?php endif; ?>
-                <?php endif; ?>
-            </div> -->
+            <div class="btn-actions-pane-right actions-icon-btn">
+
+
+                <a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Jenis Perpustakaan</a>
+
+            </div>
         </div>
         <div class="card-body">
             <?= get_message('message'); ?>
