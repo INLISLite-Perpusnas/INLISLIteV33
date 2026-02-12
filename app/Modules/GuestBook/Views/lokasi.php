@@ -5,7 +5,7 @@
 <section class="main-contact-area contact-info-area contact-info-three offer-area" style="background-color: #ffffff;margin-top: 10px;" >
 	
 	<div class="container">
-		<h2>Atur Lokasi Perpustakaan</h2>
+		<h2>Atur Lokasi Ruang Perpustakaan</h2>
 		<div class="row">
 			<div class="col-lg-12">
 				<div class="contact-wrap contact-pages mb-0">
@@ -15,7 +15,7 @@
 							<div class="row">
 								<div class="col-md-12">
 									<div class="form-group">
-										<label>Kode Perpustakaan</label>
+										<label>Kode Lokasi Ruang Perpustakaan</label>
 										<input type="text" name="Code" id="Code" class="form-control" required data-error="Kode kosong" placeholder="">
 										<small class="help-block with-errors">Contoh: ABC1230101 </small>
 									</div>

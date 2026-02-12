@@ -49,13 +49,18 @@ $slug = $request->getGet('slug') ?? 'katalog_add';
 	const judulInput = document.querySelector('input[name="judul[a]"]');
 
 	nomorInput.addEventListener('click', function() {
-		const ddcValue = ddcInput.value;
 
-		const pengarangValue = pengarangInput.value;
-		const judulValue = judulInput.value;
+    const ddcValue = (ddcInput.value || '').trim();
+    const pengarangValue = (pengarangInput.value || '').trim();
+    const judulValue = (judulInput.value || '').trim();
 
-		const concatenatedValue = ddcValue.substring(0, 3).toUpperCase() + " " + pengarangValue.substring(0, 3) + " " + judulValue.substring(0, 1);
-		nomorInput.value = concatenatedValue;
-	});
+    const concatenatedValue =
+        ddcValue.substring(0, 3).toUpperCase() + " " +
+        pengarangValue.substring(0, 3).toUpperCase() + " " +
+        judulValue.substring(0, 1).toUpperCase();
+
+    nomorInput.value = concatenatedValue;
+});
+
 </script>
 <?= $this->endSection('script'); ?>

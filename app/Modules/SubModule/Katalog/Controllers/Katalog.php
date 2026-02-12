@@ -735,39 +735,86 @@ class Katalog extends \Base\Controllers\BaseController
 
 			$IsRedirect = $this->request->getPost('IsRedirect');
 
-			$db = db_connect();
-			$db->transBegin();
-			try {
-				$catalog_id = $this->katalogModel->insert($save_data);
-				$post = array_merge(
-					array(
-						'ControlNumber' => $ControlNumber,
-						'tag005' => date("YmdHis"),
-						'BIBID' => $BIBID
-					),
-					$post,
-					array(
-						'language' => str_pad(date("ymd"), 22, "#") . str_pad($post['Languages']['ks'], 11, "#") . str_pad($post['Languages']['bkt'], 2, "#") . str_pad($post['Languages']['lang'], 5, "#"),
-						'cat_id' => $catalog_id
-					)
-				);
+		    $db = db_connect();
+            $db->transBegin();
+            
+            try {
+                // 1. Coba Insert ke Database
+                $catalog_id = $this->katalogModel->insert($save_data);
+                // Jika model memiliki rules validasi dan gagal, insert mengembalikan false
+                if ($catalog_id === false) {
+                    // Ambil daftar error dari model
+                    $modelErrors = $this->katalogModel->errors();
+                    // Ubah array error menjadi string agar bisa dilempar ke catch
+                    throw new \Exception('Validasi Gagal: ' . implode(', ', $modelErrors));
+                }
 
-				$this->katalogRuasModel->where('CatalogId', $catalog_id)->delete();
+                // Logika Insert Ruas (sesuai kode asli Anda)
+                $post = array_merge(
+                    array(
+                        'ControlNumber' => $ControlNumber,
+                        'tag005' => date("YmdHis"),
+                        'BIBID' => $BIBID
+                    ),
+                    $post,
+                    array(
+                        'language' => str_pad(date("ymd"), 22, "#") . str_pad(($post['Languages']['ks'] ?? '#'), 11, "#") . str_pad(($post['Languages']['bkt'] ?? '#'), 2, "#") . str_pad(($post['Languages']['lang'] ?? '#'), 5, "#"),
+                        'cat_id' => $catalog_id
+                    )
+                );
 
-				$catalog_ruas = data_catalog_ruas($post, $catalog_id);
-				$this->katalogRuasModel->insert_catalog_ruas($catalog_ruas);
-				$db->transCommit();
+                // Hapus data lama jika ada (untuk edit/re-save) dan insert baru
+                $this->katalogRuasModel->where('CatalogId', $catalog_id)->delete();
 
-				set_message('toastr_msg', 'Katalog berhasil disimpan');
-				set_message('toastr_type', 'success');
-			} catch (\Throwable $th) {
-				$db->transRollback();
+                // Pastikan helper ini tidak error
+                if (!function_exists('data_catalog_ruas')) {
+                    throw new \Exception('Helper function data_catalog_ruas tidak ditemukan.');
+                }
+                
+                $catalog_ruas = data_catalog_ruas($post, $catalog_id);
+                $this->katalogRuasModel->insert_catalog_ruas($catalog_ruas);
+                
+                // Jika semua lancar, Commit
+                $db->transCommit();
 
-				set_message('toastr_msg', 'Katalog gagal disimpan');
-				set_message('toastr_type', 'warning');
+                set_message('toastr_msg', 'Katalog berhasil disimpan');
+                set_message('toastr_type', 'success');
 
-				return redirect()->back()->withInput();
-			}
+                // Redirect sesuai pilihan
+                if ($IsRedirect == 1) {
+                    return redirect()->to('katalog');
+                } else {
+					
+                   
+				$rda = !empty($save_data['IsRDA']) && $save_data['IsRDA'] == 1 ? 1 : 0;
+
+				return redirect()->to('katalog/edit/' . $catalog_id . '?rda=' . $rda);
+                }
+
+            } catch (\Throwable $th) {
+                // Jika ada error, Rollback database
+                $db->transRollback();
+
+                // Ambil Pesan Error Aslinya
+                $errorMessage = $th->getMessage();
+                
+                // (Opsional) Tambahkan error database jika ada
+                $dbError = $db->error();
+                if (!empty($dbError['message'])) {
+                    $errorMessage .= " (DB: " . $dbError['message'] . ")";
+                }
+
+                // Log error ke file log CI4 (untuk debug developer)
+                log_message('error', '[Katalog Create Error] ' . $errorMessage);
+                log_message('error', $th->getTraceAsString());
+
+                // Tampilkan pesan error ke user (Toastr)
+                set_message('toastr_msg', 'Gagal Simpan: ' . $errorMessage);
+                set_message('toastr_type', 'error');
+
+                // Kembalikan ke form dengan input sebelumnya
+                return redirect()->back()->withInput();
+            }
 
 			if ($IsRedirect == 1) {
 				return redirect()->to('katalog');
