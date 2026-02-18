@@ -21,7 +21,7 @@ class PerpanjanganAnggota extends \Base\Controllers\BaseResourceController
 		$this->perpanjanganModel = new PerpanjanganAnggota\Models\PerpanjanganAnggotaModel();
 		$this->validation = \Config\Services::validation();
 		$this->session = session();
-		$this->modulePath = ROOTPATH . 'public/uploads/perpanjangananggota/';
+		$this->modulePath = ROOTPATH . 'public/uploads/perpanjangan-anggota/';
 		$this->uploadPath = WRITEPATH . 'uploads/';
 
 		if (!file_exists($this->modulePath)) {
@@ -62,8 +62,8 @@ class PerpanjanganAnggota extends \Base\Controllers\BaseResourceController
 				$this->session->setFlashdata('toastr_msg', lang('PerpanjanganAnggota.info.successfully_saved'));
 				$this->session->setFlashdata('toastr_type', 'success');
 				$response = [
-					'status'   => 201,
-					'error'    => null,
+					'status' => 201,
+					'error' => null,
 					'messages' => [
 						'success' => lang('PerpanjanganAnggota.info.successfully_saved')
 					]
@@ -71,10 +71,10 @@ class PerpanjanganAnggota extends \Base\Controllers\BaseResourceController
 				return $this->respondCreated($response);
 			} else {
 				$response = [
-					'status'   => 400,
-					'error'    => null,
+					'status' => 400,
+					'error' => null,
 					'messages' => [
-						'error' =>  lang('PerpanjanganAnggota.info.failed_saved')
+						'error' => lang('PerpanjanganAnggota.info.failed_saved')
 					]
 				];
 				return $this->fail($response);
@@ -102,8 +102,8 @@ class PerpanjanganAnggota extends \Base\Controllers\BaseResourceController
 				$this->session->setFlashdata('toastr_msg', lang('PerpanjanganAnggota.info.successfully_updated'));
 				$this->session->setFlashdata('toastr_type', 'success');
 				$response = [
-					'status'   => 201,
-					'error'    => null,
+					'status' => 201,
+					'error' => null,
 					'messages' => [
 						'success' => lang('PerpanjanganAnggota.info.successfully_updated')
 					]
@@ -124,8 +124,8 @@ class PerpanjanganAnggota extends \Base\Controllers\BaseResourceController
 		if ($data) {
 			$this->perpanjanganModel->delete($id);
 			$response = [
-				'status'   => 200,
-				'error'    => null,
+				'status' => 200,
+				'error' => null,
 				'messages' => [
 					'success' => lang('PerpanjanganAnggota.info.successfully_deleted')
 				]

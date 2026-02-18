@@ -16,15 +16,22 @@ $request = service('request'); ?>
                               <i class="pe-7s-photo icon-gradient bg-strong-bliss"></i>
                         </div>
                         <div><?= lang('PerpanjanganAnggota.action.update') ?> <?= lang('PerpanjanganAnggota.module') ?>
-                              <div class="page-title-subheading"><?= lang('PerpanjanganAnggota.form.complete_the_data') ?>.</div>
+                              <div class="page-title-subheading">
+                                    <?= lang('PerpanjanganAnggota.form.complete_the_data') ?>.</div>
                         </div>
                   </div>
                   <div class="page-title-actions">
                         <nav class="" aria-label="breadcrumb">
                               <ol class="breadcrumb">
-                                    <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> <?= lang('PerpanjanganAnggota.label.home') ?></a></li>
-                                    <li class="breadcrumb-item"><a href="<?= base_url('perpanjangananggota') ?>"><?= lang('PerpanjanganAnggota.module') ?></a></li>
-                                    <li class="active breadcrumb-item" aria-current="page"><?= lang('PerpanjanganAnggota.action.update') ?> <?= lang('PerpanjanganAnggota.module') ?></li>
+                                    <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i
+                                                      class="fa fa-home"></i>
+                                                <?= lang('PerpanjanganAnggota.label.home') ?></a></li>
+                                    <li class="breadcrumb-item"><a
+                                                href="<?= base_url('perpanjangan-anggota') ?>"><?= lang('PerpanjanganAnggota.module') ?></a>
+                                    </li>
+                                    <li class="active breadcrumb-item" aria-current="page">
+                                          <?= lang('PerpanjanganAnggota.action.update') ?>
+                                          <?= lang('PerpanjanganAnggota.module') ?></li>
                               </ol>
                         </nav>
                   </div>
@@ -32,7 +39,8 @@ $request = service('request'); ?>
       </div>
       <div class="main-card mb-3 card">
             <div class="card-header">
-                  <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Form <?= lang('PerpanjanganAnggota.action.update') ?> <?= lang('PerpanjanganAnggota.module') ?>
+                  <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Form
+                  <?= lang('PerpanjanganAnggota.action.update') ?> <?= lang('PerpanjanganAnggota.module') ?>
             </div>
             <div class="card-body">
                   <div id="infoMessage"><?= $message ?? ''; ?></div>
@@ -44,8 +52,11 @@ $request = service('request'); ?>
                                     <div class="position-relative form-group">
                                           <label for="name"><?= lang('PerpanjanganAnggota.field.name') ?>*</label>
                                           <div>
-                                                <input type="text" class="form-control" id="name" name="name" placeholder="<?= lang('PerpanjanganAnggota.field.name') ?>" value="<?= set_value('name', $perpanjangananggota->name); ?>" />
-                                                <small class="info help-block text-muted"><?= lang('PerpanjanganAnggota.field.name') ?></small>
+                                                <input type="text" class="form-control" id="name" name="name"
+                                                      placeholder="<?= lang('PerpanjanganAnggota.field.name') ?>"
+                                                      value="<?= set_value('name', $perpanjangananggota->name); ?>" />
+                                                <small
+                                                      class="info help-block text-muted"><?= lang('PerpanjanganAnggota.field.name') ?></small>
                                           </div>
                                     </div>
                               </div>
@@ -53,8 +64,11 @@ $request = service('request'); ?>
                                     <div class="position-relative form-group">
                                           <label for="sort"><?= lang('PerpanjanganAnggota.field.sort') ?></label>
                                           <div>
-                                                <input type="number" class="form-control" id="sort" name="sort" placeholder="<?= lang('PerpanjanganAnggota.field.sort') ?>" value="<?= set_value('sort', $perpanjangananggota->sort) ?>" />
-                                                <small class="info help-block text-muted"><?= lang('PerpanjanganAnggota.field.sort') ?></small>
+                                                <input type="number" class="form-control" id="sort" name="sort"
+                                                      placeholder="<?= lang('PerpanjanganAnggota.field.sort') ?>"
+                                                      value="<?= set_value('sort', $perpanjangananggota->sort) ?>" />
+                                                <small
+                                                      class="info help-block text-muted"><?= lang('PerpanjanganAnggota.field.sort') ?></small>
                                           </div>
                                     </div>
                               </div>
@@ -63,12 +77,16 @@ $request = service('request'); ?>
                         <div class="form-group">
                               <label for="description"><?= lang('PerpanjanganAnggota.field.description') ?></label>
                               <div>
-                                    <textarea id="description" name="description" placeholder="<?= lang('PerpanjanganAnggota.field.description') ?>" rows="2" class="form-control autosize-input" style="min-height: 38px;"><?= set_value('description', $perpanjangananggota->description) ?></textarea>
+                                    <textarea id="description" name="description"
+                                          placeholder="<?= lang('PerpanjanganAnggota.field.description') ?>" rows="2"
+                                          class="form-control autosize-input"
+                                          style="min-height: 38px;"><?= set_value('description', $perpanjangananggota->description) ?></textarea>
                               </div>
                         </div>
 
                         <div class="form-group">
-                              <button type="submit" class="btn btn-primary" name="submit"><?= lang('PerpanjanganAnggota.action.save') ?></button>
+                              <button type="submit" class="btn btn-primary"
+                                    name="submit"><?= lang('PerpanjanganAnggota.action.save') ?></button>
                         </div>
                   </form>
             </div>
