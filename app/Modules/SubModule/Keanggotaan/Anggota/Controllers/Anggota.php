@@ -287,6 +287,7 @@ class Anggota extends \Base\Controllers\BaseController
 				'Agama_id' 	=> $this->request->getPost('Agama_id'),
 				'UnitKerja_id' 	=> $this->request->getPost('UnitKerja_id'),
 				'Fakultas_id' 	=> $this->request->getPost('Fakultas_id'),
+				'Kelas_id' 	=> $this->request->getPost('Kelas_id'),
 				'Jurusan_id' 	=> $this->request->getPost('Jurusan_id'),
 				'IsKeranjang'  => 0,
 				'StatusAnggota_id' => $this->request->getPost('StatusAnggota_id'),
@@ -464,7 +465,7 @@ class Anggota extends \Base\Controllers\BaseController
 	}
 
 	public function edit(int $ID = null, $is_anggota = false)
-	{
+	{ 
 		if (!is_allowed('anggota/edit')) {
 			// Jika AJAX request
 			if ($this->request->isAJAX()) {
@@ -477,7 +478,7 @@ class Anggota extends \Base\Controllers\BaseController
 			set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
 			set_message('toastr_type', 'error');
 			return redirect()->to('anggota');
-		}
+		} 
 		$db = db_connect();
 		$jenisperpustakaan = $db->table('settingparameters')->where('Name', 'JenisPerpustakaan')->get()->getRow()->Value ?: "UMUM";
 
@@ -542,7 +543,7 @@ class Anggota extends \Base\Controllers\BaseController
 					'required' => 'Status Anggota tidak boleh kosong',
 				],
 			],
-		]);
+		]);  
 		if ($this->request->getPost()) {
 			if ($this->validation->withRequest($this->request)->run()) {
 				$update_data = [
@@ -573,10 +574,12 @@ class Anggota extends \Base\Controllers\BaseController
 					'Agama_id' 	=> $this->request->getPost('Agama_id'),
 					'UnitKerja_id' 	=> $this->request->getPost('UnitKerja_id'),
 					'Fakultas_id' 	=> $this->request->getPost('Fakultas_id'),
+					'Kelas_id' 	=> $this->request->getPost('Kelas_id'),
 					'Jurusan_id' 	=> $this->request->getPost('Jurusan_id'),
 					'StatusAnggota_id' => $this->request->getPost('StatusAnggota_id'),
 					'UpdateBy' => login_id(),
 				];
+				//dd($update_data);
 
 				$province = $this->request->getPost('Province');
 				if (!empty($province)) {
@@ -1037,6 +1040,7 @@ class Anggota extends \Base\Controllers\BaseController
 				'unit kerja' => 'UnitKerja_id',
 				'tahun ajaran' => 'TahunAjaran',
 				'fakultas' => 'Fakultas_id',
+				'kelas' => 'Kelas_id',
 				'program studi' => 'ProgramStudi_id',
 				'phone' => 'Phone',
 			];
@@ -1145,6 +1149,12 @@ class Anggota extends \Base\Controllers\BaseController
 									->get()
 									->getRow();
 								$memberData['Fakultas_id'] = $fakultas ? $fakultas->id : null;
+							} elseif ($dbColumnName == 'Kelas_id') {
+								$kelas = $db->table('kelas_siswa')
+									->like('namakelassiswa', $cellValue)
+									->get()
+									->getRow();
+								$memberData['Kelas_id'] = $kelas ? $kelas->id : null;
 							} elseif ($dbColumnName == 'ProgramStudi_id') {
 								$programStudi = $db->table('master_program_studi')
 									->like('Nama', $cellValue)

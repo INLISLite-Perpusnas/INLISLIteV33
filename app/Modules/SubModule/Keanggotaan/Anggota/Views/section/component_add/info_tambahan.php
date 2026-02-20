@@ -25,6 +25,7 @@
                                         <label>Pekerjaan</label>
                                         <select class="form-control" name="Job_id" id="Job_id"
                                             tabindex="-1" aria-hidden="true">
+                                            <option value="" <?= empty($anggota->Job_id) ? 'selected' : '' ?>> Pilih Pekerjaan </option>
                                             <?php foreach (get_ref_table('master_pekerjaan', 'id,Pekerjaan',null,'data') as $row): ?>
 								            <option value="<?=$row->id?>" <?=set_select('Job_id',$row->id)?>> <?=$row->Pekerjaan?></option>
 							        <?php endforeach;?>
@@ -100,6 +101,21 @@
                                             <option value="">Pilih Fakultas</option>
                                             <?php foreach (get_ref_table('master_fakultas', 'id,Nama',null,'data') as $row): ?>
 								            <option value="<?=$row->id?>" <?=set_select('Fakultas_id',$row->id)?>><?=$row->Nama?></option>
+							            <?php endforeach;?>
+                                        </select>
+                                    </div>
+                                </div>
+                                <?php endif; ?>
+
+                                 <!-- Kelas Field -->
+                                 <?php if (is_form_field_active('35', $jenis_perpustakaan_id)) : ?>
+                                <div class="col-md-4">
+                                    <div class="position-relative form-group">
+                                        <label>Kelas</label>
+                                        <select class="form-control" name="Kelas_id" id="Kelas_id">
+                                            <option value="">Pilih Kelas</option>
+                                            <?php foreach (get_ref_table('kelas_siswa', 'id, namakelassiswa',null,'data') as $row): ?>
+								            <option value="<?=$row->id?>" <?=set_select('Kelas_id',$row->id)?>><?=$row->namakelassiswa?></option>
 							            <?php endforeach;?>
                                         </select>
                                     </div>
