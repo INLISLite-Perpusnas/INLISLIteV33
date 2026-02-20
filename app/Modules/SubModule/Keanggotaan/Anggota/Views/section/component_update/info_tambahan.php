@@ -22,8 +22,9 @@
 									<div class="position-relative form-group">
 										<label>Pekerjaan</label>
 										<select class="form-control" name="Job_id" id="Job_id" tabindex="-1" aria-hidden="true">
+											<option value="" <?= empty($anggota->Job_id) ? 'selected' : '' ?>> Pilih Pekerjaan </option>
 											<?php foreach (get_ref_table('master_pekerjaan', 'id,Pekerjaan', null, 'data') as $row): ?>
-												<option value="<?= $row->id ?>"> <?= $row->Pekerjaan ?></option>
+												<option value="<?= $row->id ?>" <?= ($row->id == $anggota->Job_id) ? 'selected' : '' ?>> <?= $row->Pekerjaan ?></option>
 											<?php endforeach; ?>
 										</select>
 									</div>
@@ -71,8 +72,9 @@
 									<div class="position-relative form-group">
 										<label>Pendidikan</label>
 										<select class="form-control" name="JenjangPendidikan_id" id="JenjangPendidikan_id" tabindex="-1" aria-hidden="true">
+											<option value="" <?= empty($anggota->JenjangPendidikan_id) ? 'selected' : '' ?>> Pilih Pendidikans </option>
 											<?php foreach (get_ref_table('master_pendidikan', 'id, Nama', null, 'data') as $row): ?>
-												<option value="<?= $row->id ?>"><?= $row->Nama ?></option>
+												<option value="<?= $row->id ?>" <?= ($row->id == $anggota->JenjangPendidikan_id) ? 'selected' : '' ?>><?= $row->Nama ?></option>
 											<?php endforeach; ?>
 										</select>
 									</div>
@@ -84,13 +86,28 @@
 									<div class="position-relative form-group">
 										<label>Fakultas</label>
 										<select class="form-control" name="Fakultas_id" id="Fakultas_id">
-											<option value="">Pilih Fakultas</option>
+											<option value="" <?= empty($anggota->Fakultas_id) ? 'selected' : '' ?>> Pilih Fakultas </option>
 											<?php foreach (get_ref_table('master_fakultas', 'id,Nama', null, 'data') as $row): ?>
-												<option value="<?= $row->id ?>" <?= set_select('Fakultas_id', $row->id) ?>><?= $row->Nama ?></option>
+												<option value="<?= $row->id ?>" <?= ($row->id == $anggota->Fakultas_id) ? 'selected' : '' ?>><?= $row->Nama ?></option>
 											<?php endforeach; ?>
 										</select>
 									</div>
 								</div>
+							<?php endif; ?>
+
+							<!-- Kelas Field -->
+							<?php if (is_form_field_active('35', $jenis_perpustakaan_id)) : ?>
+							<div class="col-md-4">
+								<div class="position-relative form-group">
+									<label>Kelas</label>
+									<select class="form-control" name="Kelas_id" id="Kelas_id">
+										<option value="" <?= empty($anggota->Kelas_id) ? 'selected' : '' ?>> Pilih Kelas </option>
+										<?php foreach (get_ref_table('kelas_siswa', 'id, namakelassiswa',null,'data') as $row): ?>
+										<option value="<?= $row->id ?>" <?= ($row->id == $anggota->Kelas_id) ? 'selected' : '' ?>><?= $row->namakelassiswa ?></option>
+									<?php endforeach;?>
+									</select>
+								</div>
+							</div>
 							<?php endif; ?>
 
 							<!-- Jurusan Field -->
