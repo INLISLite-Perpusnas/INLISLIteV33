@@ -1,63 +1,211 @@
 <?= $this->extend('App\Views\layout\opac\layout'); ?>
 
-<?= $this->section('content') ?>
+<?= $this->section('style') ?>
 <link rel="stylesheet" href="<?= base_url('assets/css/opac_style.css') ?>">
+<style>
+    /* Global Styles */
+    body {
+        background-color: #f8f9fa;
+        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
 
-</head>
+    /* Hero Section */
+    .hero-section {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: white;
+        padding-top: 140px;
+        padding-bottom: 80px;
+        border-bottom-left-radius: 40px;
+        border-bottom-right-radius: 40px;
+        margin-bottom: 40px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .hero-section p.lead {
+        color: #d1e0ff;
+    }
 
-<body>
+    /* Glass Search & Recommendation Card */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        backdrop-filter: blur(10px);
+    }
+
+    .custom-input {
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 12px 15px;
+    }
+    .custom-input:focus {
+        box-shadow: 0 0 0 0.25rem rgba(42, 82, 152, 0.25);
+        border-color: #2a5298;
+    }
+    
+    .btn-primary-custom {
+        background: #2a5298;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 20px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .btn-primary-custom:hover {
+        background: #1e3c72;
+        transform: translateY(-2px);
+    }
+
+    /* Sidebar Styles */
+    .sidebar-card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        margin-bottom: 24px;
+        background: #ffffff;
+    }
+    .sidebar-card .card-header {
+        /* Gradasi biru senada dengan hero section agar tulisan putih terbaca */
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        border-bottom: none;
+        padding: 15px 20px;
+        border-radius: 16px 16px 0 0;
+    }
+    .sidebar-card .card-title {
+        color: #ffffff; /* Mengubah tulisan menjadi putih */
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    .sidebar-card .card-title i {
+        color: #ffffff; /* Mengubah ikon menjadi putih */
+    }
+    .stat-list-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px dashed #f0f0f0;
+    }
+    .stat-list-item:last-child { border-bottom: none; }
+    .stat-list-item a { 
+        color: #555; 
+        transition: color 0.3s; 
+        font-size: 0.9rem;
+    }
+    .stat-list-item a:hover { color: #2a5298; font-weight: 500; }
+    .stat-badge {
+        background: #edf2f7;
+        color: #4a5568;
+        border-radius: 20px;
+        padding: 4px 10px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    /* Catalog Cards */
+    .catalog-card {
+        border: none;
+        border-radius: 16px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        background: #ffffff;
+        height: 100%;
+        overflow: hidden;
+    }
+    .catalog-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+    .book-cover-wrapper {
+        position: relative;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .book-cover {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    .catalog-card:hover .book-cover {
+        transform: scale(1.05);
+    }
+    .book-overlay {
+        background: rgba(42, 82, 152, 0.8);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .catalog-card:hover .book-overlay {
+        opacity: 1;
+    }
+    .book-meta {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-bottom: 6px;
+    }
+    .book-meta i {
+        width: 16px;
+        color: #a0aec0;
+    }
+    .badge-floating {
+        position: absolute;
+        top: 10px;
+        left: -5px;
+        z-index: 10;
+        box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+    }
+</style>
+<?= $this->endSection() ?>
+
+<?= $this->section('content') ?>
     <section class="hero-section">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-lg-8">
+                <div class="col-lg-10">
                     <div class="text-center mb-5">
-                        <h1 class="display-4 fw-bold mb-3">
+                        <h1 class="display-5 fw-bold mb-3">
                             <i class="fas fa-book-reader me-3"></i>
-                            Selamat Datang di OPAC
+                            Katalog Perpustakaan
                         </h1>
-                        <p class="lead">Online Public Access Catalog - Temukan koleksi perpustakaan dengan mudah</p>
+                        <p class="lead">Temukan referensi, buku, dan koleksi literatur dengan mudah dan cepat.</p>
                     </div>
-                    <div class="recommendation-search mb-4">
-                        <form method="GET" action="<?= base_url('opac') ?>" id="recommendationForm">
+
+                    <div class="glass-card">
+                        <form method="GET" action="<?= base_url('opac') ?>" id="recommendationForm" class="mb-4 pb-4 border-bottom">
                             <?= csrf_field() ?>
-                            <div class="card shadow-sm">
-                                <div class="card-header bg-warning text-dark">
-                                    <h6 class="mb-0">
-                                        <i class="fas fa-magic me-2"></i>Rekomendasi Personal
+                            <div class="row align-items-center g-3">
+                                <div class="col-md-3">
+                                    <h6 class="mb-0 text-dark fw-bold">
+                                        <i class="fas fa-magic text-warning me-2"></i>Rekomendasi
                                     </h6>
                                 </div>
-                                <div class="card-body">
-                                    <div class="row g-2">
-                                        <div class="col-md-8">
-                                            <input type="text" class="form-control" name="member_no"
-                                                placeholder="Masukkan nomor anggota untuk rekomendasi personal..."
-                                                value="<?= esc($member_no ?? '') ?>">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <button type="submit" class="btn btn-warning w-100">
-                                                <i class="fas fa-magic me-2"></i>Dapatkan Rekomendasi
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <?php if (!empty($member_no)): ?>
-                                        <div class="mt-2">
-                                            <a href="<?= base_url('opac') ?>" class="btn btn-outline-secondary btn-sm">
-                                                <i class="fas fa-times me-1"></i>Kembali ke Katalog Umum
-                                            </a>
-                                        </div>
-                                    <?php endif; ?>
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control custom-input" name="member_no"
+                                        placeholder="Nomor Anggota..."
+                                        value="<?= esc($member_no ?? '') ?>">
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="submit" class="btn btn-warning w-100 fw-bold" style="border-radius: 10px;">
+                                        Cari
+                                    </button>
                                 </div>
                             </div>
+                            <?php if (!empty($member_no)): ?>
+                                <div class="mt-3 text-center">
+                                    <a href="<?= base_url('opac') ?>" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                        <i class="fas fa-times me-1"></i>Reset Rekomendasi
+                                    </a>
+                                </div>
+                            <?php endif; ?>
                         </form>
-                    </div>
-                    
-                    <div class="search-box">
+                        
                         <form method="GET" action="<?= base_url('opac') ?>">
                             <?= csrf_field() ?>
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <select class="form-select" name="search_by">
-                                        <option value="" <?= ($search_by ?? '') == '' ? 'selected' : '' ?>>Semua Field</option>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-3">
+                                    <select class="form-select custom-input" name="search_by">
+                                        <option value="" <?= ($search_by ?? '') == '' ? 'selected' : '' ?>>Semua Kriteria</option>
                                         <option value="Title" <?= ($search_by ?? '') == 'Title' ? 'selected' : '' ?>>Judul</option>
                                         <option value="Author" <?= ($search_by ?? '') == 'Author' ? 'selected' : '' ?>>Pengarang</option>
                                         <option value="Subject" <?= ($search_by ?? '') == 'Subject' ? 'selected' : '' ?>>Subjek</option>
@@ -65,55 +213,54 @@
                                         <option value="ISBN" <?= ($search_by ?? '') == 'ISBN' ? 'selected' : '' ?>>ISBN</option>
                                     </select>
                                 </div>
-                                <div class="col-md-6">
-                                    <input type="text" class="form-control form-control-lg" name="search"
+                                <div class="col-md-7">
+                                    <input type="text" class="form-control custom-input" name="search"
                                         placeholder="Masukkan kata kunci pencarian..." value="<?= esc($search ?? '') ?>">
                                 </div>
                                 <div class="col-md-2">
-                                    <button type="submit" class="btn btn-primary btn-lg w-100">
-                                        <i class="fas fa-search me-2"></i>Cari
+                                    <button type="submit" class="btn btn-primary-custom w-100 text-white">
+                                        <i class="fas fa-search me-1"></i>Cari
                                     </button>
                                 </div>
                             </div>
-                            <div class="row g-2 mt-2">
+                            <div class="row g-2">
                                 <div class="col-md-3">
-                                    <input type="text" class="form-control" name="Author" placeholder="Filter Pengarang..." value="<?= esc(request()->getVar('Author')) ?>">
+                                    <input type="text" class="form-control custom-input form-control-sm" name="Author" placeholder="Filter Pengarang..." value="<?= esc(request()->getVar('Author')) ?>">
                                 </div>
                                 <div class="col-md-3">
-                                    <input type="text" class="form-control" name="Publisher" placeholder="Filter Penerbit..." value="<?= esc(request()->getVar('Publisher')) ?>">
+                                    <input type="text" class="form-control custom-input form-control-sm" name="Publisher" placeholder="Filter Penerbit..." value="<?= esc(request()->getVar('Publisher')) ?>">
                                 </div>
                                 <div class="col-md-3">
-                                    <input type="text" class="form-control" name="Subject" placeholder="Filter Subjek..." value="<?= esc(request()->getVar('Subject')) ?>">
+                                    <input type="text" class="form-control custom-input form-control-sm" name="Subject" placeholder="Filter Subjek..." value="<?= esc(request()->getVar('Subject')) ?>">
                                 </div>
                                 <div class="col-md-3">
-                                    <input type="text" class="form-control" name="PublishYear" placeholder="Filter Tahun Terbit..." value="<?= esc(request()->getVar('PublishYear')) ?>">
+                                    <input type="text" class="form-control custom-input form-control-sm" name="PublishYear" placeholder="Filter Tahun..." value="<?= esc(request()->getVar('PublishYear')) ?>">
                                 </div>
                             </div>
-                            </form>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="content-section">
-        <div class="main-container">
+    <section class="content-section mb-5">
+        <div class="container">
             <div class="row">
                 <div class="col-lg-3 sidebar-section">
-                    <div class="sidebar-container">
+                    <div class="sidebar-container position-sticky" style="top: 20px;">
+                        
                         <div class="card sidebar-card">
-                            <div class="card-header bg-gradient-primary">
-                                <h5 class="card-title mb-0">
-                                    <i class="fas fa-chart-pie me-2"></i>Lebih Lengkap
-                                </h5>
+                            <div class="card-header d-flex align-items-center">
+                                <h5 class="card-title mb-0"><i class="fas fa-chart-pie me-2"></i>Statistik Koleksi</h5>
                             </div>
                             <div class="card-body">
-                                <div class="stat-item">
-                                    <div class="stat-icon">
-                                        <i class="fas fa-books text-primary"></i>
+                                <div class="d-flex align-items-center p-3 bg-light rounded">
+                                    <div class="me-3">
+                                        <i class="fas fa-books fa-2x text-primary"></i>
                                     </div>
-                                    <div class="stat-info">
-                                        <h6 class="stat-value"><?= isset($total_records) ? number_format($total_records) : '0' ?></h6>
+                                    <div>
+                                        <h4 class="mb-0 fw-bold text-dark"><?= isset($total_records) ? number_format($total_records) : '0' ?></h4>
                                         <small class="text-muted">Total Katalog</small>
                                     </div>
                                 </div>
@@ -122,12 +269,10 @@
 
                         <?php if (isset($publisher_counts) && !empty($publisher_counts)): ?>
                             <div class="card sidebar-card">
-                                <div class="card-header bg-gradient-success">
-                                    <h5 class="card-title mb-0">
-                                        <i class="fas fa-building me-2"></i>Penerbit Teratas
-                                    </h5>
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0"><i class="fas fa-building me-2"></i>Penerbit Teratas</h5>
                                 </div>
-                                <div class="card-body">
+                                <div class="card-body pt-2">
                                     <div class="stat-list">
                                         <?php
                                         arsort($publisher_counts);
@@ -136,10 +281,10 @@
                                             if (!empty(trim($publisher))):
                                         ?>
                                                 <div class="stat-list-item">
-                                                    <a href="<?= esc(buildFilterUrl('Publisher', $publisher)) ?>" class="stat-name text-decoration-none">
-                                                        <?= esc(substr($publisher, 0, 25)) ?><?= strlen($publisher) > 25 ? '...' : '' ?>
+                                                    <a href="<?= esc(buildFilterUrl('Publisher', $publisher)) ?>" class="text-decoration-none text-truncate pe-2">
+                                                        <?= esc($publisher) ?>
                                                     </a>
-                                                    <span class="badge bg-info text-white"><?= $count ?></span>
+                                                    <span class="stat-badge"><?= $count ?></span>
                                                 </div>
                                         <?php
                                             endif;
@@ -152,12 +297,10 @@
 
                         <?php if (isset($author_counts) && !empty($author_counts)): ?>
                             <div class="card sidebar-card">
-                                <div class="card-header bg-gradient-info">
-                                    <h5 class="card-title mb-0">
-                                        <i class="fas fa-user-edit me-2"></i>Pengarang Teratas
-                                    </h5>
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0"><i class="fas fa-user-edit me-2"></i>Pengarang Teratas</h5>
                                 </div>
-                                <div class="card-body">
+                                <div class="card-body pt-2">
                                     <div class="stat-list">
                                         <?php
                                         arsort($author_counts);
@@ -166,11 +309,10 @@
                                             if (!empty(trim($author))):
                                         ?>
                                                 <div class="stat-list-item">
-                                                    <a href="<?= esc(buildFilterUrl('Author', $author)) ?>" class="stat-name text-decoration-none">
-                                                        <?= esc(substr($author, 0, 25)) ?><?= strlen($author) > 25 ? '...' : '' ?>
+                                                    <a href="<?= esc(buildFilterUrl('Author', $author)) ?>" class="text-decoration-none text-truncate pe-2">
+                                                        <?= esc($author) ?>
                                                     </a>
-
-                                                    <span class="badge bg-info text-white"><?= $count ?></span>
+                                                    <span class="stat-badge"><?= $count ?></span>
                                                 </div>
                                         <?php
                                             endif;
@@ -183,12 +325,10 @@
 
                         <?php if (isset($subject_counts) && !empty($subject_counts)): ?>
                             <div class="card sidebar-card">
-                                <div class="card-header bg-gradient-warning">
-                                    <h5 class="card-title mb-0">
-                                        <i class="fas fa-tags me-2"></i>Subjek Teratas
-                                    </h5>
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0"><i class="fas fa-tags me-2"></i>Subjek Populer</h5>
                                 </div>
-                                <div class="card-body">
+                                <div class="card-body pt-2">
                                     <div class="stat-list">
                                         <?php
                                         arsort($subject_counts);
@@ -197,11 +337,10 @@
                                             if (!empty(trim($subject))):
                                         ?>
                                                 <div class="stat-list-item">
-                                                    <a href="<?= esc(buildFilterUrl('Subject', $subject)) ?>" class="stat-name text-decoration-none">
-                                                        <?= esc(substr($subject, 0, 25)) ?><?= strlen($subject) > 25 ? '...' : '' ?>
+                                                    <a href="<?= esc(buildFilterUrl('Subject', $subject)) ?>" class="text-decoration-none text-truncate pe-2">
+                                                        <?= esc($subject) ?>
                                                     </a>
-
-                                                    <span class="badge bg-info text-white"><?= $count ?></span>
+                                                    <span class="stat-badge"><?= $count ?></span>
                                                 </div>
                                         <?php
                                             endif;
@@ -211,15 +350,12 @@
                                 </div>
                             </div>
                         <?php endif; ?>
-
                         <?php if (isset($year_counts) && !empty($year_counts)): ?>
                             <div class="card sidebar-card">
-                                <div class="card-header" style="background: linear-gradient(45deg, #fd7e14, #e85d04); color: white;">
-                                    <h5 class="card-title mb-0">
-                                        <i class="fas fa-calendar-alt me-2"></i>Tahun Terbit
-                                    </h5>
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0"><i class="fas fa-calendar-alt me-2"></i>Tahun Terbit</h5>
                                 </div>
-                                <div class="card-body">
+                                <div class="card-body pt-2">
                                     <div class="stat-list">
                                         <?php
                                         arsort($year_counts);
@@ -228,11 +364,10 @@
                                             if (!empty(trim($year)) && $year != '1970'):
                                         ?>
                                                 <div class="stat-list-item">
-                                                    <a href="<?= esc(buildFilterUrl('PublishYear', $year)) ?>" class="stat-name text-decoration-none">
+                                                    <a href="<?= esc(buildFilterUrl('PublishYear', $year)) ?>" class="text-decoration-none text-truncate pe-2">
                                                         <?= esc($year) ?>
                                                     </a>
-
-                                                    <span class="badge bg-info text-white"><?= $count ?></span>
+                                                    <span class="stat-badge"><?= $count ?></span>
                                                 </div>
                                         <?php
                                             endif;
@@ -245,12 +380,10 @@
 
                         <?php if (isset($publish_location_counts) && !empty($publish_location_counts)): ?>
                             <div class="card sidebar-card">
-                                <div class="card-header" style="background: linear-gradient(45deg, #fd7e14, #e85d04); color: white;">
-                                    <h5 class="card-title mb-0">
-                                        <i class="fas fa-calendar-alt me-2"></i>KatalogRuasModel Terbit
-                                    </h5>
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0"><i class="fas fa-map-marker-alt me-2"></i>Kota Terbit</h5>
                                 </div>
-                                <div class="card-body">
+                                <div class="card-body pt-2">
                                     <div class="stat-list">
                                         <?php
                                         arsort($publish_location_counts);
@@ -259,11 +392,10 @@
                                             if (!empty(trim($location))):
                                         ?>
                                                 <div class="stat-list-item">
-                                                    <a href="<?= esc(buildFilterUrl('PublishLocation', $location)) ?>" class="stat-name text-decoration-none">
-                                                        <?= esc(substr($location, 0, 20)) ?><?= strlen($location) > 20 ? '...' : '' ?>
+                                                    <a href="<?= esc(buildFilterUrl('PublishLocation', $location)) ?>" class="text-decoration-none text-truncate pe-2">
+                                                        <?= esc($location) ?>
                                                     </a>
-
-                                                    <span class="badge bg-info text-white"><?= $count ?></span>
+                                                    <span class="stat-badge"><?= $count ?></span>
                                                 </div>
                                         <?php
                                             endif;
@@ -275,159 +407,96 @@
                         <?php endif; ?>
                     </div>
                 </div>
+
                 <div class="col-lg-9 catalog-section">
-                    <div class="text-center mb-5">
-                        <h3><i class="fas fa-star me-2"></i>Koleksi Terbaru</h3>
-                        <p class="text-muted">Temukan buku-buku terbaru dalam koleksi kami</p>
+                    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                        <h4 class="mb-0 fw-bold text-dark">
+                            <?= !empty($member_no) ? '<i class="fas fa-star text-warning me-2"></i>Rekomendasi Untuk Anda' : '<i class="fas fa-stream text-primary me-2"></i>Koleksi Terbaru' ?>
+                        </h4>
                     </div>
 
-                    <div class="row">
+                    <div class="row g-4">
                         <?php
-                        // Use recommendations if available, otherwise use regular catalogs
-                        $displayCatalogs = [];
-                        if (!empty($member_no) && isset($recommendations)) {
-                            $displayCatalogs = $recommendations;
-                        } else {
-                            $displayCatalogs = $catalogs ?? [];
-                        }
+                        $displayCatalogs = (!empty($member_no) && isset($recommendations)) ? $recommendations : ($catalogs ?? []);
                         ?>
 
                         <?php if (!empty($displayCatalogs)): ?>
                             <?php foreach ($displayCatalogs as $catalog): ?>
-                                <div class="col-md-6 mb-4">
-                                    <div class="card catalog-card h-100">
-                                        <div class="card-header <?= !empty($member_no) ? 'bg-success text-white' : 'bg-success text-white' ?>">
-                                            <h6 class="card-title mb-0">
-                                                <i class="fas fa-book me-2"></i>
+                                <div class="col-md-6">
+                                    <div class="card catalog-card p-3">
+                                        <div class="row g-0 h-100">
+                                            
+                                            <div class="col-4 position-relative">
                                                 <?php if (!empty($member_no)): ?>
-                                                    <?= $is_cold_start ? 'Populer' : 'Rekomendasi' ?>
-                                                    <?php if ($is_cold_start && isset($catalog['LoanCount'])): ?>
-                                                        <span class="badge bg-light text-dark ms-2"><?= $catalog['LoanCount'] ?> peminjaman</span>
-                                                    <?php endif; ?>
-                                                <?php else: ?>
-                                                    <?= esc($catalog->ControlNumber ?? 'N/A') ?>
+                                                    <span class="badge bg-<?= $is_cold_start ? 'warning text-dark' : 'success' ?> badge-floating">
+                                                        <i class="fas <?= $is_cold_start ? 'fa-fire' : 'fa-magic' ?> me-1"></i>
+                                                        <?= $is_cold_start ? 'Populer' : 'Cocok' ?>
+                                                    </span>
+                                                <?php elseif (isset($catalog->ISDRM) && $catalog->ISDRM == 1): ?>
+                                                    <span class="badge bg-info text-white badge-floating">
+                                                        <i class="fas fa-globe me-1"></i>E-Book
+                                                    </span>
                                                 <?php endif; ?>
-                                            </h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-4">
-                                                    <div class="book-cover-container position-relative">
-                                                        <?php
-                                                        $coverURL = '';
-                                                        $title = '';
-                                                        if (!empty($member_no)) {
-                                                            $coverURL = $catalog['CoverURL'] ?? '';
-                                                            $title = $catalog['Title'] ?? 'Book';
-                                                        } else {
-                                                            $coverURL = $catalog->CoverURL ?? '';
-                                                            $title = $catalog->Title ?? 'Book';
-                                                        }
 
-                                                        $coverPath = base_url('uploads/katalog/' . ($coverURL ?: 'default-cover.jpg'));
-                                                        $defaultCover = base_url('assets/img/default-cover.png');
-                                                        ?>
-                                                        <img src="<?= $coverPath ?>"
-                                                            style="max-width: 100px; max-height: 150px; width: 100%; object-fit: cover;"
-                                                            alt="Cover <?= esc($title) ?>"
-                                                            class="book-cover img-fluid rounded shadow-sm"
-                                                            onerror="this.src='<?= $defaultCover ?>'">
-                                                        <div class="book-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center rounded"
-                                                            style="background: rgba(0,0,0,0.7); opacity: 0; transition: opacity 0.3s ease;">
-                                                            <i class="fas fa-eye text-white fa-2x"></i>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-8">
+                                                <div class="book-cover-wrapper h-100">
                                                     <?php
-                                                    if (!empty($member_no)) {
-                                                        $bookTitle = $catalog['Title'] ?? 'Tanpa Judul';
-                                                        $bookPublisher = $catalog['Publisher'] ?? 'N/A';
-                                                        $bookAuthor = $catalog['Author'] ?? 'N/A';
-                                                        $bookYear = $catalog['PublishYear'] ?? 'N/A';
-                                                        $bookISBN = $catalog['ISBN'] ?? '';
-                                                        $bookSubject = $catalog['Subject'] ?? '';
-                                                        $bookID = $catalog['ID'] ?? 0;
-                                                    } else {
-                                                        $bookTitle = $catalog->Title ?? 'Tanpa Judul';
-                                                        $bookAuthor = $catalog->Author ?? 'N/A';
-                                                        $bookPublisher = $catalog->Publisher ?? 'N/A';
-                                                        $bookYear = $catalog->PublishYear ?? 'N/A';
-                                                        $bookSubject = $catalog->Subject ?? '';
-                                                        $bookISBN = $catalog->ISBN ?? '';
-                                                        $bookID = $catalog->ID ?? 0;
-                                                    }
+                                                    $coverURL = !empty($member_no) ? ($catalog['CoverURL'] ?? '') : ($catalog->CoverURL ?? '');
+                                                    $title = !empty($member_no) ? ($catalog['Title'] ?? 'Book') : ($catalog->Title ?? 'Book');
+                                                    $coverPath = base_url('uploads/katalog/' . ($coverURL ?: 'default-cover.jpg'));
+                                                    $defaultCover = base_url('assets/img/default-cover.png');
                                                     ?>
-
-                                                    <h5 class="card-title text-primary mb-2" style="font-size: 1rem; line-height: 1.3;">
-                                                        <?= esc(substr($bookTitle, 0, 50)) ?>
-                                                        <?= strlen($bookTitle) > 50 ? '...' : '' ?>
-                                                    </h5>
-
-                                                    <div class="mb-2">
-                                                        <small class="text-muted d-block" style="font-size: 0.75rem;">
-                                                            <i class="fas fa-user me-1"></i>
-                                                            <strong>Pengarang:</strong><br>
-                                                            <?= esc(substr($bookAuthor, 0, 35)) ?>
-                                                            <?= strlen($bookAuthor) > 35 ? '...' : '' ?>
-                                                        </small>
-                                                    </div>
-
-                                                    <div class="mb-2">
-                                                        <small class="text-muted d-block" style="font-size: 0.75rem;">
-                                                            <i class="fas fa-building me-1"></i>
-                                                            <strong>Penerbit:</strong><br>
-                                                            <?= esc(substr($bookPublisher, 0, 30)) ?>
-                                                            <?= strlen($bookPublisher) > 30 ? '...' : '' ?>
-                                                        </small>
-                                                    </div>
-
-                                                    <div class="mb-2">
-                                                        <small class="text-muted" style="font-size: 0.75rem;">
-                                                            <i class="fas fa-calendar me-1"></i>
-                                                            <strong>Tahun:</strong> <?= esc($bookYear) ?>
-                                                        </small>
+                                                    <img src="<?= $coverPath ?>" alt="Cover <?= esc($title) ?>" class="book-cover" onerror="this.src='<?= $defaultCover ?>'">
+                                                    <div class="book-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
+                                                        <?php $bookID = !empty($member_no) ? ($catalog['ID'] ?? 0) : ($catalog->ID ?? 0); ?>
+                                                        <a href="<?= base_url('opac/detail/' . $bookID) ?>" class="btn btn-light btn-sm rounded-pill fw-bold">
+                                                            <i class="fas fa-eye me-1"></i>Lihat
+                                                        </a>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div class="mt-3">
-                                                <?php if (!empty($bookSubject)): ?>
-                                                    <div class="mb-2">
-                                                        <span class="badge bg-secondary" style="font-size: 0.7rem;">
-                                                            <i class="fas fa-tag me-1"></i>
-                                                            <?= esc(substr($bookSubject, 0, 25)) ?>
-                                                            <?= strlen($bookSubject) > 25 ? '...' : '' ?>
-                                                        </span>
-                                                    </div>
-                                                <?php endif; ?>
+                                            <div class="col-8 ps-3 d-flex flex-column">
+                                                <?php
+                                                if (!empty($member_no)) {
+                                                    $bookTitle = $catalog['Title'] ?? 'Tanpa Judul';
+                                                    $bookAuthor = $catalog['Author'] ?? '-';
+                                                    $bookPublisher = $catalog['Publisher'] ?? '-';
+                                                    $bookYear = $catalog['PublishYear'] ?? '-';
+                                                    $bookSubject = $catalog['Subject'] ?? '';
+                                                } else {
+                                                    $bookTitle = $catalog->Title ?? 'Tanpa Judul';
+                                                    $bookAuthor = $catalog->Author ?? '-';
+                                                    $bookPublisher = $catalog->Publisher ?? '-';
+                                                    $bookYear = $catalog->PublishYear ?? '-';
+                                                    $bookSubject = $catalog->Subject ?? '';
+                                                }
+                                                ?>
 
-                                                <?php if (empty($member_no) && !empty($bookISBN)): ?>
-                                                    <div class="mb-2">
-                                                        <small class="text-info" style="font-size: 0.7rem;">
-                                                            <i class="fas fa-barcode me-1"></i>
-                                                            ISBN: <?= esc($bookISBN) ?>
-                                                        </small>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
+                                                <h5 class="card-title text-dark fw-bold mb-2" style="font-size: 1.05rem; line-height: 1.4;">
+                                                    <a href="<?= base_url('opac/detail/' . $bookID) ?>" class="text-decoration-none text-dark">
+                                                        <?= esc(substr($bookTitle, 0, 65)) ?><?= strlen($bookTitle) > 65 ? '...' : '' ?>
+                                                    </a>
+                                                </h5>
 
-                                        <div class="card-footer bg-transparent">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <a href="<?= base_url('opac/detail/' . $bookID) ?>" class="btn btn-primary btn-sm">
-                                                    <i class="fas fa-eye me-1"></i>Detail
-                                                </a>
-                                                <div class="btn-group">
-                                                    <?php if (!empty($member_no)): ?>
-                                                        <span class="badge <?= $is_cold_start ? 'bg-warning text-dark' : 'bg-success' ?>">
-                                                            <i class="fas fa-magic me-1"></i><?= $is_cold_start ? 'Populer' : 'Rekomendasi' ?>
+                                                <div class="book-meta mt-1">
+                                                    <span class="d-block mb-1 text-truncate" title="<?= esc($bookAuthor) ?>">
+                                                        <i class="fas fa-user-edit"></i> <?= esc($bookAuthor) ?>
+                                                    </span>
+                                                    <span class="d-block mb-1 text-truncate" title="<?= esc($bookPublisher) ?>">
+                                                        <i class="fas fa-building"></i> <?= esc($bookPublisher) ?>
+                                                    </span>
+                                                    <span class="d-block">
+                                                        <i class="fas fa-calendar-alt"></i> <?= esc($bookYear) ?>
+                                                    </span>
+                                                </div>
+
+                                                <div class="mt-auto pt-2 border-top">
+                                                    <?php if (!empty($bookSubject)): ?>
+                                                        <span class="badge bg-light text-secondary border text-truncate d-inline-block" style="max-width: 100%;">
+                                                            <?= esc($bookSubject) ?>
                                                         </span>
-                                                    <?php elseif (($catalog->ISDRM ==1)): ?>
-                                                        <span class="badge bg-success">
-                                                            <i class="fas fa-check me-1"></i>Tersedia Online
-                                                        </span>
+                                                    <?php else: ?>
+                                                        <span class="badge bg-light text-secondary border">Umum</span>
                                                     <?php endif; ?>
                                                 </div>
                                             </div>
@@ -437,29 +506,28 @@
                             <?php endforeach; ?>
                         <?php else: ?>
                             <div class="col-12">
-                                <div class="text-center py-5">
-                                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                                    <h4 class="text-muted">
+                                <div class="text-center py-5 bg-white rounded-3 shadow-sm">
+                                    <div class="mb-4">
+                                        <i class="fas fa-search-minus fa-4x text-muted opacity-50"></i>
+                                    </div>
+                                    <h4 class="text-dark fw-bold">
                                         <?php if (!empty($member_no)): ?>
-                                            Tidak ada rekomendasi yang ditemukan untuk anggota ini
+                                            Tidak ada rekomendasi untuk anggota ini
                                         <?php elseif (isset($search) && $search): ?>
-                                            Tidak ada hasil yang ditemukan
+                                            Koleksi tidak ditemukan
                                         <?php else: ?>
-                                            Gunakan form pencarian untuk menemukan koleksi
+                                            Mulai temukan koleksi
                                         <?php endif; ?>
                                     </h4>
-                                    <?php if (!empty($member_no)): ?>
-                                        <p class="text-muted mb-3">
-                                            Anggota mungkin belum terdaftar atau belum memiliki riwayat peminjaman
-                                        </p>
-                                    <?php elseif (isset($search) && $search): ?>
-                                        <p class="text-muted mb-3">
-                                            Coba gunakan kata kunci yang berbeda atau
-                                            <a href="<?= base_url('opac/search') ?>">pencarian lanjutan</a>
-                                        </p>
-                                    <?php endif; ?>
-                                    <a href="<?= base_url('opac') ?>" class="btn btn-primary">
-                                        <i class="fas fa-home me-2"></i>Kembali ke Beranda
+                                    <p class="text-muted mb-4 px-3">
+                                        <?php if (!empty($member_no)): ?>
+                                            Anggota mungkin belum memiliki riwayat peminjaman yang cukup untuk menampilkan rekomendasi personal.
+                                        <?php elseif (isset($search) && $search): ?>
+                                            Coba gunakan kata kunci yang lebih umum atau periksa ejaan Anda.
+                                        <?php endif; ?>
+                                    </p>
+                                    <a href="<?= base_url('opac') ?>" class="btn btn-primary-custom text-white px-4">
+                                        <i class="fas fa-sync-alt me-2"></i>Muat Ulang Katalog
                                     </a>
                                 </div>
                             </div>
@@ -467,55 +535,31 @@
                     </div>
                 </div>
             </div>
-             <section class="content-section">
-        <div class="main-container">
-           <?php if (empty($member_no) && isset($pager) && !empty($pager)): ?>
-                <div class="row">
-                    <div class="col-12">
-                        <nav aria-label="Pagination">
-                           <?= $pager ?>
-                        </nav>
-                    </div>
+
+            <div class="row mt-5">
+                <div class="col-12 d-flex flex-column align-items-center">
+                    <?php if (empty($member_no) && isset($pager) && !empty($pager)): ?>
+                        <div class="custom-pagination">
+                            <?= $pager ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (isset($execution_time)): ?>
+                        <div class="text-muted mt-3">
+                            <small><i class="fas fa-bolt text-warning me-1"></i> Waktu muat: <strong><?= number_format($execution_time, 4) ?></strong> detik</small>
+                        </div>
+                    <?php endif; ?>
                 </div>
-            <?php endif; ?>
-
-            <?php if (isset($execution_time)): ?>
-            <div class="text-center text-muted mt-4">
-                <small>
-                    <i class="fas fa-stopwatch me-1"></i>
-                    Halaman ini dimuat dalam <strong><?= number_format($execution_time, 4) ?></strong> detik.
-                </small>
             </div>
-            <?php endif; ?>
-
-        </div>
-    </section>
         </div>
     </section>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Auto-focus search input
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.querySelector('input[name="search"]');
             if (searchInput && !searchInput.value) {
                 searchInput.focus();
-            }
-
-            // Add click handlers for stat items
-            document.querySelectorAll('.stat-list-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    const statName = this.querySelector('.stat-name').textContent.trim();
-                    console.log('Clicked on:', statName);
-                });
-            });
-        });
-
-        // Search suggestions
-        document.querySelector('input[name="search"]').addEventListener('input', function(e) {
-            const query = e.target.value;
-            if (query.length > 2) {
-                console.log('Search suggestion for:', query);
             }
         });
     </script>

@@ -1,6 +1,6 @@
 <?= $this->extend('App\Views\layout\opac\layout'); ?>
 <?= $this->section('content') ?>
-<div class="container py-5">
+<div class="container py-5" style="padding-top: 80px !important; padding-bottom: 40px !important;">
     <!-- Breadcrumb -->
     <div class="col-12 mb-4">
         <nav aria-label="breadcrumb">

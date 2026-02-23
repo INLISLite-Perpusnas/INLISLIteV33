@@ -199,7 +199,7 @@ $page_title = ucfirst($segment2 ?: $segment1);
             position: relative;
             z-index: 1;
 
-            padding-left: 50px;
+            padding-left: 20px;
             padding-right: 30px;
             min-height: 100vh;
             transition: padding-left 0.3s ease;
@@ -434,7 +434,7 @@ $page_title = ucfirst($segment2 ?: $segment1);
         <!-- Main Content -->
         <div class="app-main__outer">
             <!-- Header -->
-            <header class="argon-header" style="padding-left: 60px;">
+            <header class="argon-header" style="padding-left: 20px;">
                 <div class="header-left">
 
 

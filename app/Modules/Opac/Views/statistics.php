@@ -1,7 +1,7 @@
 <?= $this->extend('App\Views\layout\opac\layout'); ?>
 
 <?= $this->section('content') ?>
-
+<section class="hero-section" style="padding-top: 80px !important; padding-bottom: 40px !important;">
 <div class="container py-5">
     <!-- Page Header -->
     <div class="row mb-5">

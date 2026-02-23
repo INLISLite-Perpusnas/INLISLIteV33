@@ -21,10 +21,12 @@ $group = user()->category ?? 'admin';
         z-index: 1000;
         overflow-y: auto;
         padding: 20px;
+        transition: width 0.3s ease;
     }
 
     .sidebar-brand {
-        padding: 10px 15px;
+        position: relative;
+        padding: 10px 45px 10px 15px;
         margin-bottom: 30px;
         display: flex;
         align-items: center;
@@ -97,156 +99,212 @@ $group = user()->category ?? 'admin';
         color: white;
     }
 
-    /* Sidebar */
-.sidebar-argon {
-    width: 250px;
-    background: #fff;
-    height: calc(100vh - 40px);
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    border-radius: 15px;
-    padding: 20px;
-    overflow-y: auto;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-}
+    /* Submenu */
+    .submenu-argon {
+        display: none;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        padding-left: 20px;
+        margin-top: 5px;
+    }
 
-/* Menu */
-.nav-menu-argon,
-.submenu-argon {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
+    .submenu-argon li a {
+        font-size: 13px;
+        padding: 8px 15px;
+    }
 
-.nav-menu-argon li a {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 15px;
-    border-radius: 8px;
-    color: #67748e;
-    text-decoration: none;
-    font-size: 14px;
-}
+    /* Open state */
+    .has-submenu.open > .submenu-argon {
+        display: block;
+    }
 
-.nav-menu-argon li a:hover,
-.nav-menu-argon li a.active {
-    background: #f6f9fc;
-    color: #344767;
-    font-weight: 600;
-}
+    /* Caret */
+    .caret {
+        margin-left: auto;
+        font-size: 12px;
+        transition: transform .3s;
+    }
 
-/* Icons */
-.nav-menu-argon i {
-    width: 30px;
-    height: 30px;
-    background: #fff;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #5e72e4;
-    box-shadow: 0 2px 4px rgba(0,0,0,.05);
-}
+    .has-submenu.open .caret {
+        transform: rotate(180deg);
+    }
 
-/* Submenu */
-.submenu-argon {
-    display: none;
-    padding-left: 20px;
-    margin-top: 5px;
-}
+    /* Toggle button - selalu visible */
+    .sidebar-toggle {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: none;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        color: #5e72e4;
+        z-index: 10;
+        padding: 8px;
+        transition: all 0.3s ease;
+        border-radius: 6px;
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-.submenu-argon li a {
-    font-size: 13px;
-    padding: 8px 15px;
-}
+    .sidebar-toggle:hover {
+        background: #f6f9fc;
+        color: #344767;
+    }
 
-/* Open state */
-.has-submenu.open > .submenu-argon {
-    display: block;
-}
+    /* Logo container */
+    .sidebar-brand > div {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
 
-/* Caret */
-.caret {
-    margin-left: auto;
-    font-size: 12px;
-    transition: transform .3s;
-}
+    .sidebar-brand > div img {
+        transition: all 0.3s ease;
+    }
 
-.has-submenu.open .caret {
-    transform: rotate(180deg);
-}
-/* ===== Layout ===== */
-.app-container {
-    padding-left: 250px; /* RAPAT */
-    transition: padding-left 0.3s ease;
-}
+    /* ===== Collapsed State ===== */
+    body.sidebar-collapsed .sidebar-argon {
+        width: 80px;
+    }
 
-/* Sidebar */
-.sidebar-argon {
-    width: 250px;
-    transition: width 0.3s ease;
-}
+    body.sidebar-collapsed .app-container {
+        padding-left: 100px;
+    }
 
-/* ===== Collapsed State ===== */
-body.sidebar-collapsed .sidebar-argon {
-    width: 80px;
-}
+    /* Hide text */
+    body.sidebar-collapsed .nav-menu-argon span,
+    body.sidebar-collapsed .brand-text {
+        display: none;
+    }
 
-body.sidebar-collapsed .app-container {
-    padding-left: 110px;
-}
+    /* Center icons */
+    body.sidebar-collapsed .nav-menu-argon a {
+        justify-content: center;
+        padding: 12px 10px;
+    }
 
-/* Hide text */
-body.sidebar-collapsed .nav-menu-argon span,
-body.sidebar-collapsed .brand-text {
-    display: none;
-}
+    body.sidebar-collapsed .nav-menu-argon i {
+        margin-right: 0;
+    }
 
-/* Center icons */
-body.sidebar-collapsed .nav-menu-argon a {
-    justify-content: center;
-}
+    /* Submenu behavior */
+    body.sidebar-collapsed .submenu-argon {
+        display: none !important;
+    }
 
-body.sidebar-collapsed .nav-menu-argon i {
-    margin-right: 0;
-}
+    body.sidebar-collapsed .caret {
+        display: none;
+    }
 
-/* Submenu behavior */
-body.sidebar-collapsed .submenu-argon {
-    display: none !important;
-}
+    /* Center logo saat collapsed */
+    body.sidebar-collapsed .sidebar-brand {
+        justify-content: center;
+        padding: 10px 15px;
+        flex-direction: column;
+        align-items: center;
+    }
 
-/* Toggle button */
-.sidebar-toggle {
-    margin-left: auto;
-    background: none;
-    border: none;
-    font-size: 16px;
-    cursor: pointer;
-    color: #5e72e4;
-}
+    body.sidebar-collapsed .sidebar-brand > div {
+        margin: 0 auto;
+    }
 
+    body.sidebar-collapsed .sidebar-brand > div img {
+        width: 45px !important;
+        height: 45px !important;
+        margin-bottom: 10px !important;
+    }
+
+    /* Toggle button saat collapsed - tetap di kanan atas */
+    body.sidebar-collapsed .sidebar-toggle {
+        top: 15px;
+        right: 15px;
+        left: auto;
+        transform: none;
+    }
+
+    /* Sidebar footer */
+    .sidebar-footer {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 15px;
+        margin-top: 20px;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .sidebar-footer img {
+        border-radius: 50%;
+    }
+
+    .sidebar-footer div {
+        flex: 1;
+    }
+
+    .sidebar-footer strong {
+        display: block;
+        font-size: 14px;
+        color: #344767;
+        margin-bottom: 3px;
+    }
+
+    .sidebar-footer a {
+        font-size: 13px;
+        text-decoration: none;
+    }
+
+    body.sidebar-collapsed .sidebar-footer {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    body.sidebar-collapsed .sidebar-footer div {
+        display: none;
+    }
+
+    /* Scrollbar styling */
+    .sidebar-argon::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .sidebar-argon::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .sidebar-argon::-webkit-scrollbar-thumb {
+        background: #e9ecef;
+        border-radius: 10px;
+    }
+
+    .sidebar-argon::-webkit-scrollbar-thumb:hover {
+        background: #cbd5e0;
+    }
 </style>
 
 <aside class="sidebar-argon">
-   <div class="sidebar-brand">
-    <div>
-        <img src="<?= !empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png') ?>" style="width: 80px; height: 80px; object-fit: contain; border-radius: 16px; margin-bottom: 20px;">
+    <div class="sidebar-brand">
+        <!-- Toggle button - posisi absolute di kanan atas -->
+        <button class="sidebar-toggle" id="sidebarToggle" title="Toggle Sidebar">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <div>
+            <img src="<?= !empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png') ?>" style="width: 80px; height: 80px; object-fit: contain; border-radius: 16px; margin-bottom: 20px;">
+        </div>
+        <span class="brand-text">INLISLite</span>
     </div>
-    <span class="brand-text">INLISLite</span><br>
-    <button class="sidebar-toggle" id="sidebarToggle">
-        <i class="fas fa-bars"></i>
-    </button>
-</div>
 
     <?= display_menu_backend(0, 1, user()->category ?? 'admin'); ?>
 
     <div class="sidebar-footer">
-        <img src="<?= base_url('themes/uigniter/images/avatars/2.jpg') ?>" width="35">
+        <img src="<?= base_url('themes/uigniter/images/avatars/2.jpg') ?>" width="35" alt="User Avatar">
         <div>
-            <strong><?= user()->username ?></strong><br>
+            <strong><?= user()->username ?></strong>
             <a href="<?= base_url('logout') ?>" class="text-danger">Logout</a>
         </div>
     </div>

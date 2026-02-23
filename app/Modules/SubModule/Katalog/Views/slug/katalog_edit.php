@@ -7,35 +7,35 @@ $rda = $request->getGet('rda') ?? 1;
 ?>
 <div class="card-header" style="min-height:100px">
 	<div class="form-group col-md-12">
-	<div class="row">
-		<div class="col-md-6">
-			<label for="worksheet_id" class="form-label">
-				<i class="fa fa-check text-primary"></i> Jenis Bahan
-			</label>
-			<select class="form-control" name="Worksheet_id" id="worksheet_id">
-				<?php foreach ($worksheets as $row) : ?>
-					<option value="<?= $row->ID ?>" <?= set_select('Worksheet_id', $row->ID, ($catalog->Worksheet_id == $row->ID)); ?>>
-						<?= $row->Name ?>
+		<div class="row">
+			<div class="col-md-6">
+				<label for="worksheet_id" class="form-label">
+					<i class="fa fa-check text-primary"></i> Jenis Bahan
+				</label>
+				<select class="form-control" name="Worksheet_id" id="worksheet_id">
+					<?php foreach ($worksheets as $row) : ?>
+						<option value="<?= $row->ID ?>" <?= set_select('Worksheet_id', $row->ID, ($catalog->Worksheet_id == $row->ID)); ?>>
+							<?= $row->Name ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+			</div>
+
+			<div class="col-md-6">
+				<label for="catalog_type" class="form-label">
+					<i class="fa fa-check text-primary"></i> Pedoman Katalog
+				</label>
+				<select class="form-control" name="IsRDA" id="catalog_type">
+					<option value="0" <?= set_select('IsRDA', '0', ($catalog->IsRDA == 0)); ?>>
+						Katalog AACR
 					</option>
-				<?php endforeach; ?>
-			</select>
-		</div>
-		
-		<div class="col-md-6">
-			<label for="catalog_type" class="form-label">
-				<i class="fa fa-check text-primary"></i> Pedoman Katalog
-			</label>
-			<select class="form-control" name="IsRDA" id="catalog_type">
-				<option value="0" <?= set_select('IsRDA', '0', ($catalog->IsRDA == 0)); ?>>
-					Katalog AACR
-				</option>
-				<option value="1" <?= set_select('IsRDA', '1', ($catalog->IsRDA == 1)); ?>>
-					Katalog RDA
-				</option>
-			</select>
+					<option value="1" <?= set_select('IsRDA', '1', ($catalog->IsRDA == 1)); ?>>
+						Katalog RDA
+					</option>
+				</select>
+			</div>
 		</div>
 	</div>
-</div>
 </div>
 
 <div class="card-header">
@@ -47,6 +47,22 @@ $rda = $request->getGet('rda') ?? 1;
 	</div>
 </div>
 <div class="card-body">
+	<?php if (session()->getFlashdata('validation_errors')) : ?>
+		<div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+			<strong>Terjadi Kesalahan!</strong>
+			<?= session()->getFlashdata('validation_errors') ?>
+			<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+			</button>
+		</div>
+	<?php endif; ?>
+
+	<?php if (session()->getFlashdata('message')) : ?>
+		<div class="alert alert-warning mb-3">
+			<?= session()->getFlashdata('message') ?>
+		</div>
+	<?php endif; ?>
+
 	<div class="card card-shadow mb-3">
 		<div class="card-header">
 			<div class="custom-title-wrap bar-primary">
@@ -192,7 +208,7 @@ $rda = $request->getGet('rda') ?? 1;
 										<div class="col-sm-4">
 											<div class="form-check">
 												<label class="form-check-label">
-													<input class="form-check-input pengarangUtamaRadio" type="radio" data-id="pengarangUtama-<?= $row->ID ?>" data-input="pengarangUtamaInput-<?= $row->ID ?>" name="pengarangUtamaRadio[]" value="2" <?= ($row->Indicator1 == 2) ? 'checked' : '' ?>>
+													<input class="form-check-input pengarangUtamaRadio" type="radio" data-id="pengarangUtama-<?= $row->ID ?>" data-input="pengarangUtamaInput-<?= $row->ID ?>" name="pengarangUtamaRadio[]" value="3" <?= ($row->Indicator1 == 3) ? 'checked' : '' ?>>
 													Nama Keluarga
 												</label>
 											</div>
@@ -253,18 +269,55 @@ $rda = $request->getGet('rda') ?? 1;
 				<?php if (count(get_catalog_ruas_tags($catalog->ID, ['700', '710', '711'])) > 0) : ?>
 					<?php $idxPengarangTambahan = 0; ?>
 					<?php foreach (get_catalog_ruas_tags($catalog->ID, ['700', '710', '711']) as $row) : ?>
+						<?php
+						// ← ekstrak $a dan $e dari value tersimpan
+						preg_match('/\$a (.+?)(?:\s+\$e (.+))?$/', $row->Value, $matches);
+						$namaValue    = trim($matches[1] ?? '');
+						$relatorValue = trim($matches[2] ?? '');
+						?>
 						<div class="form-group pengarangTambahanWrapper mb-2" id="pengarangTambahanWrapper<?= $row->ID ?>">
 							<div class="form input-group">
 								<div class="input-group-prepend" style="width: 20%;">
-									<select class="custom-select pengarangTambahanSelect" id="pengarangTambahanSelect-<?= $row->ID ?>" data-input="pengarangTambahanInput-<?= $row->ID ?>">
-										<option value="700" <?= ($row->Tag == '700') ? 'selected' : '' ?>>Nama Orang</option>
-										<option value="710" <?= ($row->Tag == '710') ? 'selected' : '' ?>>Nama Badan</option>
-										<option value="711" <?= ($row->Tag == '711') ? 'selected' : '' ?>>Nama Pertemuan</option>
-									</select>
+									<?php if ($rda == 1) : ?>
+										<select class="custom-select pengarangTambahanSelect"
+											id="pengarangTambahanSelect-<?= $idxPengarangTambahan ?>"
+											data-input="pengarangTambahanInput-<?= $idxPengarangTambahan ?>"
+											data-relator-input="pengarangTambahanRelator-<?= $idxPengarangTambahan ?>">
+											<option value="700" data-relator="" <?= ($row->Tag == '700' && empty($relatorValue)) ? 'selected' : '' ?>>Nama Orang</option>
+											<option value="710" data-relator="" <?= ($row->Tag == '710') ? 'selected' : '' ?>>Nama Badan</option>
+											<option value="711" data-relator="" <?= ($row->Tag == '711') ? 'selected' : '' ?>>Nama Pertemuan</option>
+											<option value="700" data-relator="penerjemah" <?= ($relatorValue == 'penerjemah') ? 'selected' : '' ?>>Penerjemah</option>
+											<option value="700" data-relator="ilustrator" <?= ($relatorValue == 'ilustrator') ? 'selected' : '' ?>>Ilustrator</option>
+											<option value="700" data-relator="penyunting" <?= ($relatorValue == 'penyunting') ? 'selected' : '' ?>>Penyunting</option>
+											<option value="700" data-relator="komposer" <?= ($relatorValue == 'komposer')   ? 'selected' : '' ?>>Komposer</option>
+										</select>
+									<?php else : ?>
+										<select class="custom-select pengarangTambahanSelect"
+											id="pengarangTambahanSelect-<?= $idxPengarangTambahan ?>"
+											data-input="pengarangTambahanInput-<?= $idxPengarangTambahan ?>"
+											data-relator-input="pengarangTambahanRelator-<?= $idxPengarangTambahan ?>">
+											<option value="700" data-relator="" <?= ($row->Tag == '700') ? 'selected' : '' ?>>Nama Orang</option>
+											<option value="710" data-relator="" <?= ($row->Tag == '710') ? 'selected' : '' ?>>Nama Badan</option>
+											<option value="711" data-relator="" <?= ($row->Tag == '711') ? 'selected' : '' ?>>Nama Pertemuan</option>
+										</select>
+									<?php endif; ?>
 								</div>
-								<input type="text" class="form-control" id="pengarangTambahanInput-<?= $row->ID ?>" name="pengarangTambahan[<?= $row->Tag ?>-<?= $row->Indicator1 ?>][]" placeholder="" value="<?= trim(preg_replace('/\$a /', '', $row->Value)) ?>" />
+								<input type="text"
+									class="form-control"
+									id="pengarangTambahanInput-<?= $idxPengarangTambahan ?>"
+									name="pengarangTambahan[<?= $row->Tag ?>-<?= $idxPengarangTambahan ?>][]"
+									placeholder=""
+									value="<?= $namaValue ?>" />
+								<!-- ← hidden relator -->
+								<input type="hidden"
+									id="pengarangTambahanRelator-<?= $idxPengarangTambahan ?>"
+									name="pengarangTambahanRelator[<?= $idxPengarangTambahan ?>]"
+									value="<?= $relatorValue ?>" />
 								<div class="input-group-append">
-									<span data-id="<?= $row->ID ?>" class="<?= ($idxPengarangTambahan == 0) ? 'add-pengarangTambahan' : 'remove-pengarangTambahan' ?> btn btn-outline-secondary"><i class="fa fa-<?= ($idxPengarangTambahan == 0) ? 'plus' : 'minus' ?>"></i></span>
+									<span data-id="<?= $row->ID ?>"
+										class="<?= ($idxPengarangTambahan == 0) ? 'add-pengarangTambahan' : 'remove-pengarangTambahan' ?> btn btn-outline-secondary">
+										<i class="fa fa-<?= ($idxPengarangTambahan == 0) ? 'plus' : 'minus' ?>"></i>
+									</span>
 								</div>
 							</div>
 							<div class="form-radio" style="background-color: #C0C0C0; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px;">
@@ -273,7 +326,12 @@ $rda = $request->getGet('rda') ?? 1;
 										<div class="col-sm-4">
 											<div class="form-check">
 												<label class="form-check-label">
-													<input class="form-check-input pengarangTambahanRadio" type="radio" data-select="pengarangTambahanSelect-<?= $row->ID ?>" data-input="pengarangTambahanInput-<?= $row->ID ?>" name="pengarangTambahanRadio[<?= $idxPengarangTambahan ?>][]" value="0" <?= ($row->Indicator1 == 0) ? 'checked' : '' ?>>
+													<input class="form-check-input pengarangTambahanRadio"
+														type="radio"
+														data-select="pengarangTambahanSelect-<?= $idxPengarangTambahan ?>"
+														data-input="pengarangTambahanInput-<?= $idxPengarangTambahan ?>"
+														name="pengarangTambahanRadio[<?= $idxPengarangTambahan ?>][]"
+														value="0" <?= ($row->Indicator1 == 0) ? 'checked' : '' ?>>
 													Nama Depan
 												</label>
 											</div>
@@ -281,7 +339,12 @@ $rda = $request->getGet('rda') ?? 1;
 										<div class="col-sm-4">
 											<div class="form-check">
 												<label class="form-check-label">
-													<input class="form-check-input pengarangTambahanRadio" type="radio" data-select="pengarangTambahanSelect-<?= $row->ID ?>" data-input="pengarangTambahanInput-<?= $row->ID ?>" name="pengarangTambahanRadio[<?= $idxPengarangTambahan ?>][]" value="1" <?= ($row->Indicator1 == 1) ? 'checked' : '' ?>>
+													<input class="form-check-input pengarangTambahanRadio"
+														type="radio"
+														data-select="pengarangTambahanSelect-<?= $idxPengarangTambahan ?>"
+														data-input="pengarangTambahanInput-<?= $idxPengarangTambahan ?>"
+														name="pengarangTambahanRadio[<?= $idxPengarangTambahan ?>][]"
+														value="1" <?= ($row->Indicator1 == 1) ? 'checked' : '' ?>>
 													Nama Belakang
 												</label>
 											</div>
@@ -289,7 +352,12 @@ $rda = $request->getGet('rda') ?? 1;
 										<div class="col-sm-4">
 											<div class="form-check">
 												<label class="form-check-label">
-													<input class="form-check-input pengarangTambahanRadio" type="radio" data-select="pengarangTambahanSelect-<?= $row->ID ?>" data-input="pengarangTambahanInput-<?= $row->ID ?>" name="pengarangTambahanRadio[<?= $idxPengarangTambahan ?>][]" value="2" <?= ($row->Indicator1 == 2) ? 'checked' : '' ?>>
+													<input class="form-check-input pengarangTambahanRadio"
+														type="radio"
+														data-select="pengarangTambahanSelect-<?= $idxPengarangTambahan ?>"
+														data-input="pengarangTambahanInput-<?= $idxPengarangTambahan ?>"
+														name="pengarangTambahanRadio[<?= $idxPengarangTambahan ?>][]"
+														value="2" <?= ($row->Indicator1 == 2) ? 'checked' : '' ?>>
 													Nama Keluarga
 												</label>
 											</div>
@@ -301,18 +369,46 @@ $rda = $request->getGet('rda') ?? 1;
 						<?php $idxPengarangTambahan++; ?>
 					<?php endforeach; ?>
 				<?php else : ?>
+					<!-- baris kosong jika belum ada data -->
 					<div class="form-group pengarangTambahanWrapper" id="pengarangTambahanWrapper0">
 						<div class="form input-group">
 							<div class="input-group-prepend" style="width: 20%;">
-								<select class="custom-select pengarangTambahanSelect" id="pengarangTambahanSelect" data-input="pengarangTambahanInput">
-									<option value="700" selected>Nama Orang</option>
-									<option value="710">Nama Badan</option>
-									<option value="711">Nama Pertemuan</option>
-								</select>
+								<?php if ($rda == 1) : ?>
+									<select class="custom-select pengarangTambahanSelect"
+										id="pengarangTambahanSelect-0"
+										data-input="pengarangTambahanInput-0"
+										data-relator-input="pengarangTambahanRelator-0"> 
+										<option value="700" data-relator="">Nama Orang</option>
+										<option value="710" data-relator="">Nama Badan</option>
+										<option value="711" data-relator="">Nama Pertemuan</option>
+										<option value="700" data-relator="penerjemah">Penerjemah</option>
+										<option value="700" data-relator="ilustrator">Ilustrator</option>
+										<option value="700" data-relator="penyunting">Penyunting</option>
+										<option value="700" data-relator="komposer">Komposer</option>
+									</select>
+								<?php else : ?>
+									<select class="custom-select pengarangTambahanSelect"
+										id="pengarangTambahanSelect-0"
+										data-input="pengarangTambahanInput-0"
+										data-relator-input="pengarangTambahanRelator-0">
+										<option value="700" data-relator="">Nama Orang</option>
+										<option value="710" data-relator="">Nama Badan</option>
+										<option value="711" data-relator="">Nama Pertemuan</option>
+									</select>
+								<?php endif; ?>
 							</div>
-							<input type="text" class="form-control" id="pengarangTambahanInput" name="pengarangTambahan[700-0][]" placeholder="" value="" />
+							<input type="text"
+								class="form-control"
+								id="pengarangTambahanInput-0"
+								name="pengarangTambahan[700-0][]"
+								placeholder=""
+								value="" />
+							<input type="hidden"
+								id="pengarangTambahanRelator-0"
+								name="pengarangTambahanRelator[0]"
+								value="" />
 							<div class="input-group-append">
-								<span data-id="0" class="add-pengarangTambahan btn btn-outline-secondary"><i class="fa fa-plus"></i></span>
+								<span class="add-pengarangTambahan btn btn-outline-secondary"><i class="fa fa-plus"></i></span>
 							</div>
 						</div>
 						<div class="form-radio" style="background-color: #C0C0C0; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px;">
@@ -321,7 +417,10 @@ $rda = $request->getGet('rda') ?? 1;
 									<div class="col-sm-4">
 										<div class="form-check">
 											<label class="form-check-label">
-												<input class="form-check-input pengarangTambahanRadio" type="radio" data-select="pengarangTambahanSelect" data-input="pengarangTambahanInput" name="pengarangTambahanRadio[0][]" value="0" checked>
+												<input class="form-check-input pengarangTambahanRadio" type="radio"
+													data-select="pengarangTambahanSelect-0"
+													data-input="pengarangTambahanInput-0"
+													name="pengarangTambahanRadio[0][]" value="0" checked>
 												Nama Depan
 											</label>
 										</div>
@@ -329,7 +428,10 @@ $rda = $request->getGet('rda') ?? 1;
 									<div class="col-sm-4">
 										<div class="form-check">
 											<label class="form-check-label">
-												<input class="form-check-input pengarangTambahanRadio" type="radio" data-select="pengarangTambahanSelect" data-input="pengarangTambahanInput" name="pengarangTambahanRadio[0][]" value="1">
+												<input class="form-check-input pengarangTambahanRadio" type="radio"
+													data-select="pengarangTambahanSelect-0"
+													data-input="pengarangTambahanInput-0"
+													name="pengarangTambahanRadio[0][]" value="1">
 												Nama Belakang
 											</label>
 										</div>
@@ -337,7 +439,10 @@ $rda = $request->getGet('rda') ?? 1;
 									<div class="col-sm-4">
 										<div class="form-check">
 											<label class="form-check-label">
-												<input class="form-check-input pengarangTambahanRadio" type="radio" data-select="pengarangTambahanSelect" data-input="pengarangTambahanInput" name="pengarangTambahanRadio[0][]" value="2">
+												<input class="form-check-input pengarangTambahanRadio" type="radio"
+													data-select="pengarangTambahanSelect-0"
+													data-input="pengarangTambahanInput-0"
+													name="pengarangTambahanRadio[0][]" value="2">
 												Nama Keluarga
 											</label>
 										</div>
@@ -352,75 +457,75 @@ $rda = $request->getGet('rda') ?? 1;
 	</div>
 
 	<div class="card card-shadow mb-3">
-        <div class="card-header">
-            <div class="custom-title-wrap bar-primary">
-                <div class="custom-title">Penerbitan</div>
-            </div>
-        </div>
-        <div class="card-body">
-            <?php 
-                // Jika RDA (1) gunakan str_264, jika AACR (0) gunakan str_260
-                // Kita gunakan operator null coalescing (??) untuk mencegah error jika variabel tidak ada
-                $pubData = ($catalog->IsRDA == 1) ? ($str_264 ?? []) : ($str_260 ?? []);
-            ?>
+		<div class="card-header">
+			<div class="custom-title-wrap bar-primary">
+				<div class="custom-title">Penerbitan</div>
+			</div>
+		</div>
+		<div class="card-body">
+			<?php
+			// Jika RDA (1) gunakan str_264, jika AACR (0) gunakan str_260
+			// Kita gunakan operator null coalescing (??) untuk mencegah error jika variabel tidak ada
+			$pubData = ($catalog->IsRDA == 1) ? ($str_264 ?? []) : ($str_260 ?? []);
+			?>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="varchar">Tempat Terbit</label>
-                        <input type="text" class="form-control" name="penerbit[a]" id="PublishLocation" placeholder="" value="<?= trim($pubData['a'] ?? '') ?>" />
-                    </div>
-                </div>
-                <div class=" col-md-6">
-                    <div class="form-group">
-                        <label for="varchar">Penerbit</label>
-                        <input type="text" class="form-control" name="penerbit[b]" id="Publisher" placeholder="" value="<?= trim($pubData['b'] ?? '') ?>" />
-                    </div>
-                </div>
-                <div class=" col-md-6">
-                    <div class="form-group">
-                        <label for="varchar">Tahun Terbit</label>
-                        <input type="text" class="form-control" name="penerbit[c]" id="PublishYear" placeholder="" value="<?= trim($pubData['c'] ?? '') ?>" />
-                    </div>
-                </div>
+			<div class="row">
+				<div class="col-md-6">
+					<div class="form-group">
+						<label for="varchar">Tempat Terbit</label>
+						<input type="text" class="form-control" name="penerbit[a]" id="PublishLocation" placeholder="" value="<?= trim($pubData['a'] ?? '') ?>" />
+					</div>
+				</div>
+				<div class=" col-md-6">
+					<div class="form-group">
+						<label for="varchar">Penerbit</label>
+						<input type="text" class="form-control" name="penerbit[b]" id="Publisher" placeholder="" value="<?= trim($pubData['b'] ?? '') ?>" />
+					</div>
+				</div>
+				<div class=" col-md-6">
+					<div class="form-group">
+						<label for="varchar">Tahun Terbit</label>
+						<input type="text" class="form-control" name="penerbit[c]" id="PublishYear" placeholder="" value="<?= trim($pubData['c'] ?? '') ?>" />
+					</div>
+				</div>
 
-                <?php if ($catalog->Worksheet_id == 4) : ?>
-                    <div class=" col-md-6 terbitanBerkala" style="display: block;">
-                        <div class="form-group">
-                            <label for="frekuensi">Frekuensi Saat Ini</label>
-                            <input type="text" class="form-control" name="frekuensi" id="frekuensi" placeholder="" value="<?= trim($str_310['a'] ?? '') ?>" />
-                        </div>
-                    </div>
-                    <div class=" col-md-12 terbitanBerkala" style="display: block;">
-                        <div class="form-group">
-                            <label for="frekuensiSebelumnya">Frekuensi Publikasi Sebelumnya</label>
-                            <div id="frekuensiSebelumnya">
-                                <?php if (get_catalog_ruas_tag($catalog->ID, '321')) : ?>
-                                    <?php $idx_321 = 0; ?>
-                                    <?php foreach (get_catalog_ruas_tag($catalog->ID, '321') as $row) : ?>
-                                        <div id="frekuensiSebelumnya<?= $row->ID ?>" class="form input-group mb-2" title="">
-                                            <input type="text" class="form-control" name="frekuensiSebelumnya[]" placeholder="" value="<?= trim(preg_replace('/\$a /', '', $row->Value)) ?>" />
-                                            <div class="input-group-append">
-                                                <span data-id="<?= $row->ID ?>" class="<?= ($idx_321 == 0) ? 'add-frekuensiSebelumnya' : 'remove-frekuensiSebelumnya' ?> btn btn-outline-secondary"><i class="fa fa-<?= ($idx_321 == 0) ? 'plus' : 'minus' ?>"></i></span>
-                                            </div>
-                                        </div>
-                                        <?php $idx_321++; ?>
-                                    <?php endforeach; ?>
-                                <?php else : ?>
-                                    <div id="frekuensiSebelumnya0" class="form input-group mb-2" title="">
-                                        <input type="text" class="form-control" name="frekuensiSebelumnya[]" placeholder="" value="" />
-                                        <div class="input-group-append">
-                                            <span data-id="0" class="add-frekuensiSebelumnya btn btn-outline-secondary"><i class="fa fa-plus"></i></span>
-                                        </div>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </div>
-    </div>
+				<?php if ($catalog->Worksheet_id == 4) : ?>
+					<div class=" col-md-6 terbitanBerkala" style="display: block;">
+						<div class="form-group">
+							<label for="frekuensi">Frekuensi Saat Ini</label>
+							<input type="text" class="form-control" name="frekuensi" id="frekuensi" placeholder="" value="<?= trim($str_310['a'] ?? '') ?>" />
+						</div>
+					</div>
+					<div class=" col-md-12 terbitanBerkala" style="display: block;">
+						<div class="form-group">
+							<label for="frekuensiSebelumnya">Frekuensi Publikasi Sebelumnya</label>
+							<div id="frekuensiSebelumnya">
+								<?php if (get_catalog_ruas_tag($catalog->ID, '321')) : ?>
+									<?php $idx_321 = 0; ?>
+									<?php foreach (get_catalog_ruas_tag($catalog->ID, '321') as $row) : ?>
+										<div id="frekuensiSebelumnya<?= $row->ID ?>" class="form input-group mb-2" title="">
+											<input type="text" class="form-control" name="frekuensiSebelumnya[]" placeholder="" value="<?= trim(preg_replace('/\$a /', '', $row->Value)) ?>" />
+											<div class="input-group-append">
+												<span data-id="<?= $row->ID ?>" class="<?= ($idx_321 == 0) ? 'add-frekuensiSebelumnya' : 'remove-frekuensiSebelumnya' ?> btn btn-outline-secondary"><i class="fa fa-<?= ($idx_321 == 0) ? 'plus' : 'minus' ?>"></i></span>
+											</div>
+										</div>
+										<?php $idx_321++; ?>
+									<?php endforeach; ?>
+								<?php else : ?>
+									<div id="frekuensiSebelumnya0" class="form input-group mb-2" title="">
+										<input type="text" class="form-control" name="frekuensiSebelumnya[]" placeholder="" value="" />
+										<div class="input-group-append">
+											<span data-id="0" class="add-frekuensiSebelumnya btn btn-outline-secondary"><i class="fa fa-plus"></i></span>
+										</div>
+									</div>
+								<?php endif; ?>
+							</div>
+						</div>
+					</div>
+				<?php endif; ?>
+			</div>
+		</div>
+	</div>
 
 	<div class="card card-shadow mb-3">
 		<div class="card-header">
@@ -451,7 +556,7 @@ $rda = $request->getGet('rda') ?? 1;
 				<div class=" col-md-6">
 					<div class="form-group">
 						<label for="varchar">Bahan Sertaan</label>
-						<input type="text" class="form-control" name="PhysicalDescription[e]" id="bahanSertaan" placeholder="" value="<?= trim($str_300['d'] ?? '') ?>" />
+						<input type="text" class="form-control" name="PhysicalDescription[e]" id="bahanSertaan" placeholder="" value="<?= trim($str_300['e'] ?? '') ?>" />
 					</div>
 				</div>
 			</div>
@@ -465,19 +570,19 @@ $rda = $request->getGet('rda') ?? 1;
 					<div class="col-md-6">
 						<div class="form-group">
 							<label for="jenisIsi">Jenis Isi</label>
-							<input type="text" class="form-control" name="jenisIsi" id="jenisIsi" placeholder="" value="<?= trim($str_336[0] ?? '') ?>" />
+							<input type="text" class="form-control" name="jenisIsi" id="jenisIsi" placeholder="" value="<?= trim($str_336['a'] ?? '') ?>" />
 						</div>
 					</div>
 					<div class=" col-md-6">
 						<div class="form-group">
 							<label for="jenisMedia">Jenis Media</label>
-							<input type="text" class="form-control" name="jenisMedia" id="jenisMedia" placeholder="" value="<?= trim($str_337[0] ?? '') ?>" />
+							<input type="text" class="form-control" name="jenisMedia" id="jenisMedia" placeholder="" value="<?= trim($str_337['a'] ?? '') ?>" />
 						</div>
 					</div>
 					<div class=" col-md-6">
 						<div class="form-group">
 							<label for="jenisWadah">Jenis Wadah</label>
-							<input type="text" class="form-control" name="jenisWadah" id="jenisWadah" placeholder="" value="<?= trim($str_338[0] ?? '') ?>" />
+							<input type="text" class="form-control" name="jenisWadah" id="jenisWadah" placeholder="" value="<?= trim($str_338['a'] ?? '') ?>" />
 						</div>
 					</div>
 				<?php endif; ?>
@@ -530,7 +635,7 @@ $rda = $request->getGet('rda') ?? 1;
 			</div>
 			<div class="form-group">
 				<label for="varchar">No. Klas DDC</label>
-				<input type="text" class="form-control" name="DeweyNo" id="DeweyNo" placeholder="" value="<?= trim($str_082[0] ?? '') ?>" />
+				<input type="text" class="form-control" name="DeweyNo" id="DeweyNo" placeholder="" value="<?= $str_082['a'] ?? '' ?>" />
 			</div>
 			<div class=" form-group">
 				<label for="CallNumber">No. Panggil</label>
@@ -788,41 +893,40 @@ $rda = $request->getGet('rda') ?? 1;
 		</div>
 	</div>
 	<div class="table-responsive">
-    <table class="table table-bordered table-striped mb-0">
-        <tbody>
-            <tr>
-                <th scope="row">Dibuat Oleh</th>
-                <td><?= $CreateBy ?></td>
-            </tr>
-            <tr>
-                <th scope="row">Diperbarui Oleh</th>
-                <td><?= $UpdateBy ?></td>
-            </tr>
-            <tr>
-                <th scope="row">Dibuat Pada</th>
-                <td><?= $catalog->CreateDate ?></td>
-            </tr>
-            <tr>
-                <th scope="row">Diperbarui Pada</th>
-                <td><?= $catalog->UpdateDate ?></td>
-            </tr>
-        </tbody>
-    </table>
-</div>
+		<table class="table table-bordered table-striped mb-0">
+			<tbody>
+				<tr>
+					<th scope="row">Dibuat Oleh</th>
+					<td><?= $CreateBy ?></td>
+				</tr>
+				<tr>
+					<th scope="row">Diperbarui Oleh</th>
+					<td><?= $UpdateBy ?></td>
+				</tr>
+				<tr>
+					<th scope="row">Dibuat Pada</th>
+					<td><?= $catalog->CreateDate ?></td>
+				</tr>
+				<tr>
+					<th scope="row">Diperbarui Pada</th>
+					<td><?= $catalog->UpdateDate ?></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
 
 
 	<div class="card-footer p-0 pt-3">
 		<div class="form-group">
-		
-				<div class="form-check form-check-inline">
-					<input type="hidden" name="IsRDA" value="<?= $rda ?? 1 ?>">
-					<input type="hidden" name="IsRedirect" value="0">
-					<input class="form-check-input" type="checkbox" name="IsRedirect" value="1">
-					<label class="form-check-label" for="IsRedirect">Tutup form setelah simpan</label>
-				</div>
 
-				<button type="submit" class="btn btn-primary btn-lg" name="submit"><i class="fa fa-save mr-2"></i> Simpan</button>
-		
+			<div class="form-check form-check-inline">
+				<input type="hidden" name="IsRedirect" value="0">
+				<input class="form-check-input" type="checkbox" name="IsRedirect" value="1">
+				<label class="form-check-label" for="IsRedirect">Tutup form setelah simpan</label>
+			</div>
+
+			<button type="submit" class="btn btn-primary btn-lg" name="submit"><i class="fa fa-save mr-2"></i> Simpan</button>
+
 		</div>
 	</div>
 </div>
