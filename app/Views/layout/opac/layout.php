@@ -236,17 +236,18 @@ $email = $db->table('settingparameters')->where('Name', 'EmailPerpustakaan')->ge
                         </a>
                     </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= base_url('baca-ditempat') ?>">
-                            <i class="fa-solid fa-book-reader me-1"></i> Baca Ditempat
-                        </a>
-                    </li>
+
 
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownLayanan" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fa-solid fa-desktop me-1"></i> Layanan Mandiri
                         </a>
                         <ul class="dropdown-menu shadow-sm border-0" aria-labelledby="navbarDropdownLayanan">
+                            <li>
+                                <a class="dropdown-item" href="<?= base_url('baca-ditempat') ?>">
+                                    <i class="fa-solid fa-book-reader me-1"></i> Baca Ditempat
+                                </a>
+                            </li>
                             <li>
                                 <a class="dropdown-item" href="<?= base_url('buku-tamu') ?>">
                                     <i class="fa-solid fa-address-book fa-fw text-secondary me-2"></i> Buku Tamu
