@@ -81,7 +81,8 @@ $actions = array(
 	</ul>
 
   <?php if ($slug !== 'edisi_serial'): ?>
-    <form id="frm_edit" class="main-card mb-3 card" method="post" action="">
+    <form id="frm_edit" class="main-card mb-3 card" method="post" action="<?= base_url('katalog/edit/' . $catalog->ID) ?>">
+        <?= csrf_field() ?>
       <?= $this->include("Katalog\Views\slug\\$slug"); ?>
     </form>
   <?php else: ?>

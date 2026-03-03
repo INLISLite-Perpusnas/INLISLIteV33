@@ -130,18 +130,23 @@ $slug = $request->getGet('slug') ?? '';
                     type: 'image'
                 });
             },
-            "initComplete": function(settings, json) {
+           "initComplete": function(settings, json) {
                 var $searchInput = $('div.dataTables_filter input');
                 $searchInput.unbind();
-                $searchInput.bind('keyup', function(e) {
+                
+                // 1. Event untuk merespon tombol Enter (untuk mulai mencari)
+                $searchInput.on('keyup', function(e) {
                     if (e.keyCode == 13) {
-                        if (this.value.length == 0) {
-                            t.draw();
-                        }
+                        t.search(this.value).draw();
+                    }
+                });
 
-                        if (this.value.length > 3) {
-                            t.search(this.value).draw();
-                        }
+                // 2. Event 'input' untuk mendeteksi setiap perubahan teks secara instan
+                // Ini akan langsung merespon saat kolom dihapus sampai kosong,
+                // termasuk jika Anda mengklik tombol 'X' di dalam kolom pencarian.
+                $searchInput.on('input search clear', function() {
+                    if (this.value === '') {
+                        t.search('').draw(); // Langsung reset filter dan load ulang tabel
                     }
                 });
             }

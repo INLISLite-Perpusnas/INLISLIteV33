@@ -77,7 +77,7 @@
     </style>
 </head>
 <body class="bg-light">
-    <div class="container-fluid py-4">
+    <div class="container-fluid py-4" style="padding-top: 100px !important; padding-bottom: 40px !important;">
         <div class="row">
             <!-- Form Section -->
             <div class="col-lg-6">

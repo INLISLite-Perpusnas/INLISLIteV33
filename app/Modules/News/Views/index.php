@@ -401,7 +401,7 @@
 </head>
 
 <body>
-    <div class="container py-4">
+    <div class="container py-4" style="padding-top: 80px !important; padding-bottom: 40px !important;">
         <!-- Breadcrumb -->
         <div class="col-12 mb-4">
             <nav aria-label="breadcrumb">

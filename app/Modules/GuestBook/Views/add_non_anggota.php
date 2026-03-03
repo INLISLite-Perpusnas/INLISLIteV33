@@ -353,7 +353,7 @@
 	.content-wrapper > *:nth-child(4) { animation-delay: 0.4s; }
 </style>
 
-<div class="page-container">
+<div class="page-container" style="padding-top: 100px !important; padding-bottom: 40px !important;">
 	<div class="content-wrapper">
 		<!-- Header Section -->
 		<div class="page-header">
