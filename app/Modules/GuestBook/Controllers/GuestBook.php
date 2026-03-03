@@ -84,6 +84,7 @@ class GuestBook extends \App\Controllers\BaseController
 		$this->data['title'] = 'Buku Tamu - Anggota';
 		$this->data['data'] = $data;
 		$this->data['member'] = $member;
+		$this->data['tujuan_kunjungan'] = get_ref_table('tujuan_kunjungan', 'ID, TujuanKunjungan', 'Member=1', 'data');
 		$this->data['message'] = $this->validation->getErrors()
 			? $this->validation->listErrors()
 			: $this->session->getFlashdata('message');
@@ -232,6 +233,7 @@ class GuestBook extends \App\Controllers\BaseController
 		}
 
 		$this->data['title'] = 'Buku Tamu - Bukan Anggota';
+		$this->data['tujuan_kunjungan'] = get_ref_table('tujuan_kunjungan', 'ID, TujuanKunjungan', 'nonmember=1', 'data');
 		$this->data['message'] = $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message');
 		echo view('GuestBook\Views\add_non_anggota', $this->data);
 	}
@@ -467,7 +469,8 @@ public function rombongan()
 	$this->data['message'] = $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message');
 	
 	// Get reference data for dropdowns
-	$this->data['tujuan_kunjungan'] = get_ref_table('tujuan_kunjungan', 'ID, TujuanKunjungan', 'active=1', 'data');
+	//$this->data['tujuan_kunjungan'] = get_ref_table('tujuan_kunjungan', 'ID, TujuanKunjungan', 'active=1', 'data');
+	$this->data['tujuan_kunjungan'] = get_ref_table('tujuan_kunjungan', 'ID, TujuanKunjungan', 'rombongan=1', 'data');
 	
 	echo view('GuestBook\Views\add_rombongan', $this->data);
 }

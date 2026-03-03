@@ -902,8 +902,8 @@
 						<select class="form-control <?= session('errors.TujuanKunjungan_ID') ? 'is-invalid' : '' ?>" 
 								name="TujuanKunjungan_ID" 
 								id="TujuanKunjungan_ID">
-							<option value="">-- Pilih Tujuan Kunjungan --</option>
-							<?php foreach (get_ref_table('tujuan_kunjungan', 'ID, TujuanKunjungan', 'active=1', 'data') as $row) : ?>
+							<option value="" disabled selected> ----- Pilih ----- </option>
+									  <?php foreach ($tujuan_kunjungan as $row) : ?>
 								<option value="<?= $row->ID ?>" <?= old('TujuanKunjungan_ID') == $row->ID ? 'selected' : '' ?>>
 									<?= $row->TujuanKunjungan ?>
 								</option>

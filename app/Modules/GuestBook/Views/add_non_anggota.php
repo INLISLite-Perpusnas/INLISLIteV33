@@ -499,7 +499,8 @@
 								
 									<label for="TujuanKunjungan_id">Tujuan Kunjungan</label>
 									<select class="form-control" name="TujuanKunjungan_id" id="TujuanKunjungan_id">
-										<?php foreach (get_table('tujuan_kunjungan', 'ID, TujuanKunjungan', null, 'data') as $row) : ?>
+									  <option value="" disabled selected> ----- Pilih ----- </option>
+									  <?php foreach ($tujuan_kunjungan as $row) : ?>
 											<?php // PERBAIKAN: Menyamakan ID dengan id 
 											?>
 											<option value="<?= $row->ID ?>" <?= set_select('TujuanKunjungan_id', $row->ID) ?>><?= $row->TujuanKunjungan ?></option>

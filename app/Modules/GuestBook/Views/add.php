@@ -382,8 +382,6 @@
 				<i class="fas fa-users"></i>
 				<span>Rombongan</span>
 			</a>
-
-
 		</div>
 
 		<?php if (empty($member)) : ?>
@@ -422,27 +420,7 @@
 			</div>
 
 		<?php else : ?>
-			<!-- Welcome Message -->
-			<div class="alert-custom alert-success-custom">
-				<i class="fas fa-check-circle"></i>
-				<div>
-					<strong>Selamat Datang, <?= $member->Fullname ?>!</strong><br>
-					Terima kasih telah berkunjung ke perpustakaan kami.
-				</div>
-				<button type="button" class="alert-close" onclick="this.parentElement.style.display='none'">
-					<span>&times;</span>
-				</button>
-			</div>
-
-			<!-- Member Profile -->
-			<div class="member-profile">
-				<div class="welcome-header">
-					<h2>Profil Anggota</h2>
-					<div class="member-number">No. Anggota: <?= $member->MemberNo ?></div>
-				</div>
-				<?= view('Member\Views\member_profile', array('member' => $member ?? '', 'jenis_anggota' => $jenis_anggota ?? [])) ?>
-			</div>
-
+			
 			<!-- Action Section -->
 			<div class="action-section">
 				<form method="post" action="<?php echo base_url('buku-tamu/store_anggota'); ?>">
@@ -454,11 +432,12 @@
 						<?php // PERBAIKAN: Menambahkan tanda kutip pembuka pada class 
 						?>
 						<div class="form-group">
-							<div class="col-md-6" style="padding-left: 0;">
+							<div class="col-md-12" style="padding-left: 0; text-align: center; !important;">
 								<div class="position-relative form-group">
 									<label for="TujuanKunjungan_id">Tujuan Kunjungan</label>
-									<select class="form-control" name="TujuanKunjungan_id" id="TujuanKunjungan_id">
-										<?php foreach (get_table('tujuan_kunjungan', 'ID, TujuanKunjungan', null, 'data') as $row) : ?>
+									<select class="form-control" name="TujuanKunjungan_id" id="TujuanKunjungan_id" style="width: 50%; text-align: center; margin-top: 10px; margin-left: 270px; !important;">
+										<option value="" disabled selected> ----- Pilih ----- </option>
+										  <?php foreach ($tujuan_kunjungan as $row) : ?>
 											<?php // PERBAIKAN: Menyamakan ID dengan id 
 											?>
 											<option value="<?= $row->ID ?>" <?= set_select('TujuanKunjungan_id', $row->ID) ?>><?= $row->TujuanKunjungan ?></option>
@@ -466,18 +445,43 @@
 									</select>
 								</div>
 							</div>
-						</div><br></br>
+						</div><br>
 					<?php endif; ?>
 
-					<button class="save-btn" type="submit">
+					<!-- <button class="save-btn" type="submit">
 						<i class="fas fa-save"></i>
 						Simpan Buku Tamu
-					</button>
+					</button> -->
 				</form>
-				<p style="margin-top: 15px; color: #666; font-size: 0.9rem;">
+				<!-- <p style="margin-top: 15px; color: #666; font-size: 0.9rem;">
 					Dengan menekan tombol di atas, kunjungan Anda akan tercatat dalam buku tamu perpustakaan.
+				</p> -->
+				<p style="text-align:center; color: #e74c3c; font-size: 1rem;">
+					Otomatis tersimpan dalam <strong><span id="countdown">10</span></strong> detik...
 				</p>
 			</div>
+
+			<!-- Welcome Message -->
+			<!-- <div class="alert-custom alert-success-custom">
+				<i class="fas fa-check-circle"></i>
+				<div>
+					<strong>Selamat Datang, <?= $member->Fullname ?>!</strong><br>
+					Terima kasih telah berkunjung ke perpustakaan kami.
+				</div>
+				<button type="button" class="alert-close" onclick="this.parentElement.style.display='none'">
+					<span>&times;</span>
+				</button>
+			</div> -->
+
+			<!-- Member Profile -->
+			<div class="member-profile">
+				<div class="welcome-header">
+					<h2>Profil Anggota</h2>
+					<div class="member-number">No. Anggota: <?= $member->MemberNo ?></div>
+				</div>
+				<?= view('Member\Views\member_profile', array('member' => $member ?? '', 'jenis_anggota' => $jenis_anggota ?? [])) ?>
+			</div>
+
 		<?php endif; ?>
 	</div>
 </div>
@@ -534,5 +538,37 @@
 	</script>
 <?php endif; ?>
 
+<script>
+    let countdown = 10;
+    let timer;
+
+    // Tampilkan hitung mundur
+    const countdownEl = document.getElementById('countdown');
+    
+    function startTimer() {
+        timer = setInterval(() => {
+            countdown--;
+            countdownEl.textContent = countdown;
+            
+            if (countdown <= 0) {
+                clearInterval(timer);
+                // Kalau belum pilih, set ke value default "kunjungan"
+                const select = document.getElementById('TujuanKunjungan_id');
+                if (!select.value) {
+                    select.value = '<?= $tujuan_kunjungan[0]->ID ?>'; // otomatis pilih yang pertama
+                }
+                document.querySelector('form').submit();
+            }
+        }, 1000);
+    }
+
+    // Kalau user sudah pilih, langsung submit & stop timer
+    document.getElementById('TujuanKunjungan_id').addEventListener('change', function() {
+        clearInterval(timer);
+        document.querySelector('form').submit();
+    });
+
+    startTimer();
+</script>
 
 <?= $this->endsection() ?>
