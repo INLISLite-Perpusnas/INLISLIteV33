@@ -99,7 +99,9 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
         ->select('a.ID, a.ID as action, a.ID as Collection_id')
         ->select('a.NomorBarcode, a.TanggalPengadaan, a.NoInduk, a.Catalog_id, a.IsOPAC, a.ISDRM, a.IsQUARANTINE, a.Status_id')
         ->select('cs.Name as StatusName')
+		->select('Loc.Name as LocationLibraryName')
         ->join('collectionstatus as cs', 'a.Status_id = cs.ID', 'left')
+        ->join('location_library as Loc', 'a.Location_Library_id = Loc.ID', 'left')
         ->where('a.IsQUARANTINE', $IsQUARANTINE);
 
     if (!empty($catalog_id)) {

@@ -174,7 +174,7 @@ if (!function_exists('get_ref_dropdown')) {
 }
 
 if (!function_exists('get_ref_table')) {
-	function get_ref_table($table, $fields = 'id', $where = null, $DBGroup = 'default')
+	function get_ref_table($table, $fields = 'id', $where = null, $DBGroup = 'data')
 	{
 		$db = db_connect($DBGroup);
 		$baseModel = $db->table($table);

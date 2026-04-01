@@ -28,7 +28,7 @@ class Pengembalian extends \Base\Controllers\BaseResourceController
 		$this->collectionLoanItemModel = new \Peminjaman\Models\CollectionLoanItemModel();
 		$this->collectionLoanModel = new \Peminjaman\Models\CollectionLoanModel();
 		$this->collectionModel = new \Peminjaman\Models\CollectionModel();
-		 $this->pelanggaranModel = new \Pelanggaran\Models\PelanggaranModel();
+		$this->pelanggaranModel = new \Pelanggaran\Models\PelanggaranModel();
 		$this->validation = \Config\Services::validation();
 		$this->session = session();
 		$this->modulePath = ROOTPATH . 'public/uploads/pengembalian/';
@@ -46,108 +46,117 @@ class Pengembalian extends \Base\Controllers\BaseResourceController
 	public function datatable($slug = null)
 	{
 		$db = db_connect();
+
+		// 1. Menggabungkan Select agar lebih ringkas
 		$builder = $db->table('collectionloans cl')
-			->select('cli.ID, cli.ID as action')
-			->select('cli.CollectionLoan_id, cli.LoanDate, cli.DueDate, cli.ActualReturn, cli.LateDays')
-			->select('cl.UpdateDate')
-			->select('col.NomorBarcode')
-			->select('a.Title, a.PublishLocation, a.Publisher, a.PublishYear')
-			->select('m.Fullname, m.MemberNo')
-			->select('loc.Name as LocationLibrary')
+			->select('
+            cli.ID, cli.ID as action, cli.CollectionLoan_id, cli.LoanDate, 
+            cli.DueDate, cli.ActualReturn, cli.LateDays, cl.UpdateDate, 
+            col.NomorBarcode, a.Title, a.PublishLocation, a.Publisher, 
+            a.PublishYear, m.Fullname, m.MemberNo, loc.Name as LocationLibrary
+        ')
 			->join('collectionloanitems cli', 'cli.CollectionLoan_id = cl.ID')
 			->join('collections col', 'col.ID = cli.Collection_id')
 			->join('catalogs a', 'a.ID = col.Catalog_id')
 			->join('members m', 'm.ID = cli.member_id')
 			->join('location_library loc', 'loc.ID = col.Location_Library_id')
-			->where('cli.LoanStatus', 'Return');
+			->where('cli.LoanStatus', 'Return')
+			->orderBy('cli.ActualReturn', 'DESC');
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
 			->edit('CollectionLoan_id', function ($row) {
-				$html =
-					'<div class="widget-content p-0">
-					<div class="widget-content-wrapper">
-						<div class="widget-content-left mr-3">
-							<i class="far fa-id-card fa-3x text-secondary"></i>
-						</div>
-						<div class="widget-content-left text-secondary">
-							<dl class="dl-horizontal mb-0">
-								<dt class="font-weight-bold mb-0"><i class="fa fa-user text-secondary"></i> No. Anggota</dt>
-								<dd class="font-weight-bold mb-0 mr-1">&nbsp;: <a href="#">' . $row->MemberNo . '  <span class="text-secondary">(' . $row->Fullname . ')</span></a></dd>
-								<dt class="font-weight-bold mb-0"><i class="fa fa-hashtag text-secondary"></i> No. Transaksi</dt>
-								<dd class="font-weight-bold mb-0 mr-1">&nbsp;: <a href="#">' . $row->CollectionLoan_id . '</a></dd>
-							</dl>
-						</div>
-					</div>
-				</div>';
-				return $html;
+				// 2. Menggunakan esc() untuk keamanan XSS
+				return '
+                <div class="widget-content p-0">
+                    <div class="widget-content-wrapper">
+                        <div class="widget-content-left mr-3">
+                            <i class="far fa-id-card fa-3x text-secondary"></i>
+                        </div>
+                        <div class="widget-content-left text-secondary">
+                            <dl class="dl-horizontal mb-0">
+                                <dt class="font-weight-bold mb-0"><i class="fa fa-user text-secondary"></i> No. Anggota</dt>
+                                <dd class="font-weight-bold mb-0 mr-1">&nbsp;: <a href="#">' . esc($row->MemberNo) . ' <span class="text-secondary">(' . esc($row->Fullname) . ')</span></a></dd>
+                                <dt class="font-weight-bold mb-0"><i class="fa fa-hashtag text-secondary"></i> No. Transaksi</dt>
+                                <dd class="font-weight-bold mb-0 mr-1">&nbsp;: <a href="#">' . esc($row->CollectionLoan_id) . '</a></dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>';
 			})
 			->edit('NomorBarcode', function ($row) {
-				$html =
-					'<div class="widget-content p-0">
-					<div class="widget-content-wrapper">
-						<div class="widget-content-left mr-3">
-							<i class="far fa-qrcode fa-2x text-info"></i>
-						</div>
-						<div class="widget-content-left">
-							<div class="widget-heading">' . $row->NomorBarcode . '</div>
-						</div>
-					</div>
-				</div>';
-				return $html;
+				return '
+                <div class="widget-content p-0">
+                    <div class="widget-content-wrapper">
+                        <div class="widget-content-left mr-3">
+                            <i class="far fa-qrcode fa-2x text-info"></i>
+                        </div>
+                        <div class="widget-content-left">
+                            <div class="widget-heading">' . esc($row->NomorBarcode) . '</div>
+                        </div>
+                    </div>
+                </div>';
 			})
 			->edit('Title', function ($row) {
-				$html =
-					'<div class="widget-content p-0">
-					<div class="widget-content-wrapper">
-						<div class="widget-content-left mr-3">
-							<i class="far fa-book fa-2x text-info"></i>
-						</div>
-						<div class="widget-content-left">
-							<div class="widget-heading text-primary">' . $row->Publisher . '</div>
-							<div class="widget-heading">' . $row->Title . '</div>
-						</div>
-					</div>
-				</div>';
-				return $html;
+				return '
+                <div class="widget-content p-0">
+                    <div class="widget-content-wrapper">
+                        <div class="widget-content-left mr-3">
+                            <i class="far fa-book fa-2x text-info"></i>
+                        </div>
+                        <div class="widget-content-left">
+                            <div class="widget-heading text-primary">' . esc($row->Publisher) . '</div>
+                            <div class="widget-heading">' . esc($row->Title) . '</div>
+                        </div>
+                    </div>
+                </div>';
 			})
 			->edit('LoanDate', function ($row) {
-				$html  =  '<badge class="badge badge-primary badge-pill">' . $row->LoanDate . '</badge>';
-				$html .=  '<badge class="badge badge-warning badge-pill">' . $row->DueDate . '</badge>';
-				return $html;
+				// 3. Mengganti <badge> menjadi <span class="badge">
+				return '
+                <span class="badge badge-primary badge-pill mb-1">' . esc($row->LoanDate) . '</span><br>
+                <span class="badge badge-warning badge-pill">' . esc($row->DueDate) . '</span>';
 			})
 			->edit('ActualReturn', function ($row) {
-				$html  =  '<badge class="badge badge-info badge-pill">' . $row->ActualReturn . '</badge>';
-				return $html;
+				return '<span class="badge badge-info badge-pill">' . esc($row->ActualReturn) . '</span>';
 			})
 			->edit('LateDays', function ($row) {
-				$periods = \Carbon\CarbonPeriod::create($row->DueDate, $row->ActualReturn);
-				$dates = [];
+				// 4. Perbaikan Logika Hari Telat
+				if (empty($row->DueDate) || empty($row->ActualReturn)) {
+					return '<span class="badge badge-secondary badge-pill">-</span>';
+				}
+
+				$due = \Carbon\Carbon::parse($row->DueDate)->startOfDay();
+				$return = \Carbon\Carbon::parse($row->ActualReturn)->startOfDay();
+
+				// Pengecekan: Jika dikembalikan tepat waktu atau lebih awal
+				if ($return->lte($due)) {
+					return '<span class="badge badge-success badge-pill">Tepat Waktu</span>';
+				}
+
+				// Jika telat, hitung hari kerja saja
+				$periods = \Carbon\CarbonPeriod::create($due->addDay(), $return);
+				$lateDays = 0;
+
 				foreach ($periods as $period) {
-					if (in_array($period->format('N'), ['6', '7'])) continue;
-					$dates[] = $period->format('Y-m-d');
-				}
-
-				$diff = '+' . count($dates);
-				if (count($dates) <= 3) {
-					if (count($dates) == 0) {
-						$diff_class = 'info';
-						$diff = count($dates);
-					} else {
-						$diff_class = 'warning';
+					// 6 dan 7 adalah Sabtu dan Minggu
+					if (!in_array($period->format('N'), ['6', '7'])) {
+						$lateDays++;
 					}
-				} else {
-					$diff_class = 'danger';
 				}
 
-				$html  =  '<badge class="badge badge-' . $diff_class . ' badge-pill">' . $diff . ' hari</badge>';
-				return $html;
+				if ($lateDays == 0) {
+					return '<span class="badge badge-info badge-pill">0 hari</span>';
+				}
+
+				$diff_class = $lateDays <= 3 ? 'warning' : 'danger';
+				return '<span class="badge badge-' . $diff_class . ' badge-pill">+' . $lateDays . ' hari</span>';
 			})
 			->edit('UpdateDate', function ($row) {
-				$html  =  '<badge class="badge badge-info badge-pill">' . $row->UpdateDate . '</badge>';
-				return $html;
+				return '<span class="badge badge-info badge-pill">' . esc($row->UpdateDate) . '</span>';
 			})
 			->toJson();
+
 		return $dataTable;
 	}
 
@@ -183,7 +192,7 @@ class Pengembalian extends \Base\Controllers\BaseResourceController
 			}
 
 			// $member_id = $collectionloanitems->member_id;
-			$ID=$collectionloanitems->ID;
+			$ID = $collectionloanitems->ID;
 
 
 
@@ -223,9 +232,9 @@ class Pengembalian extends \Base\Controllers\BaseResourceController
 			->join('collectionloanitems cli', 'cli.Collection_id = col.ID')
 			->join('members m', 'm.ID = cli.member_id')
 			->where('cli.LoanStatus', 'Loan');
-			if(!empty(branch_id())) {
-				$builder->where('col.Branch_id', branch_id());
-			}
+		if (!empty(branch_id())) {
+			$builder->where('col.Branch_id', branch_id());
+		}
 
 		$cart_cli_arr = array();
 		$carts = get_cart_return();
@@ -331,80 +340,79 @@ class Pengembalian extends \Base\Controllers\BaseResourceController
 	}
 
 	public function save_violation()
-{
-    if (!$this->request->isAJAX()) {
-        return redirect()->back();
-    }
-    
-    try {
-        $collectionLoanItemId = $this->request->getPost('collection_loan_item_id');
-        $lateDays = $this->request->getPost('late_days');
-        
-        // Validasi input
-        $validation = \Config\Services::validation();
-        $validation->setRules([
-            'jenis_pelanggaran_id' => 'required',
-            'jenis_denda_id' => 'required',
-            'jumlah_denda' => 'required|numeric',
-        ]);
-        
-        if (!$validation->withRequest($this->request)->run()) {
-            return $this->response->setJSON([
-                'success' => false,
-                'message' => 'Validasi gagal. Periksa kembali form Anda.'
-            ]);
-        }
-        
-        // Get loan item data
-        $loanItem =	$this->collectionLoanItemModel->find($collectionLoanItemId);
-        
-        if (!$loanItem) {
-            return $this->response->setJSON([
-                'success' => false,
-                'message' => 'Data peminjaman tidak ditemukan'
-            ]);
-        }
-        
-        $jenisPelanggaranId = $this->request->getPost('jenis_pelanggaran_id');
-        $jenisDendaId = $this->request->getPost('jenis_denda_id');
-        
-        // Hitung denda berdasarkan hari keterlambatan
-        $dendaPerHari = $this->request->getPost('jumlah_denda');
-        $jumlahDenda = $dendaPerHari * $lateDays;
-        
-        // Hitung jumlah suspend
-        $jumlahSuspend = $this->request->getPost('jumlah_suspend') ?: 0;
-        
-        $pelanggaranData = [
-            'CollectionLoan_id' => $loanItem->CollectionLoan_id,
-            'CollectionLoanItem_id' => $collectionLoanItemId,
-            'JenisPelanggaran_id' => $jenisPelanggaranId,
-            'JenisDenda_id' => $jenisDendaId,
-            'JumlahDenda' => $jumlahDenda,
-            'JumlahSuspend' => $jumlahSuspend,
-            'Member_id' => $this->request->getPost('member_id'),
-            'Collection_id' => $this->request->getPost('collection_id'),
-            'Paid' => 1, // Belum dibayar
-            'active' => 1,
-            'CreateBy' => session()->get('user_id'),
-            'CreateDate' => date('Y-m-d H:i:s'),
-            'CreateTerminal' => $this->request->getIPAddress()
-        ];
-     
-        $this->pelanggaranModel->insert($pelanggaranData);
-        
-        return $this->response->setJSON([
-            'success' => true,
-            'message' => 'Pelanggaran berhasil disimpan. Total denda: Rp ' . number_format($jumlahDenda, 0, ',', '.')
-        ]);
-        
-    } catch (\Exception $e) {
-        return $this->response->setJSON([
-            'success' => false,
-            'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-        ]);
-    }
-}
+	{
+		if (!$this->request->isAJAX()) {
+			return redirect()->back();
+		}
+
+		try {
+			$collectionLoanItemId = $this->request->getPost('collection_loan_item_id');
+			$lateDays = $this->request->getPost('late_days');
+
+			// Validasi input
+			$validation = \Config\Services::validation();
+			$validation->setRules([
+				'jenis_pelanggaran_id' => 'required',
+				'jenis_denda_id' => 'required',
+				'jumlah_denda' => 'required|numeric',
+			]);
+
+			if (!$validation->withRequest($this->request)->run()) {
+				return $this->response->setJSON([
+					'success' => false,
+					'message' => 'Validasi gagal. Periksa kembali form Anda.'
+				]);
+			}
+
+			// Get loan item data
+			$loanItem =	$this->collectionLoanItemModel->find($collectionLoanItemId);
+
+			if (!$loanItem) {
+				return $this->response->setJSON([
+					'success' => false,
+					'message' => 'Data peminjaman tidak ditemukan'
+				]);
+			}
+
+			$jenisPelanggaranId = $this->request->getPost('jenis_pelanggaran_id');
+			$jenisDendaId = $this->request->getPost('jenis_denda_id');
+
+			// Hitung denda berdasarkan hari keterlambatan
+			$dendaPerHari = $this->request->getPost('jumlah_denda');
+			$jumlahDenda = $dendaPerHari * $lateDays;
+
+			// Hitung jumlah suspend
+			$jumlahSuspend = $this->request->getPost('jumlah_suspend') ?: 0;
+
+			$pelanggaranData = [
+				'CollectionLoan_id' => $loanItem->CollectionLoan_id,
+				'CollectionLoanItem_id' => $collectionLoanItemId,
+				'JenisPelanggaran_id' => $jenisPelanggaranId,
+				'JenisDenda_id' => $jenisDendaId,
+				'JumlahDenda' => $jumlahDenda,
+				'JumlahSuspend' => $jumlahSuspend,
+				'Member_id' => $this->request->getPost('member_id'),
+				'Collection_id' => $this->request->getPost('collection_id'),
+				'Paid' => 1, // Belum dibayar
+				'active' => 1,
+				'CreateBy' => session()->get('user_id'),
+				'CreateDate' => date('Y-m-d H:i:s'),
+				'CreateTerminal' => $this->request->getIPAddress()
+			];
+
+			$this->pelanggaranModel->insert($pelanggaranData);
+
+			return $this->response->setJSON([
+				'success' => true,
+				'message' => 'Pelanggaran berhasil disimpan. Total denda: Rp ' . number_format($jumlahDenda, 0, ',', '.')
+			]);
+		} catch (\Exception $e) {
+			return $this->response->setJSON([
+				'success' => false,
+				'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+			]);
+		}
+	}
 
 	public function index()
 	{

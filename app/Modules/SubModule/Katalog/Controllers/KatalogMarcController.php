@@ -11,8 +11,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 /**
  * KatalogMarcController
- * 
- * Menangani semua operasi terkait MARC:
+ * * Menangani semua operasi terkait MARC:
  * - Form tambah/edit katalog berbasis MARC
  * - Ekspor data MARC (txt / xlsx)
  * - Import katalog dari file .mrc
@@ -32,48 +31,60 @@ class KatalogMarcController extends \Base\Controllers\BaseController
 
     public function create_marc()
     {
-        if (!is_allowed('katalog/create')) {
-            set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
-            set_message('toastr_type', 'error');
-            return redirect()->to('katalog');
-        }
-
         $data['title'] = 'Tambah Katalog Form MARC';
         $this->validation->setRule('Worksheet_id', 'Jenis Bahan', 'required');
 
-        if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
-            $catalogsModel = new DataModel('catalogs', null, 'ID');
-            $save_data     = [
-                'Worksheet_id'  => $this->request->getPost('Worksheet_id'),
-                'ControlNumber' => get_control_number(),
-                'BIBID'         => random_string('numeric', 13),
-                'Branch_id'     => user()->branch_id,
-            ];
+        if ($this->request->getPost()) {
+            if ($this->validation->withRequest($this->request)->run()) {
+                $catalogsModel = new DataModel('catalogs', null, 'ID');
+                $save_data     = [
+                    'Worksheet_id'  => $this->request->getPost('Worksheet_id'),
+                    'ControlNumber' => get_control_number(),
+                    'BIBID'         => random_string('numeric', 13),
+                    'Branch_id'     => user()->branch_id,
+                ];
 
-            if (!empty($this->request->getPost('IsRDA'))) {
-                $save_data['IsRDA'] = $this->request->getPost('IsRDA') ? 1 : 0;
+                if (!empty($this->request->getPost('IsRDA'))) {
+                    $save_data['IsRDA'] = $this->request->getPost('IsRDA') ? 1 : 0;
+                }
+
+                $CatalogId  = $catalogsModel->insert($save_data);
+                $catalog_ruas_data = $this->_buildRuasData($CatalogId);
+
+                if (!empty($catalog_ruas_data)) {
+                    // Sisipkan Tag 001 di paling awal
+                    array_unshift($catalog_ruas_data, [
+                        'CatalogId'  => $CatalogId,
+                        'Tag'        => '001',
+                        'Value'      => $save_data['ControlNumber'],
+                        'Indicator1' => '',
+                        'Indicator2' => '',
+                    ]);
+
+                    $katalogRuasModel = new DataModel('catalog_ruas', null, 'ID');
+                    $katalogRuasModel->insertBatch($catalog_ruas_data);
+
+                    $catalogsModel->update($CatalogId, convert_catalog_ruas($CatalogId));
+                }
+
+                $this->session->setFlashdata('swal_icon', 'success');
+                $this->session->setFlashdata('swal_title', 'Berhasil');
+                $this->session->setFlashdata('swal_text', 'Katalog Form MARC berhasil ditambah');
+                
+                return redirect()->to('katalog');
+
+            } else {
+                // Tampilkan SweetAlert jika validasi gagal
+                $error_msg = '<ul>';
+                foreach ($this->validation->getErrors() as $error) {
+                    $error_msg .= '<li>' . esc($error) . '</li>';
+                }
+                $error_msg .= '</ul>';
+
+                $this->session->setFlashdata('swal_icon', 'error');
+                $this->session->setFlashdata('swal_title', 'Validasi Gagal');
+                $this->session->setFlashdata('swal_html', $error_msg);
             }
-
-            $CatalogId  = $catalogsModel->insert($save_data);
-            $catalog_ruas_data = $this->_buildRuasData($CatalogId);
-
-            if (!empty($catalog_ruas_data)) {
-                // Sisipkan Tag 001 di paling awal
-                array_unshift($catalog_ruas_data, [
-                    'CatalogId'  => $CatalogId,
-                    'Tag'        => '001',
-                    'Value'      => $save_data['ControlNumber'],
-                    'Indicator1' => '',
-                    'Indicator2' => '',
-                ]);
-
-                $katalogRuasModel = new DataModel('catalog_ruas', null, 'ID');
-                $katalogRuasModel->insertBatch($catalog_ruas_data);
-
-                $catalogsModel->update($CatalogId, convert_catalog_ruas($CatalogId));
-            }
-
-            return redirect()->to('katalog');
         }
 
         $data = array_merge($data, $this->_getMarcFormData());
@@ -86,18 +97,13 @@ class KatalogMarcController extends \Base\Controllers\BaseController
 
     public function edit_marc($id = null)
     {
-        if (!$id) {
-            set_message('toastr_msg', 'ID Katalog tidak ditemukan');
-            set_message('toastr_type', 'error');
-            return redirect()->to('katalog');
-        }
-
         $catalogsModel = new DataModel('catalogs', null, 'ID');
         $catalog       = $catalogsModel->find($id);
 
         if (!$catalog) {
-            set_message('toastr_msg', 'Data katalog tidak ditemukan');
-            set_message('toastr_type', 'error');
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Tidak Ditemukan');
+            $this->session->setFlashdata('swal_text', 'Data katalog tidak ditemukan');
             return redirect()->to('katalog');
         }
 
@@ -106,44 +112,59 @@ class KatalogMarcController extends \Base\Controllers\BaseController
 
         $this->validation->setRule('Worksheet_id', 'Jenis Bahan', 'required');
 
-        if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
-            $catalogsModel->update($id, [
-                'Worksheet_id' => $this->request->getPost('Worksheet_id'),
-            ]);
+        if ($this->request->getPost()) {
+            if ($this->validation->withRequest($this->request)->run()) {
+                $catalogsModel->update($id, [
+                    'Worksheet_id' => $this->request->getPost('Worksheet_id'),
+                ]);
 
-            $katalogRuasModel = new DataModel('catalog_ruas', null, 'ID');
-            $katalogRuasModel->where('CatalogId', $id)->delete();
+                $katalogRuasModel = new DataModel('catalog_ruas', null, 'ID');
+                $katalogRuasModel->where('CatalogId', $id)->delete();
 
-            $catalog_ruas_data = $this->_buildRuasData($id);
+                $catalog_ruas_data = $this->_buildRuasData($id);
 
-            if (!empty($catalog_ruas_data)) {
-                // Pastikan Tag 001 ada
-                $has_001 = false;
-                foreach ($catalog_ruas_data as $item) {
-                    if ($item['Tag'] === '001') { $has_001 = true; break; }
+                if (!empty($catalog_ruas_data)) {
+                    // Pastikan Tag 001 ada
+                    $has_001 = false;
+                    foreach ($catalog_ruas_data as $item) {
+                        if ($item['Tag'] === '001') { $has_001 = true; break; }
+                    }
+                    if (!$has_001) {
+                        array_unshift($catalog_ruas_data, [
+                            'CatalogId'  => $id,
+                            'Tag'        => '001',
+                            'Value'      => $catalog['ControlNumber'],
+                            'Indicator1' => '',
+                            'Indicator2' => '',
+                        ]);
+                    }
+
+                    $katalogRuasModel->insertBatch($catalog_ruas_data);
+                    $catalogsModel->update($id, convert_catalog_ruas($id));
                 }
-                if (!$has_001) {
-                    array_unshift($catalog_ruas_data, [
-                        'CatalogId'  => $id,
-                        'Tag'        => '001',
-                        'Value'      => $catalog->ControlNumber,
-                        'Indicator1' => '',
-                        'Indicator2' => '',
-                    ]);
-                }
 
-                $katalogRuasModel->insertBatch($catalog_ruas_data);
-                $catalogsModel->update($id, convert_catalog_ruas($id));
+                $this->session->setFlashdata('swal_icon', 'success');
+                $this->session->setFlashdata('swal_title', 'Berhasil');
+                $this->session->setFlashdata('swal_text', 'Data katalog berhasil diupdate');
+                return redirect()->to('katalog');
+
+            } else {
+                // Tampilkan SweetAlert jika validasi gagal
+                $error_msg = '<ul>';
+                foreach ($this->validation->getErrors() as $error) {
+                    $error_msg .= '<li>' . esc($error) . '</li>';
+                }
+                $error_msg .= '</ul>';
+
+                $this->session->setFlashdata('swal_icon', 'error');
+                $this->session->setFlashdata('swal_title', 'Validasi Gagal');
+                $this->session->setFlashdata('swal_html', $error_msg);
             }
-
-            set_message('toastr_msg', 'Data katalog berhasil diupdate');
-            set_message('toastr_type', 'success');
-            return redirect()->to('katalog');
         }
 
         // GET - tampilkan form dengan data existing
         $session      = service('session');
-        $worksheet_id = $this->request->getvar('worksheet_id') ?? $catalog->Worksheet_id;
+        $worksheet_id = $this->request->getvar('worksheet_id') ?? $catalog['Worksheet_id'];
         $session->remove('worksheet_id');
         $session->remove('worksheet_fields');
         $session->set('worksheet_id', $worksheet_id);
@@ -179,7 +200,10 @@ class KatalogMarcController extends \Base\Controllers\BaseController
         $format = $this->request->getVar('format') ?? 'mrc';
 
         if (!$IDs || empty($format)) {
-            return redirect()->back()->with('error', 'Format dan data katalog harus dipilih.');
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Format dan data katalog harus dipilih.');
+            return redirect()->back();
         }
 
         $collection = [];
@@ -197,7 +221,10 @@ class KatalogMarcController extends \Base\Controllers\BaseController
         }
 
         if (count($collection) === 0) {
-            return redirect()->back()->with('error', 'Tidak ada data MARC yang ditemukan.');
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Tidak ada data MARC yang ditemukan.');
+            return redirect()->back();
         }
 
         switch ($format) {
@@ -208,7 +235,10 @@ class KatalogMarcController extends \Base\Controllers\BaseController
                 return $this->_eksporXlsx($collection);
 
             default:
-                return redirect()->back()->with('error', 'Format tidak dikenali.');
+                $this->session->setFlashdata('swal_icon', 'error');
+                $this->session->setFlashdata('swal_title', 'Terjadi Kesalahan');
+                $this->session->setFlashdata('swal_text', 'Format tidak dikenali.');
+                return redirect()->back();
         }
     }
 

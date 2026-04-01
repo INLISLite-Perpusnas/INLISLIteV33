@@ -42,7 +42,7 @@ class View extends BaseView
      * @var array
      */
     public $plugins = [];
-
+    public string $appOverridesFolder = ''; // Tambahkan baris ini!
     /**
      * View Decorators are class methods that will be run in sequence to
      * have a chance to alter the generated output just prior to caching

@@ -24,7 +24,7 @@ $slug = $request->getGet('slug') ?? '';
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('bukutamu') ?>"><i class="fa fa-home"></i> Home</a></li>
                         <li class="breadcrumb-item" aria-current="page">Buku Tamu</li>
-                        <li class="active breadcrumb-item" aria-current="page">Anggota</li>
+                        <li class="breadcrumb-item" aria-current="page">Anggota</li>
                     </ol>
                 </nav>
             </div>
@@ -87,9 +87,10 @@ $slug = $request->getGet('slug') ?? '';
             "ajax": {
                 "url": '<?php echo site_url('api/bukutamu/datatable') ?>',
             },
-            "dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
+            "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
                 "<'row'<'col-md-12'tr>>" +
-                "<'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12 text-right'i>>",
+                "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
+
             "pagingType": "full_numbers",
             "oLanguage": {
                 "sSearch": "<i class='fa fa-search'></i> _INPUT_",

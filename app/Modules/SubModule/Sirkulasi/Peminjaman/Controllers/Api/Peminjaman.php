@@ -68,7 +68,9 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
         ->join('catalogs a', 'a.ID = col.Catalog_id')
         ->join('members m', 'm.ID = cli.member_id')
         ->join('location_library loc', 'loc.ID = col.Location_Library_id')
-        ->where('cli.LoanStatus', 'Loan');
+        ->where('cli.LoanStatus', 'Loan')
+		->orderBy('cli.LoanDate', 'DESC'); // Urutkan berdasarkan tanggal pinjam terbaru				;
+		
 
     // --- BARU: AMBIL PENGATURAN HARI LIBUR ---
     // Pastikan $this->settingModel sudah tersedia di controller Anda

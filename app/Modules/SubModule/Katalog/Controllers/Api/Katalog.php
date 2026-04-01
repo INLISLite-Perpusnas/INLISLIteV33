@@ -342,59 +342,117 @@ class Katalog extends \Base\Controllers\BaseResourceController
 	}
 
 	public function upload_cover()
-	{
-		try {
-			$upload_id = $this->request->getPost('upload_id');
-			$upload_field = $this->request->getPost('upload_field');
+    {
+        try {
+            $upload_id = $this->request->getPost('upload_id');
+            $upload_field = $this->request->getPost('upload_field');
 
-			$files = (array) $this->request->getPost('upload_file');
-			if (count($files)) {
-				$data = [];
-				foreach ($files as $uuid => $name) {
-					if (file_exists($this->uploadPath . $name)) {
-						$file = new File($this->uploadPath . $name);
-						$newFileName = $file->getRandomName();
+            // SECURITY 1: Whitelist kolom (Cegah modifikasi kolom lain via Inspect Element)
+            $allowed_fields = ['CoverURL']; // Sesuaikan dengan nama kolom cover di tabel Anda
+            if (!in_array($upload_field, $allowed_fields)) {
+                return $this->respond([
+                    'status'   => 403,
+                    'error'    => true,
+                    'messages' => ['error' => 'Field tidak diizinkan untuk diubah.']
+                ], 403);
+            }
 
-						$file->move($this->modulePath, $newFileName);
-						$data = [
-							$upload_field => $newFileName,
-							'UpdateDate' => date('Y-m-d H:i:s'),
-						];
-					}
-				}
+            $files = (array) $this->request->getPost('upload_file');
+            
+            if (count($files)) {
+                $data = [];
+                
+                foreach ($files as $uuid => $name) {
+                    // SECURITY 2: Cegah Directory Traversal (misal: ../../../file.php)
+                    $cleanName = basename($name); 
+                    $filePath = $this->uploadPath . $cleanName;
 
-				$updateData = $this->katalogModel->update($upload_id, $data);
-				if ($updateData) {
-					set_message('toastr_msg', 'File Cover berhasil diupload');
-					set_message('toastr_type', 'success');
+                    if (!empty($cleanName) && file_exists($filePath)) {
+                        $file = new \CodeIgniter\Files\File($filePath);
 
-					return $this->respondCreated([
-						'status'   => 201,
-						'error'    => false,
-						'messages' => ['success' => 'File Cover berhasil diupload']
-					]);
-				} else {
-					set_message('toastr_msg', 'File Cover gagal diupload');
-					set_message('toastr_type', 'warning');
+                        // SECURITY 3: Validasi MIME Type (Pastikan yang masuk murni gambar)
+                        $mime = $file->getMimeType();
+                        $allowed_mimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
-					return $this->respond([
-						'status'   => 400,
-						'error'    => true,
-						'messages' => ['error' => 'File Cover gagal diupload']
-					]);
-				}
-			}
-		} catch (\Exception $e) {
-			set_message('toastr_msg', 'Terjadi kesalahan: ' . $e->getMessage());
-			set_message('toastr_type', 'error');
+                        if (!in_array($mime, $allowed_mimes)) {
+                            // Jika bukan gambar, langsung hapus file mencurigakan tersebut dari server
+                            unlink($filePath);
+                            
+                            return $this->respond([
+                                'status'   => 400,
+                                'error'    => true,
+                                'messages' => ['error' => 'File harus berupa gambar (JPG, PNG, GIF, WEBP).']
+                            ], 400);
+                        }
 
-			return $this->respond([
-				'status'   => 500,
-				'error'    => true,
-				'messages' => ['error' => 'Terjadi kesalahan: ' . $e->getMessage()]
-			]);
-		}
-	}
+                        $newFileName = $file->getRandomName();
+
+                        // Pindahkan ke folder module tujuan
+                        $file->move($this->modulePath, $newFileName);
+
+                        // SECURITY 4: Cleanup (Hapus file cover lama agar server tidak penuh)
+                        $old_catalog = $this->katalogModel->find($upload_id);
+                        // Menggunakan is_object atau is_array untuk fleksibilitas tipe balikan find()
+                        $old_cover = is_object($old_catalog) ? ($old_catalog->{$upload_field} ?? '') : ($old_catalog[$upload_field] ?? '');
+                        
+                        if (!empty($old_cover) && file_exists($this->modulePath . $old_cover)) {
+                            unlink($this->modulePath . $old_cover);
+                        }
+
+                        // Siapkan data untuk update DB
+                        $data = [
+                            $upload_field => $newFileName,
+                            'UpdateDate'  => date('Y-m-d H:i:s'),
+                        ];
+                    }
+                }
+
+                // Cek jika perulangan selesai tapi tidak ada data valid yang bisa diupdate
+                if (empty($data)) {
+                    return $this->respond([
+                        'status'   => 400,
+                        'error'    => true,
+                        'messages' => ['error' => 'File tidak valid atau tidak ditemukan di server.']
+                    ], 400);
+                }
+
+                // Eksekusi Update
+                $updateData = $this->katalogModel->update($upload_id, $data);
+                
+                if ($updateData) {
+                    $this->session->setFlashdata('swal_icon', 'success');
+                    $this->session->setFlashdata('swal_title', 'Berhasil');
+                    $this->session->setFlashdata('swal_text', 'File Cover berhasil diupload');
+
+                    return $this->respondCreated([
+                        'status'   => 201,
+                        'error'    => false,
+                        'messages' => ['success' => 'File Cover berhasil diupload']
+                    ]);
+                } else {
+                    $this->session->setFlashdata('swal_icon', 'warning');
+                    $this->session->setFlashdata('swal_title', 'Peringatan');
+                    $this->session->setFlashdata('swal_text', 'File Cover gagal diupload');
+
+                    return $this->respond([
+                        'status'   => 400,
+                        'error'    => true,
+                        'messages' => ['error' => 'File Cover gagal diupload (Database Error)']
+                    ], 400);
+                }
+            }
+        } catch (\Exception $e) {
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Terjadi Kesalahan');
+            $this->session->setFlashdata('swal_text', 'Error: ' . $e->getMessage());
+
+            return $this->respond([
+                'status'   => 500,
+                'error'    => true,
+                'messages' => ['error' => 'Terjadi kesalahan: ' . $e->getMessage()]
+            ], 500);
+        }
+    }
 	public function upload_file()
 	{
 		helper('auth');

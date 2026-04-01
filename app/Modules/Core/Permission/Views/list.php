@@ -1,4 +1,5 @@
 <?= $this->extend('App\Views\layout\main'); ?>
+
 <?= $this->section('style'); ?>
 <?= $this->endSection('style'); ?>
 
@@ -18,18 +19,19 @@
                 <nav class="" aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
-                        <li class="active breadcrumb-item" aria-current="page">Permission</li>
+                        <li class="breadcrumb-item" aria-current="page">Permission</li>
                     </ol>
                 </nav>
             </div>
         </div>
     </div>
+    
     <div class="main-card mb-3 card">
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Permission
             <div class="btn-actions-pane-right actions-icon-btn">
-                <?php if (is_allowed('permission/create') || is_member('admin')) : ?>
-                    <a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah Permission"><i class="fa fa-plus"></i> Tambah Permission</a>
-                <?php endif; ?>
+              <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah Permission">
+    <i class="fa fa-plus"></i> Tambah Permission
+</a>
             </div>
         </div>
         <div class="card-body">
@@ -69,16 +71,28 @@
         </div>
     </div>
 </div>
+
+
 <?= $this->endSection('page'); ?>
 
 
 <?= $this->section('script'); ?>
 <?= $this->include('Permission\Views\add_modal'); ?>
 <?= $this->include('Permission\Views\update_modal'); ?>
-<script>
-    setDataTable('#tbl_permissions', disableOrderCols = [0, 4], defaultOrderCols = [1, 'asc'], autoNumber = true);
 
-    $('#tbl_permissions').on('click', '.remove-data', function() {
+<script>
+$(document).ready(function() {
+    // Inisialisasi DataTables
+    $('#tbl_permissions').DataTable({
+        "dom": "<'row mb-2'<'col-md-6 text-left'l><'col-md-6 text-right'f>>" +
+               "<'row'<'col-md-12'tr>>" +
+               "<'row mt-2'<'col-md-5 text-left'i><'col-md-7 d-flex justify-content-end'p>>",
+        "pagingType": "full_numbers"
+    });
+
+    // Handle Hapus Permission
+    $('#tbl_permissions').on('click', '.remove-data', function(e) {
+        e.preventDefault();
         var url = $(this).attr('data-href');
         Swal.fire({
             title: '<?= lang('App.swal.are_you_sure') ?>',
@@ -94,7 +108,68 @@
                 window.location.href = url;
             }
         });
-        return false;
     });
+
+    // Handle Submit Tambah Permission
+    $('#frm_create').submit(function(event) {
+        event.preventDefault();
+        var data_post = $(this).serializeArray();
+
+        $('.loading').show();
+
+        $.ajax({
+            url: '<?= base_url('api/permission/create') ?>',
+            type: 'POST',
+            dataType: 'json',
+            data: data_post,
+        })
+        .done(function(res) {
+            console.log(res);
+            if (res.status === 200) {
+                Swal.fire({
+                    title: 'Success',
+                    text: 'Permission berhasil disimpan',
+                    type: 'success',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+
+                setTimeout(function() {
+                    window.location.href = '<?= base_url('permission') ?>';
+                }, 2000);
+            } else {
+                $('#frm_create_message').html(res.messages.error);
+            }
+        })
+        .fail(function(res) {
+            console.log(res);
+            if(res.responseJSON && res.responseJSON.messages) {
+                $('#frm_create_message').html(res.responseJSON.messages.error);
+            } else {
+                $('#frm_create_message').html('<div class="alert alert-danger">Terjadi kesalahan pada server.</div>');
+            }
+        })
+        .always(function() {
+            $('.loading').hide();
+            $('html, body').animate({
+                scrollTop: $(document).height()
+            }, 2000);
+        });
+    });
+
+    // Handle Reset Modal saat ditutup
+    $('#modal_create').on('hidden.bs.modal', function() {
+        $(this).find('form').trigger('reset');
+        $('#frm_create_message').html('');
+    });
+
+    // Handle Input Nama Method (Tanpa Spasi & Huruf Kecil)
+    $('#name').on('keyup', function(e) {
+        $(this).val($(this).val().toLowerCase().replace(/\s/g, ''));
+        if (e.which == 32) {
+            return false;
+        }
+    });
+});
 </script>
 <?= $this->endSection('script'); ?>

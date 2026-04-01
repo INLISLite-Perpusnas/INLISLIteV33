@@ -57,148 +57,173 @@ class Eksemplar extends \Base\Controllers\BaseController
 
     public function create()
     {
-        if (!is_allowed('eksemplar/create')) {
-            set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
-            set_message('toastr_type', 'error');
-            return redirect()->to('eksemplar');
-        }
-
         $this->data['title'] = 'Tambah Eksemplar';
         $slug = $this->request->getGet('slug');
 
         $NomorInduk = $this->db->table('settingparameters')->where('Name', 'NomorInduk')->get()->getRow()->Value ?: "Otomatis";
-        //$identityNo = $this->request->getPost('IdentityNo');
+        
         if ($NomorInduk == "Manual") {
-            // UBAH BAGIAN INI - Generate MemberNo berdasarkan setting
             $this->data['NomorInduk'] = "True";
-            //dd($this->data['NomorInduk']); //$MemberNo = generateMemberNumber($identityNo);
-
         } else {
             $this->data['NomorInduk'] = "False";
-            //$MemberNo = $this->request->getPost('MemberNo');
         }
 
-        $this->validation->setRule('Catalog_id', 'Judul Katalog', 'required');
-        $this->validation->setRule('Branch_id', 'Branch ID', 'required');
-        $this->validation->setRule('Location_Library_id', 'Lokasi Perpustakaan', 'required');
-        $this->validation->setRule('Location_id', 'Lokasi Ruang', 'required');
-        $this->validation->setRule('Source_id', 'Sumber Pengadaan', 'required');
-        $this->validation->setRule('Partner_id', 'Nama Sumber', 'required');
-        $this->validation->setRule('Media_id', 'Bentuk Fisik', 'required');
-        $this->validation->setRule('Category_id', 'Kategori Koleksi', 'required');
-        $this->validation->setRule('TanggalPengadaan', 'Tanggal Pengadaan', 'required');
+        // --- Aturan Validasi (Disederhanakan menggunakan Array) ---
+        $this->validation->setRules([
+            'Catalog_id'          => ['label' => 'Judul Katalog', 'rules' => 'required'],
+            'Location_Library_id' => ['label' => 'Lokasi Perpustakaan', 'rules' => 'required'],
+            'Location_id'         => ['label' => 'Lokasi Ruang', 'rules' => 'required'],
+            'Source_id'           => ['label' => 'Sumber Pengadaan', 'rules' => 'required'],
+            'Partner_id'          => ['label' => 'Nama Sumber', 'rules' => 'required'],
+            'Media_id'            => ['label' => 'Bentuk Fisik', 'rules' => 'required'],
+            'Category_id'         => ['label' => 'Kategori Koleksi', 'rules' => 'required'],
+            'TanggalPengadaan'    => ['label' => 'Tanggal Pengadaan', 'rules' => 'required'],
+        ]);
 
-        if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
-            helper('form');
-            $post = $this->request->getPost();
-            $redirect = $post['redirect'];
+        if ($this->request->getPost()) {
+            // Cek Validasi Form
+            if ($this->validation->withRequest($this->request)->run()) {
+                helper('form');
+                $post = $this->request->getPost();
+                $redirect = $post['redirect'] ?? '';
 
-            $collections = [];
-            $total = $post['JumlahEksemplar'];
-            $Catalog_id = $post['Catalog_id'] ?? null;
-            if (empty($Catalog_id)) {
-                set_message('message', 'Judul Katalog tidak boleh kosong');
-                return redirect()->back()->withInput();
-            }
-            $worksheet_id = $this->db->table('catalogs')->where('ID', $Catalog_id)->get()->getRow()->Worksheet_id ?? '';
-
-            for ($i = 1; $i <= $total; $i++) {
-                // Prepare data untuk generate barcode
-                $collectionData = [
-                    'worksheet_id' => $worksheet_id ?? null,
-                    'category_id' => $post['Category_id'] ?? null,
-                    'media_id' => $post['Media_id'] ?? null,
-                    'source_id' => $post['Source_id'] ?? null,
-                    'partner_id' => $post['Partner_id'] ?? null
-                ];
-
-
-
-
-                // Generate NomorBarcode menggunakan logic yang benar
-                $nomorBarcode = $this->generateNomorBarcode($collectionData, $i);
-
-
-
-                $save = [
-                    'Catalog_id' => $post['Catalog_id'],
-                    'Branch_id' => $post['Branch_id'],
-                    'ISDRM' => $post['ISDRM'],
-                    'Location_Library_id' => $post['Location_Library_id'],
-                    'Location_id' => $post['Location_id'],
-                    'NomorBarcode' => $nomorBarcode, // Generated barcode
-                    'NoInduk' => $nomorBarcode,
-                    'RFID' => $nomorBarcode,
-                    'CallNumber' => $post['CallNumber'],
-                    'IsQUARANTINE' => '0',
-                    'CreateBy' => user_id(),
-				            'CreateDate' => date("Y-m-d H:i:s"),
-				            'UpdateBy' => user_id(),
-				            'UpdateDate' => date("Y-m-d H:i:s")
-                ];
-
-                // ... rest of the save logic remains the same ...
-                if (!empty($post['TanggalPengadaan'])) {
-                    $save['TanggalPengadaan'] = $post['TanggalPengadaan'];
-                }
-                if (!empty($post['Rule_id'])) {
-                    $save['Rule_id'] = $post['Rule_id'];
-                }
-                if (!empty($post['Category_id'])) {
-                    $save['Category_id'] = $post['Category_id'];
-                }
-                if (!empty($post['Currency_id'])) {
-                    $save['Currency'] = $post['Currency_id'];
-                }
-                if (!empty($post['Media_id'])) {
-                    $save['Media_id'] = $post['Media_id'];
-                }
-                if (!empty($post['Source_id'])) {
-                    $save['Source_id'] = $post['Source_id'];
-                }
-                if (!empty($post['Status_id'])) {
-                    $save['Status_id'] = $post['Status_id'];
-                }
-                if (!empty($post['Partner_id'])) {
-                    $save['Partner_id'] = $post['Partner_id'];
-                }
-                if (!empty($post['Price'])) {
-                    $save['Price'] = $post['Price'];
-                }
-                if (!empty($post['PriceType'])) {
-                    $save['PriceType'] = $post['PriceType'];
-                }
-
-                array_push($collections, $save);
-            }
-
-            if (!empty($collections)) {
-                try {
-                    $this->eksemplarModel->insertBatch($collections);
-                    set_message('toastr_msg', 'Eksemplar berhasil ditambah');
-                    set_message('toastr_type', 'success');
-                } catch (\Throwable $e) {
-                    set_message('toastr_msg', 'Eksemplar gagal ditambah');
-                    set_message('toastr_type', 'warning');
-                    set_message('message', 'Eksemplar gagal ditambah');
-                }
-
-                $IsRedirect = $this->request->getPost('IsRedirect');
-                if ($IsRedirect == 1) {
-                    if (!empty($redirect)) {
-                        return redirect()->to($redirect);
-                    } else {
-                        return redirect()->to('eksemplar');
-                    }
-                } else {
+                $collections = [];
+                $total = $post['JumlahEksemplar'];
+                $Catalog_id = $post['Catalog_id'] ?? null;
+                
+                if (empty($Catalog_id)) {
+                    $this->session->setFlashdata('swal_icon', 'warning');
+                    $this->session->setFlashdata('swal_title', 'Peringatan');
+                    $this->session->setFlashdata('swal_text', 'Judul Katalog tidak boleh kosong');
                     return redirect()->back()->withInput();
                 }
+                
+                $worksheet_id = $this->db->table('catalogs')->where('ID', $Catalog_id)->get()->getRow()->Worksheet_id ?? '';
+
+                for ($i = 1; $i <= $total; $i++) {
+                    // Prepare data untuk generate barcode
+                    $collectionData = [
+                        'worksheet_id' => $worksheet_id ?? null,
+                        'category_id'  => $post['Category_id'] ?? null,
+                        'media_id'     => $post['Media_id'] ?? null,
+                        'source_id'    => $post['Source_id'] ?? null,
+                        'partner_id'   => $post['Partner_id'] ?? null
+                    ];
+
+                    // Generate NomorBarcode
+                    $nomorBarcode = $this->generateNomorBarcode($collectionData, $i);
+
+                    $save = [
+                        'Catalog_id'          => $post['Catalog_id'],
+                        'Branch_id'           => $post['Branch_id'],
+                        'ISDRM'               => $post['ISDRM'],
+                        'Location_Library_id' => $post['Location_Library_id'],
+                        'Location_id'         => $post['Location_id'],
+                        'NomorBarcode'        => $nomorBarcode, // Generated barcode
+                        'NoInduk'             => $nomorBarcode,
+                        'RFID'                => $nomorBarcode,
+                        'CallNumber'          => $post['CallNumber'],
+                        'IsQUARANTINE'        => '0',
+                        'CreateBy'            => user_id(),
+                        'CreateDate'          => date("Y-m-d H:i:s"),
+                        'UpdateBy'            => user_id(),
+                        'UpdateDate'          => date("Y-m-d H:i:s")
+                    ];
+
+                    if (!empty($post['TanggalPengadaan'])) {
+                        $save['TanggalPengadaan'] = $post['TanggalPengadaan'];
+                    }
+                    if (!empty($post['Rule_id'])) {
+                        $save['Rule_id'] = $post['Rule_id'];
+                    }
+                    if (!empty($post['Category_id'])) {
+                        $save['Category_id'] = $post['Category_id'];
+                    }
+                    if (!empty($post['Currency_id'])) {
+                        $save['Currency'] = $post['Currency_id'];
+                    }
+                    if (!empty($post['Media_id'])) {
+                        $save['Media_id'] = $post['Media_id'];
+                    }
+                    if (!empty($post['Source_id'])) {
+                        $save['Source_id'] = $post['Source_id'];
+                    }
+                    if (!empty($post['Status_id'])) {
+                        $save['Status_id'] = $post['Status_id'];
+                    }
+                    if (!empty($post['Partner_id'])) {
+                        $save['Partner_id'] = $post['Partner_id'];
+                    }
+                    if (!empty($post['Price'])) {
+                        $save['Price'] = $post['Price'];
+                    }
+                    if (!empty($post['PriceType'])) {
+                        $save['PriceType'] = $post['PriceType'];
+                    }
+
+                    array_push($collections, $save);
+                }
+             
+                if (!empty($collections)) {
+                    try {
+                        $insert = $this->eksemplarModel->insertBatch($collections);
+                        
+                        if ($insert === false) {
+                            $modelErrors = $this->eksemplarModel->errors();
+                            $errorString = !empty($modelErrors) ? implode(', ', $modelErrors) : 'Unknown Model Validation Error';
+                            
+                            $this->session->setFlashdata('swal_icon', 'error');
+                            $this->session->setFlashdata('swal_title', 'Validasi Model Gagal');
+                            $this->session->setFlashdata('swal_text', 'Eksemplar gagal ditambah. Penyebab: ' . $errorString);
+                            
+                            return redirect()->back()->withInput();
+                        }
+
+                        $this->session->setFlashdata('swal_icon', 'success');
+                        $this->session->setFlashdata('swal_title', 'Berhasil');
+                        $this->session->setFlashdata('swal_text', 'Eksemplar berhasil ditambah');
+
+                        $IsRedirect = $this->request->getPost('IsRedirect');
+                        if ($IsRedirect == 1) {
+                            if (!empty($redirect)) {
+                                return redirect()->to($redirect);
+                            } else {
+                                return redirect()->to('eksemplar');
+                            }
+                        } else {
+                            return redirect()->back();
+                        }
+
+                    } catch (\Throwable $e) {
+                        $errorMessage = $e->getMessage();
+                        
+                        $this->session->setFlashdata('swal_icon', 'error');
+                        $this->session->setFlashdata('swal_title', 'Database Error');
+                        $this->session->setFlashdata('swal_text', 'Eksemplar gagal ditambah. Error DB: ' . $errorMessage);
+                        
+                        log_message('error', '[Eksemplar Create DB Error] ' . $errorMessage);
+                        return redirect()->back()->withInput();
+                    }
+                }
+            } else {
+                // Tampilkan SweetAlert Error Validasi form
+                $error_msg = '<ul>';
+                foreach ($this->validation->getErrors() as $error) {
+                    $error_msg .= '<li>' . esc($error) . '</li>';
+                }
+                $error_msg .= '</ul>';
+
+                $this->session->setFlashdata('swal_icon', 'error');
+                $this->session->setFlashdata('swal_title', 'Validasi Gagal');
+                $this->session->setFlashdata('swal_html', $error_msg); 
+                
+                return redirect()->back()->withInput();
             }
-        } else {
-            $this->data['redirect'] = base_url('eksemplar/create');
-            set_message('message', $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message'));
-            echo view('Eksemplar\Views\add', $this->data);
         }
+
+        // Tampilkan Form View
+        $this->data['redirect'] = base_url('eksemplar/create');
+        echo view('Eksemplar\Views\add', $this->data);
     }
 
 
@@ -343,363 +368,285 @@ class Eksemplar extends \Base\Controllers\BaseController
 
         return $result . $no;
     }
-
-    public function edit($id)
+public function edit($id)
     {
-        if (!is_allowed('eksemplar/edit')) {
-            set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
-            set_message('toastr_type', 'error');
-            return redirect()->to('eksemplar');
-        }
-
         $this->data['title'] = 'Ubah Eksemplar';
         $slug = $this->request->getGet('slug');
+        
         $eksemplar = $this->eksemplarModel->find($id);
         $this->data['eksemplar'] = $eksemplar;
+        
         if (!empty($eksemplar)) {
             $katalog = $this->katalogModel->find($eksemplar->Catalog_id);
             $this->data['katalog'] = $katalog;
         } else {
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Tidak Ditemukan');
+            $this->session->setFlashdata('swal_text', 'Data eksemplar tidak ditemukan');
             return redirect()->to('/eksemplar');
         }
-		    $CreateBy = get_username($eksemplar->CreateBy ?? 0);
-		    $UpdateBy = get_username($eksemplar->UpdateBy ?? 0);
-		    $this->data['CreateBy'] = $CreateBy;
-		    $this->data['UpdateBy'] = $UpdateBy;
 
-        $this->validation->setRule('Catalog_id', 'Judul Katalog', 'required');
-        if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
-            helper('form');
-            $post = $this->request->getPost();
-            $redirect = $post['redirect'];
+        $CreateBy = get_username($eksemplar->CreateBy ?? 0);
+        $UpdateBy = get_username($eksemplar->UpdateBy ?? 0);
+        $this->data['CreateBy'] = $CreateBy;
+        $this->data['UpdateBy'] = $UpdateBy;
 
-            $update = [
-                'Location_Library_id' => $post['Location_Library_id'],
-                'Location_id' => $post['Location_id'],
-                'NomorBarcode' => $post['NomorBarcode0'],
-                'NoInduk' => $post['NoInduk0'],
-                'RFID' => $post['RFID0'],
-                'UpdateBy' => user_id(),
-				        'UpdateDate' => date("Y-m-d H:i:s")
-            ];
+        // --- Aturan Validasi (Disamakan dengan fungsi create) ---
+        $this->validation->setRules([
+            'Catalog_id'          => ['label' => 'Judul Katalog', 'rules' => 'required'],
+            'Location_Library_id' => ['label' => 'Lokasi Perpustakaan', 'rules' => 'required'],
+            'Location_id'         => ['label' => 'Lokasi Ruang', 'rules' => 'required'],
+            'Source_id'           => ['label' => 'Sumber Pengadaan', 'rules' => 'required'],
+            'Partner_id'          => ['label' => 'Nama Sumber', 'rules' => 'required'],
+            'Media_id'            => ['label' => 'Bentuk Fisik', 'rules' => 'required'],
+            'Category_id'         => ['label' => 'Kategori Koleksi', 'rules' => 'required'],
+            'TanggalPengadaan'    => ['label' => 'Tanggal Pengadaan', 'rules' => 'required'],
+        ]);
 
-            if (!empty($post['TanggalPengadaan'])) {
-                $update['TanggalPengadaan'] = $post['TanggalPengadaan'];
-            }
-            if (!empty($post['Rule_id'])) {
-                $update['Rule_id'] = $post['Rule_id'];
-            }
-            if (!empty($post['Category_id'])) {
-                $update['Category_id'] = $post['Category_id'];
-            }
-            if (!empty($post['Currency_id'])) {
-                $update['Currency'] = $post['Currency_id'];
-            }
-            if (!empty($post['Media_id'])) {
-                $update['Media_id'] = $post['Media_id'];
-            }
-            if (!empty($post['Source_id'])) {
-                $update['Source_id'] = $post['Source_id'];
-            }
-            if (!empty($post['Status_id'])) {
-                $update['Status_id'] = $post['Status_id'];
-            }
-            if (!empty($post['Partner_id'])) {
-                $update['Partner_id'] = $post['Partner_id'];
-            }
-            if (!empty($post['Price'])) {
-                $update['Price'] = $post['Price'];
-            }
-            if (!empty($post['PriceType'])) {
-                $update['PriceType'] = $post['PriceType'];
-            }
+        if ($this->request->getPost()) {
+            // Cek Validasi Form
+            if ($this->validation->withRequest($this->request)->run()) {
+                helper('form');
+                $post = $this->request->getPost();
+                $redirect = $post['redirect'] ?? '';
 
-            try {
-                $this->eksemplarModel->update($id, $update);
-                set_message('toastr_msg', 'Eksemplar berhasil diubah');
-                set_message('toastr_type', 'success');
-            } catch (\Throwable $e) {
-                set_message('toastr_msg', 'Eksemplar gagal diubah');
-                set_message('toastr_type', 'warning');
-                set_message('message', 'Eksemplar gagal diubah');
-            }
+                $update = [
+                    'Location_Library_id' => $post['Location_Library_id'],
+                    'Location_id'         => $post['Location_id'],
+                    // Fallback pengecekan key array jika namanya tanpa '0' di view
+                    'NomorBarcode'        => $post['NomorBarcode0'] ?? ($post['NomorBarcode'] ?? ''),
+                    'NoInduk'             => $post['NoInduk0'] ?? ($post['NoInduk'] ?? ''),
+                    'RFID'                => $post['RFID0'] ?? ($post['RFID'] ?? ''),
+                    'UpdateBy'            => user_id(),
+                    'UpdateDate'          => date("Y-m-d H:i:s")
+                ];
 
-            $IsRedirect = $this->request->getPost('IsRedirect');
-            if ($IsRedirect == 1) {
-                if (!empty($redirect)) {
-                    return redirect()->to($redirect);
-                } else {
-                    return redirect()->to('eksemplar');
+                if (!empty($post['TanggalPengadaan'])) {
+                    $update['TanggalPengadaan'] = $post['TanggalPengadaan'];
                 }
+                if (!empty($post['Rule_id'])) {
+                    $update['Rule_id'] = $post['Rule_id'];
+                }
+                if (!empty($post['Category_id'])) {
+                    $update['Category_id'] = $post['Category_id'];
+                }
+                if (!empty($post['Currency_id'])) {
+                    $update['Currency'] = $post['Currency_id'];
+                }
+                if (!empty($post['Media_id'])) {
+                    $update['Media_id'] = $post['Media_id'];
+                }
+                if (!empty($post['Source_id'])) {
+                    $update['Source_id'] = $post['Source_id'];
+                }
+                if (!empty($post['Status_id'])) {
+                    $update['Status_id'] = $post['Status_id'];
+                }
+                if (!empty($post['Partner_id'])) {
+                    $update['Partner_id'] = $post['Partner_id'];
+                }
+                if (!empty($post['Price'])) {
+                    $update['Price'] = $post['Price'];
+                }
+                if (!empty($post['PriceType'])) {
+                    $update['PriceType'] = $post['PriceType'];
+                }
+
+                try {
+                    $this->eksemplarModel->update($id, $update);
+                    
+                    $this->session->setFlashdata('swal_icon', 'success');
+                    $this->session->setFlashdata('swal_title', 'Berhasil');
+                    $this->session->setFlashdata('swal_text', 'Eksemplar berhasil diubah');
+                    
+                    $IsRedirect = $this->request->getPost('IsRedirect');
+                    if ($IsRedirect == 1) {
+                        if (!empty($redirect)) {
+                            return redirect()->to($redirect);
+                        } else {
+                            return redirect()->to('eksemplar');
+                        }
+                    } else {
+                        // Jika berhasil tapi disuruh stay di form
+                        return redirect()->back(); 
+                    }
+
+                } catch (\Throwable $e) {
+                    $this->session->setFlashdata('swal_icon', 'error');
+                    $this->session->setFlashdata('swal_title', 'Terjadi Kesalahan');
+                    $this->session->setFlashdata('swal_text', 'Eksemplar gagal diubah. Error DB: ' . $e->getMessage());
+                    return redirect()->back()->withInput();
+                }
+
             } else {
+                // Tampilkan SweetAlert Error Validasi form
+                $error_msg = '<ul>';
+                foreach ($this->validation->getErrors() as $error) {
+                    $error_msg .= '<li>' . esc($error) . '</li>';
+                }
+                $error_msg .= '</ul>';
+
+                $this->session->setFlashdata('swal_icon', 'error');
+                $this->session->setFlashdata('swal_title', 'Validasi Gagal');
+                $this->session->setFlashdata('swal_html', $error_msg); 
+                
                 return redirect()->back()->withInput();
             }
-        } else {
-            set_message('message', $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message'));
-            echo view('Eksemplar\Views\update', $this->data);
-        }
+        } 
+
+        // Load View (Tidak perlu ngelempar validation error lagi karena sudah ditarik di swal_html)
+        echo view('Eksemplar\Views\update', $this->data);
     }
-
-    public function create_action()
-    {
-        // echo '<pre>';
-        helper('form');
-        $model = new AkuisisiModel;
-        $post = $this->request->getPost();
-        $branch_id = user()->branch_id ?? $this->request->getGet('branch_id');
-        $BarcodeNumber = (int)preg_replace('/[^0-9]/', '', BarcodeNumber_helper());
-        $NoInduk = (int)substr(NoInduk_helper(), strpos(NoInduk_helper(), "-") + 1);
-        $RFID = (int)preg_replace('/[^0-9]/', '', RFID_helper());
-        $validation = \Config\Services::validation();
-        if ($validation->run($post, 'input_koleksi') == FALSE) {
-            // session()->setFlashdata('inputs', $post);			
-            session()->setFlashdata('errors', ['Harap Pilih Judul.']);
-            return redirect()->to(base_url('/backend/collections/create'));
-        }
-        // print_r($post);
-        // die;
-
-        for ($i = 0; $i < (int)$post['jml_eksemplar']; $i++) {
-            // echo RFID_helper() . "<br />";		
-            // echo str_pad((int)$BarcodeNumber + $i, 11, '0', STR_PAD_LEFT) . "<br />";
-            $save = [
-                'NomorBarcode' => 'BRCD' . str_pad((int)$BarcodeNumber + $i, 11, '0', STR_PAD_LEFT),
-                'NoInduk' => date("Y") . "-" . str_pad((int)$NoInduk + $i, 5, '0', STR_PAD_LEFT),
-                'Currency' => $post['Currency'],
-                'RFID' => 'RFID' . str_pad((int)$RFID + $i, 11, '0', STR_PAD_LEFT),
-                'Price' => $post['Price'],
-                'ISDRM' => $post['ISDRM'],
-                'PriceType' => $post['PriceType'],
-                'TanggalPengadaan' => $post['TANGGAL_PENGADAAN'],
-                'CallNumber' => $post['CallNumber'],
-                'Branch_id' => $branch_id,
-                'Catalog_id' => $post['Catalog_id'],
-                'Partner_id' => $post['Partner_id'],
-                'Location_id' => $post['Location_id'],
-                'Rule_id' => $post['Rule_id'],
-                'Category_id' => $post['Category_id'],
-                'Media_id' => $post['Media_id'],
-                'Source_id' => $post['Source_id'],
-                'Status_id' => $post['Status_id'],
-                'Location_Library_id' => $post['Location_Library_id'],
-                'Keterangan_Sumber' => null,
-                'CreateBy' => 2,
-                'CreateDate' => date("Y-m-d H:i:s"),
-                'CreateTerminal' => null,
-                'UpdateBy' => 2,
-                'UpdateDate' => date("Y-m-d H:i:s"),
-                'UpdateTerminal' => null,
-                'IsVerified' => '',
-                'IsQUARANTINE' => null,
-                'QUARANTINEDBY' => null,
-                'QUARANTINEDDATE' => null,
-                'QUARANTINEDTERMINAL' => null,
-                'ISREFERENSI' => null,
-                'EDISISERIAL' => $post['EDISISERIAL'],
-                // 'NOJILID' => $post['NOJILID'],
-                'TANGGAL_TERBIT_EDISI_SERIAL' => $post['TANGGAL_TERBIT_EDISI_SERIAL'],
-                'BAHAN_SERTAAN' => $post['BAHAN_SERTAAN'],
-                'KETERANGAN_LAIN' => $post['KETERANGAN_LAIN'],
-                'ISOPAC' => $post['IsOPAC'],
-            ];
-            $model->save($save);
-        }
-        return redirect()->to(base_url() . '/backend/collections');
-    }
-
-    public function update($id)
-    {
-        helper('form');
-        $model = new AkuisisiModel();
-        $collections = $model->get_by_id($id);
-
-        $data = [
-            'agama' => $collections,
-            'action' => base_url() . '/agama/update_action/' . $id,
-            'title' => 'Ubah Agama',
-            'button' => 'Ubah',
-            'breadcrumb' => [
-                'Agama',
-                'Ubah Agama',
-            ],
-        ];
-        echo view('templates/meta', $data);
-        echo view('templates/header', $data);
-        echo view('backend/akuisisi/collections_read', $data);
-        echo view('templates/footer', $data);
-        echo view('templates/rightsidebar', $data);
-        echo view('templates/script', $data);
-    }
-
 
     public function delete($id)
     {
         if (!is_allowed('eksemplar/delete')) {
-            set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
-            set_message('toastr_type', 'error');
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Akses Ditolak');
+            $this->session->setFlashdata('swal_text', 'Maaf, Anda tidak memiliki akses');
             return redirect()->to('eksemplar');
         }
 
         if (!$id) {
-            set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-            set_message('toastr_type', 'error');
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Terjadi Kesalahan');
+            $this->session->setFlashdata('swal_text', 'Parameter ID tidak valid');
             return redirect()->to('eksemplar');
         }
+
+        $eksemplar = $this->eksemplarModel->find($id);
+        if (!$eksemplar) {
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Tidak Ditemukan');
+            $this->session->setFlashdata('swal_text', 'Data eksemplar tidak ditemukan');
+            return redirect()->to('eksemplar');
+        }
+
         $EksemplarDelete = $this->eksemplarModel->delete($id);
+        
         if ($EksemplarDelete) {
-            set_message('toastr_msg', 'Eksemplar berhasil dihapus');
-            set_message('toastr_type', 'success');
-            return redirect()->to('eksemplar');
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Eksemplar berhasil dihapus');
         } else {
-            set_message('toastr_msg', 'Eksemplar gagal dihapus');
-            set_message('toastr_type', 'warning');
-            set_message('message', 'Eksemplar gagal dihapus');
-            return redirect()->to('eksemplar');
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Eksemplar gagal dihapus');
         }
+        
+        return redirect()->to('eksemplar');
     }
 
 
-    public function print_label()
-    {
-        helper('thumbnail');
-        $this->data['title'] = 'Cetak Label Eksemplar';
-
-        $this->validation->setRule('eksemplar_ids', 'Eksemplar', 'required');
-        if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
-            helper('form');
-            $post = $this->request->getPost();
-
-            $template = $post['eksemplar_tpl'];
-
-            $eksemplar_ids = $post['eksemplar_ids'];
-            $eksemplar_ids_arr = explode(',', $eksemplar_ids);
-
-            $db = db_connect();
-            $builder = $db->table('collections as a')
-                ->select('a.ID, a.ID as action')
-                ->select('a.NomorBarcode')
-                ->select('b.Title, b.CallNumber')
-                ->join('catalogs b', 'b.ID=a.Catalog_id')
-                ->whereIn('a.ID', $eksemplar_ids_arr);
-
-            $eksemplar_data = $builder->get()->getResultObject();
-            $nama_perpustakaan = $db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value ?: "Perpustakaan Mitra";
-
-            $LabelData = [];
-          
-            foreach ($eksemplar_data as $row) {
-
-                // ===================================================================
-                // BAGIAN YANG DIUBAH: Logika Kondisional untuk Barcode/QR Code
-                // ===================================================================
-
-                // Gunakan str_contains() jika Anda menggunakan PHP 8 atau lebih baru.
-                // Fungsi ini akan mengembalikan true jika kata 'qrcode' ditemukan di dalam nama template.
-                if (str_contains($template, 'qrcode')) {
-                    $barcodeImage = get_qrcode_png($row->NomorBarcode);
-                } else {
-                    $barcodeImage = get_barcode_png($row->NomorBarcode);
-                }
-
-
-
-                array_push($LabelData, array(
-                    'Title' => character_limiter($row->Title, 20),
-                    'Barcode' => $row->NomorBarcode,
-                    'CallNumber' => $row->CallNumber,
-                    'NamaPerpustakaan' => $nama_perpustakaan ?? 'Perpustakaan Mitra',
-                    'Warna1' => '#FFFF66',
-                    // Gunakan variabel yang sudah diisi secara kondisional
-                    'BarcodePNG' => $barcodeImage,
-                ));
-            }
-            view('Eksemplar\Views\template\\' . $template, array('LabelData' => $LabelData));
-        } else {
-            set_message('message', $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message'));
-        }
+public function print_label()
+{
+    helper(['thumbnail', 'form']);
+ 
+    $this->data['title'] = 'Cetak Label Eksemplar';
+ 
+    // ── Validasi ───────────────────────────────────────────────────────────
+    $this->validation->setRules([
+        'eksemplar_ids' => ['label' => 'Eksemplar',       'rules' => 'required'],
+        'eksemplar_tpl' => ['label' => 'Template Label',  'rules' => 'required'],
+    ]);
+ 
+    if (! $this->request->getPost() || ! $this->validation->withRequest($this->request)->run()) {
+        $this->session->setFlashdata('swal_icon',  'error');
+        $this->session->setFlashdata('swal_title', 'Gagal');
+        $this->session->setFlashdata('swal_html',
+            $this->validation->getErrors()
+                ? $this->validation->listErrors()
+                : 'Tidak ada eksemplar yang dipilih.'
+        );
+        return redirect()->back();
     }
-
-    public function report()
-    {
-        helper('reference');
-
-        $db = db_connect();
-        $builder = $db->table('collections as a')
-            ->select('a.ID, a.ID as action, a.ID as Collection_id')
-            ->select('a.NomorBarcode, a.TanggalPengadaan, a.NoInduk, a.Catalog_id, a.IsOPAC')
-            ->select('a.Branch_id, a.Location_id')
-            ->join('branchs b', 'b.ID = a.Branch_id', 'inner')
-            ->where('a.IsQUARANTINE', 0);
-
-        if (user()->category == 'admin') {
-        } elseif (user()->category == 'sa_prov' && user()->branch_id === null) {
-            $npp_provinsi_id = preg_replace('/\./', '', user()->npp_provinsi_id);
-            $builder->where('b.NPP_Provinsi_id', $npp_provinsi_id);
-        } elseif (user()->category == 'sa_prov' && user()->branch_id !== null) {
-            $builder->where('a.Branch_id', branch_id());
-        } elseif (user()->category == 'sa_kabkot' && user()->branch_id === null) {
-            $npp_kabkota_id = preg_replace('/\./', '', user()->npp_kabkota_id);
-            $builder->where('b.NPP_KabKota_id', $npp_kabkota_id);
-        } elseif (user()->category == 'sa_kabkot' && user()->branch_id !== null) {
-            $builder->where('a.Branch_id', branch_id());
-        } else {
-            $builder->where('a.Branch_id', branch_id());
-        }
-
-        $results = $builder->get()->getResult();
-
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-
-        $sheet->mergeCells('A1:E1');
-        $sheet->setCellValue("A1", "Laporan Eksemplar");
-        $sheet->getStyle('A1:E1')->getFont()->setBold(true)->setSize(12);
-
-        $sheet->setCellValue("A2", "Nomor Barcode");
-        $sheet->setCellValue("B2", "Tanggal Pengadaan");
-        $sheet->setCellValue("C2", "Nomor Induk");
-        $sheet->setCellValue("D2", "Data Bibliografis");
-        $sheet->setCellValue("E2", "OPAC");
-
-        $sheet->getColumnDimension('A')->setWidth(20);
-        $sheet->getColumnDimension('B')->setWidth(40);
-        $sheet->getColumnDimension('C')->setWidth(20);
-        $sheet->getColumnDimension('D')->setWidth(100);
-        $sheet->getColumnDimension('E')->setWidth(10);
-
-        $sheet->getStyle('A2:E2')->getFont()->setBold(true)->setSize(12);
-
-        $col = 3;
-        $no = 1;
-        $i = 1;
-        foreach ($results as $row) {
-            $catalog = get_ref_single('catalogs', 'ID=' . $row->Catalog_id, 'data');
-            $bibliography  = ($catalog->Title ?? "") . '\n' . ($catalog->Publikasi ?? "");
-
-            $sheet->setCellValue("A" . $col, $row->NomorBarcode);
-            $sheet->setCellValue("B" . $col, $row->TanggalPengadaan);
-            $sheet->setCellValue("C" . $col, $row->NoInduk);
-            $sheet->setCellValue("D" . $col, $bibliography);
-            $sheet->setCellValue("E" . $col, $row->IsOPAC);
-
-            $col++;
-            $no++;
-            $i++;
-        }
-
-        $writer = new Xlsx($spreadsheet);
-        $subject = 'Laporan Eksemplar';
-        $filename = ucwords($subject) . '-' . date('Y-m-d');
-
-        header('Content-Type: application/vnd.ms-excel');
-        header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
-        header('Cache-Control: max-age=0');
-
-        $writer->save('php://output');
+ 
+    // ── Ambil & sanitasi input ─────────────────────────────────────────────
+    $post      = $this->request->getPost();
+    $template  = $post['eksemplar_tpl'];
+    $paperSize = $post['paper_size'] ?? 'a4';
+    $idsArr    = array_filter(
+        array_map('intval', explode(',', preg_replace('/[^0-9,]/', '', $post['eksemplar_ids']))),
+        fn($id) => $id > 0
+    );
+ 
+    if (empty($idsArr)) {
+        $this->session->setFlashdata('swal_icon',  'warning');
+        $this->session->setFlashdata('swal_title', 'Peringatan');
+        $this->session->setFlashdata('swal_html',  'Tidak ada ID eksemplar yang valid.');
+        return redirect()->back();
     }
+ 
+    // ── Whitelist template (cegah path traversal) ─────────────────────────
+    $allowedTemplates = [
+        'cetak-label-a4-1', 'cetak-label-a4-2', 'cetak-label-a4-3',
+        'cetak-label-a4-4', 'cetak-label-a4-5', 'cetak-label-a4-4-qrcode',
+        'cetak-label-lr1',  'cetak-label-lr2',  'cetak-label-lr3',
+        'cetak-label-lr4',  'cetak-label-lr5',  'cetak-label-lr6',
+        'cetak-label-br1',  'cetak-label-br2',
+        'cetak-label-tj107-1',
+        'cetak-label-tj121-1', 'cetak-label-tj121-2',
+        'cetak-label-gc121-1', 'cetak-label-gc121-2',
+        'cetak-label-gc121-3', 'cetak-label-gc121-4',
+    ];
+ 
+    if (! in_array($template, $allowedTemplates, true)) {
+        $this->session->setFlashdata('swal_icon',  'error');
+        $this->session->setFlashdata('swal_title', 'Gagal');
+        $this->session->setFlashdata('swal_html',  'Template tidak dikenali: ' . esc($template));
+        return redirect()->back();
+    }
+ 
+    // ── Query database ─────────────────────────────────────────────────────
+    $db = db_connect();
+ 
+    $eksemplarData = $db->table('collections as a')
+        ->select('a.ID, a.NomorBarcode, b.Title, b.CallNumber')
+        ->join('catalogs b', 'b.ID = a.Catalog_id')
+        ->whereIn('a.ID', $idsArr)
+        ->get()
+        ->getResultObject();
+ 
+    if (empty($eksemplarData)) {
+        $this->session->setFlashdata('swal_icon',  'error');
+        $this->session->setFlashdata('swal_title', 'Gagal');
+        $this->session->setFlashdata('swal_html',  'Data eksemplar tidak ditemukan.');
+        return redirect()->back();
+    }
+ 
+    // ── Ambil nama perpustakaan ────────────────────────────────────────────
+    $namaPerpustakaan = $db->table('settingparameters')
+        ->where('Name', 'NamaPerpustakaan')
+        ->get()
+        ->getRow()
+        ->Value ?? 'Perpustakaan Mitra';
+ 
+    // ── Tentukan jenis gambar: Barcode atau QR Code ────────────────────────
+    $useQrCode = str_contains($template, 'qrcode') || str_contains($paperSize, 'qrcode');
+ 
+    // ── Bangun LabelData ───────────────────────────────────────────────────
+    $LabelData = [];
+ 
+    foreach ($eksemplarData as $row) {
+        $LabelData[] = [
+            'Title'            => character_limiter($row->Title, 50),
+            'Barcode'          => $row->NomorBarcode,
+            'CallNumber'       => $row->CallNumber,
+            'NamaPerpustakaan' => $namaPerpustakaan,
+            'Warna1'           => '#FFFF66',
+            'BarcodePNG'       => $useQrCode
+                                    ? get_qrcode_png($row->NomorBarcode)
+                                    : get_barcode_png($row->NomorBarcode),
+        ];
+    }
+ 
+    // ── Render view → TCPDF output PDF langsung (download) ────────────────
+    return view('Eksemplar\Views\template\\' . $template, ['LabelData' => $LabelData]);
+}
 
+   
 
-    public function proses_karantina()
+public function proses_karantina()
     {
         // Ambil data dari POST
         $eksemplar_ids = $this->request->getPost('eksemplar_ids');
@@ -711,7 +658,9 @@ class Eksemplar extends \Base\Controllers\BaseController
 
         // Validasi: Pastikan eksemplar_ids berisi angka
         if (empty($eksemplar_ids) || !is_array($eksemplar_ids) || !array_filter($eksemplar_ids, 'is_numeric')) {
-            $this->session->setFlashdata('error', 'Tidak ada eksemplar yang dipilih atau data tidak valid');
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Tidak ada eksemplar yang dipilih atau data tidak valid');
             return redirect()->back();
         }
 
@@ -725,17 +674,20 @@ class Eksemplar extends \Base\Controllers\BaseController
 
             // Periksa apakah ada baris yang diperbarui
             if ($db->affectedRows() > 0) {
-
-                set_message('toastr_msg', 'Eksemplar berhasil dikarantina');
-                set_message('toastr_type', 'success');
+                $this->session->setFlashdata('swal_icon', 'success');
+                $this->session->setFlashdata('swal_title', 'Berhasil');
+                $this->session->setFlashdata('swal_text', 'Eksemplar berhasil dikarantina');
             } else {
-                $this->session->setFlashdata('info', "Tidak ada perubahan data, mungkin eksemplar sudah dikarantina");
+                $this->session->setFlashdata('swal_icon', 'info');
+                $this->session->setFlashdata('swal_title', 'Informasi');
+                $this->session->setFlashdata('swal_text', 'Tidak ada perubahan data, mungkin eksemplar sudah dikarantina');
             }
 
             return redirect()->back();
         } catch (\Exception $e) {
-            set_message('toastr_msg', 'plih item terlebih dahulu');
-            set_message('toastr_type', 'error');
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Terjadi Kesalahan');
+            $this->session->setFlashdata('swal_text', 'Gagal memproses karantina: ' . $e->getMessage());
             return redirect()->back();
         }
     }
@@ -754,7 +706,9 @@ class Eksemplar extends \Base\Controllers\BaseController
 
         // If no IDs, redirect with error
         if (empty($eksemplar_ids)) {
-            session()->setFlashdata('error', 'Tidak ada eksemplar yang dipilih');
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Tidak ada eksemplar yang dipilih');
             return redirect()->back();
         }
 
@@ -764,24 +718,22 @@ class Eksemplar extends \Base\Controllers\BaseController
             $builder->whereIn('ID', $eksemplar_ids);
             $builder->update(['IsQUARANTINE' => 0]);
 
-            // Get count of affected rows
-            $affectedRows = $this->db->affectedRows();
-
-            set_message('toastr_msg', 'Eksemplar berhasil dipulihkan');
-            set_message('toastr_type', 'success');
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Eksemplar berhasil dipulihkan');
+            
             return redirect()->to(base_url('eksemplar'));
         } catch (\Exception $e) {
-            set_message('toastr_msg', 'plih item terlebih dahulu');
-            set_message('toastr_type', 'error');
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Terjadi Kesalahan');
+            $this->session->setFlashdata('swal_text', 'Gagal memulihkan eksemplar: ' . $e->getMessage());
             return redirect()->back();
         }
     }
 
-
     /**
      * Process OPAC display for selected collection items
-     * 
-     * @return \CodeIgniter\HTTP\RedirectResponse
+     * * @return \CodeIgniter\HTTP\RedirectResponse
      */
     public function proses_opac()
     {
@@ -796,7 +748,9 @@ class Eksemplar extends \Base\Controllers\BaseController
 
         // If still empty or not an array, redirect with error
         if (empty($eksemplar_ids) || !is_array($eksemplar_ids)) {
-            $this->session->setFlashdata('error', 'Tidak ada eksemplar yang dipilih');
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Tidak ada eksemplar yang dipilih');
             return redirect()->back();
         }
 
@@ -806,15 +760,15 @@ class Eksemplar extends \Base\Controllers\BaseController
             $builder->whereIn('ID', $eksemplar_ids);
             $builder->update(['IsOPAC' => 1]);
 
-            // Get count of affected rows
-            $affectedRows = $this->db->affectedRows();
-
-            set_message('toastr_msg', 'Eksemplar berhasil dikarantina');
-            set_message('toastr_type', 'success');
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Eksemplar berhasil ditampilkan ke OPAC');
+            
             return redirect()->back();
         } catch (\Exception $e) {
-            set_message('toastr_msg', 'plih item terlebih dahulu');
-            set_message('toastr_type', 'error');
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Terjadi Kesalahan');
+            $this->session->setFlashdata('swal_text', 'Gagal memproses OPAC: ' . $e->getMessage());
             return redirect()->back();
         }
     }

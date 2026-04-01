@@ -2,212 +2,213 @@
 
 <?= $this->section('content') ?>
 <style>
-        body {
-            background: white;
-            min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .main-container {
-            min-height: 50vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        .return-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            max-width: 800px;
-            width: 100%;
-            overflow: hidden;
-        }
-        
-        .card-header {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-            padding: 30px;
-            text-align: center;
-            border: none;
-        }
-        
-        .card-header h2 {
-            margin: 0;
-            font-weight: 600;
-            font-size: 2rem;
-        }
-        
-        .card-header p {
-            margin: 10px 0 0 0;
-            opacity: 0.9;
-        }
-        
-        .card-body {
-            padding: 40px;
-        }
-        
-        .scanner-section {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        
-        .barcode-input {
-            position: relative;
-            margin-bottom: 20px;
-        }
-        
-        .barcode-input input {
-            border: 2px solid #e0e0e0;
-            border-radius: 15px;
-            padding: 15px 50px 15px 20px;
-            font-size: 1.1rem;
-            width: 100%;
-            transition: all 0.3s ease;
-        }
-        
-        .barcode-input input:focus {
-            border-color: #4CAF50;
-            box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
-        }
-        
-        .barcode-input .scan-icon {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #666;
-            font-size: 1.5rem;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            border: none;
-            border-radius: 15px;
-            padding: 12px 30px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #45a049, #4CAF50);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
-        }
-        
-        .btn-secondary {
-            border-radius: 15px;
-            padding: 12px 30px;
-            font-weight: 600;
-        }
-        
-        .book-info {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 25px;
-            margin: 20px 0;
-            border-left: 5px solid #4CAF50;
-        }
-        
-        .book-info h5 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-        }
-        
-        .book-detail {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding: 5px 0;
-        }
-        
-        .book-detail strong {
-            color: #34495e;
-        }
-        
-        .status-badge {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-        
-        .status-success {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .status-warning {
-            background: #fff3cd;
-            color: #856404;
-        }
-        
-        .status-danger {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .history-section {
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 1px solid #e0e0e0;
-        }
-        
-        .history-item {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            border-left: 4px solid #4CAF50;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .loading i {
-            font-size: 2rem;
-            color: #4CAF50;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .alert {
-            border-radius: 15px;
-            border: none;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        
-        .alert-success {
-            background: linear-gradient(135deg, #d4edda, #c3e6cb);
-            color: #155724;
-        }
-        
-        .alert-danger {
-            background: linear-gradient(135deg, #f8d7da, #f1b0b7);
-            color: #721c24;
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+    body {
+        background: #f4f7f6; /* Mengganti putih polos ke abu-abu sangat muda agar card lebih pop-out */
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding-top: 90px;
+    }
+    
+    .main-container {
+        min-height: 50vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    
+    .return-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        max-width: 800px;
+        width: 100%;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        /* Menggunakan warna #1B3878 dengan gradasi sedikit lebih terang */
+        background: linear-gradient(135deg, #1B3878, #264b9a);
+        color: white;
+        padding: 30px;
+        text-align: center;
+        border: none;
+    }
+    
+    .card-header h2 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 2rem;
+    }
+    
+    .card-header p {
+        margin: 10px 0 0 0;
+        opacity: 0.9;
+    }
+    
+    .card-body {
+        padding: 40px;
+    }
+    
+    .scanner-section {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .barcode-input {
+        position: relative;
+        margin-bottom: 20px;
+    }
+    
+    .barcode-input input {
+        border: 2px solid #e0e0e0;
+        border-radius: 15px;
+        padding: 15px 50px 15px 20px;
+        font-size: 1.1rem;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+    
+    .barcode-input input:focus {
+        border-color: #1B3878;
+        box-shadow: 0 0 0 0.2rem rgba(27, 56, 120, 0.25);
+    }
+    
+    .barcode-input .scan-icon {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #1B3878; /* Ikon mengikuti warna tema */
+        font-size: 1.5rem;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #1B3878, #264b9a);
+        border: none;
+        border-radius: 15px;
+        padding: 12px 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #264b9a, #1B3878);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(27, 56, 120, 0.4);
+    }
+    
+    .btn-secondary {
+        border-radius: 15px;
+        padding: 12px 30px;
+        font-weight: 600;
+        border-color: #1B3878;
+        color: #1B3878;
+        background: transparent;
+    }
+
+    .btn-secondary:hover {
+        background: #1B3878;
+        color: white;
+    }
+    
+    .book-info {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 25px;
+        margin: 20px 0;
+        border-left: 5px solid #1B3878; /* Border samping mengikuti tema */
+    }
+    
+    .book-info h5 {
+        color: #1B3878;
+        margin-bottom: 15px;
+    }
+    
+    .book-detail {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding: 5px 0;
+    }
+    
+    .book-detail strong {
+        color: #34495e;
+    }
+    
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+    
+    .status-success {
+        background: #d1e7ff; /* Biru muda untuk sukses agar match */
+        color: #1B3878;
+    }
+    
+    .status-warning {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-danger {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .history-section {
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid #e0e0e0;
+    }
+    
+    .history-item {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border-left: 4px solid #1B3878;
+    }
+    
+    .loading {
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .loading i {
+        font-size: 2rem;
+        color: #1B3878;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .btn-outline-primary {
+        color: #1B3878;
+        border-color: #1B3878;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #1B3878;
+        border-color: #1B3878;
+        color: white;
+    }
+
+    .alert-success {
+        background: linear-gradient(135deg, #1B3878, #264b9a);
+        color: #ffffff;
+        border: none;
+    }
+</style>
 
 <div class="main-container">
         <div class="return-card">

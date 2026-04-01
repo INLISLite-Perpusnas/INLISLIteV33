@@ -87,7 +87,7 @@
                                 <i class="fa fa-home"></i> Home
                             </a>
                         </li>
-                        <li class="breadcrumb-item active" aria-current="page">
+                        <li class="breadcrumb-item" aria-current="page">
                             Stock Opname
                         </li>
                     </ol>

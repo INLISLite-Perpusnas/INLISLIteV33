@@ -32,7 +32,7 @@ $slug = $request->getGet('slug') ?? 'katalog_add_marc';
 					<ol class="breadcrumb">
 						<li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
 						<li class="breadcrumb-item"><a href="<?= base_url('katalog') ?>">Katalog</a></li>
-						<li class="active breadcrumb-item" aria-current="page">Tambah</li>
+						<li class="breadcrumb-item" aria-current="page">Tambah</li>
 					</ol>
 				</nav>
 			</div>
@@ -53,6 +53,20 @@ $slug = $request->getGet('slug') ?? 'katalog_add_marc';
 <?= $this->include('Katalog\Views\modal_indicator1'); ?>
 <?= $this->include('Katalog\Views\modal_indicator2'); ?>
 <?= $this->include('Katalog\Views\modal_content'); ?>
+<script>
+    $(document).ready(function() {
+        <?php if (session()->getFlashdata('swal_icon')) : ?>
+            Swal.fire({
+                type: '<?= session()->getFlashdata('swal_icon') ?>', // gunakan 'icon' jika SweetAlert2 versi terbaru
+                title: '<?= session()->getFlashdata('swal_title') ?>',
+                html: '<?= session()->getFlashdata('swal_html') ?? session()->getFlashdata('swal_text') ?>',
+                showConfirmButton: false,
+                timer: 3000,
+                icon:'error'
+            });
+        <?php endif; ?>
+    });
+</script>
 <script>
 	$(document).ready(function() {
 		$('.simple-btn-switch').on('click', function() {

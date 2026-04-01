@@ -6,6 +6,8 @@ class SelfReturn extends \App\Controllers\BaseController
 {
     protected $db;
     protected $session;
+    protected $data = [];
+    protected $language;
     
     function __construct()
     {
@@ -19,6 +21,7 @@ class SelfReturn extends \App\Controllers\BaseController
     public function index()
     {
         // Get barcode parameter from URL
+        $this->data['title'] = 'Pengembalian Mandiri';
         $nomorBarcode = $this->request->getGet('NomorBarcode');
         
         // Initialize data

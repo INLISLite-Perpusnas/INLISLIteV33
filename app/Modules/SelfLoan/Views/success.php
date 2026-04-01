@@ -1,93 +1,139 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Peminjaman Berhasil - Perpustakaan</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #039550;
-            --success-color: #28a745;
-        }
+<?= $this->extend('App\Views\layout\opac\layout'); ?>
 
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
-        }
+<?= $this->section('content') ?>
 
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
 
-        .success-animation {
-            animation: bounceIn 0.8s ease-in-out;
-        }
+   <style>
+    :root {
+        --primary-color: #1B3878;
+        --primary-dark: #142a5c;
+        --primary-light: #dbe4f3;
+    }
 
-        @keyframes bounceIn {
-            0% { transform: scale(0.3); opacity: 0; }
-            50% { transform: scale(1.05); }
-            70% { transform: scale(0.9); }
-            100% { transform: scale(1); opacity: 1; }
-        }
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        min-height: 100vh;
+        padding-top: 90px;
+    }
 
-        .loan-summary {
-            background: linear-gradient(135deg, #d4edda, #c3e6cb);
-            border-radius: 15px;
-            padding: 25px;
-            margin: 20px 0;
-            border-left: 5px solid var(--success-color);
-        }
+    /* Card */
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
 
-        .book-item {
-            background: white;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 10px 0;
-            border-left: 4px solid var(--primary-color);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
+    /* Animation */
+    .success-animation {
+        animation: bounceIn 0.8s ease-in-out;
+    }
 
-        .receipt-section {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            margin: 20px 0;
-            border: 2px dashed #dee2e6;
-        }
+    @keyframes bounceIn {
+        0% { transform: scale(0.3); opacity: 0; }
+        50% { transform: scale(1.05); }
+        70% { transform: scale(0.9); }
+        100% { transform: scale(1); opacity: 1; }
+    }
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), #027a42);
-            border: none;
-            border-radius: 25px;
-            padding: 12px 30px;
-            font-weight: 600;
-        }
+    /* Loan Summary */
+    .loan-summary {
+        background: linear-gradient(135deg, #dbe4f3, #c9d6ee);
+        border-radius: 15px;
+        padding: 25px;
+        margin: 20px 0;
+        border-left: 5px solid var(--primary-color);
+    }
 
-        .btn-success {
-            background: linear-gradient(135deg, var(--success-color), #1e7e34);
-            border: none;
-            border-radius: 25px;
-            padding: 12px 30px;
-            font-weight: 600;
-        }
+    /* Book Item */
+    .book-item {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin: 10px 0;
+        border-left: 4px solid var(--primary-color);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
 
-        @media print {
-            body { background: white !important; }
-            .no-print { display: none !important; }
-            .card { box-shadow: none !important; }
-        }
+    /* Receipt */
+    .receipt-section {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin: 20px 0;
+        border: 2px dashed #dee2e6;
+    }
 
-        @media (max-width: 768px) {
-            .container { padding: 10px; }
-        }
-    </style>
-</head>
-<body>
+    /* Buttons */
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        border: none;
+        border-radius: 25px;
+        padding: 12px 30px;
+        font-weight: 600;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        border: none;
+        border-radius: 25px;
+        padding: 12px 30px;
+        font-weight: 600;
+    }
+
+    /* Override Bootstrap Colors */
+    .text-success {
+        color: var(--primary-color) !important;
+    }
+
+    .bg-success {
+        background-color: var(--primary-color) !important;
+    }
+
+    .border-success {
+        border-color: var(--primary-color) !important;
+    }
+
+    .alert-success {
+        background-color: var(--primary-light);
+        color: var(--primary-color);
+        border-left: 5px solid var(--primary-color);
+    }
+
+    /* Custom Alert (ganti warning biar konsisten) */
+    .alert-warning {
+        background-color: var(--primary-light);
+        color: var(--primary-color);
+        border-left: 5px solid var(--primary-color);
+    }
+
+    /* Badge */
+    .badge.bg-primary {
+        background-color: var(--primary-color) !important;
+    }
+
+    /* Link hover */
+    a {
+        color: var(--primary-color);
+    }
+
+    a:hover {
+        color: var(--primary-dark);
+    }
+
+    /* Print */
+    @media print {
+        body { background: white !important; }
+        .no-print { display: none !important; }
+        .card { box-shadow: none !important; }
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+        .container { padding: 10px; }
+    }
+</style>
+
     <div class="container py-4">
         <!-- Header -->
         <div class="text-center mb-4 no-print">
@@ -289,8 +335,7 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+ 
     
     <script>
         // Auto-print after 3 seconds (optional)
@@ -328,5 +373,6 @@
             }
         }, 100);
     </script>
-</body>
-</html>
+
+
+<?= $this->endSection('content') ?>

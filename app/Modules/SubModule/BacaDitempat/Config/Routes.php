@@ -1,7 +1,7 @@
 <?php if (!isset($routes)) {
 	$routes = \Config\Services::routes(true);
 }
-$routes->group('bacaditempat', ['namespace' => 'BacaDitempat\Controllers'], function ($subroutes) {
+$routes->group('baca-di-tempat', ['namespace' => 'BacaDitempat\Controllers'], function ($subroutes) {
 	$subroutes->add('', 'BacaDitempat::index');
 	$subroutes->add('index', 'BacaDitempat::index');
 	$subroutes->add('detail/(:any)', 'BacaDitempat::detail/$1');
@@ -15,7 +15,7 @@ $routes->group('bacaditempat', ['namespace' => 'BacaDitempat\Controllers'], func
 	$subroutes->add('flip', 'BacaDitempat::flip');
 });
 
-$routes->group('api/bacaditempat', ['namespace' => 'BacaDitempat\Controllers\Api'], function ($subroutes) {
+$routes->group('api/baca-di-tempat', ['namespace' => 'BacaDitempat\Controllers\Api'], function ($subroutes) {
 	$subroutes->add('detail/(:any)', 'BacaDitempat::detail/$1');
 	$subroutes->add('create', 'BacaDitempat::create');
 	$subroutes->add('edit/(:any)', 'BacaDitempat::edit/$1');

@@ -27,9 +27,10 @@ class KatalogFormController extends \Base\Controllers\BaseController
         $branch_id = user()->branch_id ?? $this->request->getGet('branch_id');
         
         // Status RDA untuk handle redirect (Default 0 jika belum dipost)
-        $is_rda = $this->request->getPost('IsRDA') ?? $this->request->getGet('rda') ?? 0;
-        $rda_param = ($is_rda == 1) ? '1' : '0';
-
+         $is_rda = $this->request->getPost('IsRDA') ?? 0;
+       
+        // $rda_param = ($is_rda == 1) ? '1' : '0';
+       
         $rules = [
             'judul.a' => [
                 'label'  => 'Judul Utama',
@@ -38,17 +39,24 @@ class KatalogFormController extends \Base\Controllers\BaseController
             ]
         ];
 
-        if ($this->request->getMethod() === 'post') {
-            if (!$this->validate($rules)) {
-            // Ambil semua list error dalam bentuk string/list
-            $errorString = $this->validator->listErrors();
+        // 1. TAMBAHKAN PENGECEKAN METHOD POST DI SINI
+        if ($this->request->getPost()) {
             
-            set_message('toastr_msg', 'Gagal: Judul Utama wajib diisi.');
-            set_message('toastr_type', 'error');
+            if (!$this->validate($rules)) {
+                // Ambil semua list error untuk SweetAlert
+                $error_msg = '<ul>';
+                foreach ($this->validator->getErrors() as $error) {
+                    $error_msg .= '<li>' . esc($error) . '</li>';
+                }
+                $error_msg .= '</ul>';
 
-            // Masukkan error validasi ke flashdata agar bisa dibaca di View
-            return redirect()->back()->withInput()->with('validation_errors', $errorString);
-        }
+                $this->session->setFlashdata('swal_icon', 'error');
+                $this->session->setFlashdata('swal_title', 'Validasi Gagal');
+                $this->session->setFlashdata('swal_html', $error_msg);
+
+                // Kembalikan input agar form tidak kosong
+                return redirect()->back()->withInput();
+            }
 
             $post = $this->request->getPost();
             $db = db_connect();
@@ -69,8 +77,8 @@ class KatalogFormController extends \Base\Controllers\BaseController
                     'UpdateBy'      => user_id(),
                     'UpdateDate'    => date("Y-m-d H:i:s"),
                     'Worksheet_id'  => $post['Worksheet_id'] ?? 1,
-                    'IsRDA'         => $is_rda,
-                    'IsOPAC'        => !empty($post['IsOPAC']) ? 1 : 0,
+                   'IsRDA'         => $is_rda,
+                   'IsOPAC'        => isset($post['IsOPAC']) ? 1 : 0, // Lebih aman pakai isset
                 ];
 
                 if (!empty($post['judul'])) {
@@ -97,7 +105,7 @@ class KatalogFormController extends \Base\Controllers\BaseController
                 $save_data['CallNumber']          = !empty($post['CallNumber']) ? implode_data($post['CallNumber'], ';') : null;
                 $save_data['Note']                = !empty($post['catatan']) ? multi_array($post['catatan'], ';') : null;
                 $save_data['Languages']           = !empty($post['Languages']['lang']) ? implode_data($post['Languages']['lang'], ' ') : null;
-
+               
                 $catalog_id = $this->katalogModel->insert($save_data);
                 
                 // 2. Simpan Ruas
@@ -113,18 +121,25 @@ class KatalogFormController extends \Base\Controllers\BaseController
                 $this->katalogRuasModel->insert_catalog_ruas(data_catalog_ruas($post_merged, $catalog_id));
 
                 $db->transCommit();
-                set_message('toastr_msg', 'Katalog berhasil disimpan');
-                set_message('toastr_type', 'success');
+                
+                $this->session->setFlashdata('swal_icon', 'success');
+                $this->session->setFlashdata('swal_title', 'Berhasil');
+                $this->session->setFlashdata('swal_text', 'Katalog berhasil disimpan');
 
                 if ($post['IsRedirect'] == 1) return redirect()->to('katalog');
-                return redirect()->to("katalog/edit/$catalog_id?rda=$rda_param");
+                return redirect()->to("katalog/edit/$catalog_id?rda=$is_rda");
 
             } catch (\Throwable $th) {
                 $db->transRollback();
-                set_message('toastr_msg', 'Gagal Simpan: ' . $th->getMessage());
-                return redirect()->back()->withInput();
+                
+                $this->session->setFlashdata('swal_icon', 'error');
+                $this->session->setFlashdata('swal_title', 'Terjadi Kesalahan');
+                $this->session->setFlashdata('swal_text', 'Gagal Simpan: ' . $th->getMessage());
+                
+                return redirect()->to('katalog/create?rda=' . $is_rda)->withInput();
             }
-        }
+        
+        } // 2. TUTUP KURUNG KURAWAL IF POST DI SINI
 
         $data['worksheets'] = (new DataModel('worksheets', null, 'ID'))->orderBy('NoUrut')->findAll();
         $data['validation'] = $this->validator ?? \Config\Services::validation();
@@ -138,15 +153,18 @@ class KatalogFormController extends \Base\Controllers\BaseController
     {
         $catalog = $this->katalogModel->find($catalog_id);
         if (!$catalog) {
-            set_message('toastr_msg', 'Katalog tidak ditemukan');
-            set_message('toastr_type', 'error');
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Tidak Ditemukan');
+            $this->session->setFlashdata('swal_text', 'Katalog tidak ditemukan');
             return redirect()->to('katalog');
         }
 
         $branch_id = user()->branch_id ?? $this->request->getGet('branch_id');
-        $is_rda = $this->request->getPost('IsRDA');
+       
+        $is_rda = $this->request->getPost('IsRDA') ?? $catalog->IsRDA ?? 0;
+
      
-        $rda_param = ($is_rda == 1) ? '1' : '0';
+     
 
         $rules = [
             'judul.a' => [
@@ -156,16 +174,23 @@ class KatalogFormController extends \Base\Controllers\BaseController
             ]
         ];
 
-        if ($this->request->getMethod() === 'post') {
+         if ($this->request->getPost()) {
+             
            if (!$this->validate($rules)) {
-                // Ambil semua list error dalam bentuk string/list
-                $errorString = $this->validator->listErrors();
-                
-                set_message('toastr_msg', 'Gagal: Judul Utama wajib diisi.');
-                set_message('toastr_type', 'error');
+          
+                // Ambil semua list error untuk SweetAlert
+                $error_msg = '<ul>';
+                foreach ($this->validator->getErrors() as $error) {
+                    $error_msg .= '<li>' . esc($error) . '</li>';
+                }
+                $error_msg .= '</ul>';
 
-                // Masukkan error validasi ke flashdata agar bisa dibaca di View
-                return redirect()->back()->withInput()->with('validation_errors', $errorString);
+                $this->session->setFlashdata('swal_icon', 'error');
+                $this->session->setFlashdata('swal_title', 'Validasi Gagal');
+                $this->session->setFlashdata('swal_html', $error_msg);
+
+                // Kembalikan input agar form tidak kosong
+                return redirect()->to("katalog/edit/$catalog_id?rda=$is_rda");
             }
 
             $post = $this->request->getPost();
@@ -178,10 +203,9 @@ class KatalogFormController extends \Base\Controllers\BaseController
                     'UpdateBy'     => user_id(),
                     'UpdateDate'   => date("Y-m-d H:i:s"),
                     'Worksheet_id' => $post['Worksheet_id'] ?? $catalog->Worksheet_id,
-                    'IsRDA'        => !empty($post['IsRDA']) ? 1 : 0,
+                    'IsRDA'        => $is_rda,
                     'IsOPAC'       => !empty($post['IsOPAC']) ? 1 : 0,
                 ];
-            
 
                 if (!empty($branch_id)) $update_data['Branch_id'] = $branch_id;
 
@@ -209,7 +233,7 @@ class KatalogFormController extends \Base\Controllers\BaseController
                 $update_data['CallNumber']          = !empty($post['CallNumber']) ? implode_data($post['CallNumber'], ';') : null;
                 $update_data['Note']                = !empty($post['catatan']) ? multi_array($post['catatan'], ';') : null;
                 $update_data['Languages']           = !empty($post['Languages']['lang']) ? implode_data($post['Languages']['lang'], ' ') : null;
-               
+              
                 $this->katalogModel->update($catalog_id, $update_data);
                
                 // 2. Simpan Ruas
@@ -227,16 +251,22 @@ class KatalogFormController extends \Base\Controllers\BaseController
                 $this->katalogRuasModel->insert_catalog_ruas(data_catalog_ruas($post_merged, $catalog_id));
 
                 $db->transCommit();
-                set_message('toastr_msg', 'Katalog berhasil diperbarui');
-                set_message('toastr_type', 'success');
+                
+                $this->session->setFlashdata('swal_icon', 'success');
+                $this->session->setFlashdata('swal_title', 'Berhasil');
+                $this->session->setFlashdata('swal_text', 'Katalog berhasil diperbarui');
 
                 if ($post['IsRedirect'] == 1) return redirect()->to('katalog');
-                return redirect()->to("katalog/edit/$catalog_id?rda=$rda_param");
+                return redirect()->to("katalog/edit/$catalog_id?rda=$is_rda");
 
             } catch (\Throwable $th) {
                 $db->transRollback();
-                set_message('toastr_msg', 'Gagal Update: ' . $th->getMessage());
-                return redirect()->back()->withInput();
+                
+                $this->session->setFlashdata('swal_icon', 'error');
+                $this->session->setFlashdata('swal_title', 'Terjadi Kesalahan');
+                $this->session->setFlashdata('swal_text', 'Gagal Update: ' . $th->getMessage());
+                
+                return redirect()->to("katalog/edit/$catalog_id?rda=$is_rda");
             }
         }
 

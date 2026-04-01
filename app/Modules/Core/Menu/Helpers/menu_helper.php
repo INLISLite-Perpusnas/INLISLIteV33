@@ -33,7 +33,7 @@ if (!function_exists('display_menu_frontend')) {
             $class_icon = 'bx bx-chevron-down';
 
             foreach ($result as $row) {
-                $active = strtolower(trim($request->uri)) === strtolower(trim($row->controller)) ? 'active' : '';
+                $active = strtolower(trim($request->getUri())) === strtolower(trim($row->controller)) ? 'active' : '';
                 $target = '';
                 $link   = base_url($row->controller);
                 if (!filter_var($row->controller, FILTER_VALIDATE_URL) === false) {
@@ -260,7 +260,7 @@ if (!function_exists('display_menu_backend')) {
             }
 
             $url = $row->controller ? base_url($row->controller) : '#';
-            $isActive = (trim((string)$request->uri, '/') === trim($row->controller, '/'));
+            $isActive = (trim((string)$request->getUri(), '/') === trim($row->controller, '/'));
             $activeClass = $isActive ? 'active' : '';
 
             if ($row->childs > 0) {

@@ -4,17 +4,13 @@
 $routes->group('sirkulasi-peminjaman', ['namespace' => 'Peminjaman\Controllers'], function ($subroutes) {
 	$subroutes->add('', 'Peminjaman::index');
 	$subroutes->add('index', 'Peminjaman::index');
-	$subroutes->add('create_loan', 'Peminjaman::create_loan');
-	$subroutes->add('detail/(:any)', 'Peminjaman::detail/$1');
 	$subroutes->add('create', 'Peminjaman::create');
 	$subroutes->add('edit/(:any)', 'Peminjaman::edit/$1');
 	$subroutes->add('delete/(:any)', 'Peminjaman::delete/$1');
 	$subroutes->add('apply_status/(:any)', 'Peminjaman::apply_status/$1');
-	$subroutes->add('do_init', 'Peminjaman::do_init');
-	$subroutes->add('do_upload', 'Peminjaman::do_upload');
-	$subroutes->add('do_delete', 'Peminjaman::do_delete');
-	$subroutes->add('flip', 'Peminjaman::flip');
-
+	$subroutes->add('process-loan', 'Peminjaman::processLoan');
+	$subroutes->add('remove-book', 'Peminjaman::removeBook');
+	$subroutes->add('success', 'Peminjaman::success');
 	//custom
 	$subroutes->add('cart_insert/(:any)', 'Peminjaman::cart_insert/$1');
 	$subroutes->add('cart_remove/(:any)', 'Peminjaman::cart_remove/$1');

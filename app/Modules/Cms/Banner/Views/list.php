@@ -36,8 +36,8 @@ $slug = $request->getGet('slug') ?? '';
 		<div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate">
 			</i>Tabel Banner <?= ucwords(unslugify($slug)) ?>
 			<div class="btn-actions-pane-right actions-icon-btn">
-					<a href="<?= base_url('cms/banner/create?slug=' . $slug) ?>" class=" btn btn-success" title=""><i class="fa fa-plus"></i>
-						Tambah Banner </a>
+				<a href="<?= base_url('cms/banner/create?slug=' . $slug) ?>" class=" btn btn-success" title=""><i class="fa fa-plus"></i>
+					Tambah Banner </a>
 			</div>
 		</div>
 		<div class="card-body">
@@ -65,17 +65,34 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->section('script'); ?>
 <script>
+    $(document).ready(function() {
+        <?php if (session()->getFlashdata('swal_icon')) : ?>
+            Swal.fire({
+                type: '<?= session()->getFlashdata('swal_icon') ?>', // gunakan 'icon' jika SweetAlert2 versi terbaru
+                title: '<?= session()->getFlashdata('swal_title') ?>',
+                html: '<?= session()->getFlashdata('swal_html') ?? session()->getFlashdata('swal_text') ?>',
+                showConfirmButton: false,
+                timer: 3000,
+                icon:'success'
+            });
+        <?php endif; ?>
+    });
+</script>
+<script>
 	var t;
 	$(document).ready(function() {
 		t = $('#tbl_pages').DataTable({
 			"processing": true,
 			"serverSide": true,
+			"scrollCollapse": true,
+			"scrollX": true,
 			"ajax": {
 				"url": '<?php echo site_url('api/banner/datatable/' . $slug) ?>',
 			},
-			"dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
+			"dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
 				"<'row'<'col-md-12'tr>>" +
-				"<'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12 text-right'i>>",
+				"<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
+
 			"pagingType": "full_numbers",
 			"oLanguage": {
 				"sSearch": "<i class='fa fa-search'></i> _INPUT_",

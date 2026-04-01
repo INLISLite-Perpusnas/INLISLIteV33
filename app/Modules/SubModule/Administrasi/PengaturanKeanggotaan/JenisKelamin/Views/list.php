@@ -23,7 +23,7 @@ $slug = $request->getGet('slug') ?? '';
                 <nav class="" aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('jeniskelamin') ?>"><i class="fa fa-home"></i> Home</a></li>
-                        <li class="active breadcrumb-item" aria-current="page">Jenis Kelamin</li>
+                        <li class="breadcrumb-item" aria-current="page">Jenis Kelamin</li>
                     </ol>
                 </nav>
             </div>
@@ -34,7 +34,7 @@ $slug = $request->getGet('slug') ?? '';
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Jenis Kelamin
             <div class="btn-actions-pane-right actions-icon-btn">
                 <?php if (is_allowed('jeniskelamin/create')) : ?>
-                    <a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Jenis Kelamin</a>
+                   <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Jenis Kelamin</a>
                 <?php endif; ?>
             </div>
         </div>

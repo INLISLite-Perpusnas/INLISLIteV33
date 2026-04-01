@@ -2,108 +2,150 @@
 
 <?= $this->section('content') ?>
 <style>
-        :root {
-            --primary-color: #039550;
-            --secondary-color: #f8c43a;
-            --success-color: #28a745;
-            --danger-color: #dc3545;
-        }
+    :root {
+        --primary-color: #1B3878;
+        --primary-dark: #142a5c;
+        --primary-light: #dbe4f3;
+        --secondary-color: #1B3878;
+        --success-color: #1B3878;
+        --danger-color: #dc3545;
+    }
 
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
-        }
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        min-height: 100vh;
+        padding-top: 90px;
+    }
 
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
 
-        .card-header {
-            background: linear-gradient(135deg, var(--primary-color), #027a42);
-            color: white;
-            border-radius: 15px 15px 0 0 !important;
-            padding: 1.5rem;
-        }
+    .card-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        border-radius: 15px 15px 0 0 !important;
+        padding: 1.5rem;
+    }
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), #027a42);
-            border: none;
-            border-radius: 25px;
-            padding: 12px 30px;
-            font-weight: 600;
-        }
+    .btn-primary,
+    .btn-success {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        border: none;
+        border-radius: 25px;
+        padding: 12px 30px;
+        font-weight: 600;
+    }
 
-        .btn-success {
-            background: linear-gradient(135deg, var(--success-color), #1e7e34);
-            border: none;
-            border-radius: 25px;
-            padding: 12px 30px;
-            font-weight: 600;
+    .btn-outline-primary {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .btn-outline-primary:hover {
+        background-color: var(--primary-color);
+        color: #fff;
+    }
+
+    .form-control {
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+        padding: 12px 15px;
+        font-size: 18px;
+        text-align: center;
+        letter-spacing: 1px;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(27, 56, 120, 0.25);
+    }
+
+    .scanner-input {
+        font-family: 'Courier New', monospace;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    .member-card {
+        background: linear-gradient(135deg, var(--primary-light), #c9d6ee);
+        border-radius: 15px;
+        padding: 25px;
+        margin: 20px 0;
+        border-left: 5px solid var(--primary-color);
+    }
+
+    .book-item {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 10px 0;
+        border-left: 4px solid var(--primary-color);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .step-indicator {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .current-step {
+        color: var(--primary-color);
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+
+    /* Override Bootstrap biar full biru */
+    .text-primary,
+    .text-success {
+        color: var(--primary-color) !important;
+    }
+
+    .bg-primary,
+    .bg-success {
+        background-color: var(--primary-color) !important;
+    }
+
+    .badge.bg-primary {
+        background-color: var(--primary-color) !important;
+    }
+
+    .alert-success {
+        background-color: var(--primary-light);
+        color: var(--primary-color);
+        border-left: 5px solid var(--primary-color);
+    }
+
+    .alert-info {
+        background-color: var(--primary-light);
+        color: var(--primary-color);
+        border-left: 5px solid var(--primary-color);
+    }
+
+    .text-warning {
+        color: var(--primary-color) !important;
+    }
+
+    .text-success {
+        color: var(--primary-color) !important;
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            padding: 10px;
         }
 
         .form-control {
-            border-radius: 10px;
-            border: 2px solid #e9ecef;
-            padding: 12px 15px;
-            font-size: 18px;
-            text-align: center;
-            letter-spacing: 1px;
+            font-size: 16px;
         }
-
-        .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(3, 149, 80, 0.25);
-        }
-
-        .scanner-input {
-            font-family: 'Courier New', monospace;
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        .member-card {
-            background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
-            border-radius: 15px;
-            padding: 25px;
-            margin: 20px 0;
-            border-left: 5px solid var(--primary-color);
-        }
-
-        .book-item {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 10px 0;
-            border-left: 4px solid var(--primary-color);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .step-indicator {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .current-step {
-            color: var(--primary-color);
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            .form-control {
-                font-size: 16px;
-            }
-        }
-    </style>
+    }
+</style>
 
 <div class="container py-4">
         <!-- Header -->

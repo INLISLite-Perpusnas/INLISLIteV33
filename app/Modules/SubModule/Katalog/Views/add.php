@@ -43,6 +43,20 @@ $slug = $request->getGet('slug') ?? 'katalog_add';
 <?= $this->section('script'); ?>
 <?= $this->include('Katalog\Views\add_script'); ?>
 <script>
+    $(document).ready(function() {
+        <?php if (session()->getFlashdata('swal_icon')) : ?>
+            Swal.fire({
+                type: '<?= session()->getFlashdata('swal_icon') ?>', // gunakan 'icon' jika SweetAlert2 versi terbaru
+                title: '<?= session()->getFlashdata('swal_title') ?>',
+                html: '<?= session()->getFlashdata('swal_html') ?? session()->getFlashdata('swal_text') ?>',
+                showConfirmButton: false,
+                timer: 3000,
+				icon:'success'
+            });
+        <?php endif; ?>
+    });
+</script>
+<script>
 	const nomorInput = document.getElementById('nomorInput');
 	const ddcInput = document.querySelector('input[name="DeweyNo"]');
 	const pengarangInput = document.querySelector('input[name="judul[c]"]');

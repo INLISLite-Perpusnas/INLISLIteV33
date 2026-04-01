@@ -23,7 +23,7 @@ $slug = $request->getGet('slug') ?? '';
 				<nav class="" aria-label="breadcrumb">
 					<ol class="breadcrumb">
 						<li class="breadcrumb-item"><a href="<?= base_url('jenisanggota') ?>"><i class="fa fa-home"></i> Home</a></li>
-						<li class="active breadcrumb-item" aria-current="page">Jenis Anggota</li>
+						<li class="breadcrumb-item" aria-current="page">Jenis Anggota</li>
 					</ol>
 				</nav>
 			</div>
@@ -34,7 +34,7 @@ $slug = $request->getGet('slug') ?? '';
 		<div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Jenis Anggota
 			<div class="btn-actions-pane-right actions-icon-btn">
 				<?php if (is_allowed('jenisanggota/create')) : ?>
-					<a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Jenis Anggota</a>
+					 <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Jenis Anggota</a>
 				<?php endif; ?>
 			</div>
 		</div>
@@ -51,7 +51,7 @@ $slug = $request->getGet('slug') ?? '';
 						<th class="text-center" width="90">Maksimal Pinjam Koleksi</th>
 						<th class="text-center" width="90">Maksimal Lama Pinjam Koleksi</th>
 						<th class="text-center" width="90">Upload Dokumen Keanggotaan</th>
-						<th class="text-center" width="100">Default Lokasi</th>
+						<th class="text-center" width="90">Default Lokasi</th>
 						<th class="text-center" width="90">Default Jenis Bahan</th>
 						<th class="text-center" width="180">Aksi</th>
 					</tr>
@@ -73,12 +73,15 @@ $slug = $request->getGet('slug') ?? '';
 		t = $('#tbl_data').DataTable({
 			"processing": true,
 			"serverSide": true,
+			"scrollX": true, // ✅ TAMBAHKAN INI
+			"autoWidth": false, // optional biar lebih rapi
 			"ajax": {
 				"url": '<?php echo site_url('api/master-jenis-anggota/datatable/' . $slug) ?>',
 			},
-			"dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
+			"dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
 				"<'row'<'col-md-12'tr>>" +
-				"<'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12 text-right'i>>",
+				"<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
+
 			"pagingType": "full_numbers",
 			"oLanguage": {
 				"sSearch": "<i class='fa fa-search'></i> _INPUT_",
@@ -93,48 +96,59 @@ $slug = $request->getGet('slug') ?? '';
 			"columns": [{
 					data: 'no',
 					className: 'text-center',
-					orderable: false
+					orderable: false,
+					width: "60px"
 				},
 				{
-					data: 'jenisanggota'
-				},
+					data: 'jenisanggota',
+					width: "250px"
+				}, // 🔥 diperlebar
 				{
 					data: 'MasaBerlakuAnggota',
-					className: 'text-center'
+					className: 'text-center',
+					width: "150px"
 				},
 				{
 					data: 'BiayaPendaftaran',
-					className: 'text-right'
+					className: 'text-right',
+					width: "180px"
 				},
 				{
 					data: 'BiayaPerpanjangan',
-					className: 'text-right'
+					className: 'text-right',
+					width: "180px"
 				},
 				{
 					data: 'MaxPinjamKoleksi',
-					className: 'text-center'
+					className: 'text-center',
+					width: "180px"
 				},
 				{
 					data: 'MaxLoanDays',
-					className: 'text-center'
+					className: 'text-center',
+					width: "180px"
 				},
 				{
 					data: 'UploadDokumenKeanggotaanOnline',
-					className: 'text-center'
+					className: 'text-center',
+					width: "220px"
 				},
 				{
 					data: 'DefaultLokasi',
-					className: 'text-center'
+					className: 'text-center',
+					width: "200px"
 				},
 				{
 					data: 'DefaultBahan',
-					className: 'text-center'
+					className: 'text-center',
+					width: "200px"
 				},
 				{
 					data: 'action',
 					className: 'text-center',
-					orderable: false
-				},
+					orderable: false,
+					width: "200px"
+				}
 			],
 			"columnDefs": [{
 					targets: [0, 4, 6],

@@ -6,8 +6,7 @@ use Base\Models\DataModel;
 
 /**
  * KatalogController
- * 
- * Menangani: tampilan daftar, karantina, status OPAC,
+ * * Menangani: tampilan daftar, karantina, status OPAC,
  * hapus permanen, dan toggle status.
  */
 class KatalogController extends \Base\Controllers\BaseController
@@ -50,13 +49,14 @@ class KatalogController extends \Base\Controllers\BaseController
             }
 
             $this->katalogModel->updateBatch($update_data, 'ID');
-            set_message('toastr_msg', 'Berhasil ditambahkan ke Troli Karatina');
-            set_message('toastr_type', 'success');
-            set_message('message', 'Berhasil ditambahkan ke Troli Karatina');
+            
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Berhasil ditambahkan ke Troli Karantina');
         } else {
-            set_message('toastr_msg', 'Pilih katalog yang akan dikarantina terlebih dahulu');
-            set_message('toastr_type', 'warning');
-            set_message('message', 'Pilih katalog yang akan dikarantina terlebih dahulu');
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Pilih katalog yang akan dikarantina terlebih dahulu');
         }
 
         return redirect()->back();
@@ -73,13 +73,14 @@ class KatalogController extends \Base\Controllers\BaseController
             }
 
             $this->katalogModel->updateBatch($update_data, 'ID');
-            set_message('toastr_msg', 'Berhasil dipulihkan ke daftar katalog');
-            set_message('toastr_type', 'success');
-            set_message('message', 'Berhasil dipulihkan ke daftar katalog');
+            
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Berhasil dipulihkan ke daftar katalog');
         } else {
-            set_message('toastr_msg', 'Pilih katalog yang akan dipulihkan terlebih dahulu');
-            set_message('toastr_type', 'warning');
-            set_message('message', 'Pilih katalog yang akan dipulihkan terlebih dahulu');
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Pilih katalog yang akan dipulihkan terlebih dahulu');
         }
 
         return redirect()->back();
@@ -100,13 +101,14 @@ class KatalogController extends \Base\Controllers\BaseController
             }
 
             $this->katalogModel->updateBatch($update_data, 'ID');
-            set_message('toastr_msg', 'Berhasil ditampilkan ke OPAC');
-            set_message('toastr_type', 'success');
-            set_message('message', 'Berhasil ditampilkan ke OPAC');
+            
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Berhasil ditampilkan ke OPAC');
         } else {
-            set_message('toastr_msg', 'Pilih katalog yang akan ditampilkan ke OPAC terlebih dahulu');
-            set_message('toastr_type', 'warning');
-            set_message('message', 'Pilih katalog yang akan ditampilkan ke OPAC terlebih dahulu');
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Pilih katalog yang akan ditampilkan ke OPAC terlebih dahulu');
         }
 
         return redirect()->back();
@@ -127,8 +129,9 @@ class KatalogController extends \Base\Controllers\BaseController
         }
 
         if (empty($ids)) {
-            set_message('toastr_msg', 'Tidak ada katalog yang dipilih');
-            set_message('toastr_type', 'error');
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Tidak ada katalog yang dipilih');
             return redirect()->to('katalog');
         }
 
@@ -145,47 +148,49 @@ class KatalogController extends \Base\Controllers\BaseController
         $this->db->transComplete();
 
         if ($this->db->transStatus() === true) {
-            set_message('toastr_msg', 'Katalog berhasil dihapus');
-            set_message('toastr_type', 'success');
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Katalog berhasil dihapus');
         } else {
-            set_message('toastr_msg', 'Katalog gagal dihapus');
-            set_message('toastr_type', 'warning');
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Katalog gagal dihapus');
         }
 
         return redirect()->to('katalog');
     }
 
-public function hapus_permanen()
-{
-    // 1. Ambil ID dari request (get atau post)
-    $IDs = $this->request->getVar('ID');
-    $ids_to_delete = [];
+    public function hapus_permanen()
+    {
+        // 1. Ambil ID dari request (get atau post)
+        $IDs = $this->request->getVar('ID');
+        $ids_to_delete = [];
 
-    if (!empty($IDs) && is_array($IDs)) {
-        // 2. Loop untuk memastikan data bersih dan masuk ke array penampung
-        foreach ($IDs as $ID) {
-            $ids_to_delete[] = $ID;
+        if (!empty($IDs) && is_array($IDs)) {
+            // 2. Loop untuk memastikan data bersih dan masuk ke array penampung
+            foreach ($IDs as $ID) {
+                $ids_to_delete[] = $ID;
+            }
+
+            // 3. Eksekusi penghapusan
+            // Hapus detailnya dulu (Ruas) agar tidak ada data yatim (orphaned data)
+            $this->katalogRuasModel->whereIn('CatalogId', $ids_to_delete)->delete();
+            
+            // Hapus data utama (Katalog)
+            // Memberikan array ID langsung ke fungsi delete() adalah cara batch delete di CI4
+            $this->katalogModel->delete($ids_to_delete);
+
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Berhasil dihapus permanen');
+        } else {
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Pilih katalog yang akan dihapus permanen terlebih dahulu');
         }
 
-        // 3. Eksekusi penghapusan
-        // Hapus detailnya dulu (Ruas) agar tidak ada data yatim (orphaned data)
-        $this->katalogRuasModel->whereIn('CatalogId', $ids_to_delete)->delete();
-        
-        // Hapus data utama (Katalog)
-        // Memberikan array ID langsung ke fungsi delete() adalah cara batch delete di CI4
-        $this->katalogModel->delete($ids_to_delete);
-
-        set_message('toastr_msg', 'Berhasil dihapus permanen');
-        set_message('toastr_type', 'success');
-        set_message('message', 'Berhasil dihapus permanen');
-    } else {
-        set_message('toastr_msg', 'Pilih katalog yang akan dihapus permanen terlebih dahulu');
-        set_message('toastr_type', 'warning');
-        set_message('message', 'Pilih katalog yang akan dihapus permanen terlebih dahulu');
+        return redirect()->back();
     }
-
-    return redirect()->back();
-}
 
     // ----------------------------------------------------------------
     // STATUS
@@ -199,11 +204,13 @@ public function hapus_permanen()
         $updated = $this->katalogModel->update($id, [$field => $value]);
 
         if ($updated) {
-            set_message('toastr_msg', 'Katalog berhasil disimpan');
-            set_message('toastr_type', 'success');
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Status Katalog berhasil disimpan');
         } else {
-            set_message('toastr_msg', 'Katalog gagal disimpan');
-            set_message('toastr_type', 'warning');
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Status Katalog gagal disimpan');
         }
 
         return redirect()->to('katalog');
@@ -220,11 +227,13 @@ public function hapus_permanen()
         if ($data) {
             $this->edisiSerialModel->delete($id);
             
-            set_message('toastr_msg', 'Edisi serial berhasil dihapus');
-            set_message('toastr_type', 'success');
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Edisi serial berhasil dihapus');
         } else {
-            set_message('toastr_msg', 'Data edisi serial tidak ditemukan (ID: ' . $id . ')');
-            set_message('toastr_type', 'error');
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Tidak Ditemukan');
+            $this->session->setFlashdata('swal_text', 'Data edisi serial tidak ditemukan (ID: ' . $id . ')');
         }
 
         return redirect()->to(base_url('katalog/edit/' . $catalog_id . '?slug=edisi_serial'));

@@ -16,8 +16,8 @@ $nama_perpustakaan = $db->table('settingparameters')->where('Name', 'NamaPerpust
 $npp_perpustakaan=$db->table('settingparameters')->where('Name', 'NPPPerpustakaan')->get()->getRow()->Value?:"NPP Perpustakaan Mitra";
 
 // Get breadcrumb info
-$segment1 = $request->uri->getSegment(1) ?: 'dashboard';
-$segment2 = $request->uri->getSegment(2) ?: '';
+$segment1 = $request->getUri()->getSegment(1) ?? 'dashboard';
+$segment2 = $request->getUri()->getSegment(2) ?? '';
 $page_title = ucfirst($segment2 ?: $segment1);
 ?>
 

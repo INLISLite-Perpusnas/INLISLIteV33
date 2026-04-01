@@ -72,17 +72,34 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->section('script') ?>
 <script>
+    $(document).ready(function() {
+        <?php if (session()->getFlashdata('swal_icon')) : ?>
+            Swal.fire({
+                type: '<?= session()->getFlashdata('swal_icon') ?>', // gunakan 'icon' jika SweetAlert2 versi terbaru
+                title: '<?= session()->getFlashdata('swal_title') ?>',
+                html: '<?= session()->getFlashdata('swal_html') ?? session()->getFlashdata('swal_text') ?>',
+                showConfirmButton: false,
+                timer: 3000,
+                icon:'success'
+            });
+        <?php endif; ?>
+    });
+</script>
+<script>
     var t;
     $(document).ready(function() {
         t = $('#tbl_pages').DataTable({
             "processing": true,
             "serverSide": true,
+            "scrollCollapse": true,
+            "scrollX": true,
             "ajax": {
                 "url": '<?php echo site_url('api/berita/datatable/' . $slug); ?>',
             },
-            "dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
+            "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
                 "<'row'<'col-md-12'tr>>" +
-                "<'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12 text-right'i>>",
+                "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
+
             "pagingType": "full_numbers",
             "oLanguage": {
                 "sSearch": "<i class='fa fa-search'></i> _INPUT_",
@@ -130,10 +147,10 @@ $slug = $request->getGet('slug') ?? '';
                     type: 'image'
                 });
             },
-           "initComplete": function(settings, json) {
+            "initComplete": function(settings, json) {
                 var $searchInput = $('div.dataTables_filter input');
                 $searchInput.unbind();
-                
+
                 // 1. Event untuk merespon tombol Enter (untuk mulai mencari)
                 $searchInput.on('keyup', function(e) {
                     if (e.keyCode == 13) {

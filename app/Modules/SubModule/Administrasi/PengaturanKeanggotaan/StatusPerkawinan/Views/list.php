@@ -23,17 +23,17 @@ $slug = $request->getGet('slug') ?? '';
                 <nav class="" aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('statusperkawinan') ?>"><i class="fa fa-home"></i> Home</a></li>
-                        <li class="active breadcrumb-item" aria-current="page">Status Perkawinan</li>
+                        <li class="breadcrumb-item" aria-current="page">Status Perkawinan</li>
                     </ol>
                 </nav>
             </div>
         </div>
     </div>
 
-    <div class="main-card mb-3 card col-md-8">
+    <div class="main-card mb-3 card col-md-12">
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Status Perkawinan
             <div class="btn-actions-pane-right actions-icon-btn">
-                    <a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Status Perkawinan</a>
+                    <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Status Perkawinan</a>
             </div>
         </div>
         <div class="card-body">
@@ -45,7 +45,7 @@ $slug = $request->getGet('slug') ?? '';
                         <th class="text-center">Status Perkawinan</th>
                         <th class="text-center" width="100">Tanggal Update</th>
                         <th class="text-center" width="90">Status</th>
-                        <th class="text-center" width="180">Aksi</th>
+                        <th class="text-center" style="min-width: 100px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -68,9 +68,10 @@ $slug = $request->getGet('slug') ?? '';
             "ajax": {
                 "url": '<?php echo site_url('api/master-status-perkawinan/datatable/' . $slug) ?>',
             },
-            "dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
-                "<'row'<'col-md-12'tr>>" +
-                "<'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12 text-right'i>>",
+            "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
+                   "<'row'<'col-md-12'tr>>" +
+                   "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
+                   
             "pagingType": "full_numbers",
             "oLanguage": {
                 "sSearch": "<i class='fa fa-search'></i> _INPUT_",

@@ -6,7 +6,6 @@ $slug = $request->getGet('slug') ?? '';
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style') ?>
 <style>
-<<<<<<< HEAD
     .tox.tox-tinymce.tox-fullscreen {
         z-index: 1050;
         top: 60px !important;
@@ -21,6 +20,7 @@ $slug = $request->getGet('slug') ?? '';
         gap: 10px;
         margin-top: 10px;
     }
+
     .img-preview-box {
         position: relative;
         width: 120px;
@@ -31,19 +31,13 @@ $slug = $request->getGet('slug') ?? '';
         overflow: hidden;
         background: #f9f9f9;
     }
+
     .img-preview-box img {
         width: 100%;
         height: 100%;
-        object-fit: cover; /* Agar gambar tidak gepeng */
+        object-fit: cover;
+        /* Agar gambar tidak gepeng */
     }
-=======
-	/* .tox.tox-tinymce.tox-fullscreen {
-		z-index: 1050;
-		top: 60px !important;
-		left: 85px !important;
-		width: calc(100% - 85px) !important;
-	} */
->>>>>>> 768fa1327effd041bd29d938a21825fda142d99e
 </style>
 <?= $this->endSection('style') ?>
 
@@ -65,7 +59,7 @@ $slug = $request->getGet('slug') ?? '';
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
                         <li class="breadcrumb-item"><a href="<?= base_url('cms/berita') ?>"><?= lang('Berita') ?></a></li>
-                        <li class="active breadcrumb-item" aria-current="page">Tambah Berita</li>
+                        <li class="breadcrumb-item" aria-current="page">Tambah Berita</li>
                     </ol>
                 </nav>
             </div>
@@ -81,7 +75,7 @@ $slug = $request->getGet('slug') ?? '';
             <?= get_message('message') ?>
 
             <form id="frm_create" class="col-md-12 mx-auto" method="post" enctype="multipart/form-data" action="<?= base_url('cms/berita/create?slug=' . $slug) ?>">
-                
+
                 <div class="form-row">
                     <div class="col-md-12">
                         <div class="position-relative form-group">
@@ -111,9 +105,9 @@ $slug = $request->getGet('slug') ?? '';
                     <div class="col-md-6">
                         <div class="position-relative form-group p-3 border rounded">
                             <label for="file_cover" class="font-weight-bold">Cover (Wajib)</label>
-                            
+
                             <input type="file" class="form-control-file" name="file_cover" id="file_cover" accept=".jpg,.jpeg,.png" onchange="previewFile(this, 'preview_cover_container')">
-                            
+
                             <small class="form-text text-muted mt-2 mb-2">
                                 - Format: JPG, JPEG, PNG (Max 2 MB)
                             </small>
@@ -125,9 +119,9 @@ $slug = $request->getGet('slug') ?? '';
                     <div class="col-md-6">
                         <div class="position-relative form-group p-3 border rounded">
                             <label for="file_image" class="font-weight-bold">Images Gallery (Opsional)</label>
-                            
+
                             <input type="file" class="form-control-file" name="file_image[]" id="file_image" multiple accept=".jpg,.jpeg,.png" onchange="previewMultipleFiles(this, 'preview_image_container')">
-                            
+
                             <small class="form-text text-muted mt-2 mb-2">
                                 - Tahan CTRL untuk memilih banyak foto. (Max 2 MB per file)
                             </small>
@@ -149,6 +143,20 @@ $slug = $request->getGet('slug') ?? '';
 <?= $this->endSection('page') ?>
 
 <?= $this->section('script') ?>
+<script>
+    $(document).ready(function() {
+        <?php if (session()->getFlashdata('swal_icon')) : ?>
+            Swal.fire({
+                type: '<?= session()->getFlashdata('swal_icon') ?>', // gunakan 'icon' jika SweetAlert2 versi terbaru
+                title: '<?= session()->getFlashdata('swal_title') ?>',
+                html: '<?= session()->getFlashdata('swal_html') ?? session()->getFlashdata('swal_text') ?>',
+                showConfirmButton: false,
+                timer: 3000,
+                icon:'error'
+            });
+        <?php endif; ?>
+    });
+</script>
 <script>
     // 1. Fungsi Preview Single File (Cover)
     function previewFile(input, previewId) {
@@ -186,7 +194,7 @@ $slug = $request->getGet('slug') ?? '';
 
             for (let i = 0; i < filesAmount; i++) {
                 let reader = new FileReader(); // Gunakan let untuk reader
-                let file = input.files[i];      // Tangkap file saat ini
+                let file = input.files[i]; // Tangkap file saat ini
 
                 reader.onload = function(event) {
                     var html = `
@@ -199,6 +207,11 @@ $slug = $request->getGet('slug') ?? '';
                 reader.readAsDataURL(file);
             }
         }
+    }
+    if (!jQuery.now) {
+        jQuery.now = function() {
+            return Date.now();
+        };
     }
 
     // Perbaikan Utama: Membungkus inisialisasi Summernote di dalam $(document).ready()

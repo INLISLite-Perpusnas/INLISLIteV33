@@ -4,22 +4,11 @@
 $routes->group('sirkulasi-pengembalian', ['namespace' => 'Pengembalian\Controllers'], function ($subroutes) {
 	$subroutes->add('', 'Pengembalian::index');
 	$subroutes->add('index', 'Pengembalian::index');
-	$subroutes->add('detail/(:any)', 'Pengembalian::detail/$1');
-	$subroutes->add('create', 'Pengembalian::create');
-	$subroutes->add('edit/(:any)', 'Pengembalian::edit/$1');
-	$subroutes->add('delete/(:any)', 'Pengembalian::delete/$1');
+	$subroutes->get('create', 'Pengembalian::create');
 	$subroutes->add('apply_status/(:any)', 'Pengembalian::apply_status/$1');
-	$subroutes->add('do_init', 'Pengembalian::do_init');
-	$subroutes->add('do_upload', 'Pengembalian::do_upload');
-	$subroutes->add('do_delete', 'Pengembalian::do_delete');
-	$subroutes->add('flip', 'Pengembalian::flip');
-
-	//custom
-	$subroutes->add('do_return', 'Pengembalian::do_return');
-	$subroutes->add('do_return/(:any)', 'Pengembalian::do_return/$1');
-	$subroutes->add('cart_insert', 'Pengembalian::cart_insert/0');
-	$subroutes->add('cart_remove/(:any)', 'Pengembalian::cart_remove/$1');
-	$subroutes->add('cart_destroy', 'Pengembalian::cart_destroy');
+    $subroutes->add('process-return', 'Pengembalian::processReturn');
+	$subroutes->add('check-book', 'Pengembalian::checkBook');
+	$subroutes->add('getReturnHistory', 'Pengembalian::getReturnHistory');
 });
 
 $routes->group('api/sirkulasi-pengembalian', ['namespace' => 'Pengembalian\Controllers\Api'], function ($subroutes) {

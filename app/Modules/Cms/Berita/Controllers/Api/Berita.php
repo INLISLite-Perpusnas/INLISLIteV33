@@ -37,7 +37,8 @@ class Berita extends \Base\Controllers\BaseResourceController
                 'a.id, a.id as action, a.title, a.slug, a.content, a.file_image, a.viewers, a.description,a.sort,  a.active'
             )
             ->select('a.category, a.category_sub')
-            ->select('a.file_image as cover');
+            ->select('a.file_image as cover')
+            ->orderBy('a.created_at', 'DESC');
 
         if (!empty($slug)) {
             $builder = $builder->where('a.category', unslugify($slug));

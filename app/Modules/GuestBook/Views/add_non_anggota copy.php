@@ -7,7 +7,7 @@ if (isset($branch->slug) && $branch->slug != null) {
 }
 
 $request = \Config\Services::request();
-$request->uri->setSilent();
+$request->getUri()->setSilent();
 $cookie_location = cookie_location();
 $mitra_perpustakaan = $cookie_location->Branch_name ?? '';
 $lokasi_perpustakaan = $cookie_location->LocationLibrary_name ?? '';

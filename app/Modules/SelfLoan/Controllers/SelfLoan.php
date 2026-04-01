@@ -48,7 +48,9 @@ class SelfLoan extends \App\Controllers\BaseController
         
         // Process member validation
         if ($memberNo) {
+          
             $memberResult = $this->validateMember($memberNo);
+          
             if ($memberResult['success']) {
                 $this->data['memberData'] = $memberResult['data'];
                 
@@ -87,7 +89,6 @@ class SelfLoan extends \App\Controllers\BaseController
         if (empty($memberNo)) {
             return ['success' => false, 'message' => 'Nomor anggota harus diisi'];
         }
-        
         // Query member data
         $member = $this->db->table('members as m')
             ->select('m.ID, m.MemberNo, m.Fullname, m.Email, m.Phone, 
@@ -97,10 +98,8 @@ class SelfLoan extends \App\Controllers\BaseController
             ->join('jenis_anggota as ja', 'ja.ID = m.JenisAnggota_id', 'left')
             ->join('status_anggota as sa', 'sa.ID = m.StatusAnggota_id', 'left')
             ->where('m.MemberNo', $memberNo)
-            ->where('m.active', 1)
             ->get()
             ->getRow();
-        
         if (!$member) {
             return ['success' => false, 'message' => 'Anggota tidak ditemukan atau tidak aktif'];
         }
@@ -129,7 +128,6 @@ class SelfLoan extends \App\Controllers\BaseController
         foreach ($member_loc as $loc) {
             $member_loc_arr[] = $loc->LocationLoan_id;
         }
-        
         if (!empty($member_loc_arr)) {
             // Get location library ID from current location
             $current_location = $this->db->table('locations')
@@ -143,14 +141,14 @@ class SelfLoan extends \App\Controllers\BaseController
             }
         }
         
-       
-        
+    
         // Get current loans count
         $currentLoans = $this->db->table('collectionloanitems')
             ->where('member_id', $member->ID)
             ->where('LoanStatus', 'Loan')
-            ->where('active', 1)
             ->countAllResults();
+          
+          
         
         // Get loan configuration based on priority
         $loan_config = $this->getLoanConfiguration($member, []);
@@ -222,10 +220,8 @@ class SelfLoan extends \App\Controllers\BaseController
                 ->join('collectionstatus as stat', 'stat.ID = col.Status_id', 'left')
                 ->join('collectionrules as rule', 'rule.ID = col.Rule_id', 'left')
                 ->where('col.NomorBarcode', $barcode)
-                ->where('col.active', 1)
                 ->get()
                 ->getRow();
-            
             if (!$collection) {
                 return ['success' => false, 'message' => 'Koleksi dengan barcode "' . $barcode . '" tidak ditemukan'];
             }
@@ -267,7 +263,6 @@ class SelfLoan extends \App\Controllers\BaseController
             $existingLoan = $this->db->table('collectionloanitems')
                 ->where('Collection_id', $collection->ID)
                 ->where('LoanStatus', 'Loan')
-                ->where('active', 1)
                 ->get()
                 ->getRow();
             
@@ -507,7 +502,7 @@ class SelfLoan extends \App\Controllers\BaseController
         return redirect()->to('/peminjaman-mandiri?MemberNo=' . urlencode($memberNo));
     }
     
-    public function processLoan()
+   public function processLoan()
     {
         $memberNo = $this->request->getPost('MemberNo');
         
@@ -553,15 +548,24 @@ class SelfLoan extends \App\Controllers\BaseController
                    ->with('error', 'Melebihi limit peminjaman (' . $maxLoans . ' dari ' . $loan_config['source'] . ')');
         }
         
-        $this->db->transStart();
+        // --- PERBAIKAN TRANSAKSI DIMULAI DI SINI ---
+        // Gunakan transBegin() untuk transaksi manual
+        $this->db->transBegin();
         
         try {
+            $collection_loan = get_ref_single('collectionloans', 'ID IS NOT NULL','data');
+
+            $lastNumber = $collection_loan ? (int) substr($collection_loan->ID, -5) : 0;
+            $increment = $lastNumber + 1;
+
+            $collection_loan_id = get_pad_number($increment, date('ymd'), 5);
             $loanDate = date('Y-m-d H:i:s');
             $dueDate = date('Y-m-d H:i:s', strtotime("+{$loanDays} days"));
             $locationId = $this->request->getCookie('Location_id') ?: 1;
             
             // Create collection loan record
             $loanData = [
+                'ID' => $collection_loan_id,
                 'CollectionCount' => count($selectedBooks),
                 'LateCount' => 0,
                 'ExtendCount' => 0,
@@ -573,42 +577,57 @@ class SelfLoan extends \App\Controllers\BaseController
                 'CreateDate' => $loanDate,
                 'CreateTerminal' => $this->request->getIPAddress(),
                 'LocationLibrary_id' => $locationId,
-                'active' => 1
             ];
             
-            $this->db->table('collectionloans')->insert($loanData);
-            $newLoanId = $this->db->insertID();
+            // Cek apakah insert master berhasil
+            if (!$this->db->table('collectionloans')->insert($loanData)) {
+                $dbError = $this->db->error();
+                throw new \Exception('Gagal insert collectionloans: ' . $dbError['message']);
+            }
+            
             
             // Process each collection
             foreach ($selectedBooks as $book) {
                 // Create loan item
                 $loanItemData = [
-                    'CollectionLoan_id' => $newLoanId,
+                    'CollectionLoan_id' => $collection_loan_id,
                     'LoanDate' => $loanDate,
                     'DueDate' => $dueDate,
                     'LoanStatus' => 'Loan',
                     'Collection_id' => $book['id'],
-                    'member_id' => $memberData['id'],
+                    'member_id' => $memberData['id'], // Pastikan nama kolom di DB Anda memang huruf kecil 'member_id'
                     'CreateBy' => 1,
                     'CreateDate' => $loanDate,
                     'CreateTerminal' => $this->request->getIPAddress(),
                     'Branch_id' => $memberData['branch_id'],
-                    'active' => 1
                 ];
-                
-                $this->db->table('collectionloanitems')->insert($loanItemData);
+             
+                // Cek apakah insert item berhasil
+                if (!$this->db->table('collectionloanitems')->insert($loanItemData)) {
+                    $dbError = $this->db->error();
+                    throw new \Exception('Gagal insert collectionloanitems (Buku ID: '.$book['id'].'): ' . $dbError['message']);
+                }
                 
                 // Update collection status to "Dipinjam"
-                $this->db->table('collections')
+                if (!$this->db->table('collections')
                     ->where('ID', $book['id'])
                     ->update([
                         'Status_id' => 5, // Dipinjam status
                         'UpdateBy' => 1,
                         'UpdateDate' => $loanDate,
                         'UpdateTerminal' => $this->request->getIPAddress()
-                    ]);
+                    ])) {
+                    $dbError = $this->db->error();
+                    throw new \Exception('Gagal update collections: ' . $dbError['message']);
+                }
             }
             
+            // Cek status akhir transaksi sebelum di-commit
+            if ($this->db->transStatus() === false) {
+                throw new \Exception('Status transaksi false, dibatalkan oleh sistem.');
+            }
+            
+            // Commit semua perubahan jika sukses
             $this->db->transCommit();
             
             // Clear session
@@ -618,15 +637,21 @@ class SelfLoan extends \App\Controllers\BaseController
             return redirect()->to('/peminjaman-mandiri/success?loan_id=' . $newLoanId);
             
         } catch (\Exception $e) {
+            // Rollback jika terjadi kegagalan di titik manapun
             $this->db->transRollback();
+            
+            // Catat error sebenarnya ke file log
             log_message('error', 'Loan processing error: ' . $e->getMessage());
+            
+            // Menampilkan error database langsung ke user (Bagus untuk tahap development/debugging)
             return redirect()->to('/peminjaman-mandiri?MemberNo=' . urlencode($memberNo))
-                   ->with('error', 'Terjadi kesalahan sistem. Silakan coba lagi.');
+                   ->with('error', 'Gagal memproses: ' . $e->getMessage());
         }
     }
     
     public function success()
     {
+        $this->data['title'] = 'Peminjaman Berhasil';
         $loanId = $this->request->getGet('loan_id');
         
         if (!$loanId) {
@@ -651,7 +676,6 @@ class SelfLoan extends \App\Controllers\BaseController
             ->join('collections as col', 'col.ID = cli.Collection_id')
             ->join('catalogs as cat', 'cat.ID = col.Catalog_id')
             ->where('cli.CollectionLoan_id', $loanId)
-            ->where('cli.active', 1)
             ->get()
             ->getResult();
         

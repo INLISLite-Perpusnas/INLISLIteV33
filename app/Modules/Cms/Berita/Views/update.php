@@ -10,7 +10,6 @@ $request = service('request');
         top: 60px !important;
         left: 85px !important;
         width: calc(100% - 85px) !important;
-<<<<<<< HEAD
     }
 
     /* Style untuk Preview Image */
@@ -71,9 +70,6 @@ $request = service('request');
         font-weight: bold;
         display: block;
     }
-=======
-    } */
->>>>>>> 768fa1327effd041bd29d938a21825fda142d99e
 </style>
 <?= $this->endSection('style') ?>
 
@@ -263,8 +259,10 @@ $request = service('request');
         }
     }
 
-    // Perbaikan Utama: Membungkus inisialisasi Summernote di dalam $(document).ready()
-    // dan memindahkannya keluar dari fungsi previewMultipleFiles
+     if (!jQuery.now) {
+    jQuery.now = function() {
+        return Date.now();
+    }};
     $(document).ready(function() {
         // TinyMCE Init (Summernote)
         $('#content').summernote({

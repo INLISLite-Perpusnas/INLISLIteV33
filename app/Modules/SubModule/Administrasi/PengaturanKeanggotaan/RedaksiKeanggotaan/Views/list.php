@@ -23,7 +23,7 @@ $slug = $request->getGet('slug') ?? '';
 				<nav class="" aria-label="breadcrumb">
 					<ol class="breadcrumb">
 						<li class="breadcrumb-item"><a href="<?= base_url('master-redaksi-keanggotaan') ?>"><i class="fa fa-home"></i> Home</a></li>
-						<li class="active breadcrumb-item" aria-current="page">Redaksi Keanggotaan</li>
+						<li class="breadcrumb-item" aria-current="page">Redaksi Keanggotaan</li>
 					</ol>
 				</nav>
 			</div>
@@ -46,7 +46,7 @@ $slug = $request->getGet('slug') ?? '';
 						<th class="text-center" width="35">No </th>
 						<th class="text-center" width="">Kategori</th>
 						<th class="text-center" width="">Nomor Urut</th>
-						<th class="text-center" width="100">Aksi</th>
+						<th class="text-center" style="min-width: 100px;">Aksi</th>
 					</tr>
 				</thead>
 				<tbody>

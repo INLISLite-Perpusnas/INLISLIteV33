@@ -129,6 +129,20 @@ $slug = $request->getGet('slug');
 
 <?= $this->section('script'); ?>
 <script>
+    $(document).ready(function() {
+        <?php if (session()->getFlashdata('swal_icon')) : ?>
+            Swal.fire({
+                type: '<?= session()->getFlashdata('swal_icon') ?>', // gunakan 'icon' jika SweetAlert2 versi terbaru
+                title: '<?= session()->getFlashdata('swal_title') ?>',
+                html: '<?= session()->getFlashdata('swal_html') ?? session()->getFlashdata('swal_text') ?>',
+                showConfirmButton: false,
+                timer: 3000,
+                icon:'error'
+            });
+        <?php endif; ?>
+    });
+</script>
+<script>
     // Fungsi Preview Gambar
     function previewFile(input, previewId) {
         var previewContainer = document.getElementById(previewId);

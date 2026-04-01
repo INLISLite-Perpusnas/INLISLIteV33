@@ -1,6 +1,6 @@
 <?php
 $request = \Config\Services::request();
-$request->uri->setSilent();
+$request->getUri()->setSilent();
 $slug = $request->getGet('slug');
 ?>
 

@@ -36,11 +36,18 @@ $slug = $request->getGet('slug') ?? '';
 			<div class="btn-actions-pane-right actions-icon-btn">
 			</div>
 		</div>
+		<div class="card-footer">
+			<div class="d-block">
+				<button type="button" id="pulihkan_katalog" class="btn btn-warning" data-toggle="tooltip" data-placement="top" title="Semua katalog yang terpilih"><i class="fa fa-undo"></i> Pulihkan dari Karantina</button> &nbsp;
+				<button type="button" id="hapus_permanen" class="btn btn-danger" data-toggle="tooltip" data-placement="top" title="Semua katalog yang terpilih"><i class="fa fa-trash"></i> Hapus Permanen</button>
+			</div>
+		</div>
 		<div class="card-body">
 			<form name="form_items" id="form_items">
 				<table style="width: 100%;" id="tbl_data" class="table table-hover table-striped table-bordered">
 					<thead>
 						<tr>
+							<th class="text-center" width="35">No</th>
 							<th class="text-center" width="35">
 								<input type="checkbox" class="check_data" title="Pilih Semua">
 							</th>
@@ -50,7 +57,7 @@ $slug = $request->getGet('slug') ?? '';
 							<th class="text-center" width="">Publisher</th>
 							<th class="text-center" width="">Deskripsi Fisik</th>
 							<th class="text-center" width="">No. Panggil</th>
-							<th class="text-center" width="">Aksi</th>
+							<th class="text-center" style="min-width: 150px;">Aksi</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -58,41 +65,61 @@ $slug = $request->getGet('slug') ?? '';
 				</table>
 			</form>
 		</div>
-		<div class="card-footer">
-			<div class="d-block">
-				<button type="button" id="pulihkan_katalog" class="btn btn-warning" data-toggle="tooltip" data-placement="top" title="Semua katalog yang terpilih"><i class="fa fa-undo"></i> Pulihkan dari Karantina</button> &nbsp;
-				<button type="button" id="hapus_permanen" class="btn btn-danger" data-toggle="tooltip" data-placement="top" title="Semua katalog yang terpilih"><i class="fa fa-trash"></i> Hapus Permanen</button>
-			</div>
-		</div>
+		
 	</div>
 </div>
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
 <script>
+    $(document).ready(function() {
+        <?php if (session()->getFlashdata('swal_icon')) : ?>
+            Swal.fire({
+                type: '<?= session()->getFlashdata('swal_icon') ?>', // gunakan 'icon' jika SweetAlert2 versi terbaru
+                title: '<?= session()->getFlashdata('swal_title') ?>',
+                html: '<?= session()->getFlashdata('swal_html') ?? session()->getFlashdata('swal_text') ?>',
+                showConfirmButton: false,
+                timer: 3000,
+                icon:'success'
+            });
+        <?php endif; ?>
+    });
+</script>
+<script>
 	var t;
 	$(document).ready(function() {
 		t = $('#tbl_data').DataTable({
 			"processing": true,
 			"serverSide": true,
+			'scrollX': true,
+			"scrollCollapse": true,
+
 			"ajax": {
 				"url": '<?php echo site_url('api/katalog/datatable/1') ?>',
 			},
-			"dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
-				"<'row'<'col-md-12'tr>>" +
-				"<'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12 text-right'i>>",
-			"pagingType": "full_numbers",
-			"oLanguage": {
-				"sSearch": "<i class='fa fa-search'></i> _INPUT_",
-				"sLengthMenu": "_MENU_",
-				"oPaginate": {
-					"sNext": "<i class='fa fa-chevron-right'></i>",
-					"sPrevious": "<i class='fa fa-chevron-left'></i>",
-					"sLast": "<i class='fa fa-chevron-double-right'></i>",
-					"sFirst": "<i class='fa fa-chevron-double-left'></i>",
-				}
-			},
-			"columns": [{
+			"dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
+                   "<'row'<'col-md-12'tr>>" +
+                   "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
+                   
+            "pagingType": "full_numbers",
+            "oLanguage": {
+                "sSearch": "<i class='fa fa-search'></i> _INPUT_",
+                "sLengthMenu": "_MENU_",
+                "oPaginate": {
+                    "sNext": "<i class='fa fa-chevron-right'></i>",
+                    "sPrevious": "<i class='fa fa-chevron-left'></i>",
+                    "sLast": "<i class='fa fa-chevron-double-right'></i>",
+                    "sFirst": "<i class='fa fa-chevron-double-left'></i>",
+                }
+            },
+			"columns": [
+				 {
+                    data: 'no',
+                    className: 'text-center',
+                    searchable: false, // Wajib false
+                    orderable: false
+                },
+			{
 					data: 'ID',
 					className: 'text-center',
 					orderable: false

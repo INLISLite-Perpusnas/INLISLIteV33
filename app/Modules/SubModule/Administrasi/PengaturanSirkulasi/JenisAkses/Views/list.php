@@ -25,7 +25,7 @@ $slug = $request->getGet('slug') ?? '';
                         <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i></a></li>
                         <li class="breadcrumb-item">Administrasi</li>
                         <li class="breadcrumb-item">Pengaturan Sirkulasi</li>
-                        <li class="breadcrumb-item active">Jenis Akses</li>
+                        <li class="breadcrumb-item">Jenis Akses</li>
                     </ol>
                 </nav>
             </div>
@@ -36,7 +36,7 @@ $slug = $request->getGet('slug') ?? '';
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Jenis Akses
             <div class="btn-actions-pane-right actions-icon-btn">
                 <?php if (is_allowed('master-jenis-akses/create')) : ?>
-                    <a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Jenis Akses</a>
+                    <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Jenis Akses</a>
                 <?php endif; ?>
             </div>
         </div>
@@ -73,20 +73,21 @@ $slug = $request->getGet('slug') ?? '';
             "ajax": {
                 "url": '<?php echo site_url('api/master-jenis-akses/datatable/' . $slug) ?>',
             },
-            "dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
-                "<'row'<'col-md-12'tr>>" +
-                "<'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12 text-right'i>>",
-            "pagingType": "full_numbers",
-            "oLanguage": {
-                "sSearch": "<i class='fa fa-search'></i> _INPUT_",
-                "sLengthMenu": "_MENU_",
-                "oPaginate": {
-                    "sNext": "<i class='fa fa-chevron-right'></i>",
-                    "sPrevious": "<i class='fa fa-chevron-left'></i>",
-                    "sLast": "<i class='fa fa-chevron-double-right'></i>",
-                    "sFirst": "<i class='fa fa-chevron-double-left'></i>",
-                }
-            },
+         	"dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
+				"<'row'<'col-md-12'tr>>" +
+				"<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
+
+			"pagingType": "full_numbers",
+			"oLanguage": {
+				"sSearch": "<i class='fa fa-search'></i> _INPUT_",
+				"sLengthMenu": "_MENU_",
+				"oPaginate": {
+					"sNext": "<i class='fa fa-chevron-right'></i>",
+					"sPrevious": "<i class='fa fa-chevron-left'></i>",
+					"sLast": "<i class='fa fa-chevron-double-right'></i>",
+					"sFirst": "<i class='fa fa-chevron-double-left'></i>",
+				}
+			},
             "columns": [{
                     data: 'no',
                     className: 'text-center',
@@ -118,7 +119,7 @@ $slug = $request->getGet('slug') ?? '';
                 orderable: false
             }],
             "order": [
-                [2, "desc"]
+                [1, "desc"]
             ],
             "drawCallback": function(data, type, full, meta) {
                 var api = this.api();
