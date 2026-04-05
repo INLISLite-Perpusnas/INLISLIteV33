@@ -6,7 +6,7 @@
                 <h5 class="modal-title">
                     <i class="fas fa-upload"></i> Upload Kop Laporan
                 </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -58,7 +58,7 @@
                     <button type="button" id="btn_delete_kop" class="btn btn-danger mr-auto" style="display: none;">
                         <i class="fas fa-trash"></i> Hapus Kop Laporan
                     </button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-upload"></i> Upload
                     </button>
@@ -181,7 +181,7 @@
         $(selector).html(
             '<div class="alert ' + alertClass + ' alert-dismissible fade show" role="alert">' +
                 '<i class="fas fa-' + icon + '"></i> ' + message +
-                '<button type="button" class="close" data-dismiss="alert">' +
+                '<button type="button" class="close" data-bs-dismiss="alert">' +
                     '<span aria-hidden="true">&times;</span>' +
                 '</button>' +
             '</div>'

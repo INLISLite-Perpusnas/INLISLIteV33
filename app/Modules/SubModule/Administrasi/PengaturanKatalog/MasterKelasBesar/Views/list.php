@@ -34,7 +34,7 @@ $slug = $request->getGet('slug') ?? '';
                 <nav class="" aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('master-kelas-besar') ?>"><i class="fa fa-home"></i> Home</a></li>
-                        <li class="active breadcrumb-item" aria-current="page">Master Kelas Besar</li>
+                        <li class="breadcrumb-item" aria-current="page">Master Kelas Besar</li>
                     </ol>
                 </nav>
             </div>
@@ -45,7 +45,7 @@ $slug = $request->getGet('slug') ?? '';
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Master Kelas Besar
             <div class="btn-actions-pane-right actions-icon-btn">
                 <?php if (is_allowed('master-kelas-besar/create')) : ?>
-                    <a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Kelas Besar</a>
+                    <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Kelas Besar</a>
                 <?php endif; ?>
             </div>
         </div>
@@ -78,12 +78,15 @@ $slug = $request->getGet('slug') ?? '';
         t = $('#tbl_data').DataTable({
             "processing": true,
             "serverSide": true,
+            "scrollX": true,
+            "scrollCollapse": true,
             "ajax": {
                 "url": '<?php echo site_url('master-kelas-besar/datatable/' . $slug) ?>',
             },
-            "dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
-                "<'row'<'col-md-12'tr>>" +
-                "<'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12 text-right'i>>",
+           "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
+                   "<'row'<'col-md-12'tr>>" +
+                   "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
+                   
             "pagingType": "full_numbers",
             "oLanguage": {
                 "sSearch": "<i class='fa fa-search'></i> _INPUT_",

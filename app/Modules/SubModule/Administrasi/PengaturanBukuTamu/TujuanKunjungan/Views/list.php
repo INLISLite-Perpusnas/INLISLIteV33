@@ -25,7 +25,7 @@ $slug = $request->getGet('slug') ?? '';
                         <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i></a></li>
                         <li class="breadcrumb-item">Administrasi</li>
                         <li class="breadcrumb-item">Pengaturan Buku Tamu</li>
-                        <li class="breadcrumb-item active">Tujuan Kunjungan</li>
+                        <li class="breadcrumb-item">Tujuan Kunjungan</li>
                     </ol>
                 </nav>
             </div>
@@ -51,7 +51,7 @@ $slug = $request->getGet('slug') ?? '';
                         <th class="text-center" width="90">Non Member</th>
                         <th class="text-center" width="90">Rombongan</th>
                         <th class="text-center" width="90">Active</th>
-                        <th class="text-center" width="180">Aksi</th>
+                        <th class="text-center" style="min-width: 250px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -71,12 +71,15 @@ $slug = $request->getGet('slug') ?? '';
         t = $('#tbl_data').DataTable({
             "processing": true,
             "serverSide": true,
+            "scrollX": true,
+            "scrollCollapse": true,
             "ajax": {
                 "url": '<?php echo site_url('api/tujuan-kunjungan/datatable/' . $slug) ?>',
             },
-            "dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
-                "<'row'<'col-md-12'tr>>" +
-                "<'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12 text-right'i>>",
+           "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
+                   "<'row'<'col-md-12'tr>>" +
+                   "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
+                   
             "pagingType": "full_numbers",
             "oLanguage": {
                 "sSearch": "<i class='fa fa-search'></i> _INPUT_",

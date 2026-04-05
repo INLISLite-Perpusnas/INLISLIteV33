@@ -5,7 +5,7 @@
                 <h5 class="modal-title">
                     <i class="header-icon lnr-pencil icon-gradient bg-plum-plate"> </i> Edit Peraturan Peminjaman Hari
                 </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>

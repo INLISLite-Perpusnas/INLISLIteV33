@@ -80,15 +80,13 @@ $slug = $request->getGet('slug') ?? '';
                 "url": '<?php echo site_url('api/peraturan-peminjaman-tanggal/datatable/' . $slug) ?>',
             },
             // Update DOM agar search bar muncul (huruf 'f' adalah filter/search)
-            "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
-                "<'row'<'col-md-12'tr>>" +
-                "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
-
+        "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
+                   "<'row'<'col-md-12'tr>>" +
+                   "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
+                   
             "pagingType": "full_numbers",
             "oLanguage": {
-                // Shortcut ikon search
-                "sSearch": "<i class='fa fa-search'></i> ",
-                "sSearchPlaceholder": "Cari data...",
+                "sSearch": "<i class='fa fa-search'></i> _INPUT_",
                 "sLengthMenu": "_MENU_",
                 "oPaginate": {
                     "sNext": "<i class='fa fa-chevron-right'></i>",
