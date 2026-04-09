@@ -33,16 +33,10 @@ class KategoriKoleksi extends \Base\Controllers\BaseResourceController
 	{ 
 		$db = db_connect();
 		$builder = $db->table('collectioncategorys as a')
-			->select('a.ID, a.ID as action, a.Name as Nama, a.UpdateDate, a.active, a.Branch_id')
+			->select('a.ID, a.ID as action, a.Name as Nama, a.UpdateDate, a.active')
 			->select('0 as JumlahKoleksi');
 
-		if (user()->category == 'admin') {
-			$builder;
-        } elseif (user()->category == 'sa_umum' ) {
-            $builder->where('a.Branch_id', 0)->orWhere('a.Branch_id', branch_id());
-        }  else {
-            $builder->where('a.Branch_id', branch_id());
-        }
+	    
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')

@@ -25,18 +25,18 @@ $slug = $request->getGet('slug') ?? '';
                         <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i></a></li>
                         <li class="breadcrumb-item">Administrasi</li>
                         <li class="breadcrumb-item">Pengaturan Akuisisi</li>
-                        <li class="breadcrumb-item active">Media Koleksi</li>
+                        <li class="breadcrumb-item">Media Koleksi</li>
                     </ol>
                 </nav>
             </div>
         </div>
     </div>
 
-    <div class="main-card mb-3 card col-md-8">
+    <div class="main-card mb-3 card col-md-12">
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Media Koleksi
             <div class="btn-actions-pane-right actions-icon-btn">
                 <?php if (is_allowed('master-media-koleksi/create')) : ?>
-                    <a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Media Koleksi</a>
+                   <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Media Koleksi</a>
                 <?php endif; ?>
             </div>
         </div>
@@ -50,7 +50,7 @@ $slug = $request->getGet('slug') ?? '';
                         <th class="text-center">Jumlah Koleksi</th>
                         <th class="text-center" width="100">Tanggal Update</th>
                         <th class="text-center" width="90">Status</th>
-                        <th class="text-center" width="180">Aksi</th>
+                        <th class="text-center" style="min-width: 150px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -73,9 +73,10 @@ $slug = $request->getGet('slug') ?? '';
             "ajax": {
                 "url": '<?php echo site_url('api/master-media-koleksi/datatable/' . $slug) ?>',
             },
-            "dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
-                "<'row'<'col-md-12'tr>>" +
-                "<'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12 text-right'i>>",
+               "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
+                   "<'row'<'col-md-12'tr>>" +
+                   "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
+                   
             "pagingType": "full_numbers",
             "oLanguage": {
                 "sSearch": "<i class='fa fa-search'></i> _INPUT_",
@@ -118,7 +119,7 @@ $slug = $request->getGet('slug') ?? '';
                 orderable: false,
             }, ],
             "order": [
-                [2, "desc"]
+                [3, "desc"]
             ],
             "drawCallback": function(data, type, full, meta) {
                 var api = this.api();
