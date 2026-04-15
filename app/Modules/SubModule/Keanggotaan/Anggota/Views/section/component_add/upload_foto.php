@@ -52,10 +52,10 @@
 
 <div class="row">
 	<div class="col-md-12">
-		<div id="accordion" class="accordion-wrapper mb-3">
+		<div id="accordion_foto" class="accordion-wrapper mb-3">
 			<div class="card">
 				<div class="card-header-tab card-header">
-					<button type="button" data-toggle="collapse" data-target="#collapse_madatory4"
+					<button type="button" data-toggle="collapse" data-target="#collapse_foto"
 						aria-expanded="true" aria-controls="collapse_madatory"
 						class="text-left m-0 p-0 btn btn-link">
 						<h5 class="m-0 p-0">
@@ -65,7 +65,7 @@
 						</h5>
 					</button>
 				</div>
-				<div data-parent="#accordion" id="collapse_madatory4" class="collapse" style="">
+				<div data-parent="#accordion_foto" id="collapse_foto" class="collapse show">
 					<div class="card-body">
 						<div class="form-row">
 							<div class="col-md-6">

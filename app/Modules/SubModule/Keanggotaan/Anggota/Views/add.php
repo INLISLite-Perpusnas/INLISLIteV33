@@ -28,8 +28,8 @@ $request = service('request');
                 <?= lang('Anggota.label.home') ?></a></li>
             <li class="breadcrumb-item"><a href="<?= base_url('anggota') ?>"><?= lang('Anggota.module') ?></a>
             </li>
-            <li class="active breadcrumb-item" aria-current="page"><?= lang('Anggota.action.update') ?>
-              <?= lang('Anggota.module') ?></li>
+            <li class="breadcrumb-item" aria-current="page">Tambah Anggota
+             </li>
           </ol>
         </nav>
       </div>

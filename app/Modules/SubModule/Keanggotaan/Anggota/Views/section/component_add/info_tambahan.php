@@ -1,9 +1,9 @@
 <div class="row">
         <div class="col-md-12">
-            <div id="accordion" class="accordion-wrapper mb-3">
+           <div id="accordion_tambahan" class="accordion-wrapper mb-3">
                 <div class="card">
                     <div class="card-header-tab card-header">
-                        <button type="button" data-toggle="collapse" data-target="#collapse_madatory3"
+                        <button type="button" data-toggle="collapse" data-target="#collapse_tambahan"
                             aria-expanded="true" aria-controls="collapse_madatory"
                             class="text-left m-0 p-0 btn btn-link">
                             <h5 class="m-0 p-0">
@@ -11,7 +11,7 @@
                             </h5>
                         </button>
                     </div>
-                    <div data-parent="#accordion" id="collapse_madatory3" class="collapse" style="">
+                   <div data-parent="#accordion_tambahan" id="collapse_tambahan" class="collapse show">
                         <div class="card-body">
                             <div class="form-row">
                                 <div class="col-md-12">

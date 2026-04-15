@@ -10,17 +10,7 @@
             // alert(i);
         });
 
-        // var i = 0;
-        // $('.add-judul').click(function() {
-        //     var jum_field = $('.form-reapet-judul-sebelumnya').length;
-        //     i++
-        //     if(jum_field >= 0)
-        //     {
-        //         jum_field = parseInt(jum_field)+1;
-        //     }        
-        //     $('#judul-sebelumnya').append('<div alt = "var i: '+i+' var jum_field:'+jum_field+'" id = "judul-sebelumnya'+i+'" class="form-reapet input-group colorpicker-component" title="Using format option"> <input type="text" class="form-control" name="judul_sebelumnya[]" id="judul_sebelumnya[]" placeholder="Judul Sebelumnya" value="Judul Sebelumnya'+i+'" /> <div class="input-group-append"> <span id = "'+i+'" class="remove-judul btn btn-outline-secondary"><i class="fa fa-minus"></i></span> </div> </div>');
-        //     alert(jum_field);
-        // });
+
 
         $(document).on('click', '.remove-judul', function() {
             var button_id = $(this).attr('id');
@@ -125,14 +115,7 @@
             // alert($('#inputGroupSelect01').find(":selected").val());
         });
 
-        // $(document).on('change', ".form-group-tajuk-reapet", function() {
-        //     var id = $(this).attr("id");
-        //     var tag = $('input[name="Repet-Radio-Note['+id+']"]:checked').val()
 
-        //     // $('#Note').attr('name','new_name')
-        //     $('#Note_'+id+'').attr('name','Radio-Note[]['+tag+']');
-        //     // alert($('input[name="Repet-Radio-Note['+id+']"]:checked').val());
-        // });
 
         $(document).on('change', ".reapet-cust-sel", function() {
             var attr_id = $(this).attr("id");
@@ -174,30 +157,7 @@
         });
     });
 
-    $(document).ready(function() {
-        var i = 1;
-        $('.add-eksemplar').click(function() {
-            var html = [];
-            i++
-
-            html.push('<div id = "eksemplar' + i + '" class="form input-group colorpicker-component mt-2" title="Using format option"> ');
-            html.push('<div class="input-group-prepend"><span class="input-group-text">No. Induk: </span></div>');
-            html.push('<input type="text" class="form-control" name="Collections[NoInduk][0]" id="repeat-NoInduk' + i + '" placeholder="" value="" />');
-            html.push('<div class="input-group-prepend"><span class="input-group-text">No. Barcode: </span></div>');
-            html.push('<input type="text" class="form-control" name="Collections[NomorBarcode][0]" id="repeat-NomorBarcode' + i + '" placeholder="" value="" />');
-            html.push('<div class="input-group-prepend"><span class="input-group-text">No. RFID: </span></div>');
-            html.push('<input type="text" class="form-control" name="Collections[RFID][0]" id="repeat-RFID' + i + '" placeholder="" value="" />');
-            html.push('<div class="input-group-append"> <span id = "' + i + '" class="remove-eksemplar btn btn-outline-secondary"><i class="fa fa-minus"></i></span> </div>');
-            html.push('</div>');
-            $("#eksemplar").append(html.join(''));
-        });
-
-        $(document).on('click', '.remove-eksemplar', function() {
-            var button_id = $(this).attr('id');
-            // alert("$('#tajuk-pengarang'"+button_id+").remove()");        
-            $('#eksemplar' + button_id).remove();
-        });
-    });
+    
 
     $(document).ready(function() {
         var i = 1;

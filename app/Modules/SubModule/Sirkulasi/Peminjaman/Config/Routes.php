@@ -16,16 +16,16 @@ $routes->group('sirkulasi-peminjaman', ['namespace' => 'Peminjaman\Controllers']
 	$subroutes->add('cart_remove/(:any)', 'Peminjaman::cart_remove/$1');
 	$subroutes->add('cart_destroy', 'Peminjaman::cart_destroy');
 	$subroutes->add('mandiri', 'Peminjaman::mandiri');
+	   $subroutes->post('send-notification/(:num)',  'Peminjaman::sendNotification/$1');
+	$subroutes->post('send-all-notification',     'Peminjaman::sendAllNotification');
+	$subroutes->get('overdue-summary',            'Peminjaman::overdueSummary');
 });
 
 $routes->group('api/sirkulasi-peminjaman', ['namespace' => 'Peminjaman\Controllers\Api'], function ($subroutes) {
-	$subroutes->add('detail/(:any)', 'Peminjaman::detail/$1');
-	$subroutes->add('create', 'Peminjaman::create');
+	
 	$subroutes->add('loan_history', 'Peminjaman::loan_history');
-	$subroutes->post('CreateLoan', 'Peminjaman::CreateLoan');
-	$subroutes->add('edit/(:any)', 'Peminjaman::edit/$1');
-	$subroutes->add('delete/(:any)', 'Peminjaman::delete/$1');
-
+ 
+ 
 	//custom
 	$subroutes->add('datatable', 'Peminjaman::datatable');
 	$subroutes->add('datatable/(:any)', 'Peminjaman::datatable/$1');

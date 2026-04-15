@@ -391,22 +391,26 @@
                                                     <th>Aksi</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>
-                                                <?php foreach ($roweksemplar_drm as $eksemplar_drm): ?>
-                                                    <tr>
-                                                        <td><code><?= esc($eksemplar_drm->NomorBarcode) ?></code></td>
-                                                        <td><code><?= esc($eksemplar_drm->CallNumber) ?></code></td>
-                                                        <td><span class="badge bg-primary"><?= esc($eksemplar_drm->RuleName) ?></span></td>
-                                                        <td><i class="fas fa-cloud me-1"></i><?= esc($eksemplar_drm->LocationName) ?></td>
-                                                        <td><span class="badge bg-success"><?= esc($eksemplar_drm->StatusName) ?></span></td>
-                                                        <td>
-                                                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#pdfModal<?= $catalog['ID'] ?>">
-                                                                <i class="fas fa-file-pdf me-1"></i>Baca PDF
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                <?php endforeach; ?>
-                                            </tbody>
+                                           <tbody>
+<?php foreach ($roweksemplar_drm as $eksemplar_drm): ?>
+    <tr>
+        <td><code><?= esc($eksemplar_drm->NomorBarcode) ?></code></td>
+        <td><code><?= esc($eksemplar_drm->CallNumber) ?></code></td>
+        <td><span class="badge bg-primary"><?= esc($eksemplar_drm->RuleName) ?></span></td>
+        <td><i class="fas fa-cloud me-1"></i><?= esc($eksemplar_drm->LocationName) ?></td>
+        <td><span class="badge bg-success"><?= esc($eksemplar_drm->StatusName) ?></span></td>
+        <td>
+            <a href="<?= base_url('katalog/view_decrypted/' . encData($catalog['ID'])) ?>" 
+               target="_blank" 
+               class="btn btn-primary btn-sm view-decrypted" 
+               data-id="<?= $catalog['ID'] ?>">
+               
+                <i class="fas fa-file-pdf me-1"></i>Baca PDF
+            </a>
+        </td>
+    </tr>
+<?php endforeach; ?>
+</tbody>
                                         </table>
                                     </div>
                                 </div>

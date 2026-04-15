@@ -16,11 +16,13 @@ class Peminjaman extends \Base\Controllers\BaseController
 	public $collectionLoanItemModel;
 	public $cart;
 	public $db;
+    public $settingModel;
 
 	function __construct()
 	{
 		$this->peminjamanModel = new \Peminjaman\Models\PeminjamanModel();
 		$this->collectionModel = new \Peminjaman\Models\CollectionModel();
+        $this->settingModel = new \PenomoranKoleksi\Models\PenomoranKoleksiModel();
 		$this->collectionLoanModel = new \Peminjaman\Models\CollectionLoanModel();
 		$this->collectionLoanItemModel = new \Peminjaman\Models\CollectionLoanItemModel();
 		$this->cart = new \App\Libraries\Cart();
@@ -754,7 +756,274 @@ private function getDayName($day_index)
 		return redirect()->to('/peminjaman');
 	}
 
-    
+    private function getOverdueData(): array
+{
+    $db = db_connect();
+
+    // --- Ambil pengaturan hari libur weekend ---
+    $settingsData = $this->settingModel
+        ->select('Name, Value')
+        ->whereIn('Name', ['IsSaturdayHoliday', 'IsSundayHoliday'])
+        ->findAll();
+
+    $settings          = array_column($settingsData, 'Value', 'Name');
+    $isSaturdayHoliday = $settings['IsSaturdayHoliday'] ?? 'True';
+    $isSundayHoliday   = $settings['IsSundayHoliday']   ?? 'True';
+
+    $weekendDaysToIgnore = [];
+    if ($isSaturdayHoliday !== 'False') $weekendDaysToIgnore[] = '6';
+    if ($isSundayHoliday   !== 'False') $weekendDaysToIgnore[] = '7';
+
+    // --- Ambil hari libur nasional/kustom ---
+    $holidayRows = $db->table('holidays as h')
+        ->select('h.Dates')
+        ->where('h.active', 1)
+        ->get()
+        ->getResult();
+
+    $holidayList = [];
+    foreach ($holidayRows as $holiday) {
+        $holidayList[date('Y-m-d', strtotime($holiday->Dates))] = true;
+    }
+
+    // --- Query pinjaman yang sudah melewati jatuh tempo ---
+    $today = date('Y-m-d');
+    $rows  = $db->table('collectionloans cl')
+        ->select([
+            'cli.ID',
+            'cli.CollectionLoan_id',
+            'cli.LoanDate',
+            'cli.DueDate',
+            'col.NomorBarcode',
+            'a.Title',
+            'a.Publisher',
+            'm.Fullname',
+            'm.MemberNo',
+            'm.Email',            // <-- pastikan kolom ini ada di tabel members
+        ])
+        ->join('collectionloanitems cli', 'cli.CollectionLoan_id = cl.ID')
+        ->join('collections col',         'col.ID = cli.Collection_id')
+        ->join('catalogs a',              'a.ID = col.Catalog_id')
+        ->join('members m',               'm.ID = cli.member_id')
+        ->where('cli.LoanStatus', 'Loan')
+        ->where('cli.DueDate <', $today)        // Hanya yang sudah melewati jatuh tempo
+        ->orderBy('cli.DueDate', 'ASC')
+        ->get()
+        ->getResult();
+
+    // --- Hitung hari terlambat per row (tanpa hari libur) ---
+    foreach ($rows as &$row) {
+        $periods  = \Carbon\CarbonPeriod::create($row->DueDate, $today);
+        $lateDates = [];
+
+        foreach ($periods as $period) {
+            $currentDayOfWeek = $period->format('N');
+            $currentDate      = $period->format('Y-m-d');
+
+            // Lewati tanggal jatuh tempo itu sendiri
+            if ($currentDate == $row->DueDate) continue;
+
+            // Lewati weekend yang dianggap libur
+            if (in_array($currentDayOfWeek, $weekendDaysToIgnore)) continue;
+
+            // Lewati hari libur nasional/kustom
+            if (isset($holidayList[$currentDate])) continue;
+
+            $lateDates[] = $currentDate;
+        }
+
+        $row->LateDays = count($lateDates); // Integer hari terlambat
+    }
+    unset($row);
+
+    return $rows;
+}
+
+
+// ---------- METHOD 1: Kirim notifikasi ke SATU item pinjaman ---------------
+
+/**
+ * Kirim email notifikasi keterlambatan untuk satu item pinjaman.
+ * Endpoint: POST /api/sirkulasi-peminjaman/send-notification/{id}
+ *
+ * @param  int  $id  ID dari collectionloanitems
+ */
+public function sendNotification(int $id): \CodeIgniter\HTTP\ResponseInterface
+{
+    $db   = db_connect();
+    $today = date('Y-m-d');
+
+    // --- Ambil data spesifik berdasarkan ID ---
+    $row = $db->table('collectionloans cl')
+        ->select([
+            'cli.ID',
+            'cli.CollectionLoan_id',
+            'cli.LoanDate',
+            'cli.DueDate',
+            'col.NomorBarcode',
+            'a.Title',
+            'a.Publisher',
+            'm.Fullname',
+            'm.MemberNo',
+            'm.Email',
+        ])
+        ->join('collectionloanitems cli', 'cli.CollectionLoan_id = cl.ID')
+        ->join('collections col',         'col.ID = cli.Collection_id')
+        ->join('catalogs a',              'a.ID = col.Catalog_id')
+        ->join('members m',               'm.ID = cli.member_id')
+        ->where('cli.ID', $id)
+        ->where('cli.LoanStatus', 'Loan')
+        ->get()
+        ->getRow();
+
+    if (!$row) {
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => 'Data pinjaman tidak ditemukan.'
+        ]);
+    }
+
+    // Cek apakah benar-benar terlambat
+    if ($row->DueDate >= $today) {
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => 'Buku belum melewati jatuh tempo, notifikasi tidak dikirim.'
+        ]);
+    }
+
+    // Hitung hari terlambat untuk buku ini saja
+    $settingsData = $this->settingModel
+        ->select('Name, Value')
+        ->whereIn('Name', ['IsSaturdayHoliday', 'IsSundayHoliday'])
+        ->findAll();
+
+    $settings          = array_column($settingsData, 'Value', 'Name');
+    $isSaturdayHoliday = $settings['IsSaturdayHoliday'] ?? 'True';
+    $isSundayHoliday   = $settings['IsSundayHoliday']   ?? 'True';
+
+    $weekendDaysToIgnore = [];
+    if ($isSaturdayHoliday !== 'False') $weekendDaysToIgnore[] = '6';
+    if ($isSundayHoliday   !== 'False') $weekendDaysToIgnore[] = '7';
+
+    $holidayList = [];
+    $holidayRows = $db->table('holidays as h')->select('h.Dates')->where('h.active', 1)->get()->getResult();
+    foreach ($holidayRows as $h) {
+        $holidayList[date('Y-m-d', strtotime($h->Dates))] = true;
+    }
+
+    $periods   = \Carbon\CarbonPeriod::create($row->DueDate, $today);
+    $lateDates = [];
+    foreach ($periods as $period) {
+        $dow  = $period->format('N');
+        $date = $period->format('Y-m-d');
+        if ($date == $row->DueDate) continue;
+        if (in_array($dow, $weekendDaysToIgnore)) continue;
+        if (isset($holidayList[$date])) continue;
+        $lateDates[] = $date;
+    }
+    $lateDays = count($lateDates);
+
+    // Kirim email
+    $emailLib = new \App\Libraries\EmailNotificationLibrary();
+    $result   = $emailLib->sendOverdueNotification($row, $lateDays);
+
+    return $this->response->setJSON($result);
+}
+
+
+// ---------- METHOD 2: Kirim notifikasi ke SEMUA yang terlambat -------------
+
+/**
+ * Kirim email notifikasi ke semua anggota yang memiliki pinjaman terlambat.
+ * Tiap anggota mendapat SATU email berisi semua buku yang terlambat.
+ * Endpoint: POST /api/sirkulasi-peminjaman/send-all-notification
+ */
+public function sendAllNotification(): \CodeIgniter\HTTP\ResponseInterface
+{
+    $overdueData = $this->getOverdueData();
+
+    if (empty($overdueData)) {
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => 'Tidak ada data pinjaman yang terlambat.'
+        ]);
+    }
+
+    // Group berdasarkan email anggota
+    $groupedByEmail = [];
+    foreach ($overdueData as $row) {
+        $email = trim($row->Email ?? '');
+        if (empty($email)) continue;
+
+        $groupedByEmail[$email][] = $row;
+    }
+
+    if (empty($groupedByEmail)) {
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => 'Tidak ada anggota dengan email valid yang memiliki keterlambatan.'
+        ]);
+    }
+
+    // Kirim bulk email
+    $emailLib = new \App\Libraries\EmailNotificationLibrary();
+    $result   = $emailLib->sendBulkOverdueNotification($groupedByEmail);
+
+    $totalOverdue = count($overdueData);
+    $totalMembers = count($groupedByEmail);
+
+    return $this->response->setJSON([
+        'success' => true,
+        'message' => "Proses selesai. Berhasil: {$result['sent']} email, Gagal: {$result['failed']} email.",
+        'detail'  => [
+            'total_item_terlambat' => $totalOverdue,
+            'total_anggota'        => $totalMembers,
+            'email_terkirim'       => $result['sent'],
+            'email_gagal'          => $result['failed'],
+            'errors'               => $result['errors'],
+        ]
+    ]);
+}
+
+
+// ---------- METHOD 3: Preview data terlambat (untuk modal konfirmasi) ------
+
+/**
+ * Ambil ringkasan data terlambat untuk ditampilkan di modal konfirmasi Send All.
+ * Endpoint: GET /api/sirkulasi-peminjaman/overdue-summary
+ */
+public function overdueSummary(): \CodeIgniter\HTTP\ResponseInterface
+{
+    $overdueData = $this->getOverdueData();
+
+    // Hitung per anggota
+    $summary = [];
+    foreach ($overdueData as $row) {
+        $memberNo = $row->MemberNo;
+        if (!isset($summary[$memberNo])) {
+            $summary[$memberNo] = [
+                'member_no'  => $row->MemberNo,
+                'fullname'   => $row->Fullname,
+                'email'      => $row->Email ?? '-',
+                'has_email'  => !empty($row->Email),
+                'books'      => [],
+            ];
+        }
+        $summary[$memberNo]['books'][] = [
+            'title'     => $row->Title,
+            'barcode'   => $row->NomorBarcode,
+            'due_date'  => $row->DueDate,
+            'late_days' => $row->LateDays,
+        ];
+    }
+
+    return $this->response->setJSON([
+        'success'       => true,
+        'total_items'   => count($overdueData),
+        'total_members' => count($summary),
+        'data'          => array_values($summary),
+    ]);
+}
 
 
 }

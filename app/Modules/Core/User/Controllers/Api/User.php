@@ -136,10 +136,10 @@ class User extends \Base\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('action', function ($row) {
-				$permission = '<a href="' . base_url('user/permissions/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Permission" class="btn btn-primary show-data"><i class="fa fa-cogs"> </i></a>';
+				
 				$detail = '<a href="' . base_url('user/detail/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Profil User" class="btn btn-warning show-data"><i class="pe-7s-user font-weight-bold"> </i></a>';
 				$delete = '<a href="javascript:void(0);" data-href="' . base_url('user/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus User" class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
-				$html 	= $permission . ' ' . $detail . ' ' . $delete;
+				$html 	=  ' ' . $detail . ' ' . $delete;
 				return $html;
 			})
 			->toJson();
@@ -167,165 +167,196 @@ class User extends \Base\Controllers\BaseResourceController
 		}
 	}
 
-	public function create()
-	{
-		// Validate here first, since some things,
-		// like the password, can only be validated properly here.
-		$rules = [
-			'username'  	=> [
-				'label' => 'Username',
-				'rules' => 'required|alpha_dash|min_length[3]|is_unique[users.username]',
-			],
-			'first_name'	 	=> [
-				'label' => 'Nama Depan',
-				'rules' => 'required',
-			],
-			'email'			=> [
-				'label' => 'Email',
-				'rules' => 'required|valid_email|is_unique[users.email]',
-			],
-			'password'	 	=> [
-				'label' => 'Password',
-				'rules' => 'required',
-			],
-			'pass_confirm' 	=> [
-				'label' => 'Konfirmasi Password',
-				'rules' => 'required|matches[password]',
-			]
-		];
+	
 
-		if (!$this->validate($rules)) {
-			$message = $this->validation->listErrors();
-			return $this->fail($message, 400);
-		}
+public function create()
+{
+    $rules = [
+        'username'     => [
+            'label' => 'Username',
+            'rules' => 'required|alpha_dash|min_length[3]|is_unique[users.username]',
+        ],
+        'first_name'   => [
+            'label' => 'Nama Depan',
+            'rules' => 'required',
+        ],
+        'email'        => [
+            'label' => 'Email',
+            'rules' => 'required|valid_email|is_unique[users.email]',
+        ],
+        'password'     => [
+            'label' => 'Password',
+            'rules' => 'required',
+        ],
+        'pass_confirm' => [
+            'label' => 'Konfirmasi Password',
+            'rules' => 'required|matches[password]',
+        ],
+        // Validasi groups wajib dipilih minimal 1
+        'groups'       => [
+            'label' => 'Role',
+            'rules' => 'required',
+        ],
+    ];
 
-		// Save the user
-		$users = model(\Myth\Auth\Models\UserModel::class);
-		$group = $this->request->getPost('group') ?? $this->config->defaultUserGroup;
-		$username = $this->request->getPost('username');
-		$allowedPostFields = array_merge(['password'], $this->config->validFields, $this->config->personalFields);
-		$save_data = $this->request->getPost($allowedPostFields);
-		$user = new \Myth\Auth\Entities\User($save_data);
-		$user->activate();
-		$users = $users->withGroup($group);
+    if (!$this->validate($rules)) {
+        $message = $this->validation->listErrors();
+        return $this->fail($message, 400);
+    }
 
-		if (!$users->save($user)) {
-			set_message('message', $this->session->getFlashdata('message'));
-			return $this->fail('<div class="alert alert-danger fade show" role="alert">Tambah User gagal disimpan</div>', 400);
-		} else {
-			$update_data = $this->request->getPost($this->config->validFields);
-			$first_name = $this->request->getPost('first_name');
-			$last_name = $this->request->getPost('last_name');
-			$is_branch = $this->request->getPost('is_branch') ?? 1;
-			$provinsi_id = $this->request->getPost('provinsi_id') ?? user()->npp_provinsi_id;
-			$branch_id = $this->settingModel->where('Name', 'Branch_id')->first()->Value ?? 'ID Perpustakaan Mitra';
+    // Save the user (tanpa group dulu, group di-assign manual di bawah)
+    $users    = model(\Myth\Auth\Models\UserModel::class);
+    $username = $this->request->getPost('username');
 
-			try {
-				$kabkota_id = (null !== $this->request->getPost('kabkota_id')) ? $this->request->getPost('kabkota_id') : user()->kabkota_id;
-				if (!empty($kabkota_id)) {
-					$update_data['npp_kabkota_id'] = $kabkota_id;
-				}
-			} catch (\Throwable $th) {
-			}
+    $allowedPostFields = array_merge(['password'], $this->config->validFields, $this->config->personalFields);
+    $save_data         = $this->request->getPost($allowedPostFields);
+    $user              = new \Myth\Auth\Entities\User($save_data);
+    $user->activate();
 
-			if (!empty($provinsi_id)) {
-				$update_data['npp_provinsi_id'] = $provinsi_id;
-			}
+    // Simpan user tanpa group terlebih dahulu
+    if (!$users->save($user)) {
+        set_message('message', $this->session->getFlashdata('message'));
+        return $this->fail('<div class="alert alert-danger fade show" role="alert">Tambah User gagal disimpan</div>', 400);
+    }
 
-			if (!empty($branch_id)) {
-				$update_data['branch_id'] = $branch_id;
-			}
+    // Ambil ID user yang baru saja dibuat
+    $new_user_id = $users->getInsertID();
 
-			$update_data['first_name'] = $first_name;
-			$update_data['last_name'] = $last_name;
-			$update_data['category'] = $group;
-			$update_data['is_branch'] = $is_branch;
+    // Assign groups yang dipilih via checkbox
+    $group_ids = $this->request->getPost('groups');
+    if (!empty($group_ids)) {
+        foreach ($group_ids as $group_id) {
+            $this->authorize->addUserToGroup($new_user_id, $group_id);
+        }
+    }
 
+    // Update data tambahan
+    $update_data = $this->request->getPost($this->config->validFields);
 
+    $first_name  = $this->request->getPost('first_name');
+    $last_name   = $this->request->getPost('last_name');
+    $is_branch   = $this->request->getPost('is_branch') ?? 1;
+    $provinsi_id = $this->request->getPost('provinsi_id') ?? user()->npp_provinsi_id;
+    $branch_id   = $this->settingModel->where('Name', 'Branch_id')->first()->Value ?? 'ID Perpustakaan Mitra';
 
-			$db = db_connect('default');
-			$builder = $db->table('users')->where('username', $username);
-			$builder->update($update_data);
+    try {
+        $kabkota_id = (null !== $this->request->getPost('kabkota_id'))
+            ? $this->request->getPost('kabkota_id')
+            : user()->kabkota_id;
+        if (!empty($kabkota_id)) {
+            $update_data['npp_kabkota_id'] = $kabkota_id;
+        }
+    } catch (\Throwable $th) {
+    }
 
-			$response = [
-				'status'   => 201,
-				'error'    => null,
-				'messages' => [
-					'success' => 'Tambah User berhasil disimpan'
-				]
-			];
-			return $this->respond($response);
-		}
-	}
+    if (!empty($provinsi_id)) {
+        $update_data['npp_provinsi_id'] = $provinsi_id;
+    }
+
+    if (!empty($branch_id)) {
+        $update_data['branch_id'] = $branch_id;
+    }
+
+    $update_data['first_name'] = $first_name;
+    $update_data['last_name']  = $last_name;
+    // category diisi dari group pertama yang dipilih
+    $update_data['category']   = !empty($group_ids) ? $this->authorize->group($group_ids[0])->name : null;
+    $update_data['is_branch']  = $is_branch;
+
+    // Simpan akses lokasi perpustakaan
+    $location_ids                        = $this->request->getPost('location_library_ids');
+    $update_data['location_library_ids'] = !empty($location_ids) ? implode(',', $location_ids) : '';
+
+    $db      = db_connect('default');
+    $builder = $db->table('users')->where('username', $username);
+    $builder->update($update_data);
+
+    $response = [
+        'status'   => 201,
+        'error'    => null,
+        'messages' => [
+            'success' => 'Tambah User berhasil disimpan'
+        ]
+    ];
+    return $this->respond($response);
+}
 
 	public function edit($id = null)
-	{
-		$this->validation->setRule('username', 'Username', 'required');
-		$this->validation->setRule('email', 'Email', 'required');
-		if ($this->request->getPost('password')) {
-			$this->validation->setRule('password', 'Password', 'required|min_length[' . $this->config->minimumPasswordLength . ']');
-			$this->validation->setRule('pass_confirm', 'Konfirmasi Password', 'required|matches[password]');
-		}
+{
+    $this->validation->setRule('username', 'Username', 'required');
+    $this->validation->setRule('email', 'Email', 'required');
+    
+    if ($this->request->getPost('password')) {
+        $this->validation->setRule('password', 'Password', 'required|min_length[' . $this->config->minimumPasswordLength . ']');
+        $this->validation->setRule('pass_confirm', 'Konfirmasi Password', 'required|matches[password]');
+    }
 
-		if (is_member('admin')) {
-			$this->validation->setRule('groups', 'Group', 'required');
-		}
+    if (is_member('admin')) {
+        $this->validation->setRule('groups', 'Group', 'required');
+    }
 
-		if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
-			$update_data = array(
-				'first_name' => $this->request->getPost('first_name'),
-				'last_name' => $this->request->getPost('last_name'),
-				'phone' => $this->request->getPost('phone'),
-				'unit' => $this->request->getPost('unit'),
-				'company' => $this->request->getPost('company'),
-				'address' => $this->request->getPost('address'),
-				'coordinate' => $this->request->getPost('coordinate'),
-				'branch_id' => $this->settingModel->where('Name', 'Branch_id')->first()->Value ?? 'ID Perpustakaan Mitra'
-			);
+    if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
+        
+        // 1. Tangkap data dari input multiple select (berupa array)
+        $location_ids = $this->request->getPost('location_library_ids');
+        
+        // 2. Ubah array menjadi string yang dipisah koma. Jika kosong, simpan string kosong ('') atau null.
+        $location_ids_str = !empty($location_ids) ? implode(',', $location_ids) : '';
 
-		
+        $update_data = array(
+            'first_name'           => $this->request->getPost('first_name'),
+            'last_name'            => $this->request->getPost('last_name'),
+            'phone'                => $this->request->getPost('phone'),
+            'unit'                 => $this->request->getPost('unit'),
+            'company'              => $this->request->getPost('company'),
+            'address'              => $this->request->getPost('address'),
+            'coordinate'           => $this->request->getPost('coordinate'),
+            'branch_id'            => $this->settingModel->where('Name', 'Branch_id')->first()->Value ?? 'ID Perpustakaan Mitra',
+            // 3. Masukkan ke dalam array update data
+            'location_library_ids' => $location_ids_str 
+        );
 
-			if ($this->request->getPost('password')) {
-				$update_data['password_hash'] = $this->password->hash($this->request->getPost('password'));
-				$update_data['reset_hash'] = null;
-				$update_data['reset_at'] = null;
-				$update_data['reset_expires'] = null;
-			}
+        if ($this->request->getPost('password')) {
+            $update_data['password_hash'] = $this->password->hash($this->request->getPost('password'));
+            $update_data['reset_hash'] = null;
+            $update_data['reset_at'] = null;
+            $update_data['reset_expires'] = null;
+        }
 
-			$userUpdate = $this->userModel->update($id, $update_data);
-			if ($userUpdate) {
-				if (is_member('admin')) {
-					$groups = $this->authorize->groups();
-					foreach ($groups as $group) {
-						$this->authorize->removeUserFromGroup($id, $group->id);
-					}
+        $userUpdate = $this->userModel->update($id, $update_data);
+        
+        if ($userUpdate) {
+            if (is_member('admin')) {
+                $groups = $this->authorize->groups();
+                foreach ($groups as $group) {
+                    $this->authorize->removeUserFromGroup($id, $group->id);
+                }
 
-					$group_ids = $this->request->getPost('groups');
-					foreach ($group_ids as $group_id) {
-						$this->authorize->addUserToGroup($id, $group_id);
-					}
-				}
-				
-
-
-				$this->session->setFlashdata('toastr_msg', 'Profil User berhasil disimpan');
-				$this->session->setFlashdata('toastr_type', 'success');
-				$response = [
-					'status'   => 201,
-					'error'    => null,
-					'messages' => [
-						'success' => 'Profil User berhasil disimpan'
-					]
-				];
-				return $this->respond($response);
-			} else {
-				return $this->fail('<div class="alert alert-danger fade show" role="alert">Profil User gagal disimpan</div>', 400);
-			}
-		} else {
-			$message = $this->validation->listErrors();
-			return $this->fail($message, 400);
-		}
-	}
+                $group_ids = $this->request->getPost('groups');
+                foreach ($group_ids as $group_id) {
+                    $this->authorize->addUserToGroup($id, $group_id);
+                }
+            }
+            
+            $this->session->setFlashdata('toastr_msg', 'Profil User berhasil disimpan');
+            $this->session->setFlashdata('toastr_type', 'success');
+            
+            $response = [
+                'status'   => 201,
+                'error'    => null,
+                'messages' => [
+                    'success' => 'Profil User berhasil disimpan'
+                ]
+            ];
+            return $this->respond($response);
+        } else {
+            return $this->fail('<div class="alert alert-danger fade show" role="alert">Profil User gagal disimpan</div>', 400);
+        }
+    } else {
+        $message = $this->validation->listErrors();
+        return $this->fail($message, 400);
+    }
+}
 
 	public function upload_file()
 {

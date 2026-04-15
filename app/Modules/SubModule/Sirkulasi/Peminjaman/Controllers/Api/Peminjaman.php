@@ -688,94 +688,7 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 		return $dataTable;
 	}
 
-	public function index()
-	{
-		$data = $this->peminjamanModel->findAll();
-		return $this->respond($data, 200);
-	}
-
-	public function detail($id = null)
-	{
-		$data = $this->peminjamanModel->find($id);
-		if ($data) {
-			return $this->respond($data);
-		} else {
-			return $this->failNotFound('No Data Found with id ' . $id);
-		}
-	}
-
-	public function create()
-	{
-		$save_data = array(
-			'LoanDate' => $this->request->getPost('LoanDate'),
-			'DueDate' => $this->request->getPost('DueDate'),
-			'LateDays' => $this->request->getPost('LateDays'),
-			'ActualReturn' => $this->request->getPost('ActualReturn'),
-		);
-
-		$save_data_id = $this->peminjamanModel->insert($save_data);
-		if ($save_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Peminjaman berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
-			$response = [
-				'error' => false,
-				'message' => 'Peminjaman berhasil disimpan',
-			];
-		} else {
-			$response = [
-				'error' => true,
-				'message' => 'Peminjaman gagal disimpan. Silakan coba lagi',
-			];
-		}
-
-		return $this->simpleResponse($response);
-	}
-
-	public function edit($id = null)
-	{
-		$update_data = array(
-			'LoanDate' => $this->request->getPost('LoanDate'),
-			'DueDate' => $this->request->getPost('DueDate'),
-			'LateDays' => $this->request->getPost('LateDays'),
-			'ActualReturn' => $this->request->getPost('ActualReturn'),
-		);
-
-		$update_data_id = $this->peminjamanModel->update($id, $update_data);
-		if ($update_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Peminjaman berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
-			$response = [
-				'error' => false,
-				'message' => 'Peminjaman berhasil disimpan',
-			];
-		} else {
-			$response = [
-				'error' => true,
-				'message' => 'Peminjaman gagal disimpan. Silakan coba lagi',
-			];
-		}
-
-		return $this->simpleResponse($response);
-	}
-
-	public function delete($id = null)
-	{
-		$data = $this->peminjamanModel->find($id);
-		if ($data) {
-			$this->peminjamanModel->delete($id);
-			$response = [
-				'error' => false,
-				'message' => 'Peminjaman berhasil dihapus',
-			];
-		} else {
-			$response = [
-				'error' => true,
-				'message' => 'Peminjaman gagal dihapus. Silakan coba lagi',
-			];
-		}
-		return $this->simpleResponse($response);
-	}
-
+	
 	public function switch($id = null)
 	{
 		$field = $this->request->getGet('field');
@@ -978,4 +891,9 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 
 		return $this->respond($response, 200);
 	}
+
+
+	
+
+
 }

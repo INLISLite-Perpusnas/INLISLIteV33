@@ -55,14 +55,14 @@ if (!empty($npp_kabkota_id)) {
                     <?php if ($is_profile) : ?>
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
-                            <li class="active breadcrumb-item" aria-current="page">Profil Saya</li>
+                            <li class="breadcrumb-item" aria-current="page">Profil Saya</li>
                         </ol>
                     <?php else : ?>
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
                             <li class="breadcrumb-item" aria-current="page">Otorisasi</li>
                             <li class="breadcrumb-item" aria-current="page">User</li>
-                            <li class="active breadcrumb-item" aria-current="page">Detail</li>
+                            <li class="breadcrumb-item" aria-current="page">Detail</li>
                         </ol>
                     <?php endif; ?>
                 </nav>
@@ -97,7 +97,8 @@ if (!empty($npp_kabkota_id)) {
                                 <a href="javascript:void(0);" data-id="<?= $user->id ?>" data-format=".jpg,.png" data-format-title="Format (JPG|PNG). Max 1 Files @ 1MB" data-field="avatar" data-title="Upload Avatar" class="mb-2 mr-2 btn btn-pill btn-primary upload-data">
                                     <i class="fa fa-user"></i> Update Avatar
                                 </a>
-                                <a data-toggle="modal" data-target="#modal_edit" href="javascript:void(0);" class="mb-2 mr-2 btn btn-pill btn-warning" title=""><i class="fa fa-edit"></i>
+                                <a data-bs-toggle="modal" data-bs-target="#modal_edit" data-toggle="modal" data-target="#modal_edit" href="javascript:void(0);" class="mb-2 mr-2 btn btn-pill btn-warning" title="">
+                                    <i class="fa fa-edit"></i>
                                     <?php if ($is_profile) : ?>
                                         Update Profil
                                     <?php else : ?>
@@ -266,83 +267,6 @@ if (!empty($npp_kabkota_id)) {
                 <?php endif; ?>
             </div>
         </div>
-        <!-- <div class="col-md-3">
-            <div class="main-card mb-3 card">
-                <div class="card-body">
-                    <h5 class="card-title">Histori</h5>
-                    <div class="scroll-area-md">
-                        <div class="scrollbar-container ps ps--active-y">
-                            <div class="vertical-time-icons vertical-timeline vertical-timeline--animate vertical-timeline--one-column">
-                                <div class="vertical-timeline-item vertical-timeline-element">
-                                    <div>
-                                        <div class="vertical-timeline-element-icon bounce-in">
-                                            <div class="timeline-icon border-secondary bg-secondary">
-                                                <i class="fa fa-lock text-white"></i>
-                                            </div>
-                                        </div>
-                                        <div class="vertical-timeline-element-content bounce-in">
-                                            <h4 class="timeline-title text-secondary">Login Terakhir</h4>
-                                            <p><?= $user->last_login ?? '-' ?></p>
-
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="vertical-timeline-item vertical-timeline-element">
-                                    <div>
-                                        <div class="vertical-timeline-element-icon bounce-in">
-                                            <div class="timeline-icon border-secondary bg-secondary">
-                                                <i class="fa fa-tv text-white"></i>
-                                            </div>
-                                        </div>
-                                        <div class="vertical-timeline-element-content bounce-in">
-                                            <h4 class="timeline-title text-secondary">IP Addres</h4>
-                                            <p><?= $user->ip_address ?? '-' ?></p>
-
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="vertical-timeline-item vertical-timeline-element">
-                                    <div>
-                                        <div class="vertical-timeline-element-icon bounce-in">
-                                            <div class="timeline-icon border-secondary bg-secondary">
-                                                <i class="fa fa-calendar text-white"></i>
-                                            </div>
-                                        </div>
-                                        <div class="vertical-timeline-element-content bounce-in">
-                                            <h4 class="timeline-title text-secondary">Daftar Akun</h4>
-                                            <p><?= $user->created_at ?? '-' ?></p>
-
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="vertical-timeline-item vertical-timeline-element">
-                                    <div>
-                                        <div class="vertical-timeline-element-icon bounce-in">
-                                            <div class="timeline-icon border-secondary bg-secondary">
-                                                <i class="fa fa-calendar text-white"></i>
-                                            </div>
-                                        </div>
-                                        <div class="vertical-timeline-element-content bounce-in">
-                                            <h4 class="timeline-title text-secondary">Update Profile</h4>
-                                            <p><?= $user->updated_at ?? '-' ?></p>
-
-                                        </div>
-                                    </div>
-                                </div>
-
-
-                            </div>
-                            <div class="ps__rail-x" style="left: 0px; bottom: 0px;">
-                                <div class="ps__thumb-x" tabindex="0" style="left: 0px; width: 0px;"></div>
-                            </div>
-                            <div class="ps__rail-y" style="top: 0px; right: 0px; height: 290px;">
-                                <div class="ps__thumb-y" tabindex="0" style="top: 0px; height: 290px;"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> -->
     </div>
 </div>
 <?= $this->endSection('page'); ?>

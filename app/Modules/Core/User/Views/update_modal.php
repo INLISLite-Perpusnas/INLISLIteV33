@@ -8,7 +8,7 @@ $branch = get_ref_single('branchs', 'ID=' . $user->branch_id, 'data');
                 <h5 class="modal-title">
                     <i class="header-icon lnr-pencil icon-gradient bg-plum-plate"> </i> Edit Profil User
                 </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -81,7 +81,7 @@ $branch = get_ref_single('branchs', 'ID=' . $user->branch_id, 'data');
                         </div>
                     </div>
 
-                    <?php if (is_member('admin') ) : ?>
+                    <?php if (is_member('admin')) : ?>
                         <div class="position-relative form-group">
                             <label for="groups">Role*</label>
                             <div>
@@ -95,9 +95,26 @@ $branch = get_ref_single('branchs', 'ID=' . $user->branch_id, 'data');
                         </div>
                     <?php endif ?>
 
+                    <div class="position-relative form-group">
+                        <label>Akses Lokasi Perpustakaan</label>
+                        <select class="form-control select2" multiple="multiple" name="location_library_ids[]" id="frm_edit_LocationLibrary_id" style="width: 100%;">
+                            <?php
+                            // Ubah string dari database "3,5,6" kembali menjadi array [3, 5, 6]
+                            // Pastikan $user->location_library_ids tersedia dari hasil query database
+                            $selected_locations = !empty($user->location_library_ids) ? explode(',', $user->location_library_ids) : [];
+
+                            foreach (get_ref_table('location_library', 'ID, Code, Name', null, 'data') as $row) :
+                                // Cek apakah ID lokasi saat ini ada di dalam array $selected_locations
+                                $is_selected = in_array($row->ID, $selected_locations) ? 'selected' : '';
+                            ?>
+                                <option value="<?= $row->ID ?>" <?= $is_selected ?>><?= $row->Code ?> <?= $row->Name ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                     <button type="submit" class="btn btn-primary" name="submit">Simpan</button>
                 </div>
             </form>
@@ -108,6 +125,17 @@ $branch = get_ref_single('branchs', 'ID=' . $user->branch_id, 'data');
 
 <script>
     var is_profile = '<?= $is_profile ?>';
+
+    $(document).ready(function() {
+        // Inisialisasi Select2 untuk lokasi perpustakaan
+        $('#frm_edit_LocationLibrary_id').select2({
+            placeholder: "Pilih Akses Lokasi",
+            allowClear: true,
+            // dropdownParent wajib di-set ke modal agar search box select2 bisa diklik saat di dalam modal
+            dropdownParent: $('#modal_edit')
+        });
+    });
+
     $('#frm_edit').submit(function(event) {
         event.preventDefault();
         var data_post = $(this).serializeArray();

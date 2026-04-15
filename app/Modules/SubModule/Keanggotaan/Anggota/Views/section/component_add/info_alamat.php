@@ -1,16 +1,16 @@
 <div class="row">
     <div class="col-md-12">
-        <div id="accordion" class="accordion-wrapper mb-3">
+        <div id="accordion_alamat" class="accordion-wrapper mb-3">
             <div class="card">
                 <div class="card-header-tab card-header">
-                    <button type="button" data-toggle="collapse" data-target="#collapse_madatory1" aria-expanded="true" aria-controls="collapse_madatory" class="text-left m-0 p-0 btn btn-link">
+                  <button data-target="#collapse_alamat" data-toggle="collapse" aria-expanded="true" aria-controls="collapse_madatory" class="text-left m-0 p-0 btn btn-link">
                         <h5 class="m-0 p-0">
                             <i class="header-icon lnr-layers icon-gradient bg-primary"> </i>
                             Info Alamat
                         </h5>
                     </button>
                 </div>
-                <div data-parent="#accordion" id="collapse_madatory1" class="collapse" style="">
+               <div data-parent="#accordion_alamat" id="collapse_alamat" class="collapse show">
                     <div class="card-body">
                         <div class="form-row">
                             <div class="col-md-12">

@@ -6,13 +6,14 @@
                     <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i>
                     Tambah User
                 </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <form id="frm_create" method="post" action="">
                 <div class="modal-body">
                     <div id="frm_create_message"></div>
+
                     <div class="form-row">
                         <div class="col-md-12">
                             <div class="position-relative form-group">
@@ -42,6 +43,7 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="form-row">
                         <div class="col-md-6">
                             <div class="position-relative form-group">
@@ -79,22 +81,38 @@
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label>Role* </label>
-                                <div class="select-wrapper">
-                                    <input type="text" class="form-control" name="group" id="group" value="<?= $slug ?>" readonly>
+                 
+                    <div class="position-relative form-group">
+                        <label>Role*</label>
+                        <div>
+                            <?php foreach ($groups as $group) : ?>
+                                <div class="custom-checkbox custom-control custom-control-inline">
+                                    <input type="checkbox"
+                                           id="create_groups<?= $group->id ?>"
+                                           name="groups[]"
+                                           value="<?= $group->id ?>"
+                                           class="custom-control-input">
+                                    <label class="custom-control-label" for="create_groups<?= $group->id ?>">
+                                        <?= $group->name ?>
+                                    </label>
                                 </div>
-                                <small class="help-block with-errors"></small>
-                            </div>
+                            <?php endforeach; ?>
                         </div>
-                      
-
                     </div>
+
+                  
+                    <div class="position-relative form-group">
+                        <label>Akses Lokasi Perpustakaan</label>
+                        <select class="form-control" multiple="multiple" name="location_library_ids[]" id="frm_create_LocationLibrary_id" style="width: 100%;">
+                            <?php foreach (get_ref_table('location_library', 'ID, Code, Name', null, 'data') as $row) : ?>
+                                <option value="<?= $row->ID ?>"><?= $row->Code ?> <?= $row->Name ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                     <button type="submit" class="btn btn-primary" name="submit">Simpan</button>
                 </div>
             </form>
@@ -105,12 +123,21 @@
 <script>
     $(document).ready(function() {
         $('#modal_create').on('shown.bs.modal', function() {
-            $('.select2').select2({
-                width: '100%', // Adjust as needed
-                placeholder: "Pilih",
-                allowClear: true,
-                dropdownParent: $('#modal_create') // Append the dropdown to the modal
-            });
+            if (!$('#frm_create_LocationLibrary_id').hasClass('select2-hidden-accessible')) {
+                $('#frm_create_LocationLibrary_id').select2({
+                    placeholder: "Pilih Akses Lokasi",
+                    allowClear: true,
+                    dropdownParent: $('#modal_create')
+                });
+            }
+        });
+
+        $('#modal_create').on('hidden.bs.modal', function() {
+            $(this).find('form').trigger('reset');
+            if ($('#frm_create_LocationLibrary_id').hasClass('select2-hidden-accessible')) {
+                $('#frm_create_LocationLibrary_id').select2('destroy');
+            }
+            $('#frm_create_message').html('');
         });
     });
 
@@ -127,7 +154,7 @@
                 data: data_post,
             })
             .done(function(res) {
-                console.log(res)
+                console.log(res);
                 if (res.status === 201) {
                     Swal.fire({
                         title: 'Success',
@@ -136,7 +163,6 @@
                         showConfirmButton: false,
                         timer: 3000
                     });
-
                     setTimeout(function() {
                         window.location.href = '<?= base_url('user?slug=' . $slug) ?>';
                     }, 2000);
@@ -157,10 +183,4 @@
 
         return false;
     });
-
-    $('#modal_create').on('hidden.bs.modal', function() {
-        $(this).find('form').trigger('reset');
-        $('#frm_create_message').html('');
-    });
 </script>
-

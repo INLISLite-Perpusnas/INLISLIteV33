@@ -114,7 +114,7 @@ if (!function_exists('member_notify')) {
             'SMTPHost' => getenv('email.SMTPHost') ?: 'smtp.gmail.com',
             'SMTPUser' => getenv('email.SMTPUser') ?: 'your-email@gmail.com',
             'SMTPPass' => getenv('email.SMTPPass') ?: 'your-app-password',
-            'SMTPPort' => getenv('email.SMTPPort') ?: 587,
+            'SMTPPort' => (int) (getenv('email.SMTPPort') ?: 587),
             'SMTPCrypto' => 'tls',
             'mailType' => 'html',
             'charset' => 'utf-8',

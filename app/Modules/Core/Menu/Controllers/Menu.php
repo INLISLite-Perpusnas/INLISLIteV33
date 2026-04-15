@@ -105,11 +105,7 @@ class Menu extends \Base\Controllers\BaseController
 
     public function create()
     {
-        if (!is_allowed('menu/create')) {
-            set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
-            set_message('toastr_type', 'error');
-            return redirect()->to('dashboard');
-        }
+       
 
         $slug = $this->request->getGet('slug') ?? 'backend-menu';
         try {
@@ -172,11 +168,14 @@ class Menu extends \Base\Controllers\BaseController
                         $this->permissionModel->updateBatch($update_permission, 'id');
                     }
                     reloadPermission();
-                    set_message('toastr_msg', 'Menu berhasil disimpan');
-                    set_message('toastr_type', 'success');
+                         $this->session->setFlashdata('swal_icon', 'success');
+                        $this->session->setFlashdata('swal_title', 'Berhasil');
+                        $this->session->setFlashdata('swal_text', 'Eksemplar berhasil ditambah');
                     return redirect()->to('/menu?slug=' . $slug);
                 } else {
-                    $this->data['toastr_msg'] = 'Menu gagal disimpan';
+                    $this->session->setFlashdata('toastr_msg', 'Menu gagal disimpan');
+                    $this->session->setFlashdata('toastr_type', 'warning');
+                    $this->session->setFlashdata('message', 'Menu gagal disimpan');
                     $this->data['toastr_type'] = 'warning';
                     return redirect()->to('/menu?slug=' . $slug);
                 }
@@ -193,11 +192,7 @@ class Menu extends \Base\Controllers\BaseController
 
     public function edit(int $id = 0)
     {
-        if (!is_allowed('menu/edit')) {
-            set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
-            set_message('toastr_type', 'error');
-            return redirect()->to('dashboard');
-        }
+       
 
         $slug = $this->request->getGet('slug') ?? 'backend-menu';
 
@@ -265,13 +260,14 @@ class Menu extends \Base\Controllers\BaseController
                     //    dd($save_permission);
                         reloadPermission();
                     //     dd(123);
-                        set_message('toastr_msg', 'Menu berhasil disimpan');
-                        set_message('toastr_type', 'success');
+                        $this->session->setFlashdata('swal_icon', 'success');
+                        $this->session->setFlashdata('swal_title', 'Berhasil');
+                        $this->session->setFlashdata('swal_text', 'Menu berhasil diubah');
                         return redirect()->to('/menu?slug=' . $slug . '&menu_id=' . $id);
                     } else {
-                        set_message('toastr_msg', 'Menu gagal disimpan');
-                        set_message('toastr_type', 'warning');
-                        set_message('message', 'Menu gagal disimpan');
+                        $this->session->setFlashdata('swal_icon', 'error');
+                        $this->session->setFlashdata('swal_title', 'Gagal');
+                        $this->session->setFlashdata('swal_text', 'Menu gagal diubah');
                         return redirect()->to('/menu?slug=' . $slug . '&menu_id=' . $id);
                     }
                 }

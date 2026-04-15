@@ -26,7 +26,7 @@ $request = service('request');
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i></a></li>
                         <li class="breadcrumb-item">Keanggotaan</li>
-                        <li class="breadcrumb-item active">Daftar Anggota</li>
+                        <li class="breadcrumb-item ">Daftar Anggota</li>
                     </ol>
                 </nav>
             </div>

@@ -50,13 +50,14 @@
                 <tbody>
                     <?php foreach ($permissions as $row) : ?>
                         <tr>
-                            <td width="35"></td>
+                            <?php static $no = 1; ?>
+                            <td width="35" class="text-center"><?= $no++; ?></td>
                             <td><?= _spec($row->menu); ?></td>
                             <td><?= _spec($row->route); ?></td>
                             <td><?= _spec($row->name); ?></td>
                             <td><?= _spec($row->category); ?></td>
                             <td><?= _spec($row->description); ?></td>
-                            <td width="100" class="text-center">
+                            <td style="min-width: 150px;" class="text-center">
                                 <?php if (is_allowed('permission/edit') ||  is_member('admin')) : ?>
                                     <a href="javascript:void(0);" data-href="<?= base_url('api/permission/detail/' . $row->id); ?>" data-toggle="tooltip" data-placement="top" title="Edit Permission" class="btn btn-xs btn-warning show-data"><i class="pe-7s-note font-weight-bold"> </i></a>
                                 <?php endif; ?>
@@ -84,6 +85,8 @@
 $(document).ready(function() {
     // Inisialisasi DataTables
     $('#tbl_permissions').DataTable({
+        "scrollX": true,
+        "scrollCollapse": true,
         "dom": "<'row mb-2'<'col-md-6 text-left'l><'col-md-6 text-right'f>>" +
                "<'row'<'col-md-12'tr>>" +
                "<'row mt-2'<'col-md-5 text-left'i><'col-md-7 d-flex justify-content-end'p>>",

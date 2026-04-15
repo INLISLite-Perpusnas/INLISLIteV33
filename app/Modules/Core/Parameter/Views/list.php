@@ -24,52 +24,14 @@ $slug = $request->getGet('slug') ?? '';
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
                         <li class="breadcrumb-item">Setting</li>
-                        <li class="breadcrumb-item active" aria-current="page">Paramater</li>
+                        <li class="breadcrumb-item" aria-current="page">Paramater</li>
                     </ol>
                 </nav>
             </div>
         </div>
     </div>
 
-    <?php if (get_parameter('show-top-checkbox') == 1) : ?>
-        <div class="row">
-            <div class="col-md-3">
-                <div class="widget-content p-0">
-                    <div class="widget-content-wrapper">
-                        <div class="widget-content-left mr-3">
-                            <div class="switch has-switch switch-container-class" data-class="branch">
-                                <div class="switch-animate switch-on">
-                                    <input type="checkbox" class="apply-param-status" data-param="branch" data-class="1" <?= (get_parameter('branch') == '1') ? 'checked' : '' ?> data-toggle="toggle" data-onstyle="success">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="widget-content-left">
-                            <div class="widget-heading">Profiling</div>
-                            <div class="widget-subheading">Multi Branch</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="widget-content p-0">
-                    <div class="widget-content-wrapper">
-                        <div class="widget-content-left mr-3">
-                            <div class="switch has-switch switch-container-class" data-class="show-layout-setting">
-                                <div class="switch-animate switch-on">
-                                    <input type="checkbox" class="apply-param-status" data-param="show-layout-setting" data-class="1" <?= (get_parameter('show-layout-setting') == '1') ? 'checked' : '' ?> data-toggle="toggle" data-onstyle="success">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="widget-content-left">
-                            <div class="widget-heading">Layout</div>
-                            <div class="widget-subheading">Tampilkan Layout</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    <?php endif; ?>
+   
 
     <ul class="body-tabs body-tabs-layout tabs-animated body-tabs-animated nav">
         <li class="nav-item">
@@ -123,9 +85,10 @@ $slug = $request->getGet('slug') ?? '';
             "ajax": {
                 "url": '<?php echo site_url('api/parameter/datatable/' . $slug); ?>',
             },
-            "dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
-                "<'row'<'col-md-12'tr>>" +
-                "<'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12 text-right'i>>",
+          "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
+                   "<'row'<'col-md-12'tr>>" +
+                   "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
+                   
             "pagingType": "full_numbers",
             "oLanguage": {
                 "sSearch": "<i class='fa fa-search'></i> _INPUT_",
