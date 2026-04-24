@@ -428,36 +428,42 @@ private function loadRegularCatalogscache()
     }
 
     public function browse()
-    {
-        $this->data['title'] = 'Browse Katalog';
+{
+    $this->data['title'] = 'Browse Katalog';
 
-        $browseType = $this->request->getVar('type') ?? 'author';
-        $letter = $this->request->getVar('letter') ?? 'A';
+    // Validasi input type hanya boleh nilai tertentu
+    $allowedTypes = ['author', 'title', 'subject'];
+    $browseType = $this->request->getVar('type') ?? 'author';
+    $browseType = in_array($browseType, $allowedTypes) ? $browseType : 'author';
 
-        $builder = $this->katalogModel->select('catalogs.*');
+    // Validasi letter hanya boleh 1 huruf A-Z
+    $letter = $this->request->getVar('letter') ?? 'A';
+    $letter = (preg_match('/^[A-Za-z]$/', $letter)) ? strtoupper($letter) : 'A';
 
-        switch ($browseType) {
-            case 'author':
-                $builder->like('Author', $letter . '%', 'after');
-                $builder->orderBy('Author', 'ASC');
-                break;
-            case 'title':
-                $builder->like('Title', $letter . '%', 'after');
-                $builder->orderBy('Title', 'ASC');
-                break;
-            case 'subject':
-                $builder->like('Subject', $letter . '%', 'after');
-                $builder->orderBy('Subject', 'ASC');
-                break;
-        }
+    $builder = $this->katalogModel->select('catalogs.*');
 
-        $this->data['catalogs'] = $builder->findAll();
-        $this->data['browse_type'] = $browseType;
-        $this->data['letter'] = $letter;
-        $this->data['alphabet'] = range('A', 'Z');
-
-        return view('Opac\Views\browse', $this->data);
+    switch ($browseType) {
+        case 'author':
+            $builder->like('Author', $letter . '%', 'after');
+            $builder->orderBy('Author', 'ASC');
+            break;
+        case 'title':
+            $builder->like('Title', $letter . '%', 'after');
+            $builder->orderBy('Title', 'ASC');
+            break;
+        case 'subject':
+            $builder->like('Subject', $letter . '%', 'after');
+            $builder->orderBy('Subject', 'ASC');
+            break;
     }
+
+    $this->data['catalogs'] = $builder->findAll();
+    $this->data['browse_type'] = esc($browseType);
+    $this->data['letter'] = esc($letter);
+    $this->data['alphabet'] = range('A', 'Z');
+
+    return view('Opac\Views\browse', $this->data);
+}
 
     public function export()
     {
