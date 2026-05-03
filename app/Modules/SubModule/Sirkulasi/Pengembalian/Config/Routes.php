@@ -8,6 +8,8 @@ $routes->group('sirkulasi-pengembalian', ['namespace' => 'Pengembalian\Controlle
 	$subroutes->add('apply_status/(:any)', 'Pengembalian::apply_status/$1');
     $subroutes->add('process-return', 'Pengembalian::processReturn');
 	$subroutes->add('check-book', 'Pengembalian::checkBook');
+	$subroutes->get('get-jenis-pelanggaran', 'Pengembalian::getJenisPelanggaran');
+	$subroutes->get('get-jenis-denda', 'Pengembalian::getJenisDenda');
 	$subroutes->add('getReturnHistory', 'Pengembalian::getReturnHistory');
 });
 

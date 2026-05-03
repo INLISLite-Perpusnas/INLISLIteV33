@@ -138,6 +138,7 @@ class App extends BaseConfig
      *
      * @var bool
      */
+    // untuk memaksa semua permintaan menggunakan HTTPS, setel ke true
     public $forceGlobalSecureRequests = false;
 
     /**

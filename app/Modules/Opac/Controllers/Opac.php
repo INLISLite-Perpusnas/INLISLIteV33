@@ -39,56 +39,52 @@ class Opac extends \Base\Controllers\BaseController
     }
 
 
-    public function index()
-    {
-         // 🎯 1. Mulai timer
-        $startTime = microtime(true);
-        $this->data['title'] = 'OPAC - Online Public Access Catalog';
+   public function index()
+{
+    $startTime = microtime(true);
+    $this->data['title'] = 'OPAC - Online Public Access Catalog';
 
-        // Check for member number (for recommendations)
-        $memberNo = $this->request->getVar('member_no');
-
-        if ($memberNo) {
-            // Handle recommendations
-            try {
-                $result = $this->calculateRecommendations($memberNo);
-
-                $this->data['member_no'] = $memberNo;
-                $this->data['recommendations'] = $result['recommendations'];
-                $this->data['is_cold_start'] = $result['is_cold_start'];
-
-                // Don't show regular catalogs when showing recommendations
-                $this->data['catalogs'] = [];
-                $this->data['pager'] = null;
-                $this->data['search'] = null;
-                $this->data['search_by'] = null;
-                $this->data['total_records'] = 0;
-            } catch (\Exception $e) {
-                // If recommendation fails, fall back to regular catalog display
-                $this->data['member_no'] = $memberNo;
-                $this->data['recommendations'] = [];
-                $this->data['metrics'] = null;
-                $this->data['is_cold_start'] = true;
-                $this->data['recommendation_error'] = $e->getMessage();
-              
-                // Show regular catalogs as fallback
-                $this->loadRegularCatalogs();
-            }
-        } else {
-            // Regular catalog display (original functionality)
-        $is_opac_cache = env('is_opac_cache', 0);
-        if($is_opac_cache==1){
-            $this->loadRegularCatalogscache();
-        }else{
-              $this->loadRegularCatalogs();
-        }
-          
-
-        }
-    $endTime = microtime(true);
-        $this->data['execution_time'] = $endTime - $startTime;
-        return view('Opac\Views\index', $this->data);
+    // ✅ Validasi member_no
+    $memberNo = $this->request->getVar('member_no') ?? '';
+    if (!empty($memberNo) && !preg_match('/^[a-zA-Z0-9\-]{0,50}$/', $memberNo)) {
+        $memberNo = '';
     }
+    $memberNo = esc($memberNo);
+
+    if ($memberNo) {
+        try {
+            $result = $this->calculateRecommendations($memberNo);
+
+            $this->data['member_no']      = $memberNo;
+            $this->data['recommendations'] = $result['recommendations'];
+            $this->data['is_cold_start']   = $result['is_cold_start'];
+            $this->data['catalogs']        = [];
+            $this->data['pager']           = null;
+            $this->data['search']          = null;
+            $this->data['search_by']       = null;
+            $this->data['total_records']   = 0;
+
+        } catch (\Exception $e) {
+            $this->data['member_no']          = $memberNo;
+            $this->data['recommendations']    = [];
+            $this->data['metrics']            = null;
+            $this->data['is_cold_start']      = true;
+            $this->data['recommendation_error'] = esc($e->getMessage()); // ✅ escape error message
+            $this->loadRegularCatalogs();
+        }
+    } else {
+        $is_opac_cache = env('is_opac_cache', 0);
+        if ($is_opac_cache == 1) {
+            $this->loadRegularCatalogscache();
+        } else {
+            $this->loadRegularCatalogs();
+        }
+    }
+
+    $endTime = microtime(true);
+    $this->data['execution_time'] = $endTime - $startTime;
+    return view('Opac\Views\index', $this->data);
+}
 
 private function loadRegularCatalogs()
 {
@@ -178,8 +174,12 @@ private function loadRegularCatalogs()
     $yearCounts = array_count_values(array_map(fn($d) => date('Y', strtotime($d)), array_column($catalogs, 'EndDate')));
 
     // 6. Set search variables for the view
-    $this->data['search'] = $this->request->getVar('search');
-    $this->data['search_by'] = $this->request->getVar('search_by') ?? 'Title';
+    // ✅ Sesudah
+    $this->data['search'] = esc($this->request->getVar('search') ?? '');
+
+    $allowedSearchBy = ['Title', 'Author', 'Subject', 'Publisher', 'ISBN'];
+    $searchBy = $this->request->getVar('search_by') ?? 'Title';
+    $this->data['search_by'] = in_array($searchBy, $allowedSearchBy) ? $searchBy : 'Title';
     $this->data['publisher_counts'] = $publisherCounts;
     $this->data['author_counts'] = $authorCounts;
     $this->data['publish_location_counts'] = $publishLocationCounts;
@@ -308,8 +308,11 @@ private function loadRegularCatalogscache()
     }
     
     // Variabel ini dibutuhkan di view dan di-set di luar blok cache
-    $this->data['search'] = $this->request->getVar('search');
-    $this->data['search_by'] = $this->request->getVar('search_by') ?? 'Title';
+    $this->data['search'] = esc($this->request->getVar('search') ?? '');
+
+    $allowedSearchBy = ['Title', 'Author', 'Subject', 'Publisher', 'ISBN'];
+    $searchBy = $this->request->getVar('search_by') ?? 'Title';
+    $this->data['search_by'] = in_array($searchBy, $allowedSearchBy) ? $searchBy : 'Title';
 }
  
 

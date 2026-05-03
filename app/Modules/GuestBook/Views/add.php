@@ -448,30 +448,15 @@
 						</div><br>
 					<?php endif; ?>
 
-					<!-- <button class="save-btn" type="submit">
-						<i class="fas fa-save"></i>
-						Simpan Buku Tamu
-					</button> -->
+			
 				</form>
-				<!-- <p style="margin-top: 15px; color: #666; font-size: 0.9rem;">
-					Dengan menekan tombol di atas, kunjungan Anda akan tercatat dalam buku tamu perpustakaan.
-				</p> -->
+				
+				</p> 
 				<p style="text-align:center; color: #e74c3c; font-size: 1rem;">
 					Otomatis tersimpan dalam <strong><span id="countdown">10</span></strong> detik...
 				</p>
 			</div>
 
-			<!-- Welcome Message -->
-			<!-- <div class="alert-custom alert-success-custom">
-				<i class="fas fa-check-circle"></i>
-				<div>
-					<strong>Selamat Datang, <?= $member->Fullname ?>!</strong><br>
-					Terima kasih telah berkunjung ke perpustakaan kami.
-				</div>
-				<button type="button" class="alert-close" onclick="this.parentElement.style.display='none'">
-					<span>&times;</span>
-				</button>
-			</div> -->
 
 			<!-- Member Profile -->
 			<div class="member-profile">

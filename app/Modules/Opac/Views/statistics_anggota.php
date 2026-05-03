@@ -2,7 +2,7 @@
 
 <?= $this->section('content') ?>
 
-<div class="container py-5" style="padding-top: 80px !important; padding-bottom: 40px !important;">
+<div class="container py-5" style="padding-top: 100px !important; padding-bottom: 40px !important;">
     <!-- Page Header -->
     <div class="row mb-5">
         <div class="col-12">

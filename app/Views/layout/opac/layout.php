@@ -285,7 +285,7 @@ $email = $db->table('settingparameters')->where('Name', 'EmailPerpustakaan')->ge
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="<?= base_url('statistik/anggota') ?>">
+                                <a class="dropdown-item" href="<?= base_url('opac/statistics_anggota') ?>">
                                     <i class="fa-solid fa-users fa-fw text-secondary me-2"></i> Statistik Anggota
                                 </a>
                             </li>

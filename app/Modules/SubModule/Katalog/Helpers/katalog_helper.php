@@ -194,12 +194,13 @@ if (!function_exists('get_all_tags')) {
 			$builder = $db->table('worksheetfields as wsf')
 				->select('f.ID, f.Tag, f.Name, f.Mandatory, f.Fixed, f.Repeatable')
 				->join('fields as f', 'f.ID = wsf.Field_id')
-				->where('wsf.Worksheet_id', $worksheet_id);
+				->where('wsf.Worksheet_id', $worksheet_id)
+				 ->orderBy('f.Tag', 'ASC');
 			$worksheet_fields = $builder->get()->getResultArray();
 			$session->set('worksheet_fields', $worksheet_fields);
 		}
 		$session_tags = $session->get('worksheet_fields');
-		$builder2 = $db->table('fields as f')->select('f.ID, f.Tag, f.Name, f.Fixed, f.Repeatable');
+		$builder2 = $db->table('fields as f')->select('f.ID, f.Tag, f.Name, f.Fixed, f.Repeatable')->orderBy('f.Tag', 'ASC');
 		$fields = $builder2->get()->getResultArray();
 		$filtered_tags = array_filter($fields, function ($field) use ($session_tags) {
 			if ($field['Repeatable'] == 0) {

@@ -1,6 +1,6 @@
-<?php
-
-// Update your existing routes to include recommendations
+<?php if (!isset($routes)) {
+	$routes = \Config\Services::routes(true);
+}
 
 $routes->group('opac', ['namespace' => 'Opac\Controllers'], function ($subroutes) {
 	$subroutes->add('', 'Opac::index');

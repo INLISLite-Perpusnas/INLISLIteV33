@@ -16,14 +16,15 @@ class Oai extends \Base\Controllers\BaseController
     protected $baseURL;
     protected $earliestDatestamp;
     protected $granularity;
+    protected $settingModel;
     
     public function __construct()
     {
         $this->catalogModel = new \Katalog\Models\KatalogModel();
-   
+        $this->settingModel = new \PenomoranKoleksi\Models\PenomoranKoleksiModel();
         // Konfigurasi OAI-PMH Repository
-        $this->repositoryName = "Perpustakaan Digital Repository";
-        $this->adminEmail = "admin@perpustakaan.go.id";
+        $this->repositoryName = $this->settingModel->where('Name', 'NamaPerpustakaan')->first()->Value ?? 'Perpustakaan Mitra';
+        $this->adminEmail = $this->settingModel->where('Name', 'EmailPerpustakaan')->first()->Value ?? 'email@perpustakaan.mitra';
         $this->baseURL = base_url('oai-pmh');
         $this->earliestDatestamp = "2020-01-01T00:00:00Z";
         $this->granularity = "YYYY-MM-DDThh:mm:ssZ";
@@ -585,7 +586,7 @@ class Oai extends \Base\Controllers\BaseController
      */
     private function generateXMLHeader($verb)
     {
-        $requestURL = current_url() . '?' . $_SERVER['QUERY_STRING'];
+        $requestURL = current_url(true);
         $responseDate = gmdate('Y-m-d\TH:i:s\Z');
         
         $xml = '<?xml version="1.0" encoding="UTF-8"?>';

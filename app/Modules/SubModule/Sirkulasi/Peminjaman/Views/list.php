@@ -187,7 +187,7 @@ $slug = $request->getGet('slug') ?? '';
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('peminjaman') ?>"><i class="fa fa-home"></i> Home</a></li>
-                        <li class="active breadcrumb-item" aria-current="page">Peminjaman</li>
+                        <li class="breadcrumb-item" aria-current="page">Peminjaman</li>
                     </ol>
                 </nav>
             </div>

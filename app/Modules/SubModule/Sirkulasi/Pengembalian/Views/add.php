@@ -304,16 +304,101 @@
     </div>
 
 </div>
+
+
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
+<!-- Modal Pelanggaran -->
+<div class="modal fade" id="modalPelanggaran" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: var(--radius-xl); border: none; overflow: hidden;">
+
+            <!-- Header -->
+            <div class="modal-header" style="background: linear-gradient(135deg, #7c1d1d, var(--danger)); border: none; padding: 16px 24px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:9px;display:flex;align-items:center;justify-content:center;">
+                        <i class="fa fa-exclamation-triangle" style="color:white;font-size:16px;"></i>
+                    </div>
+                    <h5 class="modal-title" style="color:white;font-weight:700;margin:0;">Proses Pelanggaran Keterlambatan</h5>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body" style="padding: 24px;">
+
+                <!-- Info terlambat -->
+                <div class="pm-alert pm-alert-danger mb-3" id="overdueInfoBox">
+                    <i class="fa fa-clock-o"></i>
+                    <span id="overdueInfoText">Terdapat buku yang melewati tanggal jatuh tempo.</span>
+                </div>
+
+                <!-- Daftar buku terlambat -->
+                <div id="overdueBookList" style="margin-bottom: 18px;"></div>
+
+                <hr class="pm-divider" style="margin: 16px 0;">
+
+                <!-- Form Pelanggaran -->
+                <div id="violationFormSection">
+                    <p style="font-size:14px;color:var(--gray-500);margin-bottom:14px;">
+                        Apakah ingin mencatat pelanggaran untuk buku yang terlambat?
+                    </p>
+
+                    <div class="mb-3">
+                        <label style="font-size:13px;font-weight:700;color:var(--blue-900);margin-bottom:6px;display:block;">
+                            <i class="fa fa-list-ul"></i> Jenis Pelanggaran
+                        </label>
+                        <select id="jenisPelanggaranSelect" class="form-select" style="border-radius:var(--radius-md);font-size:14px;border:2px solid var(--gray-300);">
+                            <option value="">-- Pilih Jenis Pelanggaran --</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label style="font-size:13px;font-weight:700;color:var(--blue-900);margin-bottom:6px;display:block;">
+                            <i class="fa fa-tag"></i> Jenis Denda
+                        </label>
+                        <select id="jenisDendaSelect" class="form-select" style="border-radius:var(--radius-md);font-size:14px;border:2px solid var(--gray-300);">
+                            <option value="">-- Pilih Jenis Denda --</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label style="font-size:13px;font-weight:700;color:var(--blue-900);margin-bottom:6px;display:block;">
+                            <i class="fa fa-money"></i> Jumlah Denda
+                        </label>
+                        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                            <input type="number" id="jumlahDendaInput" class="pm-input" min="0" step="500" placeholder="Contoh: 1000"
+                                   style="flex:1;min-width:160px;font-size:15px;letter-spacing:0;font-weight:600;padding:12px 16px;">
+                            <div style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--gray-500);">
+                                <input type="checkbox" id="perHariCheck" style="width:16px;height:16px;accent-color:var(--blue-500);" checked>
+                                <label for="perHariCheck" style="cursor:pointer;font-weight:600;">Per hari</label>
+                            </div>
+                        </div>
+                        <small id="dendaPreview" style="color:var(--blue-800);font-size:12px;margin-top:6px;display:block;"></small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="border:none;padding:12px 24px 20px;gap:10px;">
+                <button type="button" id="skipViolationBtn" class="pm-btn pm-btn-ghost" style="flex:1;">
+                    <i class="fa fa-forward"></i> Lewati Pelanggaran
+                </button>
+                <button type="button" id="confirmViolationBtn" class="pm-btn pm-btn-primary" style="flex:1;background:linear-gradient(135deg,#7c1d1d,var(--danger));box-shadow:0 4px 14px rgba(232,57,77,.35);">
+                    <i class="fa fa-gavel"></i> Proses + Catat Pelanggaran
+                </button>
+            </div>
+
+    </div>
+</div>
 <script>
 class SelfReturnApp {
     constructor() {
-        this.currentMemberId = null; 
-        this.currentMemberName = null; 
-        this.booksToReturn = []; // Menyimpan state list buku yang akan dikembalikan
-        window.selfReturnApp = this; // Expose global untuk fungsi onclick hapus buku
+        this.currentMemberId   = null;
+        this.currentMemberName = null;
+        this.booksToReturn     = [];
+        this.jenisPelanggaran  = [];
+        this.jenisDenda        = [];
+        window.selfReturnApp   = this;
         this.init();
     }
 
@@ -321,6 +406,7 @@ class SelfReturnApp {
         this.bindEvents();
         this.focusInput();
         this.setupAutoScan();
+        this.loadMasterData(); // Muat dropdown sekali saja
     }
 
     bindEvents() {
@@ -330,6 +416,19 @@ class SelfReturnApp {
         document.getElementById('barcodeInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.checkBook();
         });
+
+        // Tombol di dalam modal
+        document.getElementById('skipViolationBtn').addEventListener('click', () => {
+            bootstrap.Modal.getInstance(document.getElementById('modalPelanggaran')).hide();
+            this.submitReturn(false, null);
+        });
+        document.getElementById('confirmViolationBtn').addEventListener('click', () => {
+            this.handleConfirmViolation();
+        });
+
+        // Live preview kalkulasi denda
+        document.getElementById('jumlahDendaInput').addEventListener('input', () => this.updateDendaPreview());
+        document.getElementById('perHariCheck').addEventListener('change', () => this.updateDendaPreview());
     }
 
     setupAutoScan() {
@@ -343,115 +442,105 @@ class SelfReturnApp {
         });
     }
 
-    focusInput() {
-        document.getElementById('barcodeInput').focus();
+    async loadMasterData() {
+        try {
+            const [resP, resD] = await Promise.all([
+                fetch('/sirkulasi-pengembalian/get-jenis-pelanggaran').then(r => r.json()),
+                fetch('/sirkulasi-pengembalian/get-jenis-denda').then(r => r.json())
+            ]);
+            if (resP.status === 'success') {
+                this.jenisPelanggaran = resP.data;
+                const sel = document.getElementById('jenisPelanggaranSelect');
+                resP.data.forEach(p => {
+                    sel.innerHTML += `<option value="${p.ID}">${p.JenisPelanggaran}</option>`;
+                });
+            }
+            if (resD.status === 'success') {
+                this.jenisDenda = resD.data;
+                const sel = document.getElementById('jenisDendaSelect');
+                resD.data.forEach(d => {
+                    sel.innerHTML += `<option value="${d.ID}">${d.Name}</option>`;
+                });
+            }
+        } catch (e) { console.error('Gagal memuat master data:', e); }
     }
 
-    showLoading() {
-        document.getElementById('loadingSection').classList.remove('d-none');
-        this.hideMessage();
-        this.hideBookInfo();
-    }
-
-    hideLoading() {
-        document.getElementById('loadingSection').classList.add('d-none');
-    }
+    focusInput()    { document.getElementById('barcodeInput').focus(); }
+    showLoading()   { document.getElementById('loadingSection').classList.remove('d-none'); this.hideMessage(); this.hideBookInfo(); }
+    hideLoading()   { document.getElementById('loadingSection').classList.add('d-none'); }
+    hideBookInfo()  { document.getElementById('bookInfoSection').classList.add('d-none'); }
+    hideMessage()   { document.getElementById('messageSection').innerHTML = ''; }
 
     showMessage(message, type = 'success') {
         const sec = document.getElementById('messageSection');
         const cls  = type === 'success' ? 'pm-alert-success' : 'pm-alert-danger';
         const icon = type === 'success' ? 'fa fa-check-circle' : 'fa fa-exclamation-circle';
-        sec.innerHTML = `
-            <div class="pm-alert ${cls} fade-in mt-3">
-                <i class="${icon}"></i>
-                <span>${message}</span>
-            </div>`;
-        if (type === 'success') {
-            setTimeout(() => { sec.innerHTML = ''; }, 5000);
-        }
+        sec.innerHTML = `<div class="pm-alert ${cls} fade-in mt-3"><i class="${icon}"></i><span>${message}</span></div>`;
+        if (type === 'success') setTimeout(() => { sec.innerHTML = ''; }, 5000);
     }
 
-    hideMessage() {
-        document.getElementById('messageSection').innerHTML = '';
-    }
-
-    // Fungsi baru untuk me-render buku dari array
     renderBookList() {
-        const sec = document.getElementById('bookInfoSection');
+        const sec     = document.getElementById('bookInfoSection');
         const details = document.getElementById('bookDetails');
         const titleSec = sec.querySelector('h6');
 
-        if (this.booksToReturn.length === 0) {
-            this.hideBookInfo();
-            return;
-        }
+        if (this.booksToReturn.length === 0) { this.hideBookInfo(); return; }
 
-        // Tampilkan Header dengan Nama Anggota
         titleSec.innerHTML = `
-            <div style="display:flex; flex-direction:column; gap:5px;">
-                <span style="color:var(--blue-900); font-size:16px;">
-                    <i class="fa fa-user-circle"></i> ${this.currentMemberName || '-'}
-                </span>
-                <small style="color:var(--gray-500); font-size:13px; font-weight:normal;">
+            <div style="display:flex;flex-direction:column;gap:5px;">
+                <span style="color:var(--blue-900);font-size:16px;"><i class="fa fa-user-circle"></i> ${this.currentMemberName || '-'}</span>
+                <small style="color:var(--gray-500);font-size:13px;font-weight:normal;">
                     <i class="fa fa-book"></i> ${this.booksToReturn.length} buku siap dikembalikan
                 </small>
-            </div>
-        `;
+            </div>`;
 
         let itemsHtml = '';
-        
         this.booksToReturn.forEach((book, index) => {
-            let statusBadge = book.is_overdue
+            const statusBadge = book.is_overdue
                 ? `<span class="status-badge status-overdue"><i class="fa fa-exclamation-circle"></i> Terlambat ${book.days_overdue} hari</span>`
                 : `<span class="status-badge status-available"><i class="fa fa-clock-o"></i> Sedang Dipinjam</span>`;
 
-            let dividerClass = index > 0 ? 'pm-divider-top' : '';
-
             itemsHtml += `
-                <div class="${dividerClass} position-relative fade-in" style="padding-right: 45px;">
-                    <button type="button" class="btn btn-sm btn-outline-danger position-absolute" 
-                            style="right: 0; top: 10px; border-radius: 8px; width:35px; height:35px;"
-                            onclick="selfReturnApp.removeBookItem(${book.id})" title="Keluarkan buku ini dari daftar pengembalian">
+                <div class="${index > 0 ? 'pm-divider-top' : ''} position-relative fade-in" style="padding-right:45px;">
+                    <button type="button" class="btn btn-sm btn-outline-danger position-absolute"
+                            style="right:0;top:10px;border-radius:8px;width:35px;height:35px;"
+                            onclick="selfReturnApp.removeBookItem(${book.id})">
                         <i class="fa fa-trash"></i>
                     </button>
-
                     <div class="book-detail">
                         <span class="bd-label">Judul</span>
-                        <span class="bd-val" style="text-align:right; max-width:75%;">${book.title || '-'}</span>
+                        <span class="bd-val" style="text-align:right;max-width:75%;">${book.title || '-'}</span>
                     </div>
                     <div class="book-detail">
                         <span class="bd-label">Barcode</span>
                         <span class="bd-val">${book.barcode}</span>
                     </div>
                     <div class="book-detail">
+                        <span class="bd-label">Jatuh Tempo</span>
+                        <span class="bd-val">${this.formatDate(book.due_date)}</span>
+                    </div>
+                    <div class="book-detail">
                         <span class="bd-label">Status</span>
                         <span class="bd-val">${statusBadge}</span>
                     </div>
-                </div>
-            `;
+                </div>`;
         });
 
         details.innerHTML = itemsHtml;
         sec.classList.remove('d-none');
     }
 
-    // Fungsi menghapus item dari list keranjang pengembalian
     removeBookItem(id) {
         this.booksToReturn = this.booksToReturn.filter(b => b.id !== id);
         this.renderBookList();
     }
 
-    hideBookInfo() {
-        document.getElementById('bookInfoSection').classList.add('d-none');
-    }
-
     async checkBook() {
         const barcode = document.getElementById('barcodeInput').value.trim();
-        if (!barcode) { 
+        if (!barcode) {
             Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Silakan masukkan barcode buku', confirmButtonColor: '#1B3878' });
-            this.focusInput(); return; 
+            this.focusInput(); return;
         }
-
         this.showLoading();
         try {
             const res  = await fetch('/sirkulasi-pengembalian/check-book', {
@@ -460,20 +549,17 @@ class SelfReturnApp {
                 body: `nomorBarcode=${encodeURIComponent(barcode)}`
             });
             const data = await res.json();
-            
-            if (data.status === 'success') { 
-                // Simpan data ke dalam variabel global class
-                this.currentMemberId = data.data.member_id;
+            if (data.status === 'success') {
+                this.currentMemberId   = data.data.member_id;
                 this.currentMemberName = data.data.member_name;
-                this.booksToReturn = data.data.items; 
-                
-                this.renderBookList(); 
-                this.hideMessage(); 
+                this.booksToReturn     = data.data.items;
+                this.renderBookList();
+                this.hideMessage();
                 this.loadHistory();
-                this.clearInput(); // Clear input agar siap untuk scan transaksi orang lain
-            } else { 
+                this.clearInput();
+            } else {
                 Swal.fire({ icon: 'error', title: 'Gagal', text: data.message, confirmButtonColor: '#e8394d' });
-                this.hideBookInfo(); 
+                this.hideBookInfo();
             }
         } catch (e) {
             Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan saat mengecek buku', confirmButtonColor: '#e8394d' });
@@ -481,50 +567,123 @@ class SelfReturnApp {
         } finally { this.hideLoading(); }
     }
 
-    async returnBook() {
-        // Cek jika tidak ada buku di dalam keranjang pengembalian
-        if (this.booksToReturn.length === 0) { 
-            Swal.fire({
-                icon: 'warning',
-                title: 'Perhatian',
-                text: 'Tidak ada buku yang dipilih. Silakan scan buku terlebih dahulu.',
-                confirmButtonColor: '#1B3878'
-            });
-            this.focusInput(); 
-            return; 
+    returnBook() {
+        if (this.booksToReturn.length === 0) {
+            Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Tidak ada buku yang dipilih. Silakan scan buku terlebih dahulu.', confirmButtonColor: '#1B3878' });
+            this.focusInput(); return;
         }
 
+        // Cek apakah ada buku yang terlambat
+        const overdueBooks = this.booksToReturn.filter(b => b.is_overdue);
+
+        if (overdueBooks.length > 0) {
+            this.showViolationModal(overdueBooks);
+        } else {
+            // Tidak ada keterlambatan, langsung proses
+            this.submitReturn(false, null);
+        }
+    }
+
+    showViolationModal(overdueBooks) {
+        // Render daftar buku terlambat di modal
+        const listEl = document.getElementById('overdueBookList');
+        listEl.innerHTML = overdueBooks.map(b => `
+            <div style="background:var(--gray-100);border-radius:var(--radius-md);padding:10px 14px;margin-bottom:8px;border-left:4px solid var(--danger);">
+                <div style="font-size:14px;font-weight:700;color:var(--gray-800);">${b.title || '-'}</div>
+                <div style="font-size:12px;color:var(--gray-500);">
+                    <i class="fa fa-barcode"></i> ${b.barcode} &nbsp;|&nbsp;
+                    <span style="color:var(--danger);font-weight:700;"><i class="fa fa-exclamation-circle"></i> Terlambat ${b.days_overdue} hari</span>
+                </div>
+            </div>`).join('');
+
+        document.getElementById('overdueInfoText').textContent =
+            `${overdueBooks.length} dari ${this.booksToReturn.length} buku melewati tanggal jatuh tempo.`;
+
+        // Reset form
+        document.getElementById('jumlahDendaInput').value = '';
+        document.getElementById('perHariCheck').checked   = true;
+        document.getElementById('dendaPreview').textContent = '';
+
+        // Simpan referensi overdueBooks untuk kalkulasi preview
+        this._overdueBooks = overdueBooks;
+
+        new bootstrap.Modal(document.getElementById('modalPelanggaran')).show();
+    }
+
+    updateDendaPreview() {
+        const nominal  = parseFloat(document.getElementById('jumlahDendaInput').value) || 0;
+        const perHari  = document.getElementById('perHariCheck').checked;
+        const overdue  = this._overdueBooks || [];
+        const preview  = document.getElementById('dendaPreview');
+
+        if (!nominal || overdue.length === 0) { preview.textContent = ''; return; }
+
+        if (perHari) {
+            const totalDays = overdue.reduce((s, b) => s + b.days_overdue, 0);
+            const total     = totalDays * nominal;
+            preview.innerHTML = `<i class="fa fa-info-circle"></i> Estimasi total denda: <b>Rp ${total.toLocaleString('id-ID')}</b> (${totalDays} hari × Rp ${nominal.toLocaleString('id-ID')})`;
+        } else {
+            const total = overdue.length * nominal;
+            preview.innerHTML = `<i class="fa fa-info-circle"></i> Estimasi total denda: <b>Rp ${total.toLocaleString('id-ID')}</b> (${overdue.length} buku × Rp ${nominal.toLocaleString('id-ID')})`;
+        }
+    }
+
+    handleConfirmViolation() {
+        const jenisPelanggaranId = document.getElementById('jenisPelanggaranSelect').value;
+        const jenisDendaId       = document.getElementById('jenisDendaSelect').value;
+        const jumlahDenda        = document.getElementById('jumlahDendaInput').value;
+        const perHari            = document.getElementById('perHariCheck').checked;
+
+        if (!jenisPelanggaranId) {
+            Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Silakan pilih jenis pelanggaran', confirmButtonColor: '#1B3878' }); return;
+        }
+        if (!jenisDendaId) {
+            Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Silakan pilih jenis denda', confirmButtonColor: '#1B3878' }); return;
+        }
+        if (!jumlahDenda || parseFloat(jumlahDenda) < 0) {
+            Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Silakan masukkan jumlah denda yang valid', confirmButtonColor: '#1B3878' }); return;
+        }
+
+        bootstrap.Modal.getInstance(document.getElementById('modalPelanggaran')).hide();
+
+        this.submitReturn(true, {
+            jenis_pelanggaran_id: jenisPelanggaranId,
+            jenis_denda_id:       jenisDendaId,
+            jumlah_denda:         parseFloat(jumlahDenda),
+            per_hari:             perHari
+        });
+    }
+
+    async submitReturn(processViolation, violationData) {
         this.showLoading();
-        
-        // Ambil array ID item yang ada di keranjang
-        const itemIds = this.booksToReturn.map(book => book.id);
+
+        const itemIds = this.booksToReturn.map(b => b.id);
+
+        const body = [
+            `item_ids=${encodeURIComponent(JSON.stringify(itemIds))}`,
+            `process_violation=${processViolation ? '1' : '0'}`,
+            `violation_data=${encodeURIComponent(JSON.stringify(violationData || {}))}`
+        ].join('&');
 
         try {
             const res  = await fetch('/sirkulasi-pengembalian/process-return', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `item_ids=${encodeURIComponent(JSON.stringify(itemIds))}` // Kirim sebagai JSON string
+                body
             });
             const data = await res.json();
-            
+
             this.hideLoading();
-            
+
             if (data.status === 'success') {
                 Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    html: data.message,
-                    confirmButtonColor: '#1B3878',
-                    confirmButtonText: 'Tutup',
-                    timer: 3500,
-                    timerProgressBar: true
+                    icon: 'success', title: 'Berhasil!', html: data.message,
+                    confirmButtonColor: '#1B3878', confirmButtonText: 'Tutup',
+                    timer: 4000, timerProgressBar: true
                 });
-                
-                // Kosongkan keranjang setelah berhasil
-                this.booksToReturn = []; 
-                this.currentMemberId = null;
+                this.booksToReturn     = [];
+                this.currentMemberId   = null;
                 this.currentMemberName = null;
-                
                 this.hideBookInfo();
                 this.loadHistory();
                 this.focusInput();
@@ -537,13 +696,10 @@ class SelfReturnApp {
         }
     }
 
-    // Fungsi History tetap sama seperti sebelumnya...
     async loadHistory() {
         try {
             let url = '/sirkulasi-pengembalian/getReturnHistory?limit=5';
-            if (this.currentMemberId) {
-                url += '&member_id=' + this.currentMemberId;
-            }
+            if (this.currentMemberId) url += '&member_id=' + this.currentMemberId;
             const res  = await fetch(url);
             const data = await res.json();
             if (data.status === 'success') this.displayHistory(data.data);
@@ -553,8 +709,7 @@ class SelfReturnApp {
     displayHistory(items) {
         const list = document.getElementById('historyList');
         if (!items.length) {
-            list.innerHTML = `<div class="history-empty"><i class="fa fa-inbox"></i> Belum ada riwayat pengembalian</div>`;
-            return;
+            list.innerHTML = `<div class="history-empty"><i class="fa fa-inbox"></i> Belum ada riwayat pengembalian</div>`; return;
         }
         list.innerHTML = items.map(item => `
             <div class="history-item fade-in">
@@ -565,17 +720,15 @@ class SelfReturnApp {
                 </div>
                 <div class="hi-date">
                     ${this.formatDate(item.ActualReturn)}
-                    ${item.LateDays > 0 ? `<br><span class="status-badge status-overdue" style="font-size:10px; margin-top:5px;">Terlambat ${item.LateDays} hari</span>` : ''}
+                    ${item.LateDays > 0 ? `<br><span class="status-badge status-overdue" style="font-size:10px;margin-top:5px;">Terlambat ${item.LateDays} hari</span>` : ''}
                 </div>
-            </div>
-        `).join('');
+            </div>`).join('');
     }
 
     formatDate(dateString) {
         if (!dateString) return '-';
         return new Date(dateString).toLocaleDateString('id-ID', {
-            year: 'numeric', month: 'long', day: 'numeric',
-            hour: '2-digit', minute: '2-digit'
+            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
         });
     }
 

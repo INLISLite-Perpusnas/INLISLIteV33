@@ -1,0 +1,14 @@
+change.log 3 May 2026
+Update versi CodeIgniter 4.7
+Menambahkan konfigurasi untuk memaksa penggunaan HTTPS pada app/Config/App.php
+Memperbaiki Insecure Access-Control-Allow-Origin pada app/Filters/Cors.php, 
+mengganti wildcard '*' dengan whitelist origin spesifik (Plugin ID: 98057)
+Memperbaiki Mixed Content pada cms/banner dan cms/berita, URL DataTables diubah ke URL relatif (Plugin ID: 98091)
+Update logic vulnerability Cross-Site Scripting (XSS) opac/browse (Plugin ID: 98104)
+Memperbaiki Input Reflection pada Opac/Controllers/Opac.php — validasi dan sanitasi parameter member_no, search, search_by
+Memperbaiki beberapa konfigurasi OAI-PMH Repository agar dinamis berdasarkan data yang ada di database
+Update jQuery ke versi 4.0.0
+Update Bootstrap ke versi 5.3.0
+Menambahkan fitur untuk mendapatkan jenis pelanggaran dan jenis denda pada modul pengembalian.
+Memperbaiki tampilan dan logic peminjaman dan pengembalian agar lebih  user-friendly dan sesuai dengan kebutuhan pengguna.
+Memperbaiki urutan tag form MARC agar ascending berdasarkan nomor tag
