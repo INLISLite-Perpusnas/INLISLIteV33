@@ -11,6 +11,11 @@ class Perpanjangan extends \Base\Controllers\BaseController
 	public $perpanjanganModel;
 	public $uploadPath;
 	public $modulePath;
+	public $collectionModel;
+	public $collectionLoanModel;
+	public $collectionLoanItemModel;
+	public $collectionLoanExtendModel;
+	public $cart;
 
 	function __construct()
 	{
@@ -47,176 +52,204 @@ class Perpanjangan extends \Base\Controllers\BaseController
 		echo view('Perpanjangan\Views\list', $this->data);
 	}
 
-	public function do_extend($id = null)
-	{
-		$carts = get_cart_extend();
-		$cle_save_data = array();
-		if (!empty($id)) {
-			$collectionloanitem = get_ref_single('collectionloanitems', 'ID="' . $id . '"', 'data');
-			$member = get_ref_single('members', 'ID="' . $collectionloanitem->member_id . '"', 'data');
-			$collection = get_ref_single('collections', 'ID="' . $collectionloanitem->Collection_id . '"', 'data');
-			$catalog = get_ref_single('catalogs', 'ID="' . $collection->Catalog_id . '"', 'data');
 
-			$jenis_anggota = get_ref_single('jenis_anggota', 'id="' . $member->JenisAnggota_id . '"', 'data');
-			$max_extend_days = $jenis_anggota->DayPerpanjang ?? 3;
 
-			$extend = date('Y-m-d');
-			$extend_date = new \DateTime($extend);
-			$due = new \DateTime($extend);
-			$due_date = $due->add(new \DateInterval('P' . $max_extend_days . 'D'));
+	
+public function create()
+{
+    $this->data['title'] = 'Perpanjangan Mandiri';
+    return view('Perpanjangan\Views\add', $this->data);
+}
 
-			$cle_save_data[] = array(
-				'CollectionLoan_id' => $collectionloanitem->CollectionLoan_id,
-				'CollectionLoanItem_id' => str_replace('E', '', $id),
-				'Collection_id' =>  $collection->ID,
-				'Member_id' => $member->ID,
-				'DateExtend' => date_format($extend_date, "Y/m/d H:i:s"),
-				'DueDateExtend' => date_format($due_date, "Y/m/d H:i:s"),
-				'Branch_id' => branch_id(),
-				'CreateBy' => user_id(),
-				'CreateTerminal' => $this->request->getIPAddress(),
-			);
-		} else {
-			if (!empty($carts)) {
-				foreach ($carts as $row) {
-					$jenis_anggota = get_ref_single('jenis_anggota', 'id="' . $row->options->member->JenisAnggota_id . '"', 'data');
-					$max_extend_days = $jenis_anggota->DayPerpanjang ?? 3;
+public function checkBook()
+{
+    $nomorBarcode = $this->request->getPost('nomorBarcode');
 
-					$extend = date('Y-m-d');
-					$extend_date = new \DateTime($extend);
-					$due = new \DateTime($extend);
-					$due_date = $due->add(new \DateInterval('P' . $max_extend_days . 'D'));
+    if (empty($nomorBarcode)) {
+        return $this->response->setJSON(['status' => 'error', 'message' => 'Nomor barcode tidak boleh kosong']);
+    }
 
-					$cle_save_data[] = array(
-						'CollectionLoan_id' => $row->options->collectionloanitem->CollectionLoan_id,
-						'CollectionLoanItem_id' => str_replace('E', '', $row->id),
-						'Collection_id' =>  $row->options->collection->ID,
-						'Member_id' => $row->options->member->ID,
-						'DateExtend' => date_format($extend_date, "Y/m/d H:i:s"),
-						'DueDateExtend' => date_format($due_date, "Y/m/d H:i:s"),
-						'Branch_id' => branch_id(),
-						'CreateBy' => user_id(),
-						'CreateTerminal' => $this->request->getIPAddress(),
-					);
-				}
-			}
-		}
+    $db = db_connect();
 
-		$cle_save = $this->collectionLoanExtendModel->insertBatch($cle_save_data);
-		if ($cle_save) {
-			if (!empty($carts)) {
-				foreach ($carts as $row) {
-					$this->cart->remove($row->id);
-				}
-			}
+    // Cari buku yang sedang dipinjam
+    $scannedItem = $db->table('collections c')
+        ->select('cli.CollectionLoan_id, cli.member_id, m.Fullname')
+        ->join('collectionloanitems cli', 'cli.Collection_id = c.ID AND cli.LoanStatus = "Loan" AND cli.ActualReturn IS NULL', 'inner')
+        ->join('members m', 'm.ID = cli.member_id', 'left')
+        ->where('c.NomorBarcode', $nomorBarcode)
+        ->get()->getRow();
 
-			$this->session->setFlashdata('toastr_msg', 'Perpajangan berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
-			$response = [
-				'error' => false,
-				'message' => 'Perpajangan berhasil disimpan',
-			];
-		} else {
-			$this->session->setFlashdata('toastr_msg', 'Perpajangan gagal disimpan. Silakan coba lagi');
-			$this->session->setFlashdata('toastr_type', 'error');
-			$response = [
-				'error' => true,
-				'message' => 'Perpajangan gagal disimpan. Silakan coba lagi',
-			];
-		}
+    if (!$scannedItem) {
+        return $this->response->setJSON(['status' => 'error', 'message' => 'Buku tidak ditemukan atau tidak sedang dalam status pinjam']);
+    }
 
-		return redirect()->back();
-	}
+    // Ambil semua buku dalam transaksi yang sama
+    $allItems = $db->table('collectionloanitems cli')
+        ->select('cli.*, c.NomorBarcode, cat.Title, cat.Author')
+        ->join('collections c', 'c.ID = cli.Collection_id')
+        ->join('catalogs cat', 'cat.ID = c.Catalog_id', 'left')
+        ->where('cli.CollectionLoan_id', $scannedItem->CollectionLoan_id)
+        ->where('cli.LoanStatus', 'Loan')
+        ->where('cli.ActualReturn IS NULL')
+        ->get()->getResult();
 
-	public function delete(int $id = 0)
-	{
-		if (!$id) {
-			set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-			set_message('toastr_type', 'error');
-			return redirect()->to('perpanjangan');
-		}
-		$perpanjanganDelete = $this->perpanjanganModel->delete($id);
-		if ($perpanjanganDelete) {
-			set_message('toastr_msg', 'Perpanjangan berhasil dihapus');
-			set_message('toastr_type', 'success');
-			return redirect()->to('perpanjangan');
-		} else {
-			set_message('toastr_msg', 'Perpanjangan gagal dihapus');
-			set_message('toastr_type', 'warning');
-			set_message('message', 'Perpanjangan gagal dihapus');
-			return redirect()->to('perpanjangan');
-		}
-	}
+    $today          = new \DateTime();
+    $formattedItems = [];
 
-	public function apply_status($id)
-	{
-		$field = $this->request->getGet('field');
-		$value = $this->request->getGet('value');
+    foreach ($allItems as $item) {
+        $extendCount = $db->table('collectionloanextends')
+            ->where('CollectionLoanItem_id', $item->ID)
+            ->where('active', 1)
+            ->countAllResults();
 
-		$perpanjanganUpdate = $this->perpanjanganModel->update($id, array($field => $value));
+        $dueDate   = new \DateTime($item->DueDate);
+        $isOverdue = $today > $dueDate;
 
-		if ($perpanjanganUpdate) {
-			set_message('toastr_msg', 'Perpanjangan berhasil diubah');
-			set_message('toastr_type', 'success');
-		} else {
-			set_message('toastr_msg', 'Perpanjangan gagal diubah');
-			set_message('toastr_type', 'warning');
-		}
-		return redirect()->to('/perpanjangan');
-	}
+        $formattedItems[] = [
+            'id'            => $item->ID,
+            'collection_id' => $item->Collection_id,
+            'title'         => $item->Title,
+            'author'        => $item->Author,
+            'barcode'       => $item->NomorBarcode,
+            'loan_date'     => $item->LoanDate,
+            'due_date'      => $item->DueDate,
+            'extend_count'  => $extendCount,
+            'is_overdue'    => $isOverdue,
+            'days_overdue'  => $isOverdue ? $today->diff($dueDate)->days : 0,
+        ];
+    }
 
-	public function cart_insert()
-	{
-		$IDs = $this->request->getvar('ID');
-		foreach ($IDs as $ID) {
-			$collectionloanitem = get_ref_single('collectionloanitems', 'ID="' . $ID . '"', 'data');
-			$member = get_ref_single('members', 'ID="' . $collectionloanitem->member_id . '"', 'data');
-			$collection = get_ref_single('collections', 'ID="' . $collectionloanitem->Collection_id . '"', 'data');
-			$catalog = get_ref_single('catalogs', 'ID="' . $collection->Catalog_id . '"', 'data');
+    return $this->response->setJSON([
+        'status' => 'success',
+        'data'   => [
+            'member_id'          => $scannedItem->member_id,
+            'member_name'        => $scannedItem->Fullname,
+            'collection_loan_id' => $scannedItem->CollectionLoan_id,
+            'items'              => $formattedItems
+        ]
+    ]);
+}
 
-			$this->cart->insert(array(
-				'id'      => 'E' . $ID,
-				'name'    => 'EXTEND',
-				'qty'     => 1,
-				'price'   =>  0,
-				'options' => array(
-					'collection' 			=> $collection,
-					'catalog' 				=> $catalog,
-					'member' 				=> $member,
-					'collectionloanitem' 	=> $collectionloanitem,
-				),
-			), 'E' . $ID);
-		}
+public function processExtend()
+{
+    try {
+        $itemIdsJson = $this->request->getPost('item_ids');
+        $extendDays  = (int)($this->request->getPost('extend_days') ?? 7);
 
-		set_message('toastr_msg', 'Berhasil ditambahkan ke Troli Perpajangan');
-		set_message('toastr_type', 'success');
-		set_message('message', 'Berhasil ditambahkan ke Troli Perpajangan');
+        if (empty($itemIdsJson)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Tidak ada buku yang dipilih untuk diperpanjang']);
+        }
 
-		return redirect()->back();
-	}
+        $itemIds = json_decode($itemIdsJson, true);
+        if (!is_array($itemIds) || count($itemIds) === 0) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Format data tidak valid']);
+        }
 
-	public function cart_remove($id = null)
-	{
-		$this->cart->remove($id);
+        $db = db_connect();
+        $db->transStart();
 
-		set_message('toastr_msg', 'Berhasil dihapus dari Troli Perpajangan');
-		set_message('toastr_type', 'success');
-		set_message('message', 'Berhasil dihapus dari Troli Perpajangan');
+        $loanItems = $db->table('collectionloanitems')
+            ->whereIn('ID', $itemIds)
+            ->where('LoanStatus', 'Loan')
+            ->where('ActualReturn IS NULL')
+            ->get()->getResult();
 
-		return redirect()->back();
-	}
+        if (count($loanItems) === 0) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Buku tidak ditemukan atau sudah dikembalikan']);
+        }
 
-	public function cart_destroy()
-	{
-		$carts = get_cart_extend();
-		foreach ($carts as $row) {
-			$this->cart->remove($row->id);
-		}
+        $extendDate       = date('Y-m-d H:i:s');
+        $extendedCount    = 0;
+        $collectionLoanId = null;
+        $memberId         = null;
 
-		set_message('toastr_msg', 'Troli Perpajangan berhasil dikosongkan');
-		set_message('toastr_type', 'success');
-		set_message('message', 'Troli Perpajangan berhasil dikosongkan');
+        foreach ($loanItems as $item) {
+            if (!$collectionLoanId) $collectionLoanId = $item->CollectionLoan_id;
+            if (!$memberId)         $memberId         = $item->member_id;
 
-		return redirect()->back();
-	}
+            // Hitung DueDate baru dari DueDate saat ini
+            $currentDueDate = new \DateTime($item->DueDate);
+            $newDueDate     = clone $currentDueDate;
+            $newDueDate->modify('+' . $extendDays . ' days');
+
+            // Insert ke collectionloanextends
+            $db->table('collectionloanextends')->insert([
+                'CollectionLoan_id'     => $item->CollectionLoan_id,
+                'CollectionLoanItem_id' => $item->ID,
+                'Collection_id'         => $item->Collection_id,
+                'Member_id'             => $item->member_id,
+                'DateExtend'            => $extendDate,
+                'DueDateExtend'         => $newDueDate->format('Y-m-d H:i:s'),
+                'CreateBy'              => user_id(),
+                'CreateDate'            => $extendDate,
+                'CreateTerminal'        => $this->request->getIPAddress(),
+                'active'                => 1,
+            ]);
+
+            // Update DueDate di collectionloanitems
+            $db->table('collectionloanitems')
+                ->where('ID', $item->ID)
+                ->update([
+                    'DueDate'        => $newDueDate->format('Y-m-d H:i:s'),
+                    'UpdateBy'       => user_id(),
+                    'UpdateDate'     => $extendDate,
+                    'UpdateTerminal' => $this->request->getIPAddress()
+                ]);
+
+            $extendedCount++;
+        }
+
+        // Update ExtendCount di tabel induk
+        if ($extendedCount > 0 && $collectionLoanId) {
+            $db->table('collectionloans')
+                ->where('ID', $collectionLoanId)
+                ->set('ExtendCount', 'ExtendCount + ' . $extendedCount, false)
+                ->set('UpdateBy',       user_id())
+                ->set('UpdateDate',     $extendDate)
+                ->set('UpdateTerminal', $this->request->getIPAddress())
+                ->update();
+        }
+
+        $db->transComplete();
+
+        if ($db->transStatus() === false) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Terjadi kesalahan saat memproses database']);
+        }
+
+        return $this->response->setJSON([
+            'status'  => 'success',
+            'message' => "<b>$extendedCount buku</b> berhasil diperpanjang selama <b>$extendDays hari</b>!",
+            'data'    => ['member_id' => $memberId, 'extended_count' => $extendedCount]
+        ]);
+
+    } catch (\Exception $e) {
+        return $this->response->setJSON(['status' => 'error', 'message' => 'System Error: ' . $e->getMessage()]);
+    }
+}
+
+public function getExtendHistory()
+{
+    $limit     = $this->request->getGet('limit') ?? 5;
+    $offset    = $this->request->getGet('offset') ?? 0;
+    $member_id = $this->request->getGet('member_id');
+
+    $db    = db_connect();
+    $query = $db->table('collectionloanextends cle')
+        ->select('cle.*, c.NomorBarcode, cat.Title, cat.Author')
+        ->join('collectionloanitems cli', 'cli.ID = cle.CollectionLoanItem_id')
+        ->join('collections c', 'c.ID = cle.Collection_id')
+        ->join('catalogs cat', 'cat.ID = c.Catalog_id', 'left')
+        ->where('cle.active', 1);
+
+    if (!empty($member_id)) {
+        $query->where('cle.Member_id', $member_id);
+    }
+
+    $history = $query->orderBy('cle.DateExtend', 'DESC')
+        ->limit($limit, $offset)
+        ->get()->getResult();
+
+    return $this->response->setJSON(['status' => 'success', 'data' => $history]);
+}
+
 }

@@ -46,11 +46,13 @@ class Permission extends \Base\Controllers\BaseController
             db_connect()->table('auth_groups_permissions')->where('permission_id', $id)->delete();
             db_connect()->table('auth_users_permissions')->where('permission_id', $id)->delete();
             reloadPermission();
-            set_message('toastr_msg', 'Permission berhasil dihapus');
-            set_message('toastr_type', 'success');
+             $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Data berhasil dihapus');
         } else {
-            set_message('toastr_msg', 'Permission gagal dihapus');
-            set_message('toastr_type', 'warning');
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Gagal');
+            $this->session->setFlashdata('swal_text', 'Data gagal dihapus');    
         }
         return redirect()->back();
     }

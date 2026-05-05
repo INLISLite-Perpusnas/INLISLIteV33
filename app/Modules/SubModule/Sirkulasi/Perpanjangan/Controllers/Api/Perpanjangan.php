@@ -34,114 +34,109 @@ class Perpanjangan extends \Base\Controllers\BaseResourceController
 	}
 
 	public function datatable($slug = null)
-	{
-		$db = db_connect();
-		$builder = $db->table('collectionloanextends cle')
-			->select('cli.ID, cli.ID as action')
-			->select('cli.CollectionLoan_id, cli.LoanDate, cli.DueDate, cli.ActualReturn, cli.LateDays')
-			->select('cle.ID as CountExtend, cle.DateExtend, cle.DueDateExtend, cle.UpdateDate, cle.CollectionLoanItem_id')
-			->select('col.NomorBarcode')
-			->select('a.Title, a.PublishLocation, a.Publisher, a.PublishYear')
-			->select('m.Fullname, m.MemberNo')
-			->select('loc.Name as LocationLibrary')
-			->join('collectionloanitems cli', 'cli.ID = cle.CollectionLoanItem_id')
-			->join('collectionloans cl', 'cl.ID = cli.CollectionLoan_id')
-			->join('collections col', 'col.ID = cli.Collection_id')
-			->join('catalogs a', 'a.ID = col.Catalog_id')
-			->join('branchs b', 'b.ID = a.Branch_id', 'inner')
-			->join('members m', 'm.ID = cli.member_id')
-			->join('location_library loc', 'loc.ID = col.Location_Library_id')
-			->where('cli.LoanStatus', 'Loan');
+{
+    $db = db_connect();
+    $builder = $db->table('collectionloanextends cle')
+        ->select('cli.ID, cli.ID as action')
+        ->select('cli.CollectionLoan_id, cli.LoanDate, cli.DueDate, cli.ActualReturn, cli.LateDays, cli.LoanStatus')
+        ->select('cle.ID as CountExtend, cle.DateExtend, cle.DueDateExtend, cle.UpdateDate, cle.CollectionLoanItem_id')
+        ->select('col.NomorBarcode')
+        ->select('a.Title, a.PublishLocation, a.Publisher, a.PublishYear')
+        ->select('m.Fullname, m.MemberNo')
+        ->select('loc.Name as LocationLibrary')
+        ->join('collectionloanitems cli', 'cli.ID = cle.CollectionLoanItem_id')
+        ->join('collectionloans cl',      'cl.ID = cli.CollectionLoan_id')
+        ->join('collections col',         'col.ID = cle.Collection_id')
+        ->join('catalogs a',              'a.ID = col.Catalog_id')
+        ->join('members m',               'm.ID = cle.Member_id')
+        ->join('location_library loc',    'loc.ID = col.Location_Library_id', 'left')
+        ->orderBy('cle.DateExtend', 'DESC'); // ✅ Descending
 
-		if (user()->category == 'admin') {
-		} elseif (user()->category == 'sa_prov' && user()->branch_id === null) {
-			$npp_provinsi_id = preg_replace('/\./', '', user()->npp_provinsi_id);
-			$builder->where('b.NPP_Provinsi_id', $npp_provinsi_id);
-		}  elseif (user()->category == 'sa_kabkot' && user()->branch_id !== null) {
-			$builder->where('a.Branch_id', branch_id());
-		} else {
-			$builder->where('a.Branch_id', branch_id());
-		}
+    $dataTable = DataTable::of($builder)
+        ->addNumbering('no')
+        ->edit('CollectionLoan_id', function ($row) {
+            return '
+                <div class="widget-content p-0">
+                    <div class="widget-content-wrapper">
+                        <div class="widget-content-left mr-3">
+                            <i class="far fa-id-card fa-3x text-secondary"></i>
+                        </div>
+                        <div class="widget-content-left text-secondary">
+                            <dl class="dl-horizontal mb-0">
+                                <dt class="font-weight-bold mb-0"><i class="fa fa-user text-secondary"></i> No. Anggota</dt>
+                                <dd class="font-weight-bold mb-0 mr-1">&nbsp;: <a href="#">' . $row->MemberNo . ' <span class="text-secondary">(' . $row->Fullname . ')</span></a></dd>
+                                <dt class="font-weight-bold mb-0"><i class="fa fa-hashtag text-secondary"></i> No. Transaksi</dt>
+                                <dd class="font-weight-bold mb-0 mr-1">&nbsp;: <a href="#">' . $row->CollectionLoan_id . '</a></dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>';
+        })
+        ->edit('NomorBarcode', function ($row) {
+            return '
+                <div class="widget-content p-0">
+                    <div class="widget-content-wrapper">
+                        <div class="widget-content-left mr-3">
+                            <i class="far fa-qrcode fa-2x text-info"></i>
+                        </div>
+                        <div class="widget-content-left">
+                            <div class="widget-heading">' . $row->NomorBarcode . '</div>
+                        </div>
+                    </div>
+                </div>';
+        })
+        ->edit('Title', function ($row) {
+            return '
+                <div class="widget-content p-0">
+                    <div class="widget-content-wrapper">
+                        <div class="widget-content-left mr-3">
+                            <i class="far fa-book fa-2x text-info"></i>
+                        </div>
+                        <div class="widget-content-left">
+                            <div class="widget-heading text-primary">' . $row->Publisher . '</div>
+                            <div class="widget-heading">' . $row->Title . '</div>
+                        </div>
+                    </div>
+                </div>';
+        })
+        ->edit('LoanDate', function ($row) {
+            return '
+                <span class="badge badge-primary badge-pill">
+                    <i class="fa fa-calendar"></i> ' . $row->LoanDate . '
+                </span><br>
+                <span class="badge badge-warning badge-pill mt-1">
+                    <i class="fa fa-clock-o"></i> ' . $row->DueDateExtend . '
+                </span>';
+        })
+        ->edit('CountExtend', function ($row) {
+            $count = count_extend($row->CollectionLoanItem_id);
+            return '<span class="badge badge-pill badge-secondary">Ke-' . $count . '</span>';
+        })
+        ->edit('DateExtend', function ($row) {
+            return '
+                <span class="badge badge-success badge-pill">
+                    <i class="fa fa-refresh"></i> ' . $row->DateExtend . '
+                </span>';
+        })
+        ->edit('LoanStatus', function ($row) {
+            if ($row->LoanStatus === 'Loan') {
+                return '
+                    <span class="badge badge-pill" style="background:#dde8fb;color:#1B3878;font-size:12px;padding:6px 12px;">
+                        <i class="fa fa-book"></i> Dipinjam
+                    </span>';
+            } elseif ($row->LoanStatus === 'Return') {
+                return '
+                    <span class="badge badge-pill" style="background:#edfaf4;color:#0a6e43;font-size:12px;padding:6px 12px;">
+                        <i class="fa fa-check-circle"></i> Dikembalikan
+                    </span>';
+            }
+            return '<span class="badge badge-secondary badge-pill">' . $row->LoanStatus . '</span>';
+        })
+       
+        ->toJson();
 
-		$dataTable = DataTable::of($builder)
-			->addNumbering('no')
-			->edit('CollectionLoan_id', function ($row) {
-				$html =
-					'<div class="widget-content p-0">
-					<div class="widget-content-wrapper">
-						<div class="widget-content-left mr-3">
-							<i class="far fa-id-card fa-3x text-secondary"></i>
-						</div>
-						<div class="widget-content-left text-secondary">
-							<dl class="dl-horizontal mb-0">
-								<dt class="font-weight-bold mb-0"><i class="fa fa-user text-secondary"></i> No. Anggota</dt>
-								<dd class="font-weight-bold mb-0 mr-1">&nbsp;: <a href="#">' . $row->MemberNo . '  <span class="text-secondary">(' . $row->Fullname . ')</span></a></dd>
-								<dt class="font-weight-bold mb-0"><i class="fa fa-hashtag text-secondary"></i> No. Transaksi</dt>
-								<dd class="font-weight-bold mb-0 mr-1">&nbsp;: <a href="#">' . $row->CollectionLoan_id . '</a></dd>
-							</dl>
-						</div>
-					</div>
-				</div>';
-				return $html;
-			})
-			->edit('NomorBarcode', function ($row) {
-				$html =
-					'<div class="widget-content p-0">
-					<div class="widget-content-wrapper">
-						<div class="widget-content-left mr-3">
-							<i class="far fa-qrcode fa-2x text-info"></i>
-						</div>
-						<div class="widget-content-left">
-							<div class="widget-heading">' . $row->NomorBarcode . '</div>
-						</div>
-					</div>
-				</div>';
-				return $html;
-			})
-			->edit('Title', function ($row) {
-				$html =
-					'<div class="widget-content p-0">
-					<div class="widget-content-wrapper">
-						<div class="widget-content-left mr-3">
-							<i class="far fa-book fa-2x text-info"></i>
-						</div>
-						<div class="widget-content-left">
-							<div class="widget-heading text-primary">' . $row->Publisher . '</div>
-							<div class="widget-heading">' . $row->Title . '</div>
-						</div>
-					</div>
-				</div>';
-				return $html;
-			})
-			->edit('LoanDate', function ($row) {
-				$html  =  '<badge class="badge badge-primary badge-pill">' . $row->LoanDate . '</badge>';
-				$html .=  '<badge class="badge badge-warning badge-pill">' . $row->DueDateExtend . '</badge>';
-				return $html;
-			})
-			->edit('CountExtend', function ($row) {
-				$count_extend = count_extend($row->CollectionLoanItem_id);
-				return $count_extend++;
-			})
-			->edit('DateExtend', function ($row) {
-				$html  =  '<badge class="badge badge-success badge-pill">' . $row->DateExtend . '</badge>';
-				return $html;
-			})
-			->edit('ActualReturn', function ($row) {
-				$html  =  '<badge class="badge badge-info">' . $row->ActualReturn . '</badge>';
-				return $html;
-			})
-			->edit('UpdateDate', function ($row) {
-				$html  =  '<badge class="badge badge-info">' . $row->UpdateDate . '</badge>';
-				return $html;
-			})
-			->edit('action', function ($row) {
-				$edit = '<a href="javascript:void(0);" data-href="' . base_url('api/sirkulasi-perpanjangan/detail/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-				$delete = '<a href="javascript:void(0);" data-href="' . base_url('perpanjangan/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
-				return $edit . ' ' . $delete;
-			})
-			->toJson();
-		return $dataTable;
-	}
+    return $dataTable;
+}
 
 	public function loan_datatable()
 	{
@@ -157,9 +152,7 @@ class Perpanjangan extends \Base\Controllers\BaseResourceController
 			->join('members m', 'm.ID = cli.member_id')
 			->where('cli.LoanStatus', 'Loan');
 
-			if(!empty(branch_id())) {
-				$builder->where('col.Branch_id', branch_id());
-			}
+		
 
 		$cart_cli_arr = array();
 		$carts = get_cart_extend();

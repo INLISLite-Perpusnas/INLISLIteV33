@@ -12,3 +12,4 @@ Update Bootstrap ke versi 5.3.0
 Menambahkan fitur untuk mendapatkan jenis pelanggaran dan jenis denda pada modul pengembalian.
 Memperbaiki tampilan dan logic peminjaman dan pengembalian agar lebih  user-friendly dan sesuai dengan kebutuhan pengguna.
 Memperbaiki urutan tag form MARC agar ascending berdasarkan nomor tag
+Menammbahkan fitur perpanjangan peminjaman pada modul peminjaman.
