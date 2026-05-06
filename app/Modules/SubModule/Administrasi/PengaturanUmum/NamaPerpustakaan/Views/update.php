@@ -322,9 +322,7 @@ $slug = $request->getGet('slug') ?? '';
 					<i class="lnr-cog icon-gradient bg-plum-plate"> </i>&nbsp;Pengaturan Logo
 					<div class="btn-actions-pane-right actions-icon-btn">
 						<div class="menu-header-btn-pane">
-							<a href="javascript:void(0);"
-								data-toggle="modal"
-								data-target="#modal_upload_logo"
+							<a data-bs-toggle="modal" data-bs-target="#modal_upload_logo" data-toggle="modal" data-target="#modal_upload_logo" href="javascript:void(0);"
 								class="mb-2 mr-2 btn btn-warning">
 								<i class="fa fa-edit"></i> Update
 							</a>
@@ -353,9 +351,7 @@ $slug = $request->getGet('slug') ?? '';
 					<i class="lnr-cog icon-gradient bg-plum-plate"> </i>&nbsp;Pengaturan Kop
 					<div class="btn-actions-pane-right actions-icon-btn">
 						<div class="menu-header-btn-pane">
-							<a href="javascript:void(0);"
-								data-toggle="modal"
-								data-target="#modal_upload_logokop"
+							<a data-bs-toggle="modal" data-bs-target="#modal_upload_logokop" data-toggle="modal" data-target="#modal_upload_logokop" href="javascript:void(0);"
 								class="mb-2 mr-2 btn btn-warning">
 								<i class="fa fa-edit"></i> Update
 							</a>
