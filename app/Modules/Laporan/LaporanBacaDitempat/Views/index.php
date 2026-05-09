@@ -56,7 +56,7 @@ $date_to = $request->getGet('date_to') ?? '';
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('auth') ?>"><i class="fa fa-home"></i> Home</a></li>
                         <li class="breadcrumb-item"><a href="#">Laporan</a></li>
-                        <li class="active breadcrumb-item" aria-current="page">Laporan Baca Ditempat </li>
+                        <li class="breadcrumb-item" aria-current="page">Laporan Baca Ditempat </li>
                     </ol>
                 </nav>
             </div>

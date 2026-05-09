@@ -21,12 +21,14 @@ class Opac extends \Base\Controllers\BaseController
     public $collectionLoanModel;
     public $eksemplarModel;
     public $katalogRuasModel;
+    public $bannerModel;
 
 
     function __construct()
     {
         $this->visitorModel = new \Opac\Models\VisitorModel();
         $this->katalogModel = new \Katalog\Models\KatalogModel();
+        $this->bannerModel = new \Banner\Models\BannerModel();
         $this->db = \Config\Database::connect('data');
         $this->fileModel = new \Katalog\Models\FileModel();
         $this->memberModel = new \Anggota\Models\AnggotaModel();
@@ -81,9 +83,19 @@ class Opac extends \Base\Controllers\BaseController
         }
     }
 
+    $this->data['opac_banners'] = $this->getOpacBanners();
     $endTime = microtime(true);
     $this->data['execution_time'] = $endTime - $startTime;
     return view('Opac\Views\index', $this->data);
+}
+
+private function getOpacBanners()
+{
+    try {
+        return $this->bannerModel->where('active', 1)->where('category', 'Opac')->orderBy('sort', 'ASC')->findAll();
+    } catch (\Exception $e) {
+        return [];
+    }
 }
 
 private function loadRegularCatalogs()

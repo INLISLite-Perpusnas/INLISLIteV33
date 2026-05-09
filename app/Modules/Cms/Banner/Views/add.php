@@ -56,7 +56,7 @@ $slug = $request->getGet('slug');
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
                         <li class="breadcrumb-item"><a href="<?= base_url('cms/banner') ?>"><?= lang('Banner') ?></a></li>
-                        <li class="active breadcrumb-item" aria-current="page">Tambah Banner</li>
+                        <li class="breadcrumb-item" aria-current="page">Tambah Banner</li>
                     </ol>
                 </nav>
             </div>

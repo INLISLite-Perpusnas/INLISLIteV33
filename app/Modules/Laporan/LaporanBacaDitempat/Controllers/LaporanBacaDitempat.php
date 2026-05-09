@@ -17,6 +17,7 @@ class LaporanBacaDitempat extends \Base\Controllers\BaseController
     public $guestModel;
     public $lokasiperpustakaanModel;
     public $tujuanKunjunganModel;
+    public $locationModel;
 
 	function __construct()
 	{
@@ -71,6 +72,7 @@ class LaporanBacaDitempat extends \Base\Controllers\BaseController
             'roomOptions' => $roomOptions
         ];
 		
+        /** @var array<string, mixed> $data */
         return view('LaporanBacaDitempat\Views\index', $data);
     }
 

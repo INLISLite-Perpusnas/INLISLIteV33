@@ -19,9 +19,38 @@
         border-bottom-right-radius: 40px;
         margin-bottom: 40px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
     }
     .hero-section p.lead {
         color: #d1e0ff;
+    }
+
+    /* Carousel sebagai background hero */
+    .hero-bg-carousel {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        z-index: 0;
+    }
+    .hero-bg-carousel .carousel-inner,
+    .hero-bg-carousel .carousel-item {
+        height: 100%;
+    }
+    .hero-bg-carousel .carousel-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+    }
+    .hero-bg-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(20, 45, 100, 0.65);
+        z-index: 1;
+    }
+    .hero-content {
+        position: relative;
+        z-index: 2;
     }
 
     /* Glass Search & Recommendation Card */
@@ -159,8 +188,30 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
+
     <section class="hero-section">
-        <div class="container">
+        <?php if (!empty($opac_banners)): ?>
+        <div id="opacBannerCarousel" class="carousel slide hero-bg-carousel" data-bs-ride="carousel" data-bs-interval="4000">
+            <div class="carousel-inner">
+                <?php foreach ($opac_banners as $i => $b): ?>
+                <div class="carousel-item <?= $i === 0 ? 'active' : '' ?>">
+                    <img src="<?= base_url('uploads/banner/' . esc($b->file_cover)) ?>" alt="Banner <?= $i + 1 ?>">
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <?php if (count($opac_banners) > 1): ?>
+            <button class="carousel-control-prev" type="button" data-bs-target="#opacBannerCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#opacBannerCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon"></span>
+            </button>
+            <?php endif; ?>
+        </div>
+        <div class="hero-bg-overlay"></div>
+        <?php endif; ?>
+
+        <div class="container hero-content">
             <div class="row justify-content-center">
                 <div class="col-lg-10">
                     <div class="text-center mb-5">

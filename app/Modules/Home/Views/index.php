@@ -70,9 +70,34 @@
 <?= $this->section('content') ?>
 
     <section class="hero-section">
-        <img src="<?= isset($banner['image']) ? base_url('uploads/banner/' . $banner['image']) : base_url('assets/img/default-banner.jpg') ?>" 
-             alt="Banner Perpustakaan" 
-             class="hero-bg">
+        <?php if (!empty($banners)): ?>
+        <div id="heroBannerCarousel" class="carousel slide h-100" data-bs-ride="carousel" data-bs-interval="4000">
+            <div class="carousel-inner h-100">
+                <?php foreach ($banners as $i => $b): ?>
+                <div class="carousel-item h-100 <?= $i === 0 ? 'active' : '' ?>">
+                    <img src="<?= base_url('uploads/banner/' . esc($b->file_cover)) ?>"
+                         alt="Banner <?= $i + 1 ?>"
+                         class="hero-bg">
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <?php if (count($banners) > 1): ?>
+            <button class="carousel-control-prev" type="button" data-bs-target="#heroBannerCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#heroBannerCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon"></span>
+            </button>
+            <div class="carousel-indicators">
+                <?php foreach ($banners as $i => $b): ?>
+                <button type="button" data-bs-target="#heroBannerCarousel" data-bs-slide-to="<?= $i ?>" <?= $i === 0 ? 'class="active"' : '' ?>></button>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+        </div>
+        <?php else: ?>
+        <img src="<?= base_url('assets/img/default-banner.jpg') ?>" alt="Banner Perpustakaan" class="hero-bg">
+        <?php endif; ?>
     </section>
 
     <div class="container search-overlap">

@@ -45,8 +45,8 @@ class Home extends \Base\Controllers\BaseController
         // Get news/announcements (dummy data)
         $this->data['news'] = $this->getNews();
 
-        // Get banner data (dummy data)
-        $this->data['banner'] = $this->getBannerData();
+        // Get banner data
+        $this->data['banners'] = $this->getBannersData();
 
         // Library modules
         $this->data['modules'] = $this->getLibraryModules();
@@ -160,35 +160,16 @@ class Home extends \Base\Controllers\BaseController
     /**
      * Get banner data (dummy data)
      */
-    private function getBannerData()
-{
-    // 1. Ambil Judul
-    $title = $this->settingModel->where('Name', 'TulisanBanner')->first()->Value ?? '';
-    
-    // 2. Ambil File Cover Banner yang aktif
-    // (Sebaiknya tambahkan orderBy agar banner yang diambil konsisten, misal yang terbaru)
-    $banner = $this->bannerModel->where('active', 1)->orderBy('sort', 'ASC')->first()->file_cover ?? '';
 
 
-    // 3. Tentukan URL Gambar
-    // Default image (Unsplash)
-    $imageUrl = 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1200&h=600&fit=crop';
-
-    if (!empty($banner)) {
-        // Cek path folder Anda. Di snippet ini Anda tulis 'uploads/branch', 
-        // tapi di modul sebelumnya Anda pakai 'uploads/banner'. Sesuaikan di sini:
-        $imageUrl = $banner;
+    private function getBannersData()
+    {
+        try {
+            return $this->bannerModel->where('active', 1)->orderBy('sort', 'ASC')->findAll();
+        } catch (\Exception $e) {
+            return [];
+        }
     }
-
-    return [
-        'title' => $title,
-        'subtitle' => 'Jelajahi dunia pengetahuan dengan koleksi lengkap dan layanan modern',
-        'description' => 'Akses ribuan buku, jurnal, dan sumber daya digital untuk mendukung pembelajaran dan penelitian Anda.',
-        'image' => $imageUrl, // <--- Gunakan variabel hasil pengecekan tadi
-        'cta_text' => 'Mulai Jelajahi',
-        'cta_link' => base_url('opac')
-    ];
-}
 
     /**
      * Get library modules
