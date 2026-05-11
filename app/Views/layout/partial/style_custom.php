@@ -188,3 +188,31 @@ div.dataTables_wrapper div.dataTables_paginate {
 
     
 </style>
+
+<style>
+	/* Fix SweetAlert2 yang ditimpa CSS admin theme */
+	.swal2-icon {
+		display: flex !important;
+	}
+
+	.swal2-icon.swal2-warning {
+		border-color: #f8bb86 !important;
+		color: #f8bb86 !important;
+	}
+
+	.swal2-styled.swal2-confirm {
+		background-color: #3085d6 !important;
+		color: #fff !important;
+		border: none !important;
+	}
+
+	.swal2-styled.swal2-cancel {
+		background-color: #d33 !important;
+		color: #fff !important;
+		border: none !important;
+	}
+
+	.swal2-popup {
+		font-family: inherit;
+	}
+</style>

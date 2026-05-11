@@ -51,7 +51,7 @@ $slug = $request->getGet('slug') ?? '';
                         <th class="text-center">Maks.Lama Perpanjangan</th>
                         <th class="text-center">Maks.Banyaknya Perpanjangan</th>
                         <th class="text-center" width="80">Status</th>
-                        <th class="text-center" width="180">Aksi</th>
+                        <th class="text-center" style="min-width: 200px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -74,6 +74,8 @@ $slug = $request->getGet('slug') ?? '';
             "searching": false,
             "processing": true,
             "serverSide": true,
+             scrollX    : true,
+             scrollCollapse: true,
             "ajax": {
                 "url": '<?php echo site_url('api/peraturan-peminjaman-hari/datatable/' . $slug) ?>',
             },

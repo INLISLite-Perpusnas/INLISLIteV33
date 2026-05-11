@@ -5,6 +5,7 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
+
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -65,18 +66,26 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->section('script'); ?>
 <script>
-    $(document).ready(function() {
-        <?php if (session()->getFlashdata('swal_icon')) : ?>
-            Swal.fire({
-                type: '<?= session()->getFlashdata('swal_icon') ?>', // gunakan 'icon' jika SweetAlert2 versi terbaru
-                title: '<?= session()->getFlashdata('swal_title') ?>',
-                html: '<?= session()->getFlashdata('swal_html') ?? session()->getFlashdata('swal_text') ?>',
-                showConfirmButton: false,
-                timer: 3000,
-                icon:'success'
-            });
-        <?php endif; ?>
-    });
+	$(document).ready(function() {
+		<?php if (session()->getFlashdata('swal_icon')) : ?>
+			// ✅ SESUDAH
+			Swal.fire({
+				title: '<?= lang('App.swal.are_you_sure') ?>',
+				text: "<?= lang('App.swal.can_not_be_restored') ?>",
+				icon: 'warning', // ✅ ganti type → icon
+				showCancelButton: true,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33', // ✅ merah agar tombol "Tidak" terlihat jelas
+				confirmButtonText: '<?= lang('App.btn.yes') ?>',
+				cancelButtonText: '<?= lang('App.btn.no') ?>',
+				reverseButtons: true // ✅ opsional: posisi tombol lebih natural
+			}).then((result) => {
+				if (result.value) {
+					window.location.href = url;
+				}
+			});
+		<?php endif; ?>
+	});
 </script>
 <script>
 	var t;
@@ -175,12 +184,11 @@ $slug = $request->getGet('slug') ?? '';
 		Swal.fire({
 			title: '<?= lang('App.swal.are_you_sure') ?>',
 			text: "<?= lang('App.swal.can_not_be_restored') ?>",
-			type: 'warning',
+			icon: 'warning',
 			showCancelButton: true,
-			confirmButtonColor: '#3085d6',
-			cancelButtonColor: '#dd6b55',
 			confirmButtonText: '<?= lang('App.btn.yes') ?>',
-			cancelButtonText: '<?= lang('App.btn.no') ?>'
+			cancelButtonText: '<?= lang('App.btn.no') ?>',
+			reverseButtons: false // ✅ Ya di kiri, Tidak di kanan
 		}).then((result) => {
 			if (result.value) {
 				window.location.href = url;

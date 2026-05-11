@@ -165,7 +165,7 @@ class Home extends \Base\Controllers\BaseController
     private function getBannersData()
     {
         try {
-            return $this->bannerModel->where('active', 1)->orderBy('sort', 'ASC')->findAll();
+            return $this->bannerModel->where('active', 1)->where('category', 'Beranda')->orderBy('sort', 'ASC')->findAll();
         } catch (\Exception $e) {
             return [];
         }

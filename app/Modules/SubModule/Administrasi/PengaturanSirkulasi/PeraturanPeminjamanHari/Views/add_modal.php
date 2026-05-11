@@ -18,7 +18,6 @@
                             <div class="form-group">
                                 <label for="code">Day Index</label>
                                 <div>
-                                    <!-- <input required type="text" class="form-control" id="frm_add_DayIndex" name="DayIndex" placeholder="Day Index" value="" /> -->
                                     <select id="frm_add_DayIndex" name="DayIndex" class="form-control">
                                         <option value="1">Senin</option>
                                         <option value="2">Selasa</option>
@@ -36,215 +35,166 @@
                     <div class="form-row">
                         <div class="col-lg-6 col-md-6">
                             <div class="form-group">
-                                <label for="code">Maks Koleksi Dapat Dipinjam</label>
-                                <div>
-                                    <input required type="number" min="0" class="form-control" id="frm_add_MaxPinjamKoleksi"
-                                        name="MaxPinjamKoleksi" placeholder="Maks Koleksi Dapat Dipinjam" value="" />
-                                </div>
+                                <label>Maks Koleksi Dapat Dipinjam</label>
+                                <input required type="number" min="0" class="form-control" id="frm_add_MaxPinjamKoleksi"
+                                    name="MaxPinjamKoleksi" placeholder="Maks Koleksi Dapat Dipinjam" value="" />
                             </div>
                         </div>
                         <div class="col-lg-6 col-md-6">
                             <div class="form-group">
-                                <label for="name">Maks Lama Pinjam</label>
-                                <div>
-                                    <input required type="number" min="0" class="form-control" id="frm_add_MaxLoanDays"
-                                        name="MaxLoanDays" placeholder="Maks. Lama Pinjam" value="" />
-                                </div>
+                                <label>Maks Lama Pinjam</label>
+                                <input required type="number" min="0" class="form-control" id="frm_add_MaxLoanDays"
+                                    name="MaxLoanDays" placeholder="Maks. Lama Pinjam" value="" />
                             </div>
                         </div>
                     </div>
+
+                    <div class="form-row">
+                        <div class="col-lg-6 col-md-6">
+                            <div class="form-group">
+                                <label>Jeda Peringatan Peminjaman</label>
+                                <input required type="number" min="0" class="form-control" id="frm_add_WarningLoanDays"
+                                    name="WarningLoanDays" placeholder="Jeda Peringatan Peminjaman" value="" />
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-6">
+                            <div class="form-group">
+                                <label>Koleksi Yang Dapat Dipinjam</label>
+                                <!-- ✅ Hapus tabindex="-1" dan aria-hidden="true" -->
+                                <select class="form-control select2-koleksi" name="Category_id[]" multiple="multiple" style="width:100%">
+                                    <option value="">-Pilih-</option>
+                                    <?php foreach (get_ref_table('collectioncategorys', 'ID, Name', null, 'data') as $row): ?>
+                                        <option value="<?= $row->ID ?>"><?= $row->Name ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="col-lg-6 col-md-6">
+                            <div class="form-group">
+                                <label>Maks Lama Perpanjangan</label>
+                                <input required type="number" min="0" class="form-control" id="frm_add_DayPerpanjang"
+                                    name="DayPerpanjang" placeholder="Lama Perpanjangan" value="" />
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-6">
+                            <div class="form-group">
+                                <label>Maks Banyaknya Perpanjang</label>
+                                <input required type="number" min="0" class="form-control" id="frm_add_CountPerpanjang"
+                                    name="CountPerpanjang" placeholder="Maks. Banyak Perpanjang" value="" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="col-lg-6 col-md-6">
+                            <div class="form-group">
+                                <label>Jumlah Denda</label>
+                                <input required type="number" min="0" class="form-control" id="frm_add_DendaPerTenor"
+                                    name="DendaPerTenor" placeholder="Jumlah Denda" value="" />
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-6">
+                            <div class="form-group">
+                                <label>Jenis Denda</label>
+                                <select class="form-control" name="DendaType" style="width:100%">
+                                    <option value="">-Pilih-</option>
+                                    <option value="Konstan">Denda</option>
+                                    <option value="Berkelipatan">Berkelipatan</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="col-lg-6 col-md-6">
+                            <div class="form-group">
+                                <label>Satuan Tenor Denda</label>
+                                <input required type="number" min="0" class="form-control" id="frm_add_DendaTenorJumlah"
+                                    name="DendaTenorJumlah" placeholder="Tenor Denda" value="" />
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-6">
+                            <div class="form-group">
+                                <label>Tenor Satuan Denda</label>
+                                <!-- ✅ Perbaiki typo <opttion> → <option> -->
+                                <select class="form-control" name="DendaTenorSatuan" style="width:100%">
+                                    <option value="">-Pilih-</option>
+                                    <option value="Hari">Hari</option>
+                                    <option value="Minggu">Minggu</option>
+                                    <option value="Bulan">Bulan</option>
+                                    <option value="Tahun">Tahun</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="col-lg-12 col-md-12">
+                            <div class="form-group">
+                                <label>Pengali Tenor Denda</label>
+                                <input required type="number" class="form-control" id="frm_add_DendaPerTenorMultiply"
+                                    name="DendaTenorMultipy" placeholder="Pengali Tenor Denda" value="" />
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-row">
                         <div class="col-lg-6 col-md-6">
                             <div class="form-group">
-                                <label for="code">Jeda Peringatan peminjaman</label>
-                                <div>
-                                    <input required type="number" min="0" class="form-control" id="frm_add_WarningLoanDays"
-                                        name="WarningLoanDays" placeholder="Jeda Peringatan Peminjaman" value="" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-6 col-md-6">
-                            <div class="form-group">
-                                <label for="code">Koleksi Yang Dapat Dipinjam</label>
-                                <div>
-								<select class="form-control select2" name="Category_id[]" multiple="multiple" tabindex="-1" aria-hidden="true" style="width:100%">
-									<option value="">-Pilih-</option>
-										<?php foreach (get_ref_table('collectioncategorys', 'ID, Name',null,'data') as $row): ?>
-								<option value="<?=$row->ID?>"><?=$row->Name?></option>
-							    <?php endforeach;?>
-								</select>
-
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-					<div class="form-row">
-                        <div class="col-lg-6 col-md-6">
-                            <div class="form-group">
-                                <label for="code">Maks Lama Perpanjangan</label>
-                                <div>
-                                    <input required type="number" min="0" class="form-control" id="frm_add_DayPerpanjang"
-                                        name="DayPerpanjang" placeholder="Lama Perpanjangan" value="" />
-                                </div>
+                                <label>Skorsing Tipe</label>
+                                <select required class="form-control" id="frm_add_SkorsingType" name="SkorsingType" style="width:100%">
+                                    <option value="">-- Pilih Tipe --</option>
+                                    <option value="Konstan">Konstan</option>
+                                    <option value="Berkelipatan">Berkelipatan</option>
+                                </select>
                             </div>
                         </div>
                         <div class="col-lg-6 col-md-6">
                             <div class="form-group">
-                                <label for="name">Maks Banyaknya perpanjang</label>
-                                <div>
-                                    <input required type="number" min="0" class="form-control" id="frm_add_CountPerpanjang"
-                                        name="CountPerpanjang" placeholder="Maks. Lama Pinjam" value="" />
-                                </div>
+                                <label>Lama Skorsing</label>
+                                <input required type="number" class="form-control" id="frm_add_DaySuspend"
+                                    name="DaySuspend" placeholder="Lama Skorsing" value="" />
                             </div>
                         </div>
-                    </div>
-
-					<div class="form-row">
-                        <div class="col-lg-6 col-md-6">
-                            <div class="form-group">
-                                <label for="code">Jumlah Denda</label>
-                                <div>
-                                    <input required type="number" min="0" class="form-control" id="frm_add_DendaPerTenor"
-                                        name="DendaPerTenor" placeholder="Jumlah Denda" value="" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-6 col-md-6">
-                            <div class="form-group">
-                                <label for="code">Jenis Denda</label>
-                                <div>
-								<select class="form-control" name="DendaType"  tabindex="-1" aria-hidden="true" style="width:100%">
-									<option value="">-Pilih-</option>
-										<option value="Konstan">Denda</option>
-										<option value="Berkelipatan">Berkelipatan</option>
-								</select>
-
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-					
-            
-                   
-
-					<div class="form-row">
-                        <div class="col-lg-6 col-md-6">
-                            <div class="form-group">
-                                <label for="code">Satuan Tenor Denda</label>
-                                <div>
-                                    <input required type="number" min="0" class="form-control" id="frm_add_DendaTenorJumlah"
-                                        name="DendaTenorJumlah" placeholder="Tenor Denda Denda" value="" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-6 col-md-6">
-                            <div class="form-group">
-                                <label for="code">Tenor Satuan</label>
-                                <div>
-								<select class="form-control" name="SuspendTenorSatuan"  tabindex="-1" aria-hidden="true" style="width:100%">
-									<option value="">-Pilih-</option>
-										<option value="Hari">Hari</option>
-										<option value="Minggu">Minggu</option>
-										<option value="Bulan">Bulan</option>
-										<opttion value="Tahun">Tahun</option>
-								</select>
-
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
 
                     <div class="form-row">
-                        
+                        <div class="col-lg-6 col-md-6">
+                            <div class="form-group">
+                                <label>Satuan Tenor Skorsing</label>
+                                <input required type="number" min="0" class="form-control" id="frm_add_SuspendTenorJumlah"
+                                    name="SuspendTenorJumlah" placeholder="Tenor Skorsing" value="" />
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-6">
+                            <div class="form-group">
+                                <label>Tenor Satuan Skorsing</label>
+                                <!-- ✅ Perbaiki typo <opttion> → <option> -->
+                                <select class="form-control" name="SuspendTenorSatuan" style="width:100%">
+                                    <option value="">-Pilih-</option>
+                                    <option value="Hari">Hari</option>
+                                    <option value="Minggu">Minggu</option>
+                                    <option value="Bulan">Bulan</option>
+                                    <option value="Tahun">Tahun</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
                         <div class="col-lg-12 col-md-12">
                             <div class="form-group">
-                                <label for="name">Pengali Tenor Denda</label>
-                                <div>
-                                    <input required type="number" class="form-control" id="frm_add_DendaPerTenorMultiply"
-                                        name="DendaTenorMultipy" placeholder="Pengali Tenor Indah" value="" />
-                                </div>
+                                <label>Pengali Tenor Skorsing</label>
+                                <input required type="number" class="form-control" id="frm_add_SuspendTenorMultiply"
+                                    name="SuspendTenorMultipy" placeholder="Pengali Tenor Skorsing" value="" />
                             </div>
                         </div>
                     </div>
 
-					<div class="form-row">
-                        <div class="col-lg-6 col-md-6">
-                            <div class="form-group">
-                                <label for="code">Skorsing Tipe</label>
-                                <div>
-								<select required class="form-control" id="frm_add_DendaType" name="DendaType"
-                                        placeholder="Denda Type" value="">
-                                        <option value="">-- Pilih Denda --</option>
-                                        <option value="Konstan">Konstan</option>
-                                        <option value="Berkelipatan">Berkelipatan</option>
-                                    </select>
-								
-                                    
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-6 col-md-6">
-                            <div class="form-group">
-                                <label for="name">Lama Skorsing</label>
-                                <div>
-								<input required type="number" class="form-control" id="frm_add_DaySuspend"
-                                        name="DaySuspend" placeholder="Lama Skorsing" value="" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-					<div class="form-row">
-                        <div class="col-lg-6 col-md-6">
-                            <div class="form-group">
-                                <label for="code">Satuan Tenor Skorsing</label>
-                                <div>
-                                    <input required type="number" min="0" class="form-control" id="frm_add_SuspendTenorJumlah"
-                                        name="SuspendTenorJumlah" placeholder="Tenor Skorsing" value="" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-6 col-md-6">
-                            <div class="form-group">
-                                <label for="code">Tenor Satuan</label>
-                                <div>
-								<select class="form-control" name="SuspendTenorSatuan"  tabindex="-1" aria-hidden="true" style="width:100%">
-									<option value="">-Pilih-</option>
-										<option value="Hari">Hari</option>
-										<option value="Minggu">Minggu</option>
-										<option value="Bulan">Bulan</option>
-										<opttion value="Tahun">Tahun</option>
-								</select>
-
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-					<div class="form-row">
-                        
-                        <div class="col-lg-12 col-md-12">
-                            <div class="form-group">
-                                <label for="name">Pengali Tenor Skorsing</label>
-                                <div>
-                                    <input required type="number" class="form-control" id="frm_add_SuspendTenorMultiply"
-                                        name="SuspendTenorMultipy" placeholder="Pengali Tenor Indah" value="" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                   
                 </div>
-
 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
@@ -254,44 +204,58 @@
         </div>
     </div>
 </div>
+
 <script>
- $(document).ready(function() {
-	 $('.select2').select2();
- });
-</script>
-<script>
-$('#frm_add').submit(function(event) {
-    event.preventDefault();
+    // ✅ Inisialisasi Select2 saat modal dibuka, bukan di document.ready
+    $('#modal_create').on('shown.bs.modal', function() {
+        $('.select2-koleksi').select2({
+            dropdownParent: $('#modal_create'),
+            width: '100%',
+            placeholder: '-Pilih Koleksi-',
+            allowClear: true
+        });
+    });
 
-    var url = "<?=base_url('api/peraturan-peminjaman-hari/create')?>";
-    var data_post = $(this).serializeArray();
+    // ✅ Reset form & Select2 saat modal ditutup
+    $('#modal_create').on('hidden.bs.modal', function() {
+        $(this).find('form').trigger('reset');
+        $('#frm_create_message').html('');
+        $('.select2-koleksi').val(null).trigger('change');
+    });
 
-    $("#btnAdd").html('<i class="fa fa-spinner fa-spin loading"></i> Mohon menunggu...');
-    $("#btnAdd").attr('disabled', true);
+    // ✅ Submit form
+    $('#frm_add').submit(function(event) {
+        event.preventDefault();
 
-    $.ajax({
+        var url = "<?= base_url('api/peraturan-peminjaman-hari/create') ?>";
+        var data_post = $(this).serializeArray();
+
+        $("#btnAdd").html('<i class="fa fa-spinner fa-spin"></i> Mohon menunggu...');
+        $("#btnAdd").attr('disabled', true);
+
+        $.ajax({
             url: url,
             type: 'POST',
             data: data_post,
         })
         .done(function(res) {
-            console.log(res)
+            console.log(res);
 
             if (res.error == false) {
                 Swal.fire({
                     title: 'Berhasil',
                     html: 'Peraturan Peminjaman Hari berhasil ditambah.',
-                    type: 'success',
+                    icon: 'success', // ✅ ganti type → icon
                     showConfirmButton: false,
                     timer: 5000,
                 }).then(() => {
-                    window.location.href = `<?=base_url('/master-peraturan-peminjaman-hari')?>`;
+                    window.location.href = `<?= base_url('/master-peraturan-peminjaman-hari') ?>`;
                 });
             } else {
                 Swal.fire({
                     title: 'Oups',
                     text: res.message,
-                    type: 'error',
+                    icon: 'error', // ✅ ganti type → icon
                     showConfirmButton: false,
                     timer: 5000
                 }).then(() => {
@@ -305,8 +269,8 @@ $('#frm_add').submit(function(event) {
 
             Swal.fire({
                 title: 'Oups',
-                text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
-                type: 'error',
+                text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin.',
+                icon: 'error', // ✅ ganti type → icon
                 showConfirmButton: false,
                 timer: 5000
             }).then(() => {
@@ -315,11 +279,6 @@ $('#frm_add').submit(function(event) {
             });
         });
 
-    return false;
-});
-
-$('#modal_create').on('hidden.bs.modal', function() {
-    $(this).find('form').trigger('reset');
-    $('#frm_add_message').html('');
-});
+        return false;
+    });
 </script>
