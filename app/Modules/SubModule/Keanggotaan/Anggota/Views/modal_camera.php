@@ -207,7 +207,7 @@
 						Swal.fire({
 							title: 'Success',
 							text: 'File berhasil disimpan',
-							type: 'success',
+							icon: 'success',
 							showConfirmButton: false,
 							timer: 3000
 						})

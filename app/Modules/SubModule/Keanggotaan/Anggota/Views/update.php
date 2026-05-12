@@ -340,7 +340,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 									<?= lang('Anggota.label.home') ?></a></li>
 							<li class="breadcrumb-item"><a href="<?= base_url('anggota') ?>"><?= lang('Anggota.module') ?></a>
 							</li>
-							<li class="active breadcrumb-item" aria-current="page"><?= lang('Anggota.action.update') ?>
+							<li class="breadcrumb-item" aria-current="page"><?= lang('Anggota.action.update') ?>
 								<?= lang('Anggota.module') ?></li>
 						</ol>
 					</nav>
@@ -415,20 +415,20 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 			width: '100%'
 		});
 
-		// Load region data untuk Alamat KTP
-		loadRegionData('Province', 'City', 'District', 'SubDistrict',
-			'<?= $anggota->ProvinceCode ?? '' ?>',
-			'<?= $anggota->CityCode ?? '' ?>',
-			'<?= $anggota->KecamatanCode ?? '' ?>',
-			'<?= $anggota->KelurahanCode ?? '' ?>'
+		// Load region data untuk Alamat KTP (gunakan nama karena DB menyimpan nama, bukan kode)
+		loadRegionDataByName('Province', 'City', 'District', 'SubDistrict',
+			'<?= $anggota->Province ?? '' ?>',
+			'<?= $anggota->City ?? '' ?>',
+			'<?= $anggota->Kecamatan ?? '' ?>',
+			'<?= $anggota->Kelurahan ?? '' ?>'
 		);
 
 		// Load region data untuk Alamat Domisili
-		loadRegionData('ProvinceNow', 'CityNow', 'DistrictNow', 'SubDistrictNow',
-			'<?= $anggota->ProvinceNowCode ?? '' ?>',
-			'<?= $anggota->CityNowCode ?? '' ?>',
-			'<?= $anggota->KecamatanNowCode ?? '' ?>',
-			'<?= $anggota->KelurahanNowCode ?? '' ?>'
+		loadRegionDataByName('ProvinceNow', 'CityNow', 'DistrictNow', 'SubDistrictNow',
+			'<?= $anggota->ProvinceNow ?? '' ?>',
+			'<?= $anggota->CityNow ?? '' ?>',
+			'<?= $anggota->KecamatanNow ?? '' ?>',
+			'<?= $anggota->KelurahanNow ?? '' ?>'
 		);
 
 		// Setup change handlers
@@ -458,6 +458,60 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 				});
 			}
 		});
+	}
+
+	async function loadRegionDataByName(provinceId, cityId, districtId, subdistrictId, provName, cityName, distName, subdistName) {
+		try {
+			// --- PROVINSI ---
+			const provResp = await axios.get(`<?= base_url('api/region/province') ?>`);
+			var provCode = '';
+			var provOutput = '<option value="">Pilih Provinsi</option>';
+			provResp.data.forEach(function(item) {
+				var sel = (provName && item.name.toUpperCase() === provName.toUpperCase());
+				if (sel) provCode = item.code;
+				provOutput += '<option value="' + item.code + '"' + (sel ? ' selected' : '') + '>' + item.name.toUpperCase() + '</option>';
+			});
+			$('#' + provinceId).html(provOutput).trigger('change.select2');
+
+			if (!provCode || !cityName) return;
+
+			// --- KOTA ---
+			const cityResp = await axios.get(`<?= base_url('api/region/city') ?>/` + provCode);
+			var cityCode = '';
+			var cityOutput = '<option value="">Pilih Kota</option>';
+			cityResp.data.forEach(function(item) {
+				var sel = (item.name.toUpperCase() === cityName.toUpperCase());
+				if (sel) cityCode = item.code;
+				cityOutput += '<option value="' + item.code + '"' + (sel ? ' selected' : '') + '>' + item.name.toUpperCase() + '</option>';
+			});
+			$('#' + cityId).html(cityOutput).trigger('change.select2');
+
+			if (!cityCode || !distName) return;
+
+			// --- KECAMATAN ---
+			const distResp = await axios.get(`<?= base_url('api/region/district') ?>/` + cityCode);
+			var distCode = '';
+			var distOutput = '<option value="">Pilih Kecamatan</option>';
+			distResp.data.forEach(function(item) {
+				var sel = (item.name.toUpperCase() === distName.toUpperCase());
+				if (sel) distCode = item.code;
+				distOutput += '<option value="' + item.code + '"' + (sel ? ' selected' : '') + '>' + item.name.toUpperCase() + '</option>';
+			});
+			$('#' + districtId).html(distOutput).trigger('change.select2');
+
+			if (!distCode || !subdistName) return;
+
+			// --- KELURAHAN ---
+			const subdistResp = await axios.get(`<?= base_url('api/region/sub_district') ?>/` + distCode);
+			var subdistOutput = '<option value="">Pilih Kelurahan</option>';
+			subdistResp.data.forEach(function(item) {
+				var sel = (item.name.toUpperCase() === subdistName.toUpperCase());
+				subdistOutput += '<option value="' + item.code + '"' + (sel ? ' selected' : '') + '>' + item.name.toUpperCase() + '</option>';
+			});
+			$('#' + subdistrictId).html(subdistOutput).trigger('change.select2');
+		} catch(err) {
+			console.error('Error loading region data:', err);
+		}
 	}
 
 	function setupRegionHandlers(provinceId, cityId, districtId, subdistrictId) {

@@ -3,13 +3,13 @@
         <div id="accordion_personal" class="accordion-wrapper mb-3">
             <div class="card">
                 <div class="card-header-tab card-header">
-                    <button type="button" data-toggle="collapse" data-target="#collapse_personal" aria-expanded="true" aria-controls="collapse_personal" class="text-left m-0 p-0 btn btn-link">
+                    <button type="button" data-bs-toggle="collapse" data-bs-target="#collapse_personal" aria-expanded="true" aria-controls="collapse_personal" class="text-left m-0 p-0 btn btn-link">
                         <h5 class="m-0 p-0">
                             <i class="header-icon lnr-layers icon-gradient bg-primary"></i> Info Personal
                         </h5>
                     </button>
                 </div>
-                <div data-parent="#accordion_personal" id="collapse_personal" class="collapse show">
+                <div data-bs-parent="#accordion_personal" id="collapse_personal" class="collapse show">
                     <div class="card-body">
                       
                         <div class="form-row">

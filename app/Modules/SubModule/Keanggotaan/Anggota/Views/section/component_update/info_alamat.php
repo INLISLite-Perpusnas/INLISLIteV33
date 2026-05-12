@@ -3,7 +3,7 @@
 		<div id="accordion_alamat" class="accordion-wrapper mb-3">
 			<div class="card">
 				<div class="card-header-tab card-header">
-					<button type="button" data-toggle="collapse" data-target="#collapse_madatory1"
+					<button type="button" data-bs-toggle="collapse" data-bs-target="#collapse_madatory1"
 						aria-expanded="false" aria-controls="collapse_madatory1"
 						class="text-left m-0 p-0 btn btn-link">
 						<h5 class="m-0 p-0">
@@ -12,7 +12,7 @@
 						</h5>
 					</button>
 				</div>
-				<div data-parent="#accordion_alamat" id="collapse_madatory1" class="collapse">
+				<div data-bs-parent="#accordion_alamat" id="collapse_madatory1" class="collapse">
 					<div class="card-body">
 						<!-- ALAMAT SESUAI IDENTITAS -->
 						<div class="form-row">

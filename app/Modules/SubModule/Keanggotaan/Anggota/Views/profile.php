@@ -184,11 +184,11 @@ $member = get_ref_single('members', 'ID="' . $anggota->ID . '"', 'data');
         Swal.fire({
             // showConfirmButton: false,
             text: " berhasil cetak kartu anggota",
-            type: 'success',
+            icon: 'success',
             // showCancelButton: true,
             timer: 6000,
         }).then((result) => {
-            if (result.value) {
+            if (result.isConfirmed) {
                 window.location.href = url;
             }
         });
@@ -200,11 +200,11 @@ $member = get_ref_single('members', 'ID="' . $anggota->ID . '"', 'data');
         Swal.fire({
             // showConfirmButton: false,
             text: " berhasil cetak bebas pustaka",
-            type: 'success',
+            icon: 'success',
             // showCancelButton: true,
             timer: 6000,
         }).then((result) => {
-            if (result.value) {
+            if (result.isConfirmed) {
                 window.location.href = url;
             }
         });
@@ -219,7 +219,7 @@ $member = get_ref_single('members', 'ID="' . $anggota->ID . '"', 'data');
             // title: '<?= lang('App.swal.are_you_sure') ?>',
             // showConfirmButton: false,
             text: "Anggota berhasil diubah",
-            type: 'success',
+            icon: 'success',
             // showCancelButton: true,
             timer: 6000,
             // confirmButtonColor: '#3085d6',
@@ -227,7 +227,7 @@ $member = get_ref_single('members', 'ID="' . $anggota->ID . '"', 'data');
             // confirmButtonText: '<?= lang('App.btn.yes') ?>',
             // cancelButtonText: '<?= lang('App.btn.no') ?>'
         }).then((result) => {
-            if (result.value) {
+            if (result.isConfirmed) {
                 submit;
             }
 

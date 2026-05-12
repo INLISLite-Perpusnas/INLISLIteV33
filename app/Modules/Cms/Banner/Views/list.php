@@ -66,23 +66,35 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->section('script'); ?>
 <script>
+	$("body").on("click", ".remove-data", function() {
+		var url = $(this).attr('data-href');
+		console.log(url);
+		Swal.fire({
+			title: '<?= lang('App.swal.are_you_sure') ?>',
+			text: "<?= lang('App.swal.can_not_be_restored') ?>",
+			type: 'warning',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#dd6b55',
+			confirmButtonText: '<?= lang('App.btn.yes') ?>',
+			cancelButtonText: '<?= lang('App.btn.no') ?>'
+		}).then((result) => {
+			if (result.value) {
+				window.location.href = url;
+			}
+		});
+		return false;
+	});
+
 	$(document).ready(function() {
 		<?php if (session()->getFlashdata('swal_icon')) : ?>
-			// ✅ SESUDAH
 			Swal.fire({
-				title: '<?= lang('App.swal.are_you_sure') ?>',
-				text: "<?= lang('App.swal.can_not_be_restored') ?>",
-				icon: 'warning', // ✅ ganti type → icon
-				showCancelButton: true,
-				confirmButtonColor: '#3085d6',
-				cancelButtonColor: '#d33', // ✅ merah agar tombol "Tidak" terlihat jelas
-				confirmButtonText: '<?= lang('App.btn.yes') ?>',
-				cancelButtonText: '<?= lang('App.btn.no') ?>',
-				reverseButtons: true // ✅ opsional: posisi tombol lebih natural
-			}).then((result) => {
-				if (result.value) {
-					window.location.href = url;
-				}
+				type: '<?= session()->getFlashdata('swal_icon') ?>', // gunakan 'icon' jika SweetAlert2 versi terbaru
+				title: '<?= session()->getFlashdata('swal_title') ?>',
+				html: '<?= session()->getFlashdata('swal_html') ?? session()->getFlashdata('swal_text') ?>',
+				showConfirmButton: false,
+				timer: 3000,
+				icon: 'success'
 			});
 		<?php endif; ?>
 	});

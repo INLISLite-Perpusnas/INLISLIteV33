@@ -3,14 +3,14 @@
 		<div id="accordion_anggota" class="accordion-wrapper mb-3">
 			<div class="card">
 				<div class="card-header-tab card-header">
-					<button type="button" data-toggle="collapse" data-target="#collapse_anggota" aria-expanded="true" aria-controls="collapse_anggota" class="text-left m-0 p-0 btn btn-link">
+					<button type="button" data-bs-toggle="collapse" data-bs-target="#collapse_anggota" aria-expanded="true" aria-controls="collapse_anggota" class="text-left m-0 p-0 btn btn-link">
 						<h5 class="m-0 p-0">
 							<i class="header-icon lnr-layers icon-gradient bg-primary"> </i>
 							Info Anggota
 						</h5>
 					</button>
 				</div>
-				<div data-parent="#accordion_anggota" id="collapse_anggota" class="collapse show" style="">
+				<div data-bs-parent="#accordion_anggota" id="collapse_anggota" class="collapse show">
 					<div class="card-body">
 						<div class="form-row">
 							<div class="col-md-3">

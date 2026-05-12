@@ -79,7 +79,7 @@
 					showConfirmButton: false,
 					timer: 5000,
 				}).then(() => {
-					window.location.href = `<?=base_url('jenis-perpustakaan')?>`;
+					window.location.href = `<?=base_url('master-jenis-perpustakaan')?>`;
 				});
 			} else {				
 				Swal.fire({

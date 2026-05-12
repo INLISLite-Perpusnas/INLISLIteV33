@@ -151,7 +151,7 @@ $request = service('request'); ?>
 								Swal.fire({
 									title: 'Berhasil',
 									html: res.message,
-									type: 'success',
+									icon: 'success',
 									showConfirmButton: false,
 									timer: 5000,
 								}).then(() => {});
@@ -159,7 +159,7 @@ $request = service('request'); ?>
 								Swal.fire({
 									title: 'Gagal',
 									text: res.message,
-									type: 'error',
+									icon: 'error',
 									showConfirmButton: false,
 									timer: 5000
 								}).then(() => {});
@@ -171,7 +171,7 @@ $request = service('request'); ?>
 							Swal.fire({
 								title: 'Oups',
 								text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
-								type: 'error',
+								icon: 'error',
 								showConfirmButton: false,
 								timer: 5000
 							}).then(() => {});
@@ -218,14 +218,14 @@ $request = service('request'); ?>
 		Swal.fire({
 			title: 'Anda yakin?',
 			html: "Semua anggota yang terpilih akan dipulihkan ke daftar anggota",
-			type: 'warning',
+			icon: 'warning',
 			showCancelButton: true,
 			confirmButtonColor: '#3085d6',
 			cancelButtonColor: '#dd6b55',
 			confirmButtonText: '<?= lang('App.btn.yes') ?>',
 			cancelButtonText: '<?= lang('App.btn.no') ?>'
 		}).then((result) => {
-			if (result.value) {
+			if (result.isConfirmed) {
 				window.location.href = url;
 			}
 		});
@@ -240,14 +240,14 @@ $request = service('request'); ?>
 		Swal.fire({
 			title: '<?= lang('App.swal.are_you_sure') ?>',
 			text: "<?= lang('App.swal.can_not_be_restored') ?>",
-			type: 'warning',
+			icon: 'warning',
 			showCancelButton: true,
 			confirmButtonColor: '#3085d6',
 			cancelButtonColor: '#dd6b55',
 			confirmButtonText: '<?= lang('App.btn.yes') ?>',
 			cancelButtonText: '<?= lang('App.btn.no') ?>'
 		}).then((result) => {
-			if (result.value) {
+			if (result.isConfirmed) {
 				window.location.href = url;
 			}
 		});

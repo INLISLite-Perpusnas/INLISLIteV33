@@ -133,7 +133,7 @@ class KatalogMarcController extends \Base\Controllers\BaseController
                         array_unshift($catalog_ruas_data, [
                             'CatalogId'  => $id,
                             'Tag'        => '001',
-                            'Value'      => $catalog['ControlNumber'],
+                            'Value'      => $catalog->ControlNumber,
                             'Indicator1' => '',
                             'Indicator2' => '',
                         ]);
@@ -164,7 +164,7 @@ class KatalogMarcController extends \Base\Controllers\BaseController
 
         // GET - tampilkan form dengan data existing
         $session      = service('session');
-        $worksheet_id = $this->request->getvar('worksheet_id') ?? $catalog['Worksheet_id'];
+        $worksheet_id = $this->request->getvar('worksheet_id') ?? $catalog->Worksheet_id;
         $session->remove('worksheet_id');
         $session->remove('worksheet_fields');
         $session->set('worksheet_id', $worksheet_id);

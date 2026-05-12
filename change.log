@@ -13,3 +13,5 @@ Menambahkan fitur untuk mendapatkan jenis pelanggaran dan jenis denda pada modul
 Memperbaiki tampilan dan logic peminjaman dan pengembalian agar lebih  user-friendly dan sesuai dengan kebutuhan pengguna.
 Memperbaiki urutan tag form MARC agar ascending berdasarkan nomor tag
 Menammbahkan fitur perpanjangan peminjaman pada modul peminjaman.
+Memperbaiki bug pada modul edit anggota
+Memperbaiki bug pada modul browse di halaman frontend

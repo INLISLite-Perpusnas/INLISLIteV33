@@ -24,7 +24,7 @@ class Pager extends BaseConfig
         'default_full'   => 'CodeIgniter\Pager\Views\default_full',
         'default_simple' => 'CodeIgniter\Pager\Views\default_simple',
         'default_head'   => 'CodeIgniter\Pager\Views\default_head',
-		'opac_pagination' => 'Core\Layout\Views\opac\partial\pager',
+		'opac_pagination' => 'App\Views\Layout\Opac\pager',
 		'custom_pagination' => 'Layout\Views\frontend\template\arduix5\partial\pager',
     ];
 

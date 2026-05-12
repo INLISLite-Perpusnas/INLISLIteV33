@@ -64,7 +64,7 @@ $request = service('request');
                             <th width="100">Tgl. Register</th>
                             <th width="100">Tgl. Berakhir</th>
                             <th width="130">Status Anggota</th>
-                            <th>Aksi</th>
+                            <th style="min-width: 150px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -80,11 +80,26 @@ $request = service('request');
 <?= $this->include('Anggota\Views\modal_upload'); ?>
 <?= $this->include('Anggota\Views\modal_camera'); ?>
 <script>
+      $(document).ready(function() {
+        <?php if (session()->getFlashdata('swal_icon')) : ?>
+            Swal.fire({
+                icon: '<?= session()->getFlashdata('swal_icon') ?>', // gunakan 'icon' jika SweetAlert2 versi terbaru
+                title: '<?= session()->getFlashdata('swal_title') ?>',
+                html: '<?= session()->getFlashdata('swal_html') ?? session()->getFlashdata('swal_text') ?>',
+                showConfirmButton: false,
+                timer: 3000
+            });
+        <?php endif; ?>
+    });
+</script>
+<script>
     var t;
     $(document).ready(function() {
         t = $('#tbl_data').DataTable({
             "processing": true,
             "serverSide": true,
+            "scrollX": true,
+            "scrollCollapse": true,
             "ajax": {
                 "url": '<?php echo site_url('api/anggota/datatable'); ?>',
             },
@@ -202,14 +217,14 @@ $request = service('request');
         Swal.fire({
             title: 'Anda yakin?',
             html: "Semua anggota yang terpilih akan dipindahkan ke keranjang",
-            type: 'warning',
+            icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#dd6b55',
             confirmButtonText: '<?= lang('App.btn.yes') ?>',
             cancelButtonText: '<?= lang('App.btn.no') ?>'
         }).then((result) => {
-            if (result.value) {
+            if (result.isConfirmed) {
                 window.location.href = url;
             }
         });
@@ -231,7 +246,7 @@ $request = service('request');
             Swal.fire({
                 title: 'Peringatan',
                 text: 'Silakan pilih minimal satu anggota untuk dicetak kartunya',
-                type: 'warning',
+                icon: 'warning',
                 showConfirmButton: true,
                 confirmButtonText: 'OK'
             });
@@ -258,14 +273,14 @@ $request = service('request');
         Swal.fire({
             title: 'Konfirmasi Print Kartu',
             html: `Akan mencetak kartu untuk <strong>${selectedIds.length}</strong> anggota yang dipilih`,
-            type: 'question',
+            icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#dd6b55',
             confirmButtonText: 'Ya, Print Kartu',
             cancelButtonText: 'Batal'
         }).then((result) => {
-            if (result.value) {
+            if (result.isConfirmed) {
                 // Kirim data ke controller
                 printKartuAnggota(selectedIds);
             }
@@ -284,14 +299,14 @@ $request = service('request');
         Swal.fire({
             title: 'Anda yakin?',
             html: "Semua anggota yang terpilih akan dihapus secara permanen",
-            type: 'warning',
+            icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#dd6b55',
             confirmButtonText: '<?= lang('App.btn.yes') ?>',
             cancelButtonText: '<?= lang('App.btn.no') ?>'
         }).then((result) => {
-            if (result.value) {
+            if (result.isConfirmed) {
                 window.location.href = url;
             }
         });
@@ -328,14 +343,14 @@ $request = service('request');
         Swal.fire({
             title: '<?= lang('App.swal.are_you_sure') ?>',
             text: "<?= lang('App.swal.can_not_be_restored') ?>",
-            type: 'warning',
+            icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#dd6b55',
             confirmButtonText: '<?= lang('App.btn.yes') ?>',
             cancelButtonText: '<?= lang('App.btn.no') ?>'
         }).then((result) => {
-            if (result.value) {
+            if (result.isConfirmed) {
                 window.location.href = url;
             }
         });
@@ -355,7 +370,7 @@ $request = service('request');
                     Swal.fire({
                         title: 'Berhasil',
                         html: res.message,
-                        type: 'success',
+                        icon: 'success',
                         showConfirmButton: false,
                         timer: 5000,
                     }).then(() => {});
@@ -363,7 +378,7 @@ $request = service('request');
                     Swal.fire({
                         title: 'Gagal',
                         text: res.message,
-                        type: 'error',
+                        icon: 'error',
                         showConfirmButton: false,
                         timer: 5000
                     }).then(() => {});
@@ -375,7 +390,7 @@ $request = service('request');
                 Swal.fire({
                     title: 'Oups',
                     text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
-                    type: 'error',
+                    icon: 'error',
                     showConfirmButton: false,
                     timer: 5000
                 }).then(() => {});
@@ -392,7 +407,7 @@ $request = service('request');
             Swal.fire({
                 title: 'Peringatan',
                 text: 'Silakan pilih minimal satu anggota untuk diaktifkan secara online',
-                type: 'warning',
+                icon: 'warning',
                 showConfirmButton: true,
                 confirmButtonText: 'OK'
             });
@@ -415,14 +430,14 @@ $request = service('request');
             title: 'Konfirmasi Aktivasi Online',
             html: `Akan mengaktifkan akses online untuk <strong>${selectedIds.length}</strong> anggota yang dipilih.<br><br>
                    <small class="text-muted">Username akan sama dengan No. Anggota, dan password default sama dengan username.</small>`,
-            type: 'question',
+            icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#dd6b55',
             confirmButtonText: 'Ya, Aktifkan',
             cancelButtonText: 'Batal'
         }).then((result) => {
-            if (result.value) {
+            if (result.isConfirmed) {
                 // Kirim data ke controller
                 aktifkanAnggotaOnline(selectedIds);
             }
@@ -461,7 +476,7 @@ $request = service('request');
                 Swal.fire({
                     title: 'Berhasil!',
                     html: response.message,
-                    type: 'success',
+                    icon: 'success',
                     confirmButtonText: 'OK'
                 }).then(() => {
                     // Reload datatable
@@ -473,7 +488,7 @@ $request = service('request');
                 Swal.fire({
                     title: 'Gagal',
                     html: response.message,
-                    type: 'error',
+                    icon: 'error',
                     confirmButtonText: 'OK'
                 });
             }
@@ -485,7 +500,7 @@ $request = service('request');
             Swal.fire({
                 title: 'Oops!',
                 text: 'Terjadi kesalahan saat memproses data. Silakan coba lagi.',
-                type: 'error',
+                icon: 'error',
                 confirmButtonText: 'OK'
             });
         });

@@ -430,16 +430,19 @@ class Anggota extends \Base\Controllers\BaseController
 
 				$users->insert($data_user);
 
-				set_message('toastr_msg', "Data Anggota berhasil disimpan dengan Nomor Anggota: {$MemberNo}");
-				set_message('toastr_type', 'success');
+				   $this->session->setFlashdata('swal_icon', 'success');
+                $this->session->setFlashdata('swal_title', 'Berhasil');
+                $this->session->setFlashdata('swal_text', 'Anggota berhasil disimpan');
 				return redirect()->to('/anggota');
 			} else {
-				set_message('message', $this->validation->getErrors() ? $this->validation->listErrors() : lang('Anggota.info.failed_saved'));
+				$this->session->setFlashdata('swal_icon', 'error');
+				$this->session->setFlashdata('swal_title', 'Gagal');
+				$this->session->setFlashdata('swal_text', 'Anggota gagal disimpan');
 				echo view('Anggota\Views\add', $this->data);
 			}
 		} else {
 			$this->data['redirect'] = base_url('anggota/create');
-			set_message('message', $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message'));
+		   $this->session->setFlashdata('message', $this->validation->getErrors() ? $this->validation->listErrors() : '');
 			echo view('Anggota\Views\add', $this->data);
 		}
 	}
@@ -710,13 +713,14 @@ class Anggota extends \Base\Controllers\BaseController
 					}
 
 					if ($is_anggota) {
-						set_message('toastr_msg', 'Data Anggota berhasil disimpan');
-						set_message('toastr_type', 'success');
-
+						$this->session->setFlashdata('swal_icon', 'success');
+						$this->session->setFlashdata('swal_title', 'Berhasil');
+						$this->session->setFlashdata('swal_text', 'Data Anggota berhasil disimpan');
 						return redirect()->back();
 					} else {
-						set_message('toastr_msg', 'Data Anggota berhasil disimpan');
-						set_message('toastr_type', 'success');
+						$this->session->setFlashdata('swal_icon', 'success');
+						$this->session->setFlashdata('swal_title', 'Berhasil');
+						$this->session->setFlashdata('swal_text', 'Data Anggota berhasil disimpan');
 						return redirect()->to('/anggota');
 					}
 				} else {
@@ -727,15 +731,15 @@ class Anggota extends \Base\Controllers\BaseController
 						]);
 					}
 					if ($is_anggota) {
-						set_message('toastr_msg', 'Anggota gagal disimpan');
-						set_message('toastr_type', 'warning');
-						set_message('message', 'Anggota gagal disimpan');
+						$this->session->setFlashdata('swal_icon', 'error');
+						$this->session->setFlashdata('swal_title', 'Gagal');
+						$this->session->setFlashdata('swal_text', 'Anggota gagal disimpan');
 
 						return redirect()->back();
 					} else {
-						set_message('toastr_msg', 'Anggota gagal disimpan');
-						set_message('toastr_type', 'warning');
-						set_message('message', 'Anggota gagal disimpan');
+						$this->session->setFlashdata('swal_icon', 'error');
+						$this->session->setFlashdata('swal_title', 'Gagal');
+						$this->session->setFlashdata('swal_text', 'Anggota gagal disimpan');
 
 						return redirect()->to('/anggota/edit/' . $ID);
 					}
@@ -772,14 +776,14 @@ class Anggota extends \Base\Controllers\BaseController
 			if (!empty($update_data)) {
 				$this->anggotaModel->updateBatch($update_data, 'id');
 
-				set_message('toastr_msg', 'Berhasil dipindahkan ke keranjang');
-				set_message('toastr_type', 'success');
-				set_message('message', 'Berhasil dipindahkan ke keranjang');
+				$this->session->setFlashdata('swal_icon', 'success');
+				$this->session->setFlashdata('swal_title', 'Berhasil');
+				$this->session->setFlashdata('swal_text', 'Berhasil dipindahkan ke keranjang');
 			}
 		} else {
-			set_message('toastr_msg', 'Pilih anggota yang akan dipindahkan ke keranjang terlebih dahulu');
-			set_message('toastr_type', 'warning');
-			set_message('message', 'Pilih anggota yang akan dipindahkan ke keranjang terlebih dahulu');
+			$this->session->setFlashdata('swal_icon', 'warning');
+			$this->session->setFlashdata('swal_title', 'Peringatan');
+			$this->session->setFlashdata('swal_text', 'Pilih anggota yang akan dipindahkan ke keranjang terlebih dahulu');
 		}
 
 		return redirect()->back();
@@ -801,14 +805,14 @@ class Anggota extends \Base\Controllers\BaseController
 			if (!empty($update_data)) {
 				$this->anggotaModel->updateBatch($update_data, 'ID');
 
-				set_message('toastr_msg', 'Berhasil dipulihkan dari keranjang anggota');
-				set_message('toastr_type', 'success');
-				set_message('message', 'Berhasil dipulihkan dari keranjang anggota');
+				$this->session->setFlashdata('swal_icon', 'success');
+				$this->session->setFlashdata('swal_title', 'Berhasil');
+				$this->session->setFlashdata('swal_text', 'Berhasil dipulihkan dari keranjang anggota');
 			}
 		} else {
-			set_message('toastr_msg', 'Pilih anggota yang akan dipulihkan terlebih dahulu');
-			set_message('toastr_type', 'warning');
-			set_message('message', 'Pilih anggota yang akan dipulihkan terlebih dahulu');
+			$this->session->setFlashdata('swal_icon', 'warning');
+			$this->session->setFlashdata('swal_title', 'Peringatan');
+			$this->session->setFlashdata('swal_text', 'Pilih anggota yang akan dipulihkan terlebih dahulu');
 		}
 
 		return redirect()->back();
@@ -822,13 +826,13 @@ class Anggota extends \Base\Controllers\BaseController
 		if (!empty($IDs)) {
 			$this->anggotaModel->delete($IDs);
 
-			set_message('toastr_msg', 'Anggota Berhasil dihapus permanen');
-			set_message('toastr_type', 'success');
-			set_message('message', 'Anggota Berhasil dihapus permanen');
+			$this->session->setFlashdata('swal_icon', 'success');
+			$this->session->setFlashdata('swal_title', 'Berhasil');
+			$this->session->setFlashdata('swal_text', 'Anggota Berhasil dihapus permanen');
 		} else {
-			set_message('toastr_msg', 'Pilih Anggota yang akan dihapus permanen terlebih dahulu');
-			set_message('toastr_type', 'warning');
-			set_message('message', 'Pilih Anggota yang akan dihapus permanen terlebih dahulu');
+			$this->session->setFlashdata('swal_icon', 'warning');
+			$this->session->setFlashdata('swal_title', 'Peringatan');
+			$this->session->setFlashdata('swal_text', 'Pilih Anggota yang akan dihapus permanen terlebih dahulu');
 		}
 
 		return redirect()->back();
@@ -845,25 +849,28 @@ class Anggota extends \Base\Controllers\BaseController
 	public function delete(int $id = 0)
 	{
 		if (!is_allowed('anggota/delete')) {
-			set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
-			set_message('toastr_type', 'error');
+			$this->session->setFlashdata('swal_icon', 'error');
+			$this->session->setFlashdata('swal_title', 'Error');
+			$this->session->setFlashdata('swal_text', 'Maaf, Anda tidak memiliki akses');
 			return redirect()->to('anggota');
 		}
 
 		if (!$id) {
-			set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-			set_message('toastr_type', 'error');
+			$this->session->setFlashdata('swal_icon', 'error');
+			$this->session->setFlashdata('swal_title', 'Error');
+			$this->session->setFlashdata('swal_text', 'Sorry you have to provide parameter (id)');
 			return redirect()->to('/anggota');
 		}
 		$anggotaDelete = $this->anggotaModel->delete($id);
 		if ($anggotaDelete) {
-			set_message('toastr_msg', 'Data Anggota berhasil dihapus');
-			set_message('toastr_type', 'success');
+			$this->session->setFlashdata('swal_icon', 'success');
+			$this->session->setFlashdata('swal_title', 'Berhasil');
+			$this->session->setFlashdata('swal_text', 'Data Anggota berhasil dihapus');
 			return redirect()->to('/anggota');
 		} else {
-			set_message('toastr_msg', lang('Anggota.info.failed_deleted'));
-			set_message('toastr_type', 'warning');
-			set_message('message', lang('Anggota.info.failed_deleted'));
+			$this->session->setFlashdata('swal_icon', 'warning');
+			$this->session->setFlashdata('swal_title', 'Peringatan');
+			$this->session->setFlashdata('swal_text', lang('Anggota.info.failed_deleted'));
 			return redirect()->to('/anggota/delete/' . $id);
 		}
 	}
@@ -874,85 +881,17 @@ class Anggota extends \Base\Controllers\BaseController
 		$anggotaUpdate = $this->anggotaModel->update($id, array($field => $value));
 		// dd($anggotaUpdate);
 		if ($anggotaUpdate) {
-			set_message('toastr_msg', ' Anggota berhasil disimpan');
-			set_message('toastr_type', 'success');
+			$this->session->setFlashdata('swal_icon', 'success');
+			$this->session->setFlashdata('swal_title', 'Berhasil');
+			$this->session->setFlashdata('swal_text', 'Anggota berhasil disimpan');
 		} else {
-			set_message('toastr_msg', ' Anggota gagal disimpan');
-			set_message('toastr_type', 'warning');
+			$this->session->setFlashdata('swal_icon', 'warning');
+			$this->session->setFlashdata('swal_title', 'Peringatan');
+			$this->session->setFlashdata('swal_text', 'Anggota gagal disimpan');
 		}
 		return redirect()->to('/anggota');
 	}
-	// Daftar data Pelanggaran
-	public function D_pelanggaran()
-	{
 
-		$query = $this->anggotaModel
-			->select('t_anggota.*')
-			->select('created.username as created_name')
-			->select('updated.username as updated_name')
-			->join('users created', 'created.id = t_anggota.created_by', 'left')
-			->join('users updated', 'updated.id = t_anggota.updated_by', 'left');
-		$anggotas = $query->findAll();
-		// $Nomember=$this->anggotaModel->MemberNo();
-		$this->data['title'] = 'Data-Pelanggaran';
-		$this->data['anggotas'] = $anggotas;
-		// $this->data['MemberNo'] = $this->AnggotaModel->MemberNo();
-		// $this->data['MemberNo']
-		echo view('Anggota\Views\Data-pelanggaran', $this->data);
-	}
-	// Daftar data Peminjaman
-	public function D_peminjaman()
-	{
-
-		$query = $this->anggotaModel
-			->select('t_anggota.*')
-			->select('created.username as created_name')
-			->select('updated.username as updated_name')
-			->join('users created', 'created.id = t_anggota.created_by', 'left')
-			->join('users updated', 'updated.id = t_anggota.updated_by', 'left');
-		$anggotas = $query->findAll();
-		// $Nomember=$this->anggotaModel->MemberNo();
-		$this->data['title'] = 'Data-Pelanggaran';
-		$this->data['anggotas'] = $anggotas;
-		// $this->data['MemberNo'] = $this->AnggotaModel->MemberNo();
-		// $this->data['MemberNo']
-		echo view('Anggota\Views\Data-Peminjaman', $this->data);
-	}
-	// Daftar data Perpanjangan
-	public function D_perpanjangan()
-	{
-
-		$query = $this->anggotaModel
-			->select('t_anggota.*')
-			->select('created.username as created_name')
-			->select('updated.username as updated_name')
-			->join('users created', 'created.id = t_anggota.created_by', 'left')
-			->join('users updated', 'updated.id = t_anggota.updated_by', 'left');
-		$anggotas = $query->findAll();
-		// $Nomember=$this->anggotaModel->MemberNo();
-		$this->data['title'] = 'Data-Pelanggaran';
-		$this->data['anggotas'] = $anggotas;
-		// $this->data['MemberNo'] = $this->AnggotaModel->MemberNo();
-		// $this->data['MemberNo']
-		echo view('Anggota\Views\Data-Perpanjangan', $this->data);
-	}
-	// Daftar data sumbangan
-	public function D_sumbangan(int $id = null)
-	{
-
-		$query = $this->anggotaModel
-			->select('t_anggota.*')
-			->select('created.username as created_name')
-			->select('updated.username as updated_name')
-			->join('users created', 'created.id = t_anggota.created_by', 'left')
-			->join('users updated', 'updated.id = t_anggota.updated_by', 'left');
-		$anggotas = $query->findAll();
-		$anggota = $this->anggotaModel->find($id);
-		$this->data['title'] = 'Data-Pelanggaran';
-		$this->data['anggotas'] = $anggotas;
-		$this->data['anggota'] = $anggota;
-		echo view('Anggota\Views\Data-Sumbangan', $this->data);
-	}
 	// Import Data dari EXCEL
 
 	public function import_view()

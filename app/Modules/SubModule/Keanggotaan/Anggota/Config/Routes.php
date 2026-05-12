@@ -31,10 +31,6 @@ $routes->group('anggota', ['namespace' => 'Anggota\Controllers'], function ($sub
 	$subroutes->add('do_upload', 'Anggota::do_upload');
 	$subroutes->add('do_delete', 'Anggota::do_delete');
 	$subroutes->add('flip', 'Anggota::flip');
-	$subroutes->add('D_pelanggaran', 'Anggota::D_pelanggaran');
-	$subroutes->add('D_peminjaman', 'Anggota::D_peminjaman');
-	$subroutes->add('D_perpanjangan', 'Anggota::D_perpanjangan');
-	$subroutes->add('D_sumbangan', 'Anggota::D_sumbangan');
 	$subroutes->add('import', 'Anggota::import');
 	$subroutes->add('aktifkan_online', 'Anggota::aktifkan_online');
 	$subroutes->add('uploadBackground', 'Anggota::uploadBackground');
