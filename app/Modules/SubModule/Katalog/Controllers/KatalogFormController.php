@@ -99,7 +99,7 @@ class KatalogFormController extends \Base\Controllers\BaseController
 
                 $save_data['PhysicalDescription'] = !empty($post['PhysicalDescription']) ? implode_data($post['PhysicalDescription'], ' ') : null;
                 $save_data['Edition']             = $post['Edition'] ?? null;
-                $save_data['Subject']             = !empty($post['Subject']) ? multi_array($post['Subject'], ';') : null;
+                $save_data['Subject']             = !empty($post['subject']) ? multi_array($post['subject']) : null;
                 $save_data['DeweyNo']             = !empty($post['DeweyNo']) ? implode_data($post['DeweyNo'], ' ') : null;
                 $save_data['ISBN']                = !empty($post['ISBN']) ? implode_data($post['ISBN'], ' ; ') : null;
                 $save_data['CallNumber']          = !empty($post['CallNumber']) ? implode_data($post['CallNumber'], ';') : null;
@@ -227,7 +227,7 @@ class KatalogFormController extends \Base\Controllers\BaseController
 
                 $update_data['PhysicalDescription'] = !empty($post['PhysicalDescription']) ? implode_data($post['PhysicalDescription'], ' ') : null;
                 $update_data['Edition']             = $post['Edition'] ?? null;
-                $update_data['Subject']             = !empty($post['Subject']) ? multi_array($post['Subject'], ';') : null;
+                $update_data['Subject']             = !empty($post['subject']) ? multi_array($post['subject']) : null;
                 $update_data['DeweyNo']             = !empty($post['DeweyNo']) ? implode_data($post['DeweyNo'], ' ') : null;
                 $update_data['ISBN']                = !empty($post['ISBN']) ? implode_data($post['ISBN'], ' ; ') : null;
                 $update_data['CallNumber']          = !empty($post['CallNumber']) ? implode_data($post['CallNumber'], ';') : null;

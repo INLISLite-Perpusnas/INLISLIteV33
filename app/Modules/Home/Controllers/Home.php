@@ -36,20 +36,26 @@ class Home extends \Base\Controllers\BaseController
     {
         $this->data['title'] = 'Beranda - Perpustakaan Digital';
 
-        // Get featured books/collections (latest 8 books)
-        $this->data['featured_books'] = $this->getFeaturedBooks();
+        $useCache = env('is_home_cache') == 1;
+        $cacheKey = 'home_index_data';
 
-        // Get library statistics
-        $this->data['statistics'] = $this->getLibraryStatistics();
+        if ($useCache && $cached = cache($cacheKey)) {
+            $this->data = array_merge($this->data, $cached);
+        } else {
+            $pageData = [
+                'featured_books' => $this->getFeaturedBooks(),
+                'statistics'     => $this->getLibraryStatistics(),
+                'news'           => $this->getNews(),
+                'banners'        => $this->getBannersData(),
+                'modules'        => $this->getLibraryModules(),
+            ];
 
-        // Get news/announcements (dummy data)
-        $this->data['news'] = $this->getNews();
+            if ($useCache) {
+                cache()->save($cacheKey, $pageData, 300);
+            }
 
-        // Get banner data
-        $this->data['banners'] = $this->getBannersData();
-
-        // Library modules
-        $this->data['modules'] = $this->getLibraryModules();
+            $this->data = array_merge($this->data, $pageData);
+        }
 
         return view('Home\Views\index', $this->data);
     }
@@ -130,9 +136,17 @@ class Home extends \Base\Controllers\BaseController
     private function getTodayVisitors()
     {
         try {
-            return $this->visitorModel
-                ->where('DATE(created_at)', date('Y-m-d'))
-                ->countAllResults();
+        $today = date('Y-m-d');
+        $builderAnggota = $this->db->table('memberguesses');
+        $builderAnggota->where('DATE(CreateDate)', $today);
+		 $totalAnggota = $builderAnggota->countAllResults();
+		$builderRombongan = $this->db->table('groupguesses');
+        $builderRombongan->selectSum('CountPersonel', 'total_personel');
+        $builderRombongan->where('DATE(CreateDate)', $today);
+		$resultRombongan = $builderRombongan->get()->getRow();
+        $totalRombongan = (int)($resultRombongan->total_personel ?? 0);
+		$totalKunjungan = $totalAnggota + $totalRombongan;
+            return $totalKunjungan;
         } catch (\Exception $e) {
             return 23; // Dummy data
         }
