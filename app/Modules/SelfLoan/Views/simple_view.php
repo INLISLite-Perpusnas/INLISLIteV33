@@ -338,9 +338,8 @@
                                                 </div>
                                             </div>
                                             <div class="col-md-3 text-end">
-                                                <a href="<?= base_url('peminjaman-mandiri/remove-book?MemberNo=' . urlencode($memberData['member_no']) . '&index=' . $index) ?>" 
-                                                   class="btn btn-outline-danger btn-sm"
-                                                   onclick="return confirm('Hapus buku dari daftar?')">
+                                                <a href="<?= base_url('peminjaman-mandiri/remove-book?MemberNo=' . urlencode($memberData['member_no']) . '&index=' . $index) ?>"
+                                                   class="btn btn-outline-danger btn-sm btn-hapus-buku">
                                                     <i class="fas fa-trash me-1"></i>Hapus
                                                 </a>
                                             </div>
@@ -349,8 +348,7 @@
                                 <?php endforeach; ?>
 
                                 <div class="text-center mt-4">
-                                    <form action="<?= base_url('peminjaman-mandiri/process-loan') ?>" method="POST" 
-                                          onsubmit="return confirm('Yakin ingin memproses peminjaman ini?')">
+                                    <form action="<?= base_url('peminjaman-mandiri/process-loan') ?>" method="POST" id="form-proses-peminjaman">
                                         <input type="hidden" name="MemberNo" value="<?= esc($memberData['member_no']) ?>">
                                         <button type="submit" class="btn btn-success btn-lg">
                                             <i class="fas fa-check me-2"></i>
@@ -437,6 +435,7 @@
 
   <!-- Bootstrap JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script>
         // Auto-focus on input when page loads
@@ -477,6 +476,51 @@
                 e.target.value = e.target.value.toUpperCase().replace(/\s/g, '');
             }
         });
+
+        // SweetAlert2 — konfirmasi hapus buku
+        document.querySelectorAll('.btn-hapus-buku').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const href = this.getAttribute('href');
+                Swal.fire({
+                    title: 'Hapus Buku?',
+                    text: 'Buku ini akan dihapus dari daftar peminjaman.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Ya, Hapus',
+                    cancelButtonText: 'Batal',
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        window.location.href = href;
+                    }
+                });
+            });
+        });
+
+        // SweetAlert2 — konfirmasi proses peminjaman
+        const formProses = document.getElementById('form-proses-peminjaman');
+        if (formProses) {
+            formProses.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const form = this;
+                Swal.fire({
+                    title: 'Proses Peminjaman?',
+                    text: 'Yakin ingin memproses peminjaman ini?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Ya, Proses',
+                    cancelButtonText: 'Batal',
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        }
 
         // Show loading state on form submission
         document.addEventListener('submit', function(e) {

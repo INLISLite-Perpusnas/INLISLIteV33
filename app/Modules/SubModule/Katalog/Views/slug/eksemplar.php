@@ -98,8 +98,6 @@ $paper_size_config = [
 // Encode ke JSON agar bisa dikonsumsi JavaScript tanpa request AJAX tambahan
 $paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
 ?>
-<?= $this->extend('App\Views\layout\main'); ?>
-
 <?= $this->section('style'); ?>
 <style>
     /* Samakan tinggi semua tombol prepend dengan select */
@@ -113,35 +111,7 @@ $paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
 </style>
 <?= $this->endSection('style'); ?>
 
-<?= $this->section('page'); ?>
-
-<div class="app-main__inner">
-    <div class="app-page-title">
-        <div class="page-title-wrapper">
-            <div class="page-title-heading">
-                <div class="page-title-icon">
-                    <i class="pe-7s-server icon-gradient bg-strong-bliss"></i>
-                </div>
-                <div>Eksemplar
-                    <div class="page-title-subheading">Daftar semua Eksemplar</div>
-                </div>
-            </div>
-            <div class="page-title-actions">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item">
-                            <a href="<?= base_url('Eksemplar') ?>">
-                                <i class="fa fa-home"></i> Home
-                            </a>
-                        </li>
-                        <li class="breadcrumb-item" aria-current="page">Eksemplar</li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
-    </div>
-
-    <div class="main-card mb-3 card">
+<div class="main-card mb-3 card">
 
         <!-- ── Card Header ──────────────────────────────────────────────── -->
         <div class="card-header">
@@ -149,7 +119,7 @@ $paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
             Daftar Eksemplar
             <div class="btn-actions-pane-right actions-icon-btn">
                 <?php if (is_allowed('eksemplar/create')) : ?>
-                    <a href="<?= base_url('eksemplar/create?slug=' . $slug) ?>" class="btn btn-success">
+                    <a href="<?= base_url('eksemplar/create?slug=' . $slug . '&catalog_id=' . $catalog->ID) ?>" class="btn btn-success">
                         <i class="fa fa-plus"></i> Tambah Eksemplar
                     </a>
                 <?php endif; ?>
@@ -257,9 +227,6 @@ $paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
         </div>
 
     </div>
-</div>
-
-<?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
 <script>

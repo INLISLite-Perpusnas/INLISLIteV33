@@ -700,4 +700,17 @@ $catalog = get_catalog($catalog_id);
 <?= $this->include('Eksemplar\Views\add_script'); ?>
 <?= $this->include('Eksemplar\Views\modal_katalog'); ?>
 
+<script>
+    $(document).ready(function() {
+        <?php if (session()->getFlashdata('swal_icon')) : ?>
+            Swal.fire({
+                icon: '<?= session()->getFlashdata('swal_icon') ?>',
+                title: '<?= session()->getFlashdata('swal_title') ?>',
+                html: '<?= session()->getFlashdata('swal_html') ?? session()->getFlashdata('swal_text') ?>',
+                showConfirmButton: true,
+            });
+        <?php endif; ?>
+    });
+</script>
+
 <?= $this->endSection('script'); ?>

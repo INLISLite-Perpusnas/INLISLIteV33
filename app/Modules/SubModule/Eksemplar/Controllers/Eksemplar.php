@@ -143,7 +143,7 @@ class Eksemplar extends \Base\Controllers\BaseController
                     'UpdateBy'            => user_id(),
                     'UpdateDate'          => date("Y-m-d H:i:s"),
                 ];
-
+          
                 if (!empty($post['TanggalPengadaan'])) $save['TanggalPengadaan'] = $post['TanggalPengadaan'];
                 if (!empty($post['Rule_id']))          $save['Rule_id']          = $post['Rule_id'];
                 if (!empty($post['Category_id']))      $save['Category_id']      = $post['Category_id'];
@@ -190,9 +190,17 @@ class Eksemplar extends \Base\Controllers\BaseController
                 } catch (\Throwable $e) {
                     $errorMessage = $e->getMessage();
 
+                    if (str_contains($errorMessage, 'Duplicate entry')) {
+                        preg_match("/Duplicate entry '(.+?)' for key/", $errorMessage, $m);
+                        $dupValue = $m[1] ?? '';
+                        $friendlyMsg = "Nomor Barcode <strong>{$dupValue}</strong> sudah terdaftar di sistem. Gunakan nomor barcode yang berbeda.";
+                    } else {
+                        $friendlyMsg = 'Eksemplar gagal ditambah. Silakan coba lagi atau hubungi administrator.';
+                    }
+
                     $this->session->setFlashdata('swal_icon',  'error');
-                    $this->session->setFlashdata('swal_title', 'Database Error');
-                    $this->session->setFlashdata('swal_text',  'Eksemplar gagal ditambah. Error DB: ' . $errorMessage);
+                    $this->session->setFlashdata('swal_title', 'Gagal Menyimpan');
+                    $this->session->setFlashdata('swal_html',  $friendlyMsg);
 
                     log_message('error', '[Eksemplar Create DB Error] ' . $errorMessage);
                     return redirect()->back()->withInput();

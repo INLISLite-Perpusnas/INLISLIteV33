@@ -79,9 +79,33 @@
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
 
-    .table th {
-        background-color: #667eea;
-        color: white;
+    #detailTable_wrapper {
+        padding: 10px;
+    }
+
+    #detailTable_wrapper .dataTables_length,
+    #detailTable_wrapper .dataTables_filter {
+        margin-bottom: 4px;
+    }
+
+    #detailTable_wrapper .dataTables_length select {
+        margin: 0 4px;
+    }
+
+    #detailTable_wrapper .row:first-child {
+        margin-bottom: 4px !important;
+    }
+
+    #detailTable_wrapper .row:last-child {
+        margin-top: 4px !important;
+    }
+
+    .table th,
+    #detailTable thead tr th,
+    #detailTable thead tr th div,
+    #detailTable thead tr th span {
+        background-color: #667eea !important;
+        color: white !important;
         font-weight: 600;
         border: none;
     }
@@ -182,28 +206,37 @@
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
-<div class="container-fluid py-4">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2 class="mb-1"><?= $title ?></h2>
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="<?= base_url('stockopname') ?>">Stockopname</a></li>
-                            <li class="breadcrumb-item active"><?= $stockopname->ProjectName ?></li>
-                        </ol>
-                    </nav>
+<div class="app-main__inner">
+    <div class="app-page-title">
+        <div class="page-title-wrapper">
+            <div class="page-title-heading">
+                <div class="page-title-icon">
+                    <i class="pe-7s-note icon-gradient bg-strong-bliss"></i>
                 </div>
                 <div>
-                    <a href="<?= base_url('stockopname') ?>" class="btn btn-secondary me-2">
-                        <i class="fas fa-arrow-left"></i> Kembali
-                    </a>
-                    <a href="<?= base_url('stockopname/exportStockopname/' . $stockopname->ID) ?>" class="btn btn-success">
-                        <i class="fas fa-download"></i> Export CSV
-                    </a>
+                    <h2><?= esc($stockopname->ProjectName) ?></h2>
+                    <div class="page-title-subheading">
+                        Detail data stock opname
+                    </div>
                 </div>
+            </div>
+            <div class="page-title-actions">
+                
+                <nav class="ms-3" aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="<?= base_url('dashboard') ?>">
+                                <i class="fa fa-home"></i> Home
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="<?= base_url('stockopname') ?>">Stock Opname</a>
+                        </li>
+                        <li class="breadcrumb-item" aria-current="page">
+                            <?= esc($stockopname->ProjectName) ?>
+                        </li>
+                    </ol>
+                </nav>
             </div>
         </div>
     </div>
@@ -280,7 +313,7 @@
             <div class="card">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0"><i class="fas fa-list"></i> Detail Stockopname</h5>
-                </div><br>
+                </div>
                 <div class="card-body p-0">
                     <div class="table-container">
                         <div class="table-responsive">
@@ -492,6 +525,30 @@
     };
 
     $(document).ready(function() {
+        // Inisialisasi DataTables untuk tabel detail
+        $('#detailTable').DataTable({
+            pageLength: 25,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'Semua']],
+            language: {
+                search:           'Cari:',
+                lengthMenu:       'Tampilkan _MENU_ data',
+                info:             'Menampilkan _START_ - _END_ dari _TOTAL_ data',
+                infoEmpty:        'Tidak ada data',
+                infoFiltered:     '(difilter dari _MAX_ total data)',
+                zeroRecords:      'Data tidak ditemukan',
+                paginate: {
+                    first:    'Pertama',
+                    last:     'Terakhir',
+                    next:     'Berikutnya',
+                    previous: 'Sebelumnya',
+                },
+            },
+            order: [],
+            columnDefs: [
+                { orderable: false, targets: 0 },
+            ],
+        });
+
         // Focus on barcode input
         $('#barcodeInput').focus();
 
@@ -510,8 +567,14 @@
         });
 
         // Auto-focus back to barcode input after any action
-        $(document).on('click', function() {
-            if (!$('#editModal').hasClass('show')) {
+        // Kecualikan klik pada kontrol DataTables dan elemen interaktif lainnya
+        $(document).on('click', function(e) {
+            const $target = $(e.target);
+            const isDataTablesControl = $target.closest(
+                '.dataTables_length, .dataTables_filter, .dataTables_paginate, .dataTables_info, select, input, button, a, .modal'
+            ).length > 0;
+
+            if (!isDataTablesControl && !$('#editModal').hasClass('show')) {
                 setTimeout(() => $('#barcodeInput').focus(), 100);
             }
         });

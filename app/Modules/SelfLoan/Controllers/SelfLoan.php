@@ -553,12 +553,18 @@ class SelfLoan extends \App\Controllers\BaseController
         $this->db->transBegin();
         
         try {
-            $collection_loan = get_ref_single('collectionloans', 'ID IS NOT NULL','data');
+            $todayPrefix = date('ymd');
 
-            $lastNumber = $collection_loan ? (int) substr($collection_loan->ID, -5) : 0;
-            $increment = $lastNumber + 1;
+            // Ambil MAX ID khusus hari ini agar counter tidak melompat dari hari sebelumnya
+            $maxRow = $this->db->query(
+                "SELECT MAX(ID) AS max_id FROM collectionloans WHERE ID LIKE ? LOCK IN SHARE MODE",
+                [$todayPrefix . '%']
+            )->getRow();
 
-            $collection_loan_id = get_pad_number($increment, date('ymd'), 5);
+            $lastNumber = ($maxRow && $maxRow->max_id) ? (int) substr($maxRow->max_id, -5) : 0;
+            $increment  = $lastNumber + 1;
+
+            $collection_loan_id = get_pad_number($increment, $todayPrefix, 5);
             $loanDate = date('Y-m-d H:i:s');
             $dueDate = date('Y-m-d H:i:s', strtotime("+{$loanDays} days"));
             $locationId = $this->request->getCookie('Location_id') ?: 1;
@@ -634,7 +640,7 @@ class SelfLoan extends \App\Controllers\BaseController
             $this->session->remove($sessionKey);
             
             // Redirect to success page
-            return redirect()->to('/peminjaman-mandiri/success?loan_id=' . $newLoanId);
+            return redirect()->to('/peminjaman-mandiri/success?loan_id=' . $collection_loan_id);
             
         } catch (\Exception $e) {
             // Rollback jika terjadi kegagalan di titik manapun
