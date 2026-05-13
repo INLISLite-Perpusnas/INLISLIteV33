@@ -392,7 +392,10 @@ class Stockopname extends \Base\Controllers\BaseController
 
 
     // Get reference data for dropdowns
+    $db = db_connect('data');
     $locations = $this->locationModel->findAll();
+    $statuses  = $db->table('collectionstatus')->orderBy('ID')->get()->getResultObject();
+    $rules     = $db->table('collectionrules')->orderBy('ID')->get()->getResultObject();
 
     $this->data['title'] = 'Detail Stockopname - ' . $stockopname->ProjectName;
     $this->data['locationSummary'] = $locationSummary;
@@ -402,12 +405,14 @@ class Stockopname extends \Base\Controllers\BaseController
     // --- PASS PAGINATION DATA TO VIEW ---
     $this->data['details'] = $details;
     $this->data['detailsPager'] = $detailsPager;
-    
+
     $this->data['collectionsNotInStockopname'] = $collectionsNotInStockopname;
     $this->data['notInPager'] = $notInPager;
-    $this->data['totalNotInStockopname'] = $totalNotIn; // Pass the total count
+    $this->data['totalNotInStockopname'] = $totalNotIn;
 
     $this->data['locations'] = $locations;
+    $this->data['statuses']  = $statuses;
+    $this->data['rules']     = $rules;
 
     echo view('Stockopname\Views\detail', $this->data);
 }
@@ -587,9 +592,6 @@ class Stockopname extends \Base\Controllers\BaseController
             $result = $this->stockopnamedetailModel->update($detailId, $updateData);
 
             if ($result) {
-                // Update the actual collection if needed
-                $this->updateCollectionFromStockopname($detail['CollectionID'], $updateData);
-                
                 return $this->response->setJSON([
                     'status' => 'success',
                     'message' => 'Detail stockopname berhasil diperbarui.'
@@ -601,7 +603,7 @@ class Stockopname extends \Base\Controllers\BaseController
                 ]);
             }
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return $this->response->setJSON([
                 'status' => 'error',
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()

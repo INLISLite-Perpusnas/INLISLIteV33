@@ -92,6 +92,16 @@
         margin: 0 4px;
     }
 
+    #detailTable .form-select-sm {
+        min-width: 120px;
+        font-size: 0.8rem;
+    }
+
+    #detailTable .select-saving {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
     #detailTable_wrapper .row:first-child {
         margin-bottom: 4px !important;
     }
@@ -349,27 +359,48 @@
                                                 </td>
                                                 <td><?= $detail['Author'] ?></td>
                                                 <td>
-                                                    <?= $detail['CurrentLocationName'] ?>
+                                                    <select class="form-select form-select-sm select-lokasi"
+                                                            data-detail-id="<?= $detail['ID'] ?>"
+                                                            data-field="current_location_id">
+                                                        <?php foreach ($locations as $loc): ?>
+                                                            <option value="<?= $loc->ID ?>"
+                                                                <?= $loc->ID == $detail['CurrentLocationID'] ? 'selected' : '' ?>>
+                                                                <?= esc($loc->Name) ?>
+                                                            </option>
+                                                        <?php endforeach; ?>
+                                                    </select>
                                                     <?php if ($detail['PrevLocationID'] != $detail['CurrentLocationID']): ?>
-                                                        <span class="change-indicator">PINDAH</span>
-                                                        <br>
-                                                        <small class="text-muted">Dari: <?= $detail['PrevLocationName'] ?></small>
+                                                        <small class="text-muted d-block mt-1">Dari: <?= $detail['PrevLocationName'] ?></small>
                                                     <?php endif; ?>
                                                 </td>
                                                 <td>
-                                                    <span class="badge bg-info status-badge"><?= $detail['CurrentStatusName'] ?></span>
+                                                    <select class="form-select form-select-sm select-status"
+                                                            data-detail-id="<?= $detail['ID'] ?>"
+                                                            data-field="current_status_id">
+                                                        <?php foreach ($statuses as $st): ?>
+                                                            <option value="<?= $st->ID ?>"
+                                                                <?= $st->ID == $detail['CurrentStatusID'] ? 'selected' : '' ?>>
+                                                                <?= esc($st->Name) ?>
+                                                            </option>
+                                                        <?php endforeach; ?>
+                                                    </select>
                                                     <?php if ($detail['PrevStatusID'] != $detail['CurrentStatusID']): ?>
-                                                        <span class="change-indicator">GANTI</span>
-                                                        <br>
-                                                        <small class="text-muted">Dari: <?= $detail['PrevStatusName'] ?></small>
+                                                        <small class="text-muted d-block mt-1">Dari: <?= $detail['PrevStatusName'] ?></small>
                                                     <?php endif; ?>
                                                 </td>
                                                 <td>
-                                                    <?= $detail['CurrentRuleName'] ?>
+                                                    <select class="form-select form-select-sm select-rule"
+                                                            data-detail-id="<?= $detail['ID'] ?>"
+                                                            data-field="current_collection_rule_id">
+                                                        <?php foreach ($rules as $rule): ?>
+                                                            <option value="<?= $rule->ID ?>"
+                                                                <?= $rule->ID == $detail['CurrentCollectionRuleID'] ? 'selected' : '' ?>>
+                                                                <?= esc($rule->Name) ?>
+                                                            </option>
+                                                        <?php endforeach; ?>
+                                                    </select>
                                                     <?php if ($detail['PrevCollectionRuleID'] != $detail['CurrentCollectionRuleID']): ?>
-                                                        <span class="change-indicator">GANTI</span>
-                                                        <br>
-                                                        <small class="text-muted">Dari: <?= $detail['PrevRuleName'] ?></small>
+                                                        <small class="text-muted d-block mt-1">Dari: <?= $detail['PrevRuleName'] ?></small>
                                                     <?php endif; ?>
                                                 </td>
                                                 <td>
@@ -528,6 +559,8 @@
         // Inisialisasi DataTables untuk tabel detail
         $('#detailTable').DataTable({
             pageLength: 25,
+            scrollX: true,
+            scrollCollapse: true,
             lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'Semua']],
             language: {
                 search:           'Cari:',
@@ -547,6 +580,46 @@
             columnDefs: [
                 { orderable: false, targets: 0 },
             ],
+        });
+
+        // Inline select — update lokasi / status / aturan
+        $(document).on('change', '.select-lokasi, .select-status, .select-rule', function() {
+            const $sel      = $(this);
+            const detailId  = $sel.data('detail-id');
+            const field     = $sel.data('field');
+            const value     = $sel.val();
+
+            $sel.addClass('select-saving');
+
+            const payload = { detail_id: detailId };
+            payload[field] = value;
+
+            $.ajax({
+                url: '<?= base_url('stockopname/updateDetail') ?>',
+                method: 'POST',
+                data: payload,
+                dataType: 'json',
+                success: function(res) {
+                    if (res.status === 'success') {
+                        Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Berhasil diperbarui', timer: 1500, showConfirmButton: false });
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Gagal', text: res.message || 'Gagal memperbarui' });
+                        $sel.val($sel.data('prev-val'));
+                    }
+                },
+                error: function() {
+                    Swal.fire({ icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan jaringan' });
+                    $sel.val($sel.data('prev-val'));
+                },
+                complete: function() {
+                    $sel.removeClass('select-saving');
+                },
+            });
+        });
+
+        // Simpan nilai sebelumnya agar bisa di-rollback jika gagal
+        $(document).on('focus', '.select-lokasi, .select-status, .select-rule', function() {
+            $(this).data('prev-val', $(this).val());
         });
 
         // Focus on barcode input
@@ -585,7 +658,7 @@
         const barcode = $('#barcodeInput').val().trim();
 
         if (!barcode) {
-            toastr.warning('Mohon masukkan nomor barcode');
+            Swal.fire({ icon: 'warning', title: 'Peringatan', text: 'Mohon masukkan nomor barcode' });
             return;
         }
 
@@ -604,17 +677,17 @@
             dataType: 'json',
             success: function(response) {
                 if (response.status === 'success') {
-                    toastr.success(response.message);
+                    Swal.fire({ icon: 'success', title: 'Berhasil', text: response.message, timer: 1500, showConfirmButton: false });
                     addNewRowToTable(response.data);
                     $('#barcodeInput').val('').focus();
                     updateSummary();
                 } else {
-                    toastr.error(response.message);
+                    Swal.fire({ icon: 'error', title: 'Gagal', text: response.message });
                     $('#barcodeInput').select();
                 }
             },
             error: function(xhr, status, error) {
-                toastr.error('Terjadi kesalahan saat memproses barcode');
+                Swal.fire({ icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan saat memproses barcode' });
                 console.error('Error:', error);
             },
             complete: function() {
@@ -732,7 +805,7 @@
                 }
             },
             error: function() {
-                toastr.error('Gagal memuat informasi koleksi');
+                Swal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal memuat informasi koleksi' });
             }
         });
     }
@@ -748,43 +821,53 @@
             dataType: 'json',
             success: function(response) {
                 if (response.status === 'success') {
-                    toastr.success(response.message);
+                    Swal.fire({ icon: 'success', title: 'Berhasil', text: response.message, timer: 1500, showConfirmButton: false })
+                        .then(() => { location.reload(); });
                     $('#editModal').modal('hide');
-                    location.reload(); // Reload to show updated data
                 } else {
-                    toastr.error(response.message);
+                    Swal.fire({ icon: 'error', title: 'Gagal', text: response.message });
                 }
             },
             error: function() {
-                toastr.error('Terjadi kesalahan saat memperbarui data');
+                Swal.fire({ icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan saat memperbarui data' });
             }
         });
     }
 
     // Delete detail function
     function deleteDetail(detailId) {
-        if (confirm('Yakin ingin menghapus detail stockopname ini?')) {
-            $.ajax({
-                url: `<?= base_url('stockopname/deleteDetail') ?>/${detailId}`,
-                type: 'DELETE',
-                dataType: 'json',
-                success: function(response) {
-                    if (response.status === 'success') {
-                        toastr.success(response.message);
-                        $(`#row-${detailId}`).fadeOut(500, function() {
-                            $(this).remove();
-                            updateRowNumbers();
-                            updateSummary();
-                        });
-                    } else {
-                        toastr.error(response.message);
+        Swal.fire({
+            icon: 'warning',
+            title: 'Hapus Data',
+            text: 'Yakin ingin menghapus detail stockopname ini?',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#d33',
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: `<?= base_url('stockopname/deleteDetail') ?>/${detailId}`,
+                    type: 'DELETE',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            Swal.fire({ icon: 'success', title: 'Berhasil', text: response.message, timer: 1500, showConfirmButton: false });
+                            $(`#row-${detailId}`).fadeOut(500, function() {
+                                $(this).remove();
+                                updateRowNumbers();
+                                updateSummary();
+                            });
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'Gagal', text: response.message });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({ icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan saat menghapus data' });
                     }
-                },
-                error: function() {
-                    toastr.error('Terjadi kesalahan saat menghapus data');
-                }
-            });
-        }
+                });
+            }
+        });
     }
 
     // Update row numbers after deletion
