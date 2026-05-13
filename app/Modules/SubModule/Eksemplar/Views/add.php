@@ -70,7 +70,7 @@ $catalog = get_catalog($catalog_id);
                                 <a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a>
                             </li>
                             <li class="breadcrumb-item"><a href="<?= base_url('eksemplar') ?>">Eksemplar</a></li>
-                            <li class="active breadcrumb-item" aria-current="page">Tambah Eksemplar</li>
+                            <li class="breadcrumb-item">Tambah Eksemplar</li>
                         </ol>
                     </nav>
                 </div>
@@ -84,7 +84,7 @@ $catalog = get_catalog($catalog_id);
             <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Tambah Eksemplar
             <div class="btn-actions-pane-right actions-icon-btn">
                 <?php if (is_allowed('eksemplar/create')) : ?>
-                    <a data-toggle="modal" data-target="#modal_katalog" href="javascript:void(0);"
+                    <a data-bs-toggle="modal" data-bs-target="#modal_katalog" data-toggle="modal" data-target="#modal_katalog" href="javascript:void(0);"
                         class="btn btn-success" title="Daftar Katalog">
                         <i class="fa fa-check-square"></i> Pilih Judul Katalog
                     </a>

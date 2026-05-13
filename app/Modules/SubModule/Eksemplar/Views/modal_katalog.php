@@ -9,7 +9,7 @@ $member_no = $request->getGet('member_no');
 				<h5 class="modal-title">
 					<i class="header-icon lnr-list icon-gradient bg-success"> </i> Daftar Katalog
 				</h5>
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span>
 				</button>
 			</div>

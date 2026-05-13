@@ -8,83 +8,83 @@ $slug = $request->getGet('slug') ?? '';
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
 
 <style>
-    .select2 {
-        text-transform: none;
-        font-weight: normal;
-    }
-    
-    .search-results {
-        max-height: 300px;
-        overflow-y: auto;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        margin-top: 5px;
-    }
-    
-    .search-result-item {
-        padding: 10px;
-        border-bottom: 1px solid #eee;
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
-    
-    .search-result-item:hover {
-        background-color: #f8f9fa;
-    }
-    
-    .search-result-item:last-child {
-        border-bottom: none;
-    }
-    
-    .search-result-item .result-title {
-        font-weight: bold;
-        color: #333;
-    }
-    
-    .search-result-item .result-subtitle {
-        font-size: 0.9em;
-        color: #666;
-        margin-top: 2px;
-    }
-    
-    .loading-spinner {
-        text-align: center;
-        padding: 20px;
-    }
-    
-    .search-section {
-        background-color: #f8f9fa;
-        border: 1px solid #e9ecef;
-        border-radius: 5px;
-        padding: 20px;
-        margin-bottom: 20px;
-    }
+	.select2 {
+		text-transform: none;
+		font-weight: normal;
+	}
 
-    /* Custom SweetAlert2 styling */
-    .swal2-popup {
-        border-radius: 8px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    }
-    
-    .swal2-title {
-        font-size: 1.5em;
-        font-weight: 600;
-    }
-    
-    .swal2-content {
-        font-size: 1em;
-        line-height: 1.5;
-    }
-    
-    .swal2-confirm {
-        border-radius: 5px;
-        padding: 10px 20px;
-        font-weight: 500;
-    }
-    
-    .swal2-timer-progress-bar {
-        background: rgba(255, 255, 255, 0.6);
-    }
+	.search-results {
+		max-height: 300px;
+		overflow-y: auto;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		margin-top: 5px;
+	}
+
+	.search-result-item {
+		padding: 10px;
+		border-bottom: 1px solid #eee;
+		cursor: pointer;
+		transition: background-color 0.2s;
+	}
+
+	.search-result-item:hover {
+		background-color: #f8f9fa;
+	}
+
+	.search-result-item:last-child {
+		border-bottom: none;
+	}
+
+	.search-result-item .result-title {
+		font-weight: bold;
+		color: #333;
+	}
+
+	.search-result-item .result-subtitle {
+		font-size: 0.9em;
+		color: #666;
+		margin-top: 2px;
+	}
+
+	.loading-spinner {
+		text-align: center;
+		padding: 20px;
+	}
+
+	.search-section {
+		background-color: #f8f9fa;
+		border: 1px solid #e9ecef;
+		border-radius: 5px;
+		padding: 20px;
+		margin-bottom: 20px;
+	}
+
+	/* Custom SweetAlert2 styling */
+	.swal2-popup {
+		border-radius: 8px;
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+	}
+
+	.swal2-title {
+		font-size: 1.5em;
+		font-weight: 600;
+	}
+
+	.swal2-content {
+		font-size: 1em;
+		line-height: 1.5;
+	}
+
+	.swal2-confirm {
+		border-radius: 5px;
+		padding: 10px 20px;
+		font-weight: 500;
+	}
+
+	.swal2-timer-progress-bar {
+		background: rgba(255, 255, 255, 0.6);
+	}
 </style>
 <?= $this->endSection('style') ?>
 
@@ -138,10 +138,10 @@ $slug = $request->getGet('slug') ?? '';
 								</div>
 							</div>
 						</div>
-						
+
 						<!-- Search Results -->
 						<div id="search_results" class="search-results" style="display: none;"></div>
-						
+
 						<!-- Selected Data Preview -->
 						<div id="selected_data_preview" class="mt-3" style="display: none;">
 							<div class="alert alert-success">
@@ -173,7 +173,7 @@ $slug = $request->getGet('slug') ?? '';
 						<input type="hidden" id="kabkota_id" name="kabkota_id" value="<?= set_value('kabkota_id', $kabkota_id ?? '') ?>">
 						<input type="hidden" id="kecamatan_id" name="kecamatan_id" value="<?= set_value('kecamatan_id', $kecamatan_id ?? '') ?>">
 						<input type="hidden" id="kelurahan_id" name="kelurahan_id" value="<?= set_value('kelurahan_id', $kelurahan_id ?? '') ?>">
-						
+
 						<div class="form-row">
 							<div class="col-md-6">
 								<div class="position-relative form-group">
@@ -297,7 +297,7 @@ $slug = $request->getGet('slug') ?? '';
 								</div>
 							</div>
 						</div>
-						
+
 						<div class="form-row">
 							<div class="col-md-12">
 								<div class="form-group" style="display: inline-block">
@@ -382,218 +382,231 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->section('script') ?>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
-
 <script>
-// Konfigurasi global SweetAlert2
-const Toast = Swal.mixin({
-    toast: true,
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 3000,
-    timerProgressBar: true,
-    didOpen: (toast) => {
-        toast.addEventListener('mouseenter', Swal.stopTimer)
-        toast.addEventListener('mouseleave', Swal.resumeTimer)
-    }
-});
+	$(document).ready(function() {
+		<?php if (session()->getFlashdata('swal_icon')) : ?>
+			Swal.fire({
+				type: '<?= session()->getFlashdata('swal_icon') ?>', // gunakan 'icon' jika SweetAlert2 versi terbaru
+				title: '<?= session()->getFlashdata('swal_title') ?>',
+				html: '<?= session()->getFlashdata('swal_html') ?? session()->getFlashdata('swal_text') ?>',
+				showConfirmButton: false,
+				timer: 3000,
+				icon: 'success'
+			});
+		<?php endif; ?>
+	});
+</script>
+<script>
+	// Konfigurasi global SweetAlert2
+	const Toast = Swal.mixin({
+		toast: true,
+		position: 'top-end',
+		showConfirmButton: false,
+		timer: 3000,
+		timerProgressBar: true,
+		didOpen: (toast) => {
+			toast.addEventListener('mouseenter', Swal.stopTimer)
+			toast.addEventListener('mouseleave', Swal.resumeTimer)
+		}
+	});
 
-// Helper functions untuk notifikasi cepat
-function showToastSuccess(message) {
-    Toast.fire({
-        icon: 'success',
-        title: message
-    });
-}
+	// Helper functions untuk notifikasi cepat
+	function showToastSuccess(message) {
+		Toast.fire({
+			icon: 'success',
+			title: message
+		});
+	}
 
-function showToastError(message) {
-    Toast.fire({
-        icon: 'error',
-        title: message
-    });
-}
+	function showToastError(message) {
+		Toast.fire({
+			icon: 'error',
+			title: message
+		});
+	}
 
-function showToastWarning(message) {
-    Toast.fire({
-        icon: 'warning',
-        title: message
-    });
-}
+	function showToastWarning(message) {
+		Toast.fire({
+			icon: 'warning',
+			title: message
+		});
+	}
 
-function showToastInfo(message) {
-    Toast.fire({
-        icon: 'info',
-        title: message
-    });
-}
+	function showToastInfo(message) {
+		Toast.fire({
+			icon: 'info',
+			title: message
+		});
+	}
 
-// JavaScript utama untuk pencarian perpustakaan
-document.addEventListener('DOMContentLoaded', function() {
-    var searchInput = document.getElementById('search_perpus');
-    var searchButton = document.getElementById('btn_search_perpus');
-    var resultsContainer = document.getElementById('search_results');
-    var selectedDataPreview = document.getElementById('selected_data_preview');
-    var previewContent = document.getElementById('preview_content');
-    var applyDataBtn = document.getElementById('btn_apply_data');
-    var clearSelectionBtn = document.getElementById('btn_clear_selection');
-    
-    var selectedData = null;
+	// JavaScript utama untuk pencarian perpustakaan
+	document.addEventListener('DOMContentLoaded', function() {
+		var searchInput = document.getElementById('search_perpus');
+		var searchButton = document.getElementById('btn_search_perpus');
+		var resultsContainer = document.getElementById('search_results');
+		var selectedDataPreview = document.getElementById('selected_data_preview');
+		var previewContent = document.getElementById('preview_content');
+		var applyDataBtn = document.getElementById('btn_apply_data');
+		var clearSelectionBtn = document.getElementById('btn_clear_selection');
 
-    // Search functionality
-    function performSearch() {
-        var keyword = searchInput.value.trim();
-        resultsContainer.innerHTML = '';
-        resultsContainer.style.display = 'none';
-        selectedDataPreview.style.display = 'none';
+		var selectedData = null;
 
-        if (keyword.length < 3) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Perhatian!',
-                text: 'Masukkan minimal 3 karakter untuk pencarian.',
-                showConfirmButton: true,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#ffc107'
-            });
-            return;
-        }
+		// Search functionality
+		function performSearch() {
+			var keyword = searchInput.value.trim();
+			resultsContainer.innerHTML = '';
+			resultsContainer.style.display = 'none';
+			selectedDataPreview.style.display = 'none';
 
-        // Show loading
-        resultsContainer.innerHTML = '<div class="loading-spinner"><i class="fa fa-spinner fa-spin"></i> Mencari...</div>';
-        resultsContainer.style.display = 'block';
+			if (keyword.length < 3) {
+				Swal.fire({
+					icon: 'warning',
+					title: 'Perhatian!',
+					text: 'Masukkan minimal 3 karakter untuk pencarian.',
+					showConfirmButton: true,
+					confirmButtonText: 'OK',
+					confirmButtonColor: '#ffc107'
+				});
+				return;
+			}
 
-        // Fetch data from controller
-        fetch('<?= base_url('master-nama-perpustakaan/searchperpustakaan') ?>?q=' + encodeURIComponent(keyword))
-            .then(response => response.json())
-            .then(data => {
-                resultsContainer.innerHTML = '';
-                
-                if (data.status === 'success' && data.data && data.data.length > 0) {
-                    data.data.forEach(function(item) {
-                        var resultItem = document.createElement('div');
-                        resultItem.className = 'search-result-item';
-                        resultItem.innerHTML = `
+			// Show loading
+			resultsContainer.innerHTML = '<div class="loading-spinner"><i class="fa fa-spinner fa-spin"></i> Mencari...</div>';
+			resultsContainer.style.display = 'block';
+
+			// Fetch data from controller
+			fetch('<?= base_url('master-nama-perpustakaan/searchperpustakaan') ?>?q=' + encodeURIComponent(keyword))
+				.then(response => response.json())
+				.then(data => {
+					resultsContainer.innerHTML = '';
+
+					if (data.status === 'success' && data.data && data.data.length > 0) {
+						data.data.forEach(function(item) {
+							var resultItem = document.createElement('div');
+							resultItem.className = 'search-result-item';
+							resultItem.innerHTML = `
                             <div class="result-title">NPP: ${item.npp || 'N/A'} | ${item.nama || 'N/A'}</div>
                             <div class="result-subtitle">
                                 Jenis: ${item.jenis || 'N/A'} | 
                                 Alamat: ${item.alamat || 'N/A'}
                             </div>
                         `;
-                        
-                        resultItem.addEventListener('click', function() {
-                            selectedData = item;
-                            selectResult(item);
-                        });
 
-                        resultsContainer.appendChild(resultItem);
-                    });
-                } else {
-                    resultsContainer.innerHTML = '<div class="search-result-item">Tidak ada data ditemukan.</div>';
-                }
-            })
-            .catch(err => {
-                console.error('Error:', err);
-                resultsContainer.innerHTML = '<div class="search-result-item text-danger">Terjadi kesalahan saat pencarian.</div>';
-                
-                // Show error notification
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Terjadi Kesalahan!',
-                    text: 'Koneksi bermasalah. Silakan coba lagi.',
-                    showConfirmButton: true,
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#dc3545'
-                });
-            });
-    }
+							resultItem.addEventListener('click', function() {
+								selectedData = item;
+								selectResult(item);
+							});
 
-    // Select result
-    function selectResult(item) {
-        previewContent.innerHTML = `
+							resultsContainer.appendChild(resultItem);
+						});
+					} else {
+						resultsContainer.innerHTML = '<div class="search-result-item">Tidak ada data ditemukan.</div>';
+					}
+				})
+				.catch(err => {
+					console.error('Error:', err);
+					resultsContainer.innerHTML = '<div class="search-result-item text-danger">Terjadi kesalahan saat pencarian.</div>';
+
+					// Show error notification
+					Swal.fire({
+						icon: 'error',
+						title: 'Terjadi Kesalahan!',
+						text: 'Koneksi bermasalah. Silakan coba lagi.',
+						showConfirmButton: true,
+						confirmButtonText: 'OK',
+						confirmButtonColor: '#dc3545'
+					});
+				});
+		}
+
+		// Select result
+		function selectResult(item) {
+			previewContent.innerHTML = `
             <strong>NPP:</strong> ${item.npp || 'N/A'}<br>
             <strong>Nama:</strong> ${item.nama || 'N/A'}<br>
             <strong>Jenis:</strong> ${item.jenis || 'N/A'}<br>
             <strong>Alamat:</strong> ${item.alamat || 'N/A'}<br>
             <strong>Email:</strong> ${item.email || 'N/A'}
         `;
-        
-        selectedDataPreview.style.display = 'block';
-        resultsContainer.style.display = 'none';
-        searchInput.value = `${item.npp || ''} - ${item.nama || ''}`;
-    }
 
-    // Apply selected data to form
-    function applySelectedData() {
-        if (!selectedData) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Perhatian!',
-                text: 'Tidak ada data yang dipilih.',
-                showConfirmButton: true,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#ffc107'
-            });
-            return;
-        }
+			selectedDataPreview.style.display = 'block';
+			resultsContainer.style.display = 'none';
+			searchInput.value = `${item.npp || ''} - ${item.nama || ''}`;
+		}
 
-        // Update form fields
-        document.getElementById('npp_perpustakaan').value = selectedData.npp || '';
-        document.getElementById('nama_perpustakaan').value = selectedData.nama || '';
-        document.getElementById('jenis_perpustakaan').value = selectedData.jenis || '';
-        document.getElementById('nama_lokasi_perpustakaan').value = selectedData.alamat || '';
-        document.getElementById('email_perpustakaan').value = selectedData.email || '';
-        document.getElementById('branch_id').value = selectedData.id || '';
-		document.getElementById('provinsi_id').value = selectedData.provinsi_id || '';
-        document.getElementById('kabkota_id').value = selectedData.kabkota_id || '';
-        document.getElementById('kecamatan_id').value = selectedData.kecamatan_id || '';
-        document.getElementById('kelurahan_id').value = selectedData.kelurahan_id || '';
+		// Apply selected data to form
+		function applySelectedData() {
+			if (!selectedData) {
+				Swal.fire({
+					icon: 'warning',
+					title: 'Perhatian!',
+					text: 'Tidak ada data yang dipilih.',
+					showConfirmButton: true,
+					confirmButtonText: 'OK',
+					confirmButtonColor: '#ffc107'
+				});
+				return;
+			}
 
-        // Hide preview
-        selectedDataPreview.style.display = 'none';
-        
-        // Show success message with SweetAlert
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil!',
-            text: 'Data berhasil diterapkan ke form. Silakan simpan untuk menyimpan perubahan.',
-            showConfirmButton: true,
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#28a745'
-        });
-    }
+			// Update form fields
+			document.getElementById('npp_perpustakaan').value = selectedData.npp || '';
+			document.getElementById('nama_perpustakaan').value = selectedData.nama || '';
+			document.getElementById('jenis_perpustakaan').value = selectedData.jenis || '';
+			document.getElementById('nama_lokasi_perpustakaan').value = selectedData.alamat || '';
+			document.getElementById('email_perpustakaan').value = selectedData.email || '';
+			document.getElementById('branch_id').value = selectedData.id || '';
+			document.getElementById('provinsi_id').value = selectedData.provinsi_id || '';
+			document.getElementById('kabkota_id').value = selectedData.kabkota_id || '';
+			document.getElementById('kecamatan_id').value = selectedData.kecamatan_id || '';
+			document.getElementById('kelurahan_id').value = selectedData.kelurahan_id || '';
 
-    // Clear selection
-    function clearSelection() {
-        selectedData = null;
-        selectedDataPreview.style.display = 'none';
-        searchInput.value = '';
-        resultsContainer.innerHTML = '';
-        resultsContainer.style.display = 'none';
-    }
+			// Hide preview
+			selectedDataPreview.style.display = 'none';
 
-    // Event listeners
-    searchButton.addEventListener('click', performSearch);
-    
-    searchInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            performSearch();
-        }
-    });
+			// Show success message with SweetAlert
+			Swal.fire({
+				icon: 'success',
+				title: 'Berhasil!',
+				text: 'Data berhasil diterapkan ke form. Silakan simpan untuk menyimpan perubahan.',
+				showConfirmButton: true,
+				confirmButtonText: 'OK',
+				confirmButtonColor: '#28a745'
+			});
+		}
 
-    applyDataBtn.addEventListener('click', applySelectedData);
-    clearSelectionBtn.addEventListener('click', clearSelection);
+		// Clear selection
+		function clearSelection() {
+			selectedData = null;
+			selectedDataPreview.style.display = 'none';
+			searchInput.value = '';
+			resultsContainer.innerHTML = '';
+			resultsContainer.style.display = 'none';
+		}
 
-    // Hide search results when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!resultsContainer.contains(e.target) && 
-            !searchInput.contains(e.target) && 
-            !searchButton.contains(e.target)) {
-            if (selectedDataPreview.style.display === 'none') {
-                resultsContainer.style.display = 'none';
-            }
-        }
-    });
-});
+		// Event listeners
+		searchButton.addEventListener('click', performSearch);
+
+		searchInput.addEventListener('keypress', function(e) {
+			if (e.key === 'Enter') {
+				e.preventDefault();
+				performSearch();
+			}
+		});
+
+		applyDataBtn.addEventListener('click', applySelectedData);
+		clearSelectionBtn.addEventListener('click', clearSelection);
+
+		// Hide search results when clicking outside
+		document.addEventListener('click', function(e) {
+			if (!resultsContainer.contains(e.target) &&
+				!searchInput.contains(e.target) &&
+				!searchButton.contains(e.target)) {
+				if (selectedDataPreview.style.display === 'none') {
+					resultsContainer.style.display = 'none';
+				}
+			}
+		});
+	});
 </script>
 
 <?= $this->include('NamaPerpustakaan\Views\upload_modal'); ?>

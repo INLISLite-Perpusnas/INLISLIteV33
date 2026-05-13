@@ -10,7 +10,7 @@ $html = '';
 $no = 0;
 $item = 0;
 $rec = 0;
-$jumlahData = 2;
+$jumlahData = count($LabelData);
 
 foreach ($LabelData as $LabelData) {
 	$rec++;
@@ -58,6 +58,10 @@ foreach ($LabelData as $LabelData) {
 	}
 
 	if ($item == 7 || $rec == $jumlahData) {
+		if ($no > 0) {
+			$html .= '</tr>';
+			$no = 0;
+		}
 		$html .= '</table>';
 		$html .= '</div>';
 		$item = 0;

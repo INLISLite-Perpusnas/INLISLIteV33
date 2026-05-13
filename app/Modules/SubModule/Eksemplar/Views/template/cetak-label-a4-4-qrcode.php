@@ -62,6 +62,10 @@ foreach ($tempLabelData as $label) {
     }
 
     if ($item == 7 || $rec == $jumlahData) {
+        if ($no > 0) {
+            $html .= '</tr>';
+            $no = 0;
+        }
         $html .= '</table>';
         $html .= '</div>';
         $item = 0;

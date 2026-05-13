@@ -181,11 +181,13 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 			}
 
 			if ($success) {
-				set_message('toastr_msg', 'Perubahan berhasil disimpan');
-				set_message('toastr_type', 'success');
+				$this->session->setFlashdata('swal_icon', 'success');
+				$this->session->setFlashdata('swal_title', 'Berhasil');
+				$this->session->setFlashdata('swal_text', 'Data berhasil disimpan');
 			} else {
-				set_message('toastr_msg', 'Gagal menyimpan perubahan');
-				set_message('toastr_type', 'error');
+				$this->session->setFlashdata('swal_icon', 'error');
+				$this->session->setFlashdata('swal_title', 'Gagal');
+				$this->session->setFlashdata('swal_text', 'Data gagal disimpan');
 			}
 			return redirect()->back();
 		} else {

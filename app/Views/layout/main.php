@@ -29,7 +29,7 @@ $page_title = ucfirst($segment2 ?: $segment1);
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title><?= $title ?? $page_title . ' - ' . $nama_perpustakaan; ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no" />
-
+    <link rel="icon" href="<?= !empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png') ?>">
     <link rel="stylesheet" href="<?= base_url('themes/uigniter'); ?>/css/base.css">
     <?= $this->include('App\Views\layout\partial\style'); ?>
     <?= $this->include('App\Views\layout\partial\style_custom'); ?>

@@ -27,7 +27,7 @@
                         <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
                         <li class="breadcrumb-item">Otorisasi</li>
                         <li class="breadcrumb-item">Role</li>
-                        <li class="active breadcrumb-item" aria-current="page">Permission</li>
+                        <li class="breadcrumb-item" aria-current="page">Permission</li>
                     </ol>
                 </nav>
             </div>

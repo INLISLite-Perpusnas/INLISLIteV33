@@ -436,8 +436,8 @@ $email = $db->table('settingparameters')->where('Name', 'EmailPerpustakaan')->ge
 
                 <div class="col-lg-4 mb-4 mb-lg-0">
                     <div class="d-flex align-items-center gap-3 mb-4">
-                        <img src="<?= !empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png') ?>"
-                            alt="Logo" class="rounded bg-white p-1" style="width:40px;height:40px;object-fit:cover;">
+                        <img src="<?=  base_url('assets/img/Logo-Inlislite.png') ?>"
+                            alt="Logo" class="rounded bg-white p-1" style="width:150px;height:70px;object-fit:cover;">
                         <h4 class="m-0 fw-bold"><?= esc($nama_perpustakaan) ?></h4>
                     </div>
                     <p class="text-secondary" style="font-size:0.9rem;line-height:1.8;">

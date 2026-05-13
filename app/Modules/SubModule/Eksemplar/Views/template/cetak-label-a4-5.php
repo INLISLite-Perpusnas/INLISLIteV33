@@ -9,7 +9,7 @@ $html = '';
 $no = 0;
 $item = 0;
 $rec = 0;
-$jumlahData = 2;
+$jumlahData = count($LabelData);
 foreach ($LabelData as $LabelData) :
 	// $params = $pdf->serializeTCPDFtagParameters(array($LabelData['Barcode'], 'C128', '', '', 60, 20, 0.4, array('position' => 'S', 'border' => true, 'padding' => 2, 'fgcolor' => array(0, 0, 0), 'bgcolor' => array(255, 255, 255), 'text' => false, 'font' => 'helvetica'), 'N'));
 	// for ($ix = 1; $ix <= 18; $ix++) {
@@ -56,6 +56,10 @@ foreach ($LabelData as $LabelData) :
 	}
 
 	if ($item == 7 || $rec == $jumlahData) {
+		if ($no > 0) {
+			$html .= '</tr>';
+			$no = 0;
+		}
 		$html .= '</table>';
 		$html .= '</div>';
 		$item = 0;
