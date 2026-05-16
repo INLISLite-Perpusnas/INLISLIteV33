@@ -36,7 +36,8 @@ class MasterJurusan extends \Base\Controllers\BaseResourceController
 		$db = db_connect();
 		$builder = $db->table('master_jurusan as a')
 			->select('a.id, a.id as action,a.Nama, a.UpdateDate')
-			->select('a.active');
+			->select('a.active, b.Nama as Fakultas')
+			->join('master_fakultas as b', 'b.id = a.id_fakultas', 'left');
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
