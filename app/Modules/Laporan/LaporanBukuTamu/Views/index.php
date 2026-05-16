@@ -43,7 +43,7 @@ $date_to = $request->getGet('date_to') ?? '';
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('auth') ?>"><i class="fa fa-home"></i> Home</a></li>
                         <li class="breadcrumb-item"><a href="#">Laporan</a></li>
-                        <li class="active breadcrumb-item" aria-current="page">Laporan Buku Tamu </li>
+                        <li class="breadcrumb-item" aria-current="page">Laporan Buku Tamu </li>
                     </ol>
                 </nav>
             </div>
@@ -68,11 +68,19 @@ $date_to = $request->getGet('date_to') ?? '';
                 
                 <div class="form-group mb-3">
                     <label><b>Pilih Kolom yang akan diekspor</b></label>
+                    <div class="mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="select_all_columns">
+                            <label class="form-check-label fw-semibold" for="select_all_columns">
+                                Pilih Semua Kolom
+                            </label>
+                        </div>
+                    </div>
                     <div class="row">
                         <?php foreach ($columns as $key => $label) : ?>
                             <div class="col-md-4">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="columns[]" value="<?= $key ?>" id="<?= $key ?>">
+                                    <input class="form-check-input column-checkbox" type="checkbox" name="columns[]" value="<?= $key ?>" id="<?= $key ?>">
                                     <label class="form-check-label" for="<?= $key ?>">
                                         <?= $label ?>
                                     </label>
@@ -295,6 +303,19 @@ $(document).ready(function() {
             }
         });
     }
+
+    // Select all columns toggle
+    $('#select_all_columns').change(function() {
+        $('.column-checkbox').prop('checked', $(this).is(':checked'));
+        updatePreview();
+    });
+
+    // Sync select-all state when individual checkboxes change
+    $(document).on('change', '.column-checkbox', function() {
+        var total = $('.column-checkbox').length;
+        var checked = $('.column-checkbox:checked').length;
+        $('#select_all_columns').prop('checked', total === checked);
+    });
 
     // Event listeners for form changes
     $('input[name="columns[]"], #filter_type, #gender_id, #visitor_type, #location, #room, #destination').change(updatePreview);

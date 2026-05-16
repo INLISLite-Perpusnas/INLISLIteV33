@@ -25,8 +25,7 @@ class GuestModel extends \App\Models\BaseModel
                      mp.Pekerjaan AS pekerjaan,
                      md.Nama AS pendidikan,
                      tk.TujuanKunjungan AS tujuan,
-                     mg.Information AS info,
-                     mg.Branch_id, b.NPP_Provinsi_id, b.NPP_KabKota_id
+                     mg.Information AS info
               FROM memberguesses mg
               LEFT JOIN members m ON m.MemberNo = mg.NoAnggota
               LEFT JOIN locations l ON l.ID = mg.Location_Id 
@@ -52,8 +51,7 @@ class GuestModel extends \App\Models\BaseModel
                      mp.Pekerjaan AS pekerjaan,
                      md.Nama AS pendidikan,
                      tk.TujuanKunjungan AS tujuan,
-                     mg.Information AS info,
-                     mg.Branch_id, b.NPP_Provinsi_id, b.NPP_KabKota_id
+                     mg.Information AS info
               FROM memberguesses mg
               LEFT JOIN locations l ON l.ID = mg.Location_Id
               LEFT JOIN location_library ll ON ll.ID = l.LocationLibrary_id
@@ -87,8 +85,7 @@ class GuestModel extends \App\Models\BaseModel
                             IFNULL(CONCAT(gg.CountS1, ' S1','<br>'),''), IFNULL(CONCAT(gg.CountS2, ' S2','<br>'),''), 
                             IFNULL(CONCAT(gg.CountS3, ' S3'),'')) AS pendidikan,
                      tk.TujuanKunjungan AS tujuan,
-                     gg.Information AS info, 
-                     gg.Branch_id, b.NPP_Provinsi_id, b.NPP_KabKota_id
+                     gg.Information AS info
               FROM groupguesses gg
               LEFT JOIN locations l ON l.ID = gg.Location_Id
               LEFT JOIN location_library ll ON ll.ID = l.LocationLibrary_id

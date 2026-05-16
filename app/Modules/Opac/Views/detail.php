@@ -1,5 +1,13 @@
 <?= $this->extend('App\Views\layout\opac\layout'); ?>
 
+<?= $this->section('style') ?>
+<style>
+    #bookTab .nav-link {
+        color: #000;
+    }
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 
 <div class="container py-5">
@@ -391,26 +399,35 @@
                                                     <th>Aksi</th>
                                                 </tr>
                                             </thead>
-                                           <tbody>
-<?php foreach ($roweksemplar_drm as $eksemplar_drm): ?>
-    <tr>
-        <td><code><?= esc($eksemplar_drm->NomorBarcode) ?></code></td>
-        <td><code><?= esc($eksemplar_drm->CallNumber) ?></code></td>
-        <td><span class="badge bg-primary"><?= esc($eksemplar_drm->RuleName) ?></span></td>
-        <td><i class="fas fa-cloud me-1"></i><?= esc($eksemplar_drm->LocationName) ?></td>
-        <td><span class="badge bg-success"><?= esc($eksemplar_drm->StatusName) ?></span></td>
-        <td>
-            <a href="<?= base_url('katalog/view_decrypted/' . encData($catalog['ID'])) ?>" 
-               target="_blank" 
-               class="btn btn-primary btn-sm view-decrypted" 
-               data-id="<?= $catalog['ID'] ?>">
-               
-                <i class="fas fa-file-pdf me-1"></i>Baca PDF
-            </a>
-        </td>
-    </tr>
-<?php endforeach; ?>
-</tbody>
+                                            <tbody>
+                                                <?php foreach ($roweksemplar_drm as $eksemplar_drm): ?>
+                                                    <tr>
+                                                        <td><code><?= esc($eksemplar_drm->NomorBarcode) ?></code></td>
+                                                        <td><code><?= esc($eksemplar_drm->CallNumber) ?></code></td>
+                                                        <td><span class="badge bg-primary"><?= esc($eksemplar_drm->RuleName) ?></span></td>
+                                                        <td><i class="fas fa-cloud me-1"></i><?= esc($eksemplar_drm->LocationName) ?></td>
+                                                        <td><span class="badge bg-success"><?= esc($eksemplar_drm->StatusName) ?></span></td>
+                                                        <td>
+                                                            <?php
+                                                            $canRead = $eksemplar_drm->Status_id == 1
+                                                                || in_array($eksemplar_drm->CollectionID, $member_active_loan_collections ?? []);
+                                                            ?>
+                                                            <?php if ($canRead): ?>
+                                                                <a href="<?= base_url('opac/baca-digital/' . $catalog['ID']) ?>"
+                                                                    target="_blank"
+                                                                    class="btn btn-primary btn-sm">
+                                                                    <i class="fas fa-file-pdf me-1"></i>Baca PDF
+                                                                </a>
+                                                            <?php else: ?>
+                                                                <button class="btn btn-warning btn-sm"
+                                                                    onclick="Swal.fire({icon:'info',title:'Sedang Dipinjam',text:'Koleksi digital ini sedang dipinjam oleh anggota lain. Silakan coba lagi nanti.',confirmButtonText:'Oke'})">
+                                                                    <i class="fas fa-book-reader me-1"></i>Sedang Dipinjam
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        </td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
                                         </table>
                                     </div>
                                 </div>
@@ -548,7 +565,7 @@
                         <?php endif; ?>
 
                         <?php if (!empty($catalog['Publisher'])): ?>
-                                <a href="<?= base_url('opac?search=' . urlencode($catalog['Publisher']) . '&search_by=Publisher') ?>"
+                            <a href="<?= base_url('opac?search=' . urlencode($catalog['Publisher']) . '&search_by=Publisher') ?>"
                                 class="btn btn-outline-success btn-sm">
                                 <i class="fas fa-building me-1"></i>
                                 Dari <?= esc($catalog['Publisher']) ?>
@@ -621,14 +638,14 @@
                         <i class="fas fa-file-pdf fa-4x text-primary mb-3"></i>
                         <h5>PDF Viewer</h5>
                         <iframe
-                            src="<?= base_url('katalog/view_decrypted/' . $ID) ?>"
+                            src="<?= base_url('opac/baca-digital/' . $catalog['ID']) ?>"
                             width="100%" height="500px" style="border: none;"></iframe>
                     </div>
 
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                  
+
                 </div>
             </div>
         </div>
@@ -638,6 +655,27 @@
 
 
 <script>
+    <?php if (session()->getFlashdata('digital_error')): ?>
+    document.addEventListener('DOMContentLoaded', function () {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Masa Peminjaman Berakhir',
+            text: <?= json_encode(session()->getFlashdata('digital_error')) ?>,
+            confirmButtonText: 'Oke',
+        });
+    });
+    <?php endif; ?>
+    <?php if (session()->getFlashdata('digital_info')): ?>
+    document.addEventListener('DOMContentLoaded', function () {
+        Swal.fire({
+            icon: 'info',
+            title: 'Sedang Dipinjam',
+            text: <?= json_encode(session()->getFlashdata('digital_info')) ?>,
+            confirmButtonText: 'Oke',
+        });
+    });
+    <?php endif; ?>
+
     // Data dari PHP yang sudah di-escape
     const catalogData = {
         id: <?= json_encode($catalog['ID']) ?>,

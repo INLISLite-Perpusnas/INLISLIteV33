@@ -101,21 +101,6 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
         // Ambil builder
         $query = $this->guestModel->getPengunjung($startDate, $endDate);
 
-        // Filter role user
-        if (user()->category == 'admin') {
-            // semua data
-        } elseif (user()->category == 'sa_prov' && user()->branch_id === null) {
-            $npp_provinsi_id = preg_replace('/\./', '', user()->npp_provinsi_id);
-            $query->where('b.NPP_Provinsi_id', $npp_provinsi_id);
-        } elseif (user()->category == 'sa_prov' && user()->branch_id !== null) {
-            $query->where('mg.Branch_id', branch_id());
-        } elseif (user()->category == 'sa_kabkot' && user()->branch_id === null) {
-            $npp_kabkota_id = preg_replace('/\./', '', user()->npp_kabkota_id);
-            $query->where('b.NPP_KabKota_id', $npp_kabkota_id);
-        } else {
-            $query->where('mg.Branch_id', branch_id());
-        }
-
         // Filter tambahan
         switch ($filterType) {
             case 'month':
@@ -289,21 +274,7 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
         // ambil builder
         $query = $this->guestModel->getPengunjung($startDate, $endDate, 20);
 
-         if (user()->category == 'admin') {
-        } elseif (user()->category == 'sa_prov' && user()->branch_id === null) {
-            $npp_provinsi_id = preg_replace('/\./', '', user()->npp_provinsi_id);
-            $builder->where('b.NPP_Provinsi_id', $npp_provinsi_id);
-        } elseif (user()->category == 'sa_prov' && user()->branch_id !== null) {
-            $builder->where('mg.Branch_id', branch_id());
-        } elseif (user()->category == 'sa_kabkot' && user()->branch_id === null) {
-            $npp_kabkota_id = preg_replace('/\./', '', user()->npp_kabkota_id);
-            $builder->where('b.NPP_KabKota_id', $npp_kabkota_id);
-        } elseif (user()->category == 'sa_kabkot' && user()->branch_id !== null) {
-            $builder->where('mg.Branch_id', branch_id());
-        } else {
-            $builder->where('mg.Branch_id', branch_id());
-        }
-
+      
         // filter tambahan sesuai tipe
         switch ($filterType) {
             case 'month':

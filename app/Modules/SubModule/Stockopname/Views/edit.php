@@ -133,7 +133,7 @@
                         <li class="breadcrumb-item">
                             <a href="<?= base_url('stockopname') ?>">Stock Opname</a>
                         </li>
-                        <li class="breadcrumb-item active" aria-current="page">
+                        <li class="breadcrumb-item" aria-current="page">
                             Edit Stock Opname
                         </li>
                     </ol>
@@ -231,7 +231,7 @@
                                            class="form-control <?= (validation_show_error('TglMulai')) ? 'is-invalid' : '' ?>" 
                                            id="TglMulai"
                                            name="TglMulai" 
-                                           value="<?= set_value('TglMulai', $stockopname->TglMulai) ?>" 
+                                           value="<?= set_value('TglMulai', $stockopname->TglMulai ? date('Y-m-d', strtotime($stockopname->TglMulai)) : '') ?>"
                                            required />
                                     <?= validation_show_error('TglMulai', '<div class="invalid-feedback">', '</div>') ?>
                                 </div>

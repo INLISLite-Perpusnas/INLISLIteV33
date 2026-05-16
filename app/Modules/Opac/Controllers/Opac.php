@@ -311,14 +311,33 @@ private function loadRegularCatalogscache()
 
         // Get digital books (DRM)
         $roweksemplar_drm = $EksemplarModel
-            ->select('collections.NomorBarcode, collections.CallNumber, collectionrules.Name as RuleName, locations.Name as LocationName, collectionstatus.Name as StatusName')
+            ->select('collections.ID as CollectionID, collections.NomorBarcode, collections.CallNumber, collections.Status_id, collectionrules.Name as RuleName, locations.Name as LocationName, collectionstatus.Name as StatusName')
             ->join('collectionrules', 'collectionrules.id = collections.Rule_id', 'left')
             ->join('locations', 'locations.id = collections.Location_id', 'left')
             ->join('collectionstatus', 'collectionstatus.id = collections.Status_id', 'left')
             ->where('collections.catalog_id', $id)
             ->where('collections.ISDRM', 1)
-
             ->findAll();
+
+        // Kumpulkan ID koleksi DRM yang sedang dipinjam oleh anggota yang login
+        $member_active_loan_collections = [];
+        try {
+            $nomor_anggota = user()->username;
+            $member        = $this->memberModel->where('MemberNo', $nomor_anggota)->first();
+            if ($member && !empty($roweksemplar_drm)) {
+                $collection_ids = array_column((array) $roweksemplar_drm, 'CollectionID');
+                $active_loans   = $this->db->table('collectionloanitems')
+                    ->whereIn('Collection_id', $collection_ids)
+                    ->where('member_id', $member->ID)
+                    ->where('LoanStatus', 'Loan')
+                    ->where('DueDate >=', date('Y-m-d H:i:s'))
+                    ->get()
+                    ->getResult();
+                $member_active_loan_collections = array_column($active_loans, 'Collection_id');
+            }
+        } catch (\Throwable $e) {
+            // User tidak login atau bukan anggota – abaikan
+        }
 
         $marc = $this->katalogRuasModel
             ->select('*')
@@ -327,12 +346,11 @@ private function loadRegularCatalogscache()
 
         $this->data['marc'] = $marc;
 
-
-
-        $this->data['title'] = 'Detail Katalog - ' . $catalog['Title'];
-        $this->data['catalog'] = $catalog;
-        $this->data['roweksemplar'] = $roweksemplar;
+        $this->data['title']       = 'Detail Katalog - ' . $catalog['Title'];
+        $this->data['catalog']     = $catalog;
+        $this->data['roweksemplar']     = $roweksemplar;
         $this->data['roweksemplar_drm'] = $roweksemplar_drm;
+        $this->data['member_active_loan_collections'] = $member_active_loan_collections;
 
         return view('Opac\Views\detail', $this->data);
     }
@@ -1627,5 +1645,197 @@ public function browse()
     {
         $subfields = $this->parseSubfields($value);
         return isset($subfields[$subfieldCode]) ? $subfields[$subfieldCode] : '';
+    }
+
+    public function bacaDigital($catalog_id)
+    {
+        helper('reference');
+
+        $file = $this->fileModel->where('Catalog_id', $catalog_id)->first();
+        if (!$file) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('File digital tidak ditemukan');
+        }
+
+        $nomor_anggota = user()->username;
+        $member        = $this->memberModel->where('MemberNo', $nomor_anggota)->first();
+        $member_id     = $member ? (int) $member->ID : 0;
+
+        if ($member_id > 0) {
+            $collection = $this->db->table('collections')
+                ->where('Catalog_id', $catalog_id)
+                ->where('ISDRM', 1)
+                ->get()
+                ->getRow();
+
+            if ($collection) {
+                $loanItem = $this->db->table('collectionloanitems')
+                    ->where('Collection_id', $collection->ID)
+                    ->where('member_id', $member_id)
+                    ->where('LoanStatus', 'Loan')
+                    ->get()
+                    ->getRow();
+
+                if ($loanItem) {
+                    if (strtotime($loanItem->DueDate) < time()) {
+                        $this->_autoReturnDigitalLoan($loanItem, $collection->ID);
+                        return redirect()
+                            ->to(base_url('opac/detail/' . $catalog_id))
+                            ->with('digital_error', 'Masa peminjaman digital telah berakhir. Koleksi dikembalikan otomatis. Silakan pinjam kembali.');
+                    }
+                    // Loan masih aktif – langsung izinkan baca
+                } else {
+                    // Tidak punya loan aktif – cek apakah koleksi masih tersedia
+                    if ((int) $collection->Status_id !== 1) {
+                        return redirect()
+                            ->to(base_url('opac/detail/' . $catalog_id))
+                            ->with('digital_info', 'Koleksi digital ini sedang dipinjam oleh anggota lain. Silakan coba lagi nanti.');
+                    }
+                    // Koleksi tersedia – catat peminjaman baru
+                    try {
+                        $this->_recordDigitalLoan((int) $catalog_id, $member_id);
+                    } catch (\Exception $e) {
+                        log_message('error', 'Digital loan recording error: ' . $e->getMessage());
+                    }
+                }
+            }
+        }
+
+        return redirect()->to(base_url('katalog/view_decrypted/' . encData($file->ID)));
+    }
+
+    private function _autoReturnDigitalLoan($loanItem, int $collection_id)
+    {
+        $now = date('Y-m-d H:i:s');
+        $ip  = $this->request->getIPAddress();
+
+        $this->db->transBegin();
+
+        $this->db->table('collectionloanitems')
+            ->where('ID', $loanItem->ID)
+            ->update([
+                'LoanStatus'     => 'Return',
+                'UpdateDate'     => $now,
+                'UpdateTerminal' => $ip,
+            ]);
+
+        $loan = $this->db->table('collectionloans')
+            ->where('ID', $loanItem->CollectionLoan_id)
+            ->get()
+            ->getRow();
+
+        if ($loan) {
+            $this->db->table('collectionloans')
+                ->where('ID', $loanItem->CollectionLoan_id)
+                ->update([
+                    'ReturnCount'    => (int) ($loan->ReturnCount ?? 0) + 1,
+                    'UpdateDate'     => $now,
+                    'UpdateTerminal' => $ip,
+                ]);
+        }
+
+        $this->db->table('collections')
+            ->where('ID', $collection_id)
+            ->update([
+                'Status_id'      => 1,
+                'UpdateDate'     => $now,
+                'UpdateTerminal' => $ip,
+            ]);
+
+        if ($this->db->transStatus() === false) {
+            $this->db->transRollback();
+        } else {
+            $this->db->transCommit();
+        }
+    }
+
+    private function _recordDigitalLoan(int $catalog_id, int $member_id)
+    {
+        $collection = $this->db->table('collections')
+            ->where('Catalog_id', $catalog_id)
+            ->where('ISDRM', 1)
+            ->get()
+            ->getRow();
+
+        if (!$collection) {
+            return;
+        }
+
+        $existing = $this->db->table('collectionloanitems')
+            ->where('Collection_id', $collection->ID)
+            ->where('member_id', $member_id)
+            ->where('LoanStatus', 'Loan')
+            ->get()
+            ->getRow();
+
+        if ($existing) {
+            return;
+        }
+
+        $member = $this->db->table('members as m')
+            ->select('m.ID, m.Branch_id, ja.MaxLoanDays')
+            ->join('jenis_anggota as ja', 'ja.ID = m.JenisAnggota_id', 'left')
+            ->where('m.ID', $member_id)
+            ->get()
+            ->getRow();
+
+        if (!$member) {
+            return;
+        }
+
+        $loanDays = (int) ($member->MaxLoanDays ?? 7);
+        $last_loan = get_ref_single('collectionloans', 'ID IS NOT NULL', 'data');
+        $lastNumber = $last_loan ? (int) substr($last_loan->ID, -5) : 0;
+        $loan_id = get_pad_number($lastNumber + 1, date('ymd'), 5);
+
+        $now       = date('Y-m-d H:i:s');
+        $dueDate   = date('Y-m-d H:i:s', strtotime("+{$loanDays} days"));
+        $createdBy = session()->get('logged_in') ?? 0;
+        $ip        = $this->request->getIPAddress();
+
+        $this->db->transBegin();
+
+        $this->db->table('collectionloans')->insert([
+            'ID'                => $loan_id,
+            'CollectionCount'   => 1,
+            'LateCount'         => 0,
+            'ExtendCount'       => 0,
+            'LoanCount'         => 1,
+            'ReturnCount'       => 0,
+            'Member_id'         => $member_id,
+            'LocationLibrary_id'=> $collection->Location_Library_id ?? null,
+            'Branch_id'         => $member->Branch_id,
+            'CreateBy'          => $createdBy,
+            'CreateDate'        => $now,
+            'CreateTerminal'    => $ip,
+        ]);
+
+        $this->db->table('collectionloanitems')->insert([
+            'CollectionLoan_id' => $loan_id,
+            'LoanDate'          => $now,
+            'DueDate'           => $dueDate,
+            'LoanStatus'        => 'Loan',
+            'Collection_id'     => $collection->ID,
+            'member_id'         => $member_id,
+            'CreateBy'          => $createdBy,
+            'CreateDate'        => $now,
+            'CreateTerminal'    => $ip,
+            'Branch_id'         => $member->Branch_id,
+        ]);
+
+        $this->db->table('collections')
+            ->where('ID', $collection->ID)
+            ->update([
+                'Status_id'      => 5,
+                'UpdateBy'       => $createdBy,
+                'UpdateDate'     => $now,
+                'UpdateTerminal' => $ip,
+            ]);
+
+        if ($this->db->transStatus() === false) {
+            $this->db->transRollback();
+            throw new \Exception('Transaksi gagal saat mencatat peminjaman digital');
+        }
+
+        $this->db->transCommit();
     }
 }
