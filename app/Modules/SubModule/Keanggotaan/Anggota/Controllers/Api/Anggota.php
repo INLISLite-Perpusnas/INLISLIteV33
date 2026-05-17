@@ -110,27 +110,23 @@ class Anggota extends \Base\Controllers\BaseResourceController
 									<div class="widget-heading">' . $row->FullName . '</div>
 									<div class="widget-subheading"><i class="fa fa-envelope"></i> ' . $row->Email . '</div>
 									<div class="widget-subheading"><i class="fa fa-user"></i> ' . $row->JenisAnggota . '</div>
-									<a href="#" width="100px" type="button" 
-										class="btn btn-secondary btn-sm mt-2 upload-data" 
-										data-toggle="modal" 
-										data-target="#modal_upload" 
+									<button type="button" 
+										class="btn btn-secondary btn-sm mt-2 btn-upload-foto" 
 										data-id="' . $row->ID . '" 
 										data-format=".pdf,.jpg,.png" 
 										data-format-title="Format (JPG|PNG). Max 1 Files @ 2MB" 
 										data-field="PhotoUrl" 
 										data-title="Upload Foto"
-									><i class="fa fa-upload"></i> Upload Foto</a>
+									><i class="fa fa-upload"></i> Upload Foto</button>
 
-									<a href="#" width="100px" type="button" 
-										class="btn btn-secondary btn-sm mt-2 upload-data" 
-										data-toggle="modal" 
-										data-target="#modal_camera" 
+									<button type="button" 
+										class="btn btn-secondary btn-sm mt-2 btn-ambil-foto" 
 										data-id="' . $row->ID . '" 
 										data-format=".pdf,.jpg,.png" 
 										data-format-title="Format (JPG|PNG). Max 1 Files @ 2MB" 
 										data-field="PhotoUrl" 
-										data-title="Upload Foto"
-									><i class="fa fa-camera"></i> Ambil Foto</a>
+										data-title="Ambil Foto"
+									><i class="fa fa-camera"></i> Ambil Foto</button>
 								</div>
 							</div>
 						</div>';

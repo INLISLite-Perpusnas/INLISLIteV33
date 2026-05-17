@@ -57,7 +57,7 @@
                 <h5 class="modal-title">
                     <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Ambil Gambar
                 </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -92,7 +92,7 @@
                 </div>
                 <div class="modal-footer">
 					<input type="hidden" name="capture_id" id="capture_id" value="">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                     <button type="submit" class="btn btn-primary" name="submit">Simpan</button>
                 </div>
             </form>
@@ -181,12 +181,8 @@
 
 		// window.addEventListener('load', startup, false);
 
-		$(document).on('show.bs.modal','#modal_camera', function (e) {
-			var this_ = e.relatedTarget;
-			var id = $(this_).attr('data-id');
-			$('#capture_id').val(id);
-			startup();
-		});
+		// Event handler removed - modal initialization is now handled in list.php
+		// This prevents duplicate initialization and event conflicts
 
 		$('#form_capture').submit(function(e) {
 			e.preventDefault()
@@ -204,17 +200,16 @@
 				.done(function(res) {
 					console.log(res)
 					if (res.status === 201) {
+						$('#modal_camera').modal('hide');
 						Swal.fire({
-							title: 'Success',
-							text: 'File berhasil disimpan',
+							title: 'Berhasil',
+							text: 'Foto berhasil disimpan',
 							icon: 'success',
 							showConfirmButton: false,
 							timer: 3000
-						})
-
-						setTimeout(function() {
-							window.location.href = "<?= base_url('anggota') ?>";
-						}, 2000)
+						}).then(function() {
+							if (typeof t !== 'undefined') t.ajax.reload(null, false);
+						});
 					} else {
 						$('#form_capture_message').html(res.messages.error)
 					}

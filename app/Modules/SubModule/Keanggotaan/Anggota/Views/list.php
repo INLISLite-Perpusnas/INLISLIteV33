@@ -505,6 +505,120 @@ $request = service('request');
             });
         });
     }
+
+    // Modal Upload Foto - Initialize on button click
+    $(document).on('click', '.btn-upload-foto', function(e) {
+        e.preventDefault();
+        var id = $(this).attr('data-id');
+        var field = $(this).attr('data-field');
+        var title = $(this).attr('data-title');
+        var format = $(this).attr('data-format');
+        var formatTitle = $(this).attr('data-format-title');
+        
+        $('#upload_id').val(id);
+        $('#upload_field').val(field);
+        $('#upload_title').val(title);
+        $('#upload_title_span').html(title);
+        $('#upload_data_format_title').html(formatTitle || 'Format (JPG|PNG). Max 1 Files @ 2MB');
+        
+        // Initialize dropzone
+        if (Dropzone.instances.length > 0) {
+            Dropzone.instances.forEach(dz => dz.destroy());
+        }
+        setDropzone('file_pendukung', 'anggota', '.png,.jpg,.jpeg', 1, 10);
+        
+        $('#modal_upload').modal('show');
+    });
+
+    // Modal Camera - Initialize on button click
+    $(document).on('click', '.btn-ambil-foto', function(e) {
+        e.preventDefault();
+        var id = $(this).attr('data-id');
+        $('#capture_id').val(id);
+        $('#modal_camera').modal('show');
+    });
+
+    // Handle modal upload hidden
+    $(document).on('hidden.bs.modal','#modal_upload', function (e) {
+        if (Dropzone.instances.length > 0) {
+            Dropzone.instances.forEach(dz => dz.destroy());
+        }
+        $('#form_upload_message').html('');
+    });
+
+    // Handle modal camera shown
+    $(document).on('shown.bs.modal','#modal_camera', function (e) {
+        // Startup camera when modal is shown
+        var width = 350;
+        var height = 0;
+        var streaming = false;
+        
+        var video = document.getElementById('video');
+        var canvas = document.getElementById('canvas');
+        var photo = document.getElementById('photo');
+        var camera_image = document.getElementById('camera_image');
+        var startbutton = document.getElementById('startbutton');
+
+        function startup() {
+            navigator.mediaDevices.getUserMedia({video: true, audio: false})
+            .then(function(stream) {
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(function(err) {
+                console.log("An error occurred: " + err);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Tidak dapat mengakses kamera: ' + err,
+                    icon: 'error'
+                });
+            });
+
+            video.addEventListener('canplay', function(ev){
+                if (!streaming) {
+                    height = video.videoHeight / (video.videoWidth/width);
+                
+                    if (isNaN(height)) {
+                        height = width / (4/3);
+                    }
+                
+                    video.setAttribute('width', width);
+                    video.setAttribute('height', height);
+                    canvas.setAttribute('width', width);
+                    canvas.setAttribute('height', height);
+                    streaming = true;
+                }
+            }, false);
+
+            startbutton.addEventListener('click', function(ev){
+                takepicture();
+                ev.preventDefault();
+            }, false);
+        }
+
+        function takepicture() {
+            var context = canvas.getContext('2d');
+            if (width && height) {
+                canvas.width = width;
+                canvas.height = height;
+                context.drawImage(video, 0, 0, width, height);
+                
+                var data = canvas.toDataURL('image/png');
+                photo.setAttribute('src', data);
+                camera_image.setAttribute('value', data);
+            }
+        }
+
+        startup();
+    });
+
+    // Handle modal camera hidden
+    $(document).on('hidden.bs.modal','#modal_camera', function (e) {
+        var video = document.getElementById('video');
+        if (video && video.srcObject) {
+            video.srcObject.getTracks().forEach(track => track.stop());
+        }
+    });
 </script>
 
 <?= $this->endSection('script'); ?>

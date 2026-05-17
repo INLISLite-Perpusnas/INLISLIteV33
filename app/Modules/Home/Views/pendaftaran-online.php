@@ -1,16 +1,9 @@
 <?= $this->extend('App\Views\layout\opac\layout'); ?>
 
-<?= $this->section('content') ?>
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pendaftaran Anggota</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
-  <style>
+<?= $this->section('style') ?>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+<style>
     :root {
       --primary-color: #2563eb;
       --secondary-color: #475569;
@@ -20,8 +13,6 @@
       --border-radius: 12px;
       --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     }
-
-
 
     .page-header {
       background: rgba(255, 255, 255, 0.95);
@@ -243,6 +234,7 @@
       padding: 1.5rem;
       text-align: center;
       box-shadow: var(--shadow);
+      margin-bottom: 2rem;
     }
 
     @media (max-width: 768px) {
@@ -265,33 +257,17 @@
     }
 
     @keyframes shake {
-
-      10%,
-      90% {
-        transform: translate3d(-1px, 0, 0);
-      }
-
-      20%,
-      80% {
-        transform: translate3d(2px, 0, 0);
-      }
-
-      30%,
-      50%,
-      70% {
-        transform: translate3d(-4px, 0, 0);
-      }
-
-      40%,
-      60% {
-        transform: translate3d(4px, 0, 0);
-      }
+      10%, 90% { transform: translate3d(-1px, 0, 0); }
+      20%, 80% { transform: translate3d(2px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+      40%, 60% { transform: translate3d(4px, 0, 0); }
     }
-  </style>
-</head>
+</style>
+<?= $this->endSection() ?>
 
-<body><br>
-  <div class="container">
+<?= $this->section('content') ?>
+
+  <div class="container" style="margin-top: 100px;">
     <!-- Header -->
     <div class="page-header">
       <h1><i class="fas fa-user-plus me-3"></i>Pendaftaran Anggota</h1>
@@ -586,15 +562,15 @@
     </div>
   </div>
 
-  <!-- Scripts -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/1000hz-bootstrap-validator/0.11.9/validator.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.7.3/sweetalert2.all.min.js"></script>
+<?= $this->endSection() ?>
 
-  <script>
+<?= $this->section('script') ?>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/1000hz-bootstrap-validator/0.11.9/validator.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.7.3/sweetalert2.all.min.js"></script>
+
+<script>
     // Initialize form
     $(document).ready(function() {
       // Initialize Select2
@@ -624,8 +600,8 @@
       });
     }
 
-    // Load initial data - replace with your actual base_url
-    const baseUrl = '<?php echo base_url(); ?>'; // Replace with actual base URL
+    // Load initial data
+    const baseUrl = '<?php echo base_url(); ?>';
     getData(`${baseUrl}/api/region/province`, `#Province`);
 
     $('#Province').change(function(e) {
@@ -642,11 +618,6 @@
       var code = $(this).val();
       getData(`${baseUrl}/api/region/sub_district/${code}`, `#SubDistrict`);
     });
-
-    // $('#SubDistrict').change(function(e) {
-    //     var name = $("#SubDistrict option:selected").text();
-    //     $(this).val(name);
-    // });
 
     getData(`${baseUrl}/api/region/province`, `#ProvinceNow`);
 
@@ -665,7 +636,7 @@
       getData(`${baseUrl}/api/region/sub_district/${code}`, `#SubDistrictNow`);
     });
 
-    // Copy address functionality - Original
+    // Copy address functionality
     $("#check_copy").change(function(e) {
       if (this.checked) {
         var Address = $('#Address').val();
@@ -675,14 +646,12 @@
         var SubDistrict = $('#SubDistrict').val();
 
         $('#AddressNow').val(Address);
-        // $('#ProvinceNow').val(Province);
         getData(`${baseUrl}/api/region/province`, `#ProvinceNow`, Province);
         getData(`${baseUrl}/api/region/city/${Province}`, `#CityNow`, City);
         getData(`${baseUrl}/api/region/district/${City}`, `#DistrictNow`, District);
         getData(`${baseUrl}/api/region/sub_district/${District}`, `#SubDistrictNow`, SubDistrict);
       } else {
         $('#AddressNow').val('');
-        // $('#ProvinceNow').val('');
         $('#ProvinceNow').empty();
         $('#CityNow').empty();
         $('#DistrictNow').empty();
@@ -690,7 +659,7 @@
       }
     });
 
-    // Check button - Original
+    // Check button
     $("#btnCheck").click(function() {
       var url = `${baseUrl}/api/member/check`;
       var data_post = 'email=' + $("#Email").val() + '&username=' + $("#IdentityNo").val();
@@ -704,7 +673,6 @@
           data: data_post,
         })
         .done(function(res) {
-
           if (res.error == false) {
             Swal.fire({
               title: 'Yeay',
@@ -720,7 +688,6 @@
             });
           } else {
             formError();
-
             Swal.fire({
               title: 'Oups',
               html: res.message,
@@ -734,7 +701,6 @@
           }
         })
         .fail(function(res) {
-
           Swal.fire({
             title: 'Oups',
             text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
@@ -750,7 +716,7 @@
       return false;
     });
 
-    // Form validation - Original with Bootstrap validator
+    // Form validation with Bootstrap validator
     $("#frm_register").validator().on("submit", function(event) {
       if (event.isDefaultPrevented()) {
         formError();
@@ -761,7 +727,6 @@
     });
 
     function submitForm() {
-      // Initiate Variables With Form Content
       var form = $("#frm_register");
       var url = `${baseUrl}/api/member/register`;
       var data_post = form.serialize();
@@ -775,10 +740,8 @@
           data: data_post,
         })
         .done(function(res) {
-
           if (res.error == false) {
             updateProgress(100);
-
             Swal.fire({
               title: 'Berhasil',
               html: 'Link verifikasi anggota berhasil terkirim.<br>Silakan cek email Anda segera!',
@@ -790,7 +753,6 @@
             });
           } else {
             formError();
-
             Swal.fire({
               title: 'Gagal',
               html: res.message,
@@ -804,7 +766,6 @@
           }
         })
         .fail(function(res) {
-
           Swal.fire({
             title: 'Error',
             html: 'Link verifikasi anggota gagal terkirim.<br>Coba beberapa saat lagi atau hubungi Admin',
@@ -866,10 +827,7 @@
     });
 
     $('input[type=tel]').on('input', function() {
-      this.value = this.value.replace(/[^0-9.]/g, ''); 
+      this.value = this.value.replace(/[^0-9.]/g, '');
     });
-    
-  </script>
-</body>
-
+</script>
 <?= $this->endSection() ?>
