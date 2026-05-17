@@ -76,7 +76,7 @@ ServerSignature Off
 	Header set X-Frame-Options "SAMEORIGIN"
 	Header set X-XSS-Protection "1; mode=block"
 	Header set X-Content-Type-Options "nosniff"
-	Header set Content-Security-Policy "default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
+	Header set Content-Security-Policy "default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdn.tiny.cloud; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https: http:; font-src 'self' data: https:; connect-src 'self' https: blob:; frame-src 'self' https:; worker-src 'self' blob:;"
 	# Prevent browsers from MIME-sniffing the content-type
 	Header set X-Content-Type-Options "nosniff"
 	# Don't allow pages to be embedded in frames

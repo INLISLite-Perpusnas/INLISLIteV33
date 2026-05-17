@@ -260,34 +260,7 @@
                 </div>
 
                 <div class="glass-card">
-                    <form method="GET" action="<?= base_url('opac') ?>" id="recommendationForm" class="mb-4 pb-4 border-bottom">
-                        <?= csrf_field() ?>
-                        <div class="row align-items-center g-3">
-                            <div class="col-md-3">
-                                <h6 class="mb-0 text-dark fw-bold">
-                                    <i class="fas fa-magic text-warning me-2"></i>Rekomendasi
-                                </h6>
-                            </div>
-                            <div class="col-md-6">
-                                <input type="text" class="form-control custom-input" name="member_no"
-                                    placeholder="Nomor Anggota..."
-                                    value="<?= esc($member_no ?? '') ?>">
-                            </div>
-                            <div class="col-md-3">
-                                <button type="submit" class="btn btn-warning w-100 fw-bold" style="border-radius: 10px;">
-                                    Cari
-                                </button>
-                            </div>
-                        </div>
-                        <?php if (!empty($member_no)): ?>
-                            <div class="mt-3 text-center">
-                                <a href="<?= base_url('opac') ?>" class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                                    <i class="fas fa-times me-1"></i>Reset Rekomendasi
-                                </a>
-                            </div>
-                        <?php endif; ?>
-                    </form>
-
+                    
                     <form method="GET" action="<?= base_url('opac') ?>">
                         <?= csrf_field() ?>
                         <div class="row g-3 mb-3">
