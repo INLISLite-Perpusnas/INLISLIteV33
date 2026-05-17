@@ -31,15 +31,16 @@ $slug = $request->getGet('slug') ?? 'katalog_add';
                 <div class="page-title-icon">
                     <i class="pe-7s-note icon-gradient bg-strong-bliss"></i>
                 </div>
-                <div>Tambah Katalog
+                <div>Penomoran Koleksi
                     <div class="page-title-subheading">Mohon lengkapi data pada form berikut.</div>
                 </div>
             </div>
             <div class="page-title-actions">
                 <nav class="" aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
-                        <li class="breadcrumb-item"><a href="<?= base_url('katalog') ?>">Pengaturan Akuisisi</a></li>
+                        <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i></a></li>
+                         <li class="breadcrumb-item">Administrasi</li>
+                        <li class="breadcrumb-item">Pengaturan Akuisisi</li>
                         <li class="breadcrumb-item" aria-current="page">Penomoran Koleksi</li>
                     </ol>
                 </nav>

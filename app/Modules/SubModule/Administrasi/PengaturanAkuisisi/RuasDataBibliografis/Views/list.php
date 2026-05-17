@@ -63,10 +63,33 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->section('page'); ?>
 <div class="container-fluid mt-4">
+    	<div class="app-page-title">
+		<div class="page-title-wrapper">
+			<div class="page-title-heading">
+				<div class="page-title-icon">
+					<i class="pe-7s-server icon-gradient bg-strong-bliss"></i>
+				</div>
+				<div>Ruas Data Bibliografis
+					<div class="page-title-subheading">Kelola ruas data bibliografis untuk setiap jenis bahan</div>
+				</div>
+			</div>
+			<div class="page-title-actions">
+				<nav class="" aria-label="breadcrumb">
+					<ol class="breadcrumb">
+						<li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i></a></li>
+						<li class="breadcrumb-item" aria-current="page">Administrasi</li>
+                        <li class="breadcrumb-item" aria-current="page">Pengaturan Akuisisi</li>
+						<li class="breadcrumb-item" aria-current="page">Ruas Data Bibliografis</li>
+					</ol>
+				</nav>
+			</div>
+		</div>
+	</div>
+
     <div class="row">
         <div class="col-12">
             <!-- Header Section -->
-            <div class="card shadow-sm ">
+            <!-- <div class="card shadow-sm ">
                 <div class="card-header bg-primary text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -86,7 +109,7 @@ $slug = $request->getGet('slug') ?? '';
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
             <!-- Filter Section -->
             <div class="filter-section">
