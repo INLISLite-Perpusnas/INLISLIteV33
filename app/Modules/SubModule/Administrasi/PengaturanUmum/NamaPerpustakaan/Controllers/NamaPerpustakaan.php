@@ -78,7 +78,7 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
     if (!$keyword || strlen(trim($keyword)) < 3) {
         return $this->failValidationErrors('Keyword minimal 3 karakter');
     }
-    $url = env('FLASK_API_BASEURL') . '/perpustakaan?q=' . urlencode($keyword);
+    $url = env('FLASK_API_BASEURL') . '/api/perpustakaan?q=' . urlencode($keyword);
 
 
     $apiKey = env('API_KEY');
@@ -135,6 +135,96 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
         'message' => 'Data berhasil diambil'
     ]);
 }
+
+	public function daftarkanInlisLite()
+	{
+		$npp          = $this->settingModel->where('Name', 'NPPPerpustakaan')->first()->Value ?? '';
+		$nama         = $this->settingModel->where('Name', 'NamaPerpustakaan')->first()->Value ?? '';
+		$alamat       = $this->settingModel->where('Name', 'NamaLokasiPerpustakaan')->first()->Value ?? '';
+		$email        = $this->settingModel->where('Name', 'EmailPerpustakaan')->first()->Value ?? '';
+		$jenis        = $this->settingModel->where('Name', 'JenisPerpustakaan')->first()->Value ?? '';
+		$phone        = $this->settingModel->where('Name', 'Phone')->first()->Value ?? '';
+		$provinsi_id  = $this->settingModel->where('Name', 'ProvinsiID')->first()->Value ?? '';
+		$kabkota_id   = $this->settingModel->where('Name', 'KabKotaID')->first()->Value ?? '';
+		$kecamatan_id = $this->settingModel->where('Name', 'KecamatanID')->first()->Value ?? '';
+		$kelurahan_id = $this->settingModel->where('Name', 'KelurahanID')->first()->Value ?? '';
+
+		// Override with request body if provided (from form fields)
+		$body = $this->request->getJSON(true) ?? [];
+		if (!empty($body)) {
+			$npp          = $body['npp']          ?? $npp;
+			$nama         = $body['nama']         ?? $nama;
+			$alamat       = $body['alamat']       ?? $alamat;
+			$email        = $body['email']        ?? $email;
+			$jenis        = $body['jenis']        ?? $jenis;
+			$phone        = $body['phone']        ?? $phone;
+			$provinsi_id  = $body['provinsi_id']  ?? $provinsi_id;
+			$kabkota_id   = $body['kabkota_id']   ?? $kabkota_id;
+			$kecamatan_id = $body['kecamatan_id'] ?? $kecamatan_id;
+			$kelurahan_id = $body['kelurahan_id'] ?? $kelurahan_id;
+		}
+
+		$flaskUrl = env('FLASK_API_BASEURL') . '/api/pengguna-inlislite';
+		$apiKey   = env('API_KEY');
+
+		if (!$apiKey) {
+			return $this->respond(['status' => 'error', 'message' => 'Konfigurasi API_KEY tidak ditemukan.'], 500);
+		}
+
+		$payload = json_encode([
+			'npp'          => $npp,
+			'nama'         => $nama,
+			'alamat'       => $alamat,
+			'email'        => $email,
+			'jenis'        => $jenis,
+			'phone'        => $phone,
+			'prov_id'      => $provinsi_id,
+			'kabkota_id'   => $kabkota_id,
+			'kecamatan_id' => $kecamatan_id,
+			'kelurahan_id' => $kelurahan_id,
+		]);
+
+		$ch = curl_init();
+		curl_setopt_array($ch, [
+			CURLOPT_URL            => $flaskUrl,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_POST           => true,
+			CURLOPT_POSTFIELDS     => $payload,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_MAXREDIRS      => 5,
+			CURLOPT_CONNECTTIMEOUT => 10,
+			CURLOPT_TIMEOUT        => 30,
+			CURLOPT_HTTPHEADER     => [
+				'Content-Type: application/json',
+				'x-api-key: ' . $apiKey,
+			],
+		]);
+
+		$response = curl_exec($ch);
+		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		$errNo    = curl_errno($ch);
+		$errMsg   = curl_error($ch);
+		curl_close($ch);
+
+		if ($errNo) {
+			log_message('error', "daftarkanInlisLite cURL Error [{$errNo}]: {$errMsg}");
+			return $this->respond(['status' => 'error', 'message' => 'Gagal terhubung ke API eksternal.'], 500);
+		}
+
+		$data = json_decode($response, true);
+
+		if ($httpCode >= 200 && $httpCode < 300) {
+			return $this->respond(['status' => 'success', 'message' => 'Pendaftaran InlisLite berhasil.', 'data' => $data]);
+		}
+
+		log_message('error', "daftarkanInlisLite HTTP {$httpCode}: {$response}");
+		return $this->respond([
+			'status'   => 'error',
+			'message'  => $data['error'] ?? $data['message'] ?? 'Pendaftaran InlisLite gagal.',
+			'http_code' => $httpCode,
+			'data'     => $data ?? $response,
+		], 200);
+	}
 
 	/**
 	 * Update data perpustakaan dengan data dari pencarian

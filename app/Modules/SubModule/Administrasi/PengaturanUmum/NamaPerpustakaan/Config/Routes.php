@@ -9,7 +9,8 @@ $routes->group('master-nama-perpustakaan', ['namespace' => 'NamaPerpustakaan\Con
     $subroutes->add('index', 'NamaPerpustakaan::index'); 
     $subroutes->add('edit', 'NamaPerpustakaan::edit'); 
     $subroutes->add('update', 'NamaPerpustakaan::update'); 
-    $subroutes->add('searchperpustakaan', 'NamaPerpustakaan::searchPerpustakaan'); 
+    $subroutes->add('searchperpustakaan', 'NamaPerpustakaan::searchPerpustakaan');
+    $subroutes->post('daftarkan-inlislite', 'NamaPerpustakaan::daftarkanInlisLite');
     $subroutes->add('logo-upload', 'NamaPerpustakaan::uploadLogo');
     $subroutes->add('logo-current', 'NamaPerpustakaan::getCurrentLogo');
     $subroutes->add('logo-delete', 'NamaPerpustakaan::deleteLogo');

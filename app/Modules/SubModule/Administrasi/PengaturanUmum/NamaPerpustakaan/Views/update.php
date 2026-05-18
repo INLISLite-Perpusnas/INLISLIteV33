@@ -169,10 +169,6 @@ $slug = $request->getGet('slug') ?? '';
 					<form id="frm_create" method="post" action="<?= base_url('master-nama-perpustakaan/update') ?>">
 						<!-- Hidden fields for search data -->
 						<input type="hidden" id="branch_id" name="branch_id" value="<?= set_value('branch_id', $Branch_id) ?>">
-						<input type="hidden" id="provinsi_id" name="provinsi_id" value="<?= set_value('provinsi_id', $provinsi_id ?? '') ?>">
-						<input type="hidden" id="kabkota_id" name="kabkota_id" value="<?= set_value('kabkota_id', $kabkota_id ?? '') ?>">
-						<input type="hidden" id="kecamatan_id" name="kecamatan_id" value="<?= set_value('kecamatan_id', $kecamatan_id ?? '') ?>">
-						<input type="hidden" id="kelurahan_id" name="kelurahan_id" value="<?= set_value('kelurahan_id', $kelurahan_id ?? '') ?>">
 
 						<div class="form-row">
 							<div class="col-md-6">
@@ -203,6 +199,43 @@ $slug = $request->getGet('slug') ?? '';
 								</div>
 							</div>
 						</div>
+						<div class="form-row">
+							<div class="col-md-6">
+								<div class="position-relative form-group">
+									<label for="provinsi_id">Provinsi</label>
+									<select class="form-control" name="provinsi_id" id="provinsi_id">
+										<option value="">-- Pilih Provinsi --</option>
+									</select>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="position-relative form-group">
+									<label for="kabkota_id">Kabupaten / Kota</label>
+									<select class="form-control" name="kabkota_id" id="kabkota_id">
+										<option value="">-- Pilih Kab/Kota --</option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="form-row">
+							<div class="col-md-6">
+								<div class="position-relative form-group">
+									<label for="kecamatan_id">Kecamatan</label>
+									<select class="form-control" name="kecamatan_id" id="kecamatan_id">
+										<option value="">-- Pilih Kecamatan --</option>
+									</select>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="position-relative form-group">
+									<label for="kelurahan_id">Kelurahan / Desa</label>
+									<select class="form-control" name="kelurahan_id" id="kelurahan_id">
+										<option value="">-- Pilih Kelurahan --</option>
+									</select>
+								</div>
+							</div>
+						</div>
+
 						<div class="form-row">
 							<div class="col-md-6">
 								<div class="position-relative form-group">
@@ -311,6 +344,9 @@ $slug = $request->getGet('slug') ?? '';
 
 						<div class="form-group">
 							<button type="submit" class="btn btn-primary" name="submit">Simpan</button>
+							<button type="button" class="btn btn-success ml-2" id="btn_daftarkan_inlislite">
+								<i class="fa fa-paper-plane"></i> Daftarkan InlisLite
+							</button>
 						</div>
 					</form>
 				</div>
@@ -554,11 +590,23 @@ $slug = $request->getGet('slug') ?? '';
 			document.getElementById('jenis_perpustakaan').value = selectedData.jenis || '';
 			document.getElementById('nama_lokasi_perpustakaan').value = selectedData.alamat || '';
 			document.getElementById('email_perpustakaan').value = selectedData.email || '';
-			document.getElementById('branch_id').value = selectedData.id || '';
-			document.getElementById('provinsi_id').value = selectedData.provinsi_id || '';
-			document.getElementById('kabkota_id').value = selectedData.kabkota_id || '';
-			document.getElementById('kecamatan_id').value = selectedData.kecamatan_id || '';
-			document.getElementById('kelurahan_id').value = selectedData.kelurahan_id || '';
+
+			// Reload region cascade with data from search result
+			savedProvinsiCode  = selectedData.provinsi_id  || '';
+			savedKabkotaCode   = selectedData.kabkota_id   || '';
+			savedKecamatanCode = selectedData.kecamatan_id || '';
+			savedKelurahanCode = selectedData.kelurahan_id || '';
+			loadProvinces(function() {
+				if (savedProvinsiCode) {
+					loadCities(savedProvinsiCode, function() {
+						if (savedKabkotaCode) {
+							loadDistricts(savedKabkotaCode, function() {
+								if (savedKecamatanCode) loadSubDistricts(savedKecamatanCode);
+							});
+						}
+					});
+				}
+			});
 
 			// Hide preview
 			selectedDataPreview.style.display = 'none';
@@ -611,4 +659,173 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->include('NamaPerpustakaan\Views\upload_modal'); ?>
 <?= $this->include('NamaPerpustakaan\Views\upload_modal_kop'); ?>
+
+<script>
+// Region cascade dropdown logic
+var savedProvinsiCode   = '<?= esc($provinsi_id ?? '') ?>';
+var savedKabkotaCode    = '<?= esc($kabkota_id ?? '') ?>';
+var savedKecamatanCode  = '<?= esc($kecamatan_id ?? '') ?>';
+var savedKelurahanCode  = '<?= esc($kelurahan_id ?? '') ?>';
+
+function populateSelect(selectEl, items, savedCode) {
+    items.forEach(function(item) {
+        var opt = document.createElement('option');
+        opt.value = item.code;
+        opt.dataset.npp = item.npp;
+        opt.textContent = item.name;
+        if (item.code == savedCode) opt.selected = true;
+        selectEl.appendChild(opt);
+    });
+}
+
+function getSelectedNpp(selectId) {
+    var sel = document.getElementById(selectId);
+    if (!sel || !sel.value) return '';
+    var opt = sel.options[sel.selectedIndex];
+    return opt ? (opt.dataset.npp || '') : '';
+}
+
+function loadProvinces(callback) {
+    fetch('<?= base_url('api/region/province') ?>')
+        .then(function(r) { return r.json(); })
+        .then(function(resp) {
+            var sel = document.getElementById('provinsi_id');
+            sel.innerHTML = '<option value="">-- Pilih Provinsi --</option>';
+            populateSelect(sel, resp.data || resp, savedProvinsiCode);
+            if (typeof callback === 'function') callback();
+        });
+}
+
+function loadCities(provinsiCode, callback) {
+    var sel = document.getElementById('kabkota_id');
+    sel.innerHTML = '<option value="">-- Pilih Kab/Kota --</option>';
+    if (!provinsiCode) return;
+    fetch('<?= base_url('api/region/city/') ?>' + provinsiCode)
+        .then(function(r) { return r.json(); })
+        .then(function(resp) {
+            populateSelect(sel, resp.data || resp, savedKabkotaCode);
+            if (typeof callback === 'function') callback();
+        });
+}
+
+function loadDistricts(kabkotaCode, callback) {
+    var sel = document.getElementById('kecamatan_id');
+    sel.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
+    if (!kabkotaCode) return;
+    fetch('<?= base_url('api/region/district/') ?>' + kabkotaCode)
+        .then(function(r) { return r.json(); })
+        .then(function(resp) {
+            populateSelect(sel, resp.data || resp, savedKecamatanCode);
+            if (typeof callback === 'function') callback();
+        });
+}
+
+function loadSubDistricts(kecamatanCode, callback) {
+    var sel = document.getElementById('kelurahan_id');
+    sel.innerHTML = '<option value="">-- Pilih Kelurahan --</option>';
+    if (!kecamatanCode) return;
+    fetch('<?= base_url('api/region/sub_district/') ?>' + kecamatanCode)
+        .then(function(r) { return r.json(); })
+        .then(function(resp) {
+            populateSelect(sel, resp.data || resp, savedKelurahanCode);
+            if (typeof callback === 'function') callback();
+        });
+}
+
+// Cascade on manual change
+document.getElementById('provinsi_id').addEventListener('change', function() {
+    savedKabkotaCode   = '';
+    savedKecamatanCode = '';
+    savedKelurahanCode = '';
+    document.getElementById('kabkota_id').innerHTML   = '<option value="">-- Pilih Kab/Kota --</option>';
+    document.getElementById('kecamatan_id').innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
+    document.getElementById('kelurahan_id').innerHTML = '<option value="">-- Pilih Kelurahan --</option>';
+    loadCities(this.value);
+});
+
+document.getElementById('kabkota_id').addEventListener('change', function() {
+    savedKecamatanCode = '';
+    savedKelurahanCode = '';
+    document.getElementById('kecamatan_id').innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
+    document.getElementById('kelurahan_id').innerHTML = '<option value="">-- Pilih Kelurahan --</option>';
+    loadDistricts(this.value);
+});
+
+document.getElementById('kecamatan_id').addEventListener('change', function() {
+    savedKelurahanCode = '';
+    document.getElementById('kelurahan_id').innerHTML = '<option value="">-- Pilih Kelurahan --</option>';
+    loadSubDistricts(this.value);
+});
+
+// Pre-load on page ready with saved values cascading
+loadProvinces(function() {
+    if (savedProvinsiCode) {
+        loadCities(savedProvinsiCode, function() {
+            if (savedKabkotaCode) {
+                loadDistricts(savedKabkotaCode, function() {
+                    if (savedKecamatanCode) {
+                        loadSubDistricts(savedKecamatanCode);
+                    }
+                });
+            }
+        });
+    }
+});
+
+// Daftarkan InlisLite button
+document.getElementById('btn_daftarkan_inlislite').addEventListener('click', function() {
+    Swal.fire({
+        icon: 'question',
+        title: 'Daftarkan InlisLite?',
+        html: 'Data perpustakaan yang telah disimpan akan dikirimkan untuk pendaftaran InlisLite.<br>Pastikan data sudah lengkap dan benar.',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Daftarkan',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d'
+    }).then(function(result) {
+        if (!result.isConfirmed) return;
+
+        var btn = document.getElementById('btn_daftarkan_inlislite');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Mendaftarkan...';
+
+        fetch('<?= base_url('master-nama-perpustakaan/daftarkan-inlislite') ?>', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                npp:          document.getElementById('npp_perpustakaan').value,
+                nama:         document.getElementById('nama_perpustakaan').value,
+                alamat:       document.getElementById('nama_lokasi_perpustakaan').value,
+                email:        document.getElementById('email_perpustakaan').value,
+                jenis:        document.getElementById('jenis_perpustakaan').value,
+                phone:        document.getElementById('phone').value,
+                provinsi_id:  getSelectedNpp('provinsi_id'),
+                kabkota_id:   getSelectedNpp('kabkota_id'),
+                kecamatan_id: getSelectedNpp('kecamatan_id'),
+                kelurahan_id: getSelectedNpp('kelurahan_id')
+            })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa fa-paper-plane"></i> Daftarkan InlisLite';
+            if (data.status === 'success') {
+                Swal.fire({ icon: 'success', title: 'Berhasil!', text: data.message || 'Pendaftaran InlisLite berhasil.' });
+            } else {
+                Swal.fire({ icon: 'error', title: 'Gagal!', text: data.message || 'Pendaftaran InlisLite gagal.' });
+            }
+        })
+        .catch(function(err) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa fa-paper-plane"></i> Daftarkan InlisLite';
+            Swal.fire({ icon: 'error', title: 'Kesalahan Koneksi', text: 'Tidak dapat terhubung ke server.' });
+        });
+    });
+});
+</script>
+
 <?= $this->endSection('script') ?>
