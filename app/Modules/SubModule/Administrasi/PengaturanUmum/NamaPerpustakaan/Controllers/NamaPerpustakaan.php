@@ -164,6 +164,13 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 			$kelurahan_id = $body['kelurahan_id'] ?? $kelurahan_id;
 		}
 
+		// Ensure region IDs are integers or null (JS sends integer row IDs from t_region)
+		$toIntOrNull = fn($v) => ($v === null || $v === '' || $v === 'null') ? null : (int)$v;
+		$provinsi_id  = $toIntOrNull($provinsi_id);
+		$kabkota_id   = $toIntOrNull($kabkota_id);
+		$kecamatan_id = $toIntOrNull($kecamatan_id);
+		$kelurahan_id = $toIntOrNull($kelurahan_id);
+
 		$flaskUrl = env('FLASK_API_BASEURL') . '/api/pengguna-inlislite';
 		$apiKey   = env('API_KEY');
 

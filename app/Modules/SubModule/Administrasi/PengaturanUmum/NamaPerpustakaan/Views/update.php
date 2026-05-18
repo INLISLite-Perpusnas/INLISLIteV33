@@ -667,15 +667,28 @@ var savedKabkotaCode    = '<?= esc($kabkota_id ?? '') ?>';
 var savedKecamatanCode  = '<?= esc($kecamatan_id ?? '') ?>';
 var savedKelurahanCode  = '<?= esc($kelurahan_id ?? '') ?>';
 
+function stripDots(val) {
+    return val ? String(val).replace(/\./g, '') : '';
+}
+
 function populateSelect(selectEl, items, savedCode) {
     items.forEach(function(item) {
         var opt = document.createElement('option');
-        opt.value = item.code;
-        opt.dataset.npp = item.npp;
+        opt.value = item.code;                              // dotted code, used for cascade API calls
+        opt.dataset.stripped = stripDots(item.code);        // dots-removed code, sent to Flask
         opt.textContent = item.name;
-        if (item.code == savedCode) opt.selected = true;
+        if (item.code == savedCode || stripDots(item.code) === stripDots(savedCode)) {
+            opt.selected = true;
+        }
         selectEl.appendChild(opt);
     });
+}
+
+function getStrippedCode(selectId) {
+    var sel = document.getElementById(selectId);
+    if (!sel || !sel.value) return null;
+    var opt = sel.options[sel.selectedIndex];
+    return (opt && opt.dataset.stripped) ? opt.dataset.stripped : null;
 }
 
 function getSelectedNpp(selectId) {
@@ -803,10 +816,10 @@ document.getElementById('btn_daftarkan_inlislite').addEventListener('click', fun
                 email:        document.getElementById('email_perpustakaan').value,
                 jenis:        document.getElementById('jenis_perpustakaan').value,
                 phone:        document.getElementById('phone').value,
-                provinsi_id:  getSelectedNpp('provinsi_id'),
-                kabkota_id:   getSelectedNpp('kabkota_id'),
-                kecamatan_id: getSelectedNpp('kecamatan_id'),
-                kelurahan_id: getSelectedNpp('kelurahan_id')
+                provinsi_id:  getStrippedCode('provinsi_id'),
+                kabkota_id:   getStrippedCode('kabkota_id'),
+                kecamatan_id: getStrippedCode('kecamatan_id'),
+                kelurahan_id: getStrippedCode('kelurahan_id')
             })
         })
         .then(function(r) { return r.json(); })
