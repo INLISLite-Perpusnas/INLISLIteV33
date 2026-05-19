@@ -110,34 +110,7 @@ private function loadRegularCatalogs()
     if ($search) {
         $rawSearch = $this->request->getVar('search');
         $searchBy  = sanitizeSearch($this->request->getVar('search_by') ?? 'Title');
-        $builder->groupStart();
-        switch ($searchBy) {
-            case 'Title':
-                $builder->like('Title', $search);
-                break;
-            case 'Author':
-                $authors = array_filter(array_map('trim', preg_split('/[;,]+/', $rawSearch)));
-                foreach ($authors as $author) {
-                    $builder->orLike('Author', sanitizeSearch($author));
-                }
-                break;
-            case 'Subject':
-                $builder->like('Subject', $search);
-                break;
-            case 'ISBN':
-                $builder->like('ISBN', $search);
-                break;
-            case 'Publisher':
-                $builder->like('Publisher', $search);
-                break;
-            default:
-                $builder->orLike('Title', $search)
-                        ->orLike('Author', $rawSearch)
-                        ->orLike('Subject', $search)
-                        ->orLike('ISBN', $search)
-                        ->orLike('Publisher', $search);
-        }
-        $builder->groupEnd();
+        $this->applyFulltextSearch($builder, $search, $searchBy, $rawSearch);
     }
 
     $additionalFilters = ['Publisher', 'Author', 'PublishLocation', 'Subject', 'PublishYear'];
@@ -158,7 +131,6 @@ private function loadRegularCatalogs()
     $catalogs = $builder->paginate($perPage, 'default', $currentPage);
     $pager    = $this->katalogModel->pager;
 
-    // ✅ Simpan pager sebagai OBJEK, bukan HTML string
     $this->data['pager']         = $pager;
     $this->data['catalogs']      = $catalogs;
     $this->data['total_records'] = $pager->getTotal();
@@ -204,34 +176,7 @@ private function loadRegularCatalogscache()
         if ($search) {
             $rawSearch = $this->request->getVar('search');
             $searchBy  = sanitizeSearch($this->request->getVar('search_by') ?? 'Title');
-            $builder->groupStart();
-            switch ($searchBy) {
-                case 'Title':
-                    $builder->like('Title', $search);
-                    break;
-                case 'Author':
-                    $authors = array_filter(array_map('trim', preg_split('/[;,]+/', $rawSearch)));
-                    foreach ($authors as $author) {
-                        $builder->orLike('Author', sanitizeSearch($author));
-                    }
-                    break;
-                case 'Subject':
-                    $builder->like('Subject', $search);
-                    break;
-                case 'ISBN':
-                    $builder->like('ISBN', $search);
-                    break;
-                case 'Publisher':
-                    $builder->like('Publisher', $search);
-                    break;
-                default:
-                    $builder->orLike('Title', $search)
-                            ->orLike('Author', $rawSearch)
-                            ->orLike('Subject', $search)
-                            ->orLike('ISBN', $search)
-                            ->orLike('Publisher', $search);
-            }
-            $builder->groupEnd();
+            $this->applyFulltextSearch($builder, $search, $searchBy, $rawSearch);
         }
 
         $additionalFilters = ['Publisher', 'Author', 'PublishLocation', 'Subject', 'PublishYear'];
@@ -371,22 +316,33 @@ private function loadRegularCatalogscache()
             'language' => $this->request->getVar('language')
         ];
 
-        $results = [];
+        $results     = [];
+        $total       = 0;
+        $perPage     = 12;
+        $currentPage = $this->request->getVar('page') ?? 1;
 
         if ($this->request->getMethod() === 'post' || $this->request->getVar('submit')) {
             $builder = $this->katalogModel->select('catalogs.*');
 
             if ($searchData['title']) {
-                $builder->like('Title', $searchData['title']);
+                $term = $this->toFtTerm($searchData['title']);
+                $term ? $builder->where("MATCH(Title) AGAINST ('{$term}' IN BOOLEAN MODE)", null, false)
+                      : $builder->like('Title', $searchData['title']);
             }
             if ($searchData['author']) {
-                $builder->like('Author', $searchData['author']);
+                $term = $this->toFtTerm($searchData['author']);
+                $term ? $builder->where("MATCH(Author) AGAINST ('{$term}' IN BOOLEAN MODE)", null, false)
+                      : $builder->like('Author', $searchData['author']);
             }
             if ($searchData['subject']) {
-                $builder->like('Subject', $searchData['subject']);
+                $term = $this->toFtTerm($searchData['subject']);
+                $term ? $builder->where("MATCH(Subject) AGAINST ('{$term}' IN BOOLEAN MODE)", null, false)
+                      : $builder->like('Subject', $searchData['subject']);
             }
             if ($searchData['publisher']) {
-                $builder->like('Publisher', $searchData['publisher']);
+                $term = $this->toFtTerm($searchData['publisher']);
+                $term ? $builder->where("MATCH(Publisher) AGAINST ('{$term}' IN BOOLEAN MODE)", null, false)
+                      : $builder->like('Publisher', $searchData['publisher']);
             }
             if ($searchData['isbn']) {
                 $builder->like('ISBN', $searchData['isbn']);
@@ -401,12 +357,14 @@ private function loadRegularCatalogscache()
                 $builder->like('Languages', $searchData['language']);
             }
 
-            $results = $builder->findAll();
+            $results = $builder->paginate($perPage, 'default', $currentPage);
+            $total   = $this->katalogModel->pager->getTotal();
         }
 
+        $this->data['pager']       = $this->katalogModel->pager ?? null;
         $this->data['search_data'] = $searchData;
-        $this->data['results'] = $results;
-        $this->data['total_found'] = count($results);
+        $this->data['results']     = $results;
+        $this->data['total_found'] = $total;
 
         return view('Opac\Views\search', $this->data);
     }
@@ -1645,6 +1603,88 @@ public function browse()
     {
         $subfields = $this->parseSubfields($value);
         return isset($subfields[$subfieldCode]) ? $subfields[$subfieldCode] : '';
+    }
+
+    /**
+     * Apply FULLTEXT search to query builder, fallback to LIKE when term is too short.
+     * Requires FULLTEXT indexes on catalogs table — see app/Database/opac_fulltext_indexes.sql
+     */
+    private function applyFulltextSearch($builder, string $search, string $searchBy, string $rawSearch = null): void
+    {
+        $rawSearch = $rawSearch ?? $search;
+
+        $builder->groupStart();
+        switch ($searchBy) {
+            case 'Title':
+                $term = $this->toFtTerm($search);
+                $term ? $builder->where("MATCH(Title) AGAINST ('{$term}' IN BOOLEAN MODE)", null, false)
+                      : $builder->like('Title', $search);
+                break;
+
+            case 'Author':
+                $authors = array_filter(array_map('trim', preg_split('/[;,]+/', $rawSearch)));
+                $first   = true;
+                foreach ($authors as $author) {
+                    $term = $this->toFtTerm(sanitizeSearch($author));
+                    if ($first) {
+                        $term ? $builder->where("MATCH(Author) AGAINST ('{$term}' IN BOOLEAN MODE)", null, false)
+                              : $builder->like('Author', sanitizeSearch($author));
+                    } else {
+                        $term ? $builder->orWhere("MATCH(Author) AGAINST ('{$term}' IN BOOLEAN MODE)", null, false)
+                              : $builder->orLike('Author', sanitizeSearch($author));
+                    }
+                    $first = false;
+                }
+                break;
+
+            case 'Subject':
+                $term = $this->toFtTerm($search);
+                $term ? $builder->where("MATCH(Subject) AGAINST ('{$term}' IN BOOLEAN MODE)", null, false)
+                      : $builder->like('Subject', $search);
+                break;
+
+            case 'ISBN':
+                $builder->like('ISBN', $search);
+                break;
+
+            case 'Publisher':
+                $term = $this->toFtTerm($search);
+                $term ? $builder->where("MATCH(Publisher) AGAINST ('{$term}' IN BOOLEAN MODE)", null, false)
+                      : $builder->like('Publisher', $search);
+                break;
+
+            default: // semua kolom
+                $term = $this->toFtTerm($search);
+                if ($term) {
+                    $builder->where("MATCH(Title, Author, Subject, Publisher) AGAINST ('{$term}' IN BOOLEAN MODE)", null, false)
+                            ->orLike('ISBN', $search);
+                } else {
+                    $builder->orLike('Title', $search)
+                            ->orLike('Author', $rawSearch)
+                            ->orLike('Subject', $search)
+                            ->orLike('ISBN', $search)
+                            ->orLike('Publisher', $search);
+                }
+        }
+        $builder->groupEnd();
+    }
+
+    /**
+     * Convert a sanitized search string to MySQL FULLTEXT Boolean mode term.
+     * Returns empty string when all words are too short (falls back to LIKE).
+     * Input sudah melalui sanitizeSearch() sehingga karakter berbahaya sudah dihapus.
+     */
+    private function toFtTerm(string $search): string
+    {
+        // Hapus operator FULLTEXT Boolean dan single quote sebagai lapisan keamanan tambahan
+        $search = preg_replace('/[+\-><()\~*"@\'\\\\]/', '', $search);
+        $words  = preg_split('/\s+/', trim($search), -1, PREG_SPLIT_NO_EMPTY);
+        $terms  = [];
+        foreach ($words as $word) {
+            if (mb_strlen($word) < 2) continue;
+            $terms[] = '+' . $word . '*';
+        }
+        return implode(' ', $terms);
     }
 
     public function bacaDigital($catalog_id)
