@@ -76,7 +76,7 @@ $slug = $request->getGet('slug') ?? '';
             "processing": true,
             "serverSide": true,
             "ajax": {
-                "url": '<?php echo site_url('api/bacaditempat/datatable') ?>',
+                "url": '<?php echo site_url('api/baca-di-tempat/datatable') ?>',
             },
              "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
                 "<'row'<'col-md-12'tr>>" +

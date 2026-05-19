@@ -14,12 +14,14 @@ class LaporanAI extends \Base\Controllers\BaseController
     public $auth;
     public $authorize;
     public $anggotaModel;
-    private $geminiApiKey;
+    private string $geminiApiKey;
+    private string $geminiModel;
     private $db;
 
     function __construct()
     {
-        $this->geminiApiKey = env('GEMINI_API_KEY'); // Set di .env file
+        $this->geminiApiKey = env('GEMINI_API_KEY');
+        $this->geminiModel  = env('GEMINI_MODEL', 'gemini-2.0-flash');
         $this->db = db_connect();
         
         // Handle MySQL ONLY_FULL_GROUP_BY mode
@@ -360,7 +362,7 @@ SQL Query:";
      */
     private function callGeminiAPI($prompt)
     {
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=" . $this->geminiApiKey;
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$this->geminiModel}:generateContent?key=" . $this->geminiApiKey;
         
         $data = [
             'contents' => [
