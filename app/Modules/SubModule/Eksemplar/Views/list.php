@@ -9,7 +9,6 @@ $branch_id = $request->getGet('branch_id');
  */
 $actions = [
     'cetak-label'         => 'Cetak Label',
-    'tampil-opac'         => 'Tampilkan di Opac',
     'karantina-eksemplar' => 'Karantina Eksemplar',
 ];
 
@@ -246,6 +245,7 @@ $paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
                             <th class="text-center" style="min-width: 300px;">Data Bibliografis</th>
                             <th class="text-center">DRM</th>
                             <th class="text-center">Karantina</th>
+                            <th class="text-center">OPAC</th>
                             <th class="text-center">Status</th>
                             <th class="text-center" width="100">Lokasi</th>
                             <th class="text-center" width="80">Aksi</th>
@@ -324,6 +324,7 @@ $(document).ready(function () {
             { data: 'Catalog_id'                                     },
             { data: 'ISDRM',               className: 'text-center', orderable: false },
             { data: 'IsQUARANTINE',        className: 'text-center', orderable: false },
+            { data: 'IsOPAC',              className: 'text-center', searchable: false, orderable: false },
             { data: 'StatusName',          className: 'text-center'  },
             { data: 'LocationLibraryName', className: 'text-center'  },
             { data: 'action',              className: 'text-center', orderable: false }

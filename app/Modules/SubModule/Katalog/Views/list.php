@@ -50,16 +50,7 @@ $request = service('request');
                     <?php endif; ?>
                 <?php endif; ?>
 
-                <div class="dropdown">
-                    <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button"
-                        id="downloadMarcDropdownKatalog" data-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-download"></i> Ekspor Katalog MARC
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="downloadMarcDropdownKatalog">
-                        <li><a class="dropdown-item" href="#" onclick="submitExport('txt')">Export TXT</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="submitExport('xlsx')">Export Excel</a></li>
-                    </ul>
-                </div>
+               
             </div>
         </div>
         
@@ -123,7 +114,7 @@ $request = service('request');
             "processing": true,
             "serverSide": true,
             "ajax": {
-                "url": "<?php echo site_url('api/katalog/datatable') ?>",
+                "url": "<?php echo site_url('api/katalog/datatable/0') ?>",
                 "type": "POST",
 
             },
@@ -332,12 +323,6 @@ $request = service('request');
         return false;
     });
 
-    function submitExport(format) {
-        var form = $('#form_items');
-        var serialize_bulk = form.serialize() + '&format=' + format;
-        var url = "<?= base_url('katalog/ekspor_marc') ?>" + '?' + serialize_bulk;
-        window.location.href = url;
-    }
 </script>
 
 <?= $this->endSection('script'); ?>

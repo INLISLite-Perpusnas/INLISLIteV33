@@ -19,7 +19,7 @@
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
                         <li class="breadcrumb-item">Otorisasi</li>
-                        <li class="active breadcrumb-item" aria-current="page">Role</li>
+                        <li class="breadcrumb-item" aria-current="page">Role</li>
                     </ol>
                 </nav>
             </div>
@@ -74,7 +74,32 @@
 <?= $this->include('Group\Views\update_modal'); ?>
 
 <script>
-    setDataTable('#tbl_groups', disableOrderCols = [0, 3], defaultOrderCols = [0, 'asc'], autoNumber = true);
+    $('#tbl_groups').DataTable({
+        "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
+               "<'row'<'col-md-12'tr>>" +
+               "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
+        "pagingType": "full_numbers",
+        "oLanguage": {
+            "sSearch": "<i class='fa fa-search'></i> _INPUT_",
+            "sLengthMenu": "_MENU_",
+            "oPaginate": {
+                "sNext"    : "<i class='fa fa-chevron-right'></i>",
+                "sPrevious": "<i class='fa fa-chevron-left'></i>",
+                "sLast"    : "<i class='fa fa-chevron-double-right'></i>",
+                "sFirst"   : "<i class='fa fa-chevron-double-left'></i>",
+            }
+        },
+        "columnDefs": [
+            { "targets": [0, 3], "orderable": false }
+        ],
+        "order": [[1, "asc"]],
+        "drawCallback": function() {
+            var api = this.api();
+            api.column(0, { page: 'current' }).nodes().each(function(cell, i) {
+                cell.innerHTML = api.page.info().start + i + 1;
+            });
+        }
+    });
 
     $('#tbl_groups').on('click', '.remove-data', function() {
         var url = $(this).attr('data-href');

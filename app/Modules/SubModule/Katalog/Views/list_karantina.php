@@ -57,6 +57,8 @@ $slug = $request->getGet('slug') ?? '';
 							<th class="text-center" width="">Publisher</th>
 							<th class="text-center" width="">Deskripsi Fisik</th>
 							<th class="text-center" width="">No. Panggil</th>
+							<th class="text-center" width="">Eksemplar</th>
+							<th class="text-center" width="">Pedoman Katalog</th>
 							<th class="text-center" style="min-width: 150px;">Aksi</th>
 						</tr>
 					</thead>
@@ -74,13 +76,16 @@ $slug = $request->getGet('slug') ?? '';
 <script>
     $(document).ready(function() {
         <?php if (session()->getFlashdata('swal_icon')) : ?>
+            <?php
+                $swal_icon = session()->getFlashdata('swal_icon');
+                $is_warning = in_array($swal_icon, ['warning', 'error']);
+            ?>
             Swal.fire({
-                type: '<?= session()->getFlashdata('swal_icon') ?>', // gunakan 'icon' jika SweetAlert2 versi terbaru
+                icon: '<?= $swal_icon ?>',
                 title: '<?= session()->getFlashdata('swal_title') ?>',
-                html: '<?= session()->getFlashdata('swal_html') ?? session()->getFlashdata('swal_text') ?>',
-                showConfirmButton: false,
-                timer: 3000,
-                icon:'success'
+                html: '<?= addslashes(session()->getFlashdata('swal_html') ?? session()->getFlashdata('swal_text') ?? '') ?>',
+                showConfirmButton: <?= $is_warning ? 'true' : 'false' ?>,
+                <?php if (!$is_warning) : ?>timer: 3000,<?php endif; ?>
             });
         <?php endif; ?>
     });
@@ -142,6 +147,18 @@ $slug = $request->getGet('slug') ?? '';
 				},
 				{
 					data: 'ControlNumber'
+				},
+				{
+					data: 'Eksemplar',
+					className: 'text-center',
+					searchable: false,
+					orderable: false
+				},
+				{
+					data: 'IsRDA',
+					className: 'text-center',
+					searchable: false,
+					orderable: false
 				},
 				{
 					data: 'action',

@@ -137,11 +137,13 @@ public function index()
 				$upsertGroupPermission = $groupPermissionModel->insertBatch($save_data);
 				if ($upsertGroupPermission) {
 					reloadPermission();
-					set_message('toastr_msg', 'Permission berhasil disimpan');
-					set_message('toastr_type', 'success');
+					session()->setFlashdata('swal_icon',  'success');
+					session()->setFlashdata('swal_title', 'Berhasil');
+					session()->setFlashdata('swal_text',  'Permission berhasil disimpan');
 				} else {
-					set_message('toastr_msg', 'Permission gagal disimpan');
-					set_message('toastr_type', 'warning');
+					session()->setFlashdata('swal_icon',  'warning');
+					session()->setFlashdata('swal_title', 'Gagal');
+					session()->setFlashdata('swal_text',  'Permission gagal disimpan');
 				}
 			}
 

@@ -157,15 +157,14 @@
                 console.log(res);
                 if (res.status === 201) {
                     Swal.fire({
-                        title: 'Success',
-                        text: 'Tambah User berhasil',
-                        type: 'success',
+                        title: 'Berhasil',
+                        text: 'Tambah User berhasil disimpan',
+                        icon: 'success',
                         showConfirmButton: false,
                         timer: 3000
-                    });
-                    setTimeout(function() {
+                    }).then(function() {
                         window.location.href = '<?= base_url('user?slug=' . $slug) ?>';
-                    }, 2000);
+                    });
                 } else {
                     $('#frm_create_message').html(res.messages.error);
                 }

@@ -126,10 +126,8 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
             return $html;
         })
         ->edit('IsOPAC', function ($row) {
-            $color = $row->IsOPAC == 1 ? 'success' : 'warning';
-            $label = $row->IsOPAC == 1 ? 'Ya' : 'Tdk';
-            $html = '<span class="badge badge-' . $color . '" style="min-width: 40px">' . $label . '</span>';
-            return $html;
+            $checked = $row->IsOPAC == 1 ? 'checked' : '';
+            return '<input type="checkbox" class="apply-status" data-href="' . base_url('api/eksemplar/switch/' . $row->ID) . '" data-checked="' . $checked . '" data-field="IsOPAC" ' . $checked . ' data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="mini">';
         })
         ->edit('ISDRM', function ($row) {
             $color = $row->ISDRM == 1 ? 'success' : 'warning';
@@ -189,12 +187,6 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
             
             // Siapkan variabel delete sebagai string kosong
             $delete = ""; 
-
-            // Hanya tampilkan tombol delete jika IsQUARANTINE TIDAK sama dengan 0.
-            // Asumsinya, nilai 1 berarti "di karantina" dan boleh dihapus.
-            if ($row->IsQUARANTINE != 0) {
-                $delete = '<a href="javascript:void(0);" data-href="' . base_url('eksemplar/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
-            }
 
             // Gabungkan tombol edit dan delete (jika ada)
             return $edit . ' ' . $delete;

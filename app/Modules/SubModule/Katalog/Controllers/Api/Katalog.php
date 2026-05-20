@@ -40,7 +40,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 
 	public function datatable($IsQUARANTINE = 0)
 	{
-		$db = db_connect();
+		$db = db_connect('data');
 
 		$builder = $db->table('catalogs as a')
 			->select('a.ID, a.ID as action')
@@ -66,8 +66,9 @@ class Katalog extends \Base\Controllers\BaseResourceController
 				return count_collections($row->ID);
 			})
 			->edit('IsRDA', function ($row) {
-				$checked = $row->IsRDA == 1 ? 'checked' : '';
-				return '<input type="checkbox" class="apply-status" data-href="' . base_url('api/katalog/switch/' . $row->ID) . '" data-checked="' . $checked . '" data-field="IsRDA" ' . $checked . ' data-toggle="toggle" data-onstyle="success" data-on="RDA" data-off="AACR" data-size="mini">';
+				return $row->IsRDA == 1
+					? '<span class="badge badge-success">RDA</span>'
+					: '<span class="badge badge-secondary">AACR</span>';
 			})
 			->edit('IsOPAC', function ($row) {
 				$checked = $row->IsOPAC == 1 ? 'checked' : '';
@@ -80,13 +81,8 @@ class Katalog extends \Base\Controllers\BaseResourceController
 					$edit = '<a href="' . base_url('katalog/edit/' . $row->ID . '?rda=1') . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
 				}
 
-				$delete = '';
-				// Only show delete button if IsQUARANTINE = 1
-				if ($IsQUARANTINE == 1) {
-					$delete = '<a href="' . base_url('katalog/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
-				}
 
-				return $edit . ($delete ? ' ' . $delete : '');
+				return $edit;
 			})
 			->toJson();
 
@@ -96,7 +92,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 	public function katalog($IsQUARANTINE = 0)
 	{
 		$branch_id = $this->request->getGet('branch_id');
-		$db = db_connect();
+		$db = db_connect('data');
 
 		$builder = $db->table('catalogs as a')
 			->select('a.ID, a.ID as action')
@@ -149,9 +145,9 @@ class Katalog extends \Base\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('IsRDA', function ($row) {
-				$checked = $row->IsRDA == 1 ? 'checked' : '';
-				$html = '<input type="checkbox" class="apply-status" data-href="' . base_url('api/katalog/switch/' . $row->ID) . '" data-checked="' . $checked . '" data-field="IsRDA" ' . $checked . ' data-toggle="toggle" data-onstyle="success" data-on="RDA" data-off="AACR" data-size="mini">';
-				return $html;
+				return $row->IsRDA == 1
+					? '<span class="badge badge-success">RDA</span>'
+					: '<span class="badge badge-secondary">AACR</span>';
 			})
 			->edit('IsOPAC', function ($row) {
 				$checked = $row->IsOPAC == 1 ? 'checked' : '';
@@ -159,7 +155,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('action', function ($row) {
-				$edit = '<a href="javascript:void(0);" data-href="' . base_url('katalog/edit/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Ubah1" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
+				$edit = '<a href="javascript:void(0);" data-href="' . base_url('katalog/edit/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
 
 				$delete = '<a href="javascript:void(0);" data-href="' . base_url('katalog/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
 				return $edit . ' ' . $delete;
@@ -322,10 +318,10 @@ class Katalog extends \Base\Controllers\BaseResourceController
 
 	public function switch($id = null)
 	{
-		$field = $this->request->getGet('field');
-		$value = $this->request->getGet('value');
+		$field = $this->request->getPost('field') ?? $this->request->getGet('field');
+		$value = $this->request->getPost('value') ?? $this->request->getGet('value');
 
-		$update_data_id = $this->katalogModel->update($id, array($field => ($value == 'true') ? 1 : 0));
+		$update_data_id = $this->katalogModel->update($id, array($field => ($value == 'true' || $value === true || $value === 1) ? 1 : 0));
 
 		if ($update_data_id) {
 			$response = [

@@ -11,7 +11,6 @@
             </div>
             <form id="frm_create" method="post" action="">
                 <div class="modal-body">
-                    <div id="frm_create_message"></div>
                     <div class="form-row">
                         <div class="form-group col">
                             <label for="menu">Nama Method</label>
@@ -69,23 +68,35 @@
                 console.log(res)
                 if (res.status === 200) {
                     Swal.fire({
-                        title: 'Success',
+                        title: 'Berhasil',
                         text: 'Permission berhasil disimpan',
-                        type: 'success',
+                        icon: 'success',
                         showConfirmButton: false,
                         timer: 3000
-                    });
-
-                    setTimeout(function() {
+                    }).then(function() {
                         window.location.href = '<?= base_url('permission') ?>';
-                    }, 2000);
+                    });
                 } else {
-                    $('#frm_create_message').html(res.messages.error);
+                    Swal.fire({
+                        title: 'Gagal',
+                        text: res.messages.error,
+                        icon: 'error',
+                        showConfirmButton: true
+                    });
                 }
             })
             .fail(function(res) {
                 console.log(res);
-                $('#frm_create_message').html(res.responseJSON.messages.error);
+                let errorMsg = 'Terjadi kesalahan pada server';
+                if(res.responseJSON && res.responseJSON.messages && res.responseJSON.messages.error) {
+                    errorMsg = res.responseJSON.messages.error;
+                }
+                Swal.fire({
+                    title: 'Gagal',
+                    text: errorMsg,
+                    icon: 'error',
+                    showConfirmButton: true
+                });
             })
             .always(function() {
                 $('.loading').hide();
@@ -99,7 +110,6 @@
 
     $('#modal_create').on('hidden.bs.modal', function() {
         $(this).find('form').trigger('reset');
-        $('#frm_create_message').html('');
     });
 
     $('#name').on('keyup', function(e) {

@@ -99,9 +99,7 @@ $branch = get_ref_single('branchs', 'ID=' . $user->branch_id, 'data');
                         <label>Akses Lokasi Perpustakaan</label>
                         <select class="form-control select2" multiple="multiple" name="location_library_ids[]" id="frm_edit_LocationLibrary_id" style="width: 100%;">
                             <?php
-                            // Ubah string dari database "3,5,6" kembali menjadi array [3, 5, 6]
-                            // Pastikan $user->location_library_ids tersedia dari hasil query database
-                            $selected_locations = !empty($user->location_library_ids) ? explode(',', $user->location_library_ids) : [];
+                            $selected_locations = !empty($user->location_ids) ? explode(',', $user->location_ids) : [];
 
                             foreach (get_ref_table('location_library', 'ID, Code, Name', null, 'data') as $row) :
                                 // Cek apakah ID lokasi saat ini ada di dalam array $selected_locations
@@ -153,21 +151,18 @@ $branch = get_ref_single('branchs', 'ID=' . $user->branch_id, 'data');
                 console.log(res)
                 if (res.status === 201) {
                     Swal.fire({
-                        title: 'Success',
+                        title: 'Berhasil',
                         text: 'Profil User berhasil disimpan',
-                        type: 'success',
+                        icon: 'success',
                         showConfirmButton: false,
                         timer: 3000
-                    });
-
-                    setTimeout(function() {
+                    }).then(function() {
                         if (is_profile == true) {
                             window.location.href = '<?= base_url('user/profile') ?>';
                         } else {
                             window.location.href = '<?= base_url('user/detail/' . $user->id) ?>';
                         }
-
-                    }, 2000);
+                    });
                 } else {
                     $('#frm_edit_message').html(res.messages.error);
                 }

@@ -479,7 +479,7 @@
     
     <!-- Copyright -->
     <div class="copyright">
-        <?= get_parameter('site-copyright', '&copy; 2023 Perpustakaan Nasional RI') ?>
+        <?= (date('Y') . ' Copyright &copy; Perpustakaan Nasional RI') ?>
     </div>
 </div>
 

@@ -44,6 +44,11 @@ class User extends \Base\Controllers\BaseController
         $groups = $this->groupModel->findAll();
         $slug = $this->request->getGet('slug') ?? '';
         $branch_id = $this->request->getGet('branch_id') ?? '';
+
+        if (empty($slug) && !empty($groups)) {
+            return redirect()->to(base_url('user/index?slug=' . $groups[0]->name));
+        }
+
         $this->data['title'] = 'User';
         $this->data['groups'] = $groups;
         $this->data['slug'] = $slug;

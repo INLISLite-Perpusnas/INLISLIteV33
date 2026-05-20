@@ -38,7 +38,7 @@
 
        <!-- Statistics Cards -->
        <div class="stats-grid">
-           <div class="stat-card info">
+           <div class="stat-card info" data-href="<?= base_url('anggota') ?>">
                <div class="stat-header">
                    <div class="stat-content">
                        <h3>Jumlah Anggota</h3>
@@ -50,19 +50,7 @@
                </div>
            </div>
 
-           <div class="stat-card primary">
-               <div class="stat-header">
-                   <div class="stat-content">
-                       <h3>Anggota Baru</h3>
-                       <div class="stat-number" data-target="<?= $total_anggota_baru ?? 0 ?>">0</div>
-                   </div>
-                   <div class="stat-icon">
-                       <i class="fas fa-user-plus"></i>
-                   </div>
-               </div>
-           </div>
-
-           <div class="stat-card success">
+           <div class="stat-card success" data-href="<?= base_url('user') ?>">
                <div class="stat-header">
                    <div class="stat-content">
                        <h3>User Aktif</h3>
@@ -74,7 +62,7 @@
                </div>
            </div>
 
-           <div class="stat-card warning">
+           <div class="stat-card warning" data-href="<?= base_url('bukutamu') ?>">
                <div class="stat-header">
                    <div class="stat-content">
                        <h3>Kunjungan Anggota</h3>
@@ -86,7 +74,7 @@
                </div>
            </div>
 
-           <div class="stat-card danger">
+           <div class="stat-card danger" data-href="<?= base_url('bukutamu/non_anggota') ?>">
                <div class="stat-header">
                    <div class="stat-content">
                        <h3>Kunjungan Non Anggota</h3>
@@ -113,7 +101,7 @@
 
        <!-- Chart Cards -->
        <div class="chart-grid">
-           <div class="chart-card">
+           <div class="chart-card" data-href="<?= base_url('katalog') ?>">
                <div class="chart-header">
                    <div class="chart-icon">
                        <i class="fas fa-book"></i>
@@ -123,7 +111,7 @@
                <div class="chart-value" data-target="<?= $total_katalog ?? 0 ?>">0</div>
            </div>
 
-           <div class="chart-card">
+           <div class="chart-card" data-href="<?= base_url('eksemplar') ?>">
                <div class="chart-header">
                    <div class="chart-icon">
                        <i class="fas fa-layer-group"></i>
@@ -133,7 +121,7 @@
                <div class="chart-value" data-target="<?= $total_koleksi ?? 0 ?>">0</div>
            </div>
 
-           <div class="chart-card">
+           <div class="chart-card" data-href="<?= base_url('sirkulasi-peminjaman') ?>">
                <div class="chart-header">
                    <div class="chart-icon">
                        <i class="fas fa-handshake"></i>
@@ -190,26 +178,30 @@
    // Card hover effects
    function initCardEffects() {
        const cards = document.querySelectorAll('.stat-card, .chart-card');
-       
+
        cards.forEach(card => {
+           if (card.dataset.href) {
+               card.style.cursor = 'pointer';
+           }
+
            card.addEventListener('mouseenter', () => {
                card.style.transform = 'translateY(-10px) scale(1.02)';
            });
-           
+
            card.addEventListener('mouseleave', () => {
                card.style.transform = 'translateY(0) scale(1)';
            });
        });
    }
 
-   // Click ripple effect
+   // Click ripple effect + navigasi
    function initClickEffects() {
        document.querySelectorAll('.stat-card, .chart-card').forEach(card => {
            card.addEventListener('click', function(e) {
                const ripple = document.createElement('div');
                const rect = card.getBoundingClientRect();
                const size = 20;
-               
+
                ripple.style.position = 'absolute';
                ripple.style.borderRadius = '50%';
                ripple.style.background = 'rgba(102, 126, 234, 0.3)';
@@ -219,12 +211,15 @@
                ripple.style.top = (e.clientY - rect.top - size/2) + 'px';
                ripple.style.width = ripple.style.height = size + 'px';
                ripple.style.pointerEvents = 'none';
-               
+
                card.appendChild(ripple);
-               
-               setTimeout(() => {
-                   ripple.remove();
-               }, 600);
+
+               const href = card.dataset.href;
+               if (href) {
+                   setTimeout(() => { window.location.href = href; }, 200);
+               } else {
+                   setTimeout(() => { ripple.remove(); }, 600);
+               }
            });
        });
    }

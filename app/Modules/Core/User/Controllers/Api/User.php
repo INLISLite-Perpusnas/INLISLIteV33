@@ -265,7 +265,7 @@ public function create()
 
     // Simpan akses lokasi perpustakaan
     $location_ids                        = $this->request->getPost('location_library_ids');
-    $update_data['location_library_ids'] = !empty($location_ids) ? implode(',', $location_ids) : '';
+    $update_data['location_ids'] = !empty($location_ids) ? implode(',', $location_ids) : '';
 
     $db      = db_connect('default');
     $builder = $db->table('users')->where('username', $username);
@@ -313,7 +313,7 @@ public function create()
             'coordinate'           => $this->request->getPost('coordinate'),
             'branch_id'            => $this->settingModel->where('Name', 'Branch_id')->first()->Value ?? 'ID Perpustakaan Mitra',
             // 3. Masukkan ke dalam array update data
-            'location_library_ids' => $location_ids_str 
+            'location_ids' => $location_ids_str
         );
 
         if ($this->request->getPost('password')) {

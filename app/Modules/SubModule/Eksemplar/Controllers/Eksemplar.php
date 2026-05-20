@@ -732,6 +732,35 @@ public function proses_karantina()
         }
     }
 
+    public function hapus_permanen()
+    {
+        $IDs = $this->request->getPost('ID');
+
+        if (empty($IDs) || !is_array($IDs)) {
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Pilih eksemplar yang akan dihapus permanen terlebih dahulu');
+            return redirect()->back();
+        }
+
+        $ids = array_filter(array_map('intval', $IDs));
+
+        try {
+            $db = db_connect();
+            $db->table('collections')->whereIn('ID', $ids)->delete();
+
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Eksemplar berhasil dihapus permanen');
+        } catch (\Exception $e) {
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Terjadi Kesalahan');
+            $this->session->setFlashdata('swal_text', 'Gagal menghapus eksemplar: ' . $e->getMessage());
+        }
+
+        return redirect()->back();
+    }
+
     /**
      * Process OPAC display for selected collection items
      * * @return \CodeIgniter\HTTP\RedirectResponse

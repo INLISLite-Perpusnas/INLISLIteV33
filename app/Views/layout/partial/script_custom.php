@@ -48,6 +48,32 @@
 	// 	toggleUserProfile();
 	// });
 
+	/* SweetAlert - Flash global (swal_icon / swal_title / swal_text) */
+	<?php $swal_icon = session()->getFlashdata('swal_icon'); ?>
+	<?php if ($swal_icon): ?>
+	Swal.fire({
+		icon:  '<?= esc($swal_icon) ?>',
+		title: '<?= esc(session()->getFlashdata('swal_title') ?? '') ?>',
+		text:  '<?= esc(session()->getFlashdata('swal_text')  ?? '') ?>',
+		showConfirmButton: false,
+		timer: 3000,
+		timerProgressBar: true,
+	});
+	<?php endif; ?>
+
+	/* SweetAlert - Permission Denied */
+	<?php $swal_permission = session()->getFlashdata('swal_permission'); ?>
+	<?php if (is_array($swal_permission)): ?>
+	Swal.fire({
+		icon: '<?= esc((string)($swal_permission['icon']  ?? '')) ?>',
+		title: '<?= esc((string)($swal_permission['title'] ?? '')) ?>',
+		text: '<?= esc((string)($swal_permission['text']  ?? '')) ?>',
+		confirmButtonColor: '#d33',
+		timer: 4000,
+		timerProgressBar: true,
+	});
+	<?php endif; ?>
+
 	/* Toastr */
 	var toastr_msg = '<?= get_message('toastr_msg'); ?>';
 	var toastr_type = '<?= get_message('toastr_type'); ?>';

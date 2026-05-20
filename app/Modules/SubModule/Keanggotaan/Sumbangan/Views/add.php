@@ -4,8 +4,6 @@ $request = service('request');
 
 <?= $this->extend('App\Views\layout\main'); ?>
 
-
-<?= $this->section('page'); ?>
 <?= $this->section('style'); ?>
 <style>
     .select2-container--default .select2-selection--single {

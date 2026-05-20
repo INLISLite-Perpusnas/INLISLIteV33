@@ -18,6 +18,8 @@ $routes->group('eksemplar', ['namespace' => 'Eksemplar\Controllers'], function (
 	$subroutes->add('do_upload', 'Eksemplar::do_upload');
 	$subroutes->add('do_delete', 'Eksemplar::do_delete');
 	$subroutes->add('proses_karantina', 'Eksemplar::proses_karantina');
+	$subroutes->add('proses_opac', 'Eksemplar::proses_opac');
+	$subroutes->add('hapus_permanen', 'Eksemplar::hapus_permanen');
 	$subroutes->add('pulihkan_eksemplar', 'Eksemplar::pulihkan_eksemplar');
 	$subroutes->add('flip', 'Eksemplar::flip');
 	$subroutes->add('importviews', 'Eksemplar::importviews');

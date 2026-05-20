@@ -63,7 +63,7 @@
                         </form>
                     </div>
                 </div>
-                <div class="text-center text-dark opacity-8 mt-3"><?=get_parameter('site-copyright', '&copy; 2023 Perpustakaan Nasioanl RI')?></div>
+                <div class="text-center text-dark opacity-8 mt-3"><?= ( date('Y') . ' Perpustakaan Nasioanl RI') ?></div>
             </div>
         </div>
     </div>

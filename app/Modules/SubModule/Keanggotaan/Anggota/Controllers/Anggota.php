@@ -412,24 +412,6 @@ class Anggota extends \Base\Controllers\BaseController
 				if (!empty($save_akses_lokasi)) {
 					$this->anggotahakaksesModel->insertBatch($save_akses_lokasi);
 				}
-				//  simpan data ke tabel users
-				// $email = $this->request->getPost('Email');
-				$password = get_parameter('password-default', 'inlislite=');
-				$activate_hash = bin2hex(random_bytes(16));
-				$db = db_connect('default');
-				$users = $db->table('users');
-
-				$data_user = [
-					'username' => $MemberNo,
-					'password_hash' => $password,
-					'anggota' => $newAnggotaId,
-					'email' => $save_data['Email'],
-					'activate_hash' => $activate_hash,
-					'active' => 0
-				];
-
-				$users->insert($data_user);
-
 				   $this->session->setFlashdata('swal_icon', 'success');
                 $this->session->setFlashdata('swal_title', 'Berhasil');
                 $this->session->setFlashdata('swal_text', 'Anggota berhasil disimpan');
@@ -1609,14 +1591,13 @@ public function aktifkan_online()
         ]);
     }
 
-    $db = db_connect();
+    $db = db_connect('default');
     $memberModel = $this->anggotaModel;
-    $userModel = new \User\Models\UserModel();
 
-    $successCount = $failCount = $existingCount = 0;
+    $successCount = $failCount = 0;
     $errors = [];
+    $activatedList = [];
 
-    // Fetch Members sekaligus (lebih efisien)
     $members = $memberModel->whereIn('ID', $memberIds)->findAll();
 
     if (empty($members)) {
@@ -1626,95 +1607,96 @@ public function aktifkan_online()
         ]);
     }
 
-    $db->transBegin();
+    foreach ($members as $member) {
 
-    try {
-        foreach ($members as $member) {
+        if (empty($member->MemberNo)) {
+            $failCount++;
+            $errors[] = "No anggota " . esc($member->Fullname) . " kosong";
+            continue;
+        }
 
-            if (empty($member->MemberNo) || empty($member->Email)) {
-                $failCount++;
-                $errors[] = "Data anggota ".esc($member->Fullname)." tidak lengkap";
-                continue;
+        // Cek user sudah ada berdasarkan username
+        $existingUser = $db->table('users')->where('username', $member->MemberNo)->get()->getRow();
+
+        if ($existingUser) {
+            // User sudah ada, pastikan active=1 dan auth_groups_users terdaftar
+            $userId = $existingUser->id;
+            $db->table('users')->where('id', $userId)->update(['active' => 1]);
+
+            $alreadyInGroup = $db->table('auth_groups_users')
+                ->where('group_id', 8)->where('user_id', $userId)
+                ->get()->getRow();
+            if (!$alreadyInGroup) {
+                $db->table('auth_groups_users')->insert([
+                    'group_id' => 8,
+                    'user_id'  => $userId,
+                ]);
             }
 
-            // Cek user sudah ada
-            $existingUser = $userModel->where('username', $member->MemberNo)
-                                      ->orWhere('email', $member->Email)
-                                      ->first();
+            $memberModel->update($member->ID, ['IsOnlineActive' => 1]);
 
-            if ($existingUser) {
-                $existingCount++;
-                continue;
-            }
-
-            $passwordHash = $this->password->hash($member->MemberNo);
-
-            $userData = [
-                'username'      => $member->MemberNo,
-                'email'         => $member->Email,
-                'first_name'    => $member->Fullname,
-                'password_hash' => $passwordHash,
-                'category'      => 'anggota',
-                'active'        => 1,
-                'created_at'    => date('Y-m-d H:i:s'),
+            $successCount++;
+            $activatedList[] = [
+                'name'     => $member->Fullname,
+                'username' => $member->MemberNo,
             ];
-			
-
-           if ($userModel->insert($userData)) {
-				$successCount++;
-
-				// Tandai anggota sebagai aktif online
-				$memberModel->update($member->ID, ['IsOnlineActive' => 1]);
-
-				// Insert ke tabel auth_group_users
-				$userId = $userModel->insertID();
-				$db->table('auth_groups_users')->insert([
-					'group_id' => 8,
-					'user_id'  => $userId
-				]);
-
-			} else {
-				$failCount++;
-				$errors[] = "Gagal aktivasi akun untuk ".esc($member->Fullname);
-			}
-
+            continue;
         }
 
-        if ($db->transStatus() === false) {
-            $db->transRollback();
-            return $this->response->setJSON([
-                'error' => true,
-                'message' => 'Kesalahan database, transaksi dibatalkan.'
+        $passwordHash  = $this->password->hash($member->MemberNo);
+        $activate_hash = bin2hex(random_bytes(16));
+
+        $userData = [
+            'username'      => $member->MemberNo,
+            'email'         => $member->Email ?? '',
+            'password_hash' => $passwordHash,
+            'anggota'       => $member->ID,
+            'activate_hash' => $activate_hash,
+            'active'        => 1,
+        ];
+
+        if ($db->table('users')->insert($userData)) {
+            $userId = $db->insertID();
+
+            $db->table('auth_groups_users')->insert([
+                'group_id' => 8,
+                'user_id'  => $userId,
             ]);
+
+            $memberModel->update($member->ID, ['IsOnlineActive' => 1]);
+
+            $successCount++;
+            $activatedList[] = [
+                'name'     => $member->Fullname,
+                'username' => $member->MemberNo,
+            ];
+        } else {
+            $failCount++;
+            $errors[] = "Gagal aktivasi akun untuk " . esc($member->Fullname);
         }
-
-        $db->transCommit();
-    }
-    catch (\Exception $e) {
-        $db->transRollback();
-        return $this->response->setJSON([
-            'error' => true,
-            'message' => 'Terjadi kesalahan: '.$e->getMessage()
-        ]);
     }
 
-    // Inline HTML Message (tanpa view)
     $message = "<div class='text-left'>
         <p><strong>Hasil Aktivasi Online:</strong></p>
         <ul>
             <li>✓ Berhasil: <strong>{$successCount}</strong> anggota</li>";
-    if ($existingCount > 0) {
-        $message .= "<li>⚠ Sudah aktif: <strong>{$existingCount}</strong> anggota</li>";
-    }
     if ($failCount > 0) {
         $message .= "<li>✗ Gagal: <strong>{$failCount}</strong> anggota</li>";
     }
     $message .= "</ul>";
 
+    if (!empty($activatedList)) {
+        $message .= "<hr><p><strong>Info Akun (Username & Password = No Anggota):</strong></p><ul>";
+        foreach ($activatedList as $acc) {
+            $message .= "<li><strong>" . esc($acc['name']) . "</strong> — Username: <code>" . esc($acc['username']) . "</code>, Password: <code>" . esc($acc['username']) . "</code></li>";
+        }
+        $message .= "</ul>";
+    }
+
     if (!empty($errors)) {
         $message .= "<hr><p><strong>Detail Error:</strong></p><ul>";
         foreach ($errors as $err) {
-            $message .= "<li class='text-danger small'>".esc($err)."</li>";
+            $message .= "<li class='text-danger small'>" . esc($err) . "</li>";
         }
         $message .= "</ul>";
     }
@@ -1726,8 +1708,7 @@ public function aktifkan_online()
         'message' => $message,
         'data' => [
             'success' => $successCount,
-            'existing' => $existingCount,
-            'failed' => $failCount
+            'failed'  => $failCount,
         ]
     ]);
 }

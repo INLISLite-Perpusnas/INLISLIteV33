@@ -32,8 +32,11 @@ class Permissions implements FilterInterface
 
     $is_allowed = is_allowed($permission, session()->get('logged_in'));
     if (!$is_allowed) {
-      set_message('toastr_msg', lang('App.permission.not.have'));
-      set_message('toastr_type', 'error');
+      session()->setFlashdata('swal_permission', [
+        'icon'  => 'error',
+        'title' => 'Akses Ditolak',
+        'text'  => lang('App.permission.not.have'),
+      ]);
       return redirect()->to('/dashboard/index');
     }
   }

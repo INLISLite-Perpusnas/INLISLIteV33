@@ -135,6 +135,27 @@ class KatalogController extends \Base\Controllers\BaseController
             return redirect()->to('katalog');
         }
 
+        // Cek apakah ada katalog yang masih memiliki eksemplar
+        $katalog_with_eksemplar = [];
+        foreach ($ids as $catalog_id) {
+            $catalog_id = (int) $catalog_id;
+            if ($catalog_id > 0) {
+                $jumlah = $this->eksemplarModel->where('Catalog_id', $catalog_id)->countAllResults();
+                if ($jumlah > 0) {
+                    $katalog = $this->katalogModel->find($catalog_id);
+                    $katalog_with_eksemplar[] = ($katalog->BIBID ?? $catalog_id) . ' - ' . ($katalog->Title ?? '') . ' <b>(' . $jumlah . ' eksemplar)</b>';
+                }
+            }
+        }
+
+        if (!empty($katalog_with_eksemplar)) {
+            $list = implode('<br>', $katalog_with_eksemplar);
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Tidak Dapat Dihapus');
+            $this->session->setFlashdata('swal_html', 'Katalog berikut masih memiliki eksemplar, hapus eksemplarnya terlebih dahulu:<br><br>' . $list);
+            return redirect()->back();
+        }
+
         $this->db->transStart();
 
         foreach ($ids as $catalog_id) {
@@ -157,7 +178,7 @@ class KatalogController extends \Base\Controllers\BaseController
             $this->session->setFlashdata('swal_text', 'Katalog gagal dihapus');
         }
 
-        return redirect()->to('katalog');
+        return redirect()->back();
     }
 
     public function hapus_permanen()
@@ -172,10 +193,28 @@ class KatalogController extends \Base\Controllers\BaseController
                 $ids_to_delete[] = $ID;
             }
 
-            // 3. Eksekusi penghapusan
+            // 3. Cek apakah ada katalog yang masih memiliki eksemplar
+            $katalog_with_eksemplar = [];
+            foreach ($ids_to_delete as $catalog_id) {
+                $jumlah = $this->eksemplarModel->where('Catalog_id', $catalog_id)->countAllResults();
+                if ($jumlah > 0) {
+                    $katalog = $this->katalogModel->find($catalog_id);
+                    $katalog_with_eksemplar[] = ($katalog->BIBID ?? $catalog_id) . ' - ' . ($katalog->Title ?? '') . ' <b>(' . $jumlah . ' eksemplar)</b>';
+                }
+            }
+
+            if (!empty($katalog_with_eksemplar)) {
+                $list = implode('<br>', $katalog_with_eksemplar);
+                $this->session->setFlashdata('swal_icon', 'warning');
+                $this->session->setFlashdata('swal_title', 'Tidak Dapat Dihapus');
+                $this->session->setFlashdata('swal_html', 'Katalog berikut masih memiliki eksemplar, hapus eksemplarnya terlebih dahulu:<br><br>' . $list);
+                return redirect()->back();
+            }
+
+            // 4. Eksekusi penghapusan
             // Hapus detailnya dulu (Ruas) agar tidak ada data yatim (orphaned data)
             $this->katalogRuasModel->whereIn('CatalogId', $ids_to_delete)->delete();
-            
+
             // Hapus data utama (Katalog)
             // Memberikan array ID langsung ke fungsi delete() adalah cara batch delete di CI4
             $this->katalogModel->delete($ids_to_delete);

@@ -218,35 +218,62 @@ if (!function_exists('display_menu_backend')) {
         $baseModel = new \App\Models\BaseModel();
 
         $sql = "
-            SELECT 
+            SELECT
                 cm.id,
                 cm.icon,
                 cm.name,
                 cm.controller,
                 cm.type,
                 (
-                    SELECT COUNT(*) 
-                    FROM c_menus c2 
-                    WHERE c2.parent = cm.id 
+                    SELECT COUNT(*)
+                    FROM c_menus c2
+                    INNER JOIN auth_permissions ap2
+                        ON c2.controller = REPLACE(ap2.name, '/access', '')
+                    INNER JOIN auth_groups_permissions agp2
+                        ON ap2.id = agp2.permission_id
+                    INNER JOIN auth_groups ag2
+                        ON ag2.id = agp2.group_id
+                    WHERE c2.parent = cm.id
                     AND c2.active = 1
+                    AND ag2.name = ?
+                    AND ap2.name LIKE '%/access%'
                 ) AS childs
             FROM c_menus cm
-            INNER JOIN auth_permissions ap 
-                ON cm.controller = REPLACE(ap.name, '/access', '')
-            INNER JOIN auth_groups_permissions agp 
-                ON ap.id = agp.permission_id
-            INNER JOIN auth_groups ag 
-                ON ag.id = agp.group_id
-            WHERE 
+            WHERE
                 cm.parent = ?
                 AND cm.active = 1
                 AND cm.category_id = '1'
-                AND ag.name = ?
-                AND ap.name LIKE '%/access%'
+                AND (
+                    (
+                        cm.type != 'label'
+                        AND EXISTS (
+                            SELECT 1 FROM auth_permissions ap
+                            INNER JOIN auth_groups_permissions agp ON ap.id = agp.permission_id
+                            INNER JOIN auth_groups ag ON ag.id = agp.group_id
+                            WHERE REPLACE(ap.name, '/access', '') = cm.controller
+                            AND ag.name = ?
+                            AND ap.name LIKE '%/access%'
+                        )
+                    )
+                    OR (
+                        cm.type = 'label'
+                        AND EXISTS (
+                            SELECT 1 FROM c_menus c2
+                            INNER JOIN auth_permissions ap2
+                                ON c2.controller = REPLACE(ap2.name, '/access', '')
+                            INNER JOIN auth_groups_permissions agp2 ON ap2.id = agp2.permission_id
+                            INNER JOIN auth_groups ag2 ON ag2.id = agp2.group_id
+                            WHERE c2.parent = cm.id
+                            AND c2.active = 1
+                            AND ag2.name = ?
+                            AND ap2.name LIKE '%/access%'
+                        )
+                    )
+                )
             ORDER BY cm.sort ASC
         ";
 
-        $result = $baseModel->query($sql, [$parent, $group])->getResult();
+        $result = $baseModel->query($sql, [$group, $parent, $group, $group])->getResult();
 
         if (!$result) return '';
 

@@ -1,3 +1,10 @@
+<style>
+    .body-tabs-animated .nav-link,
+    .body-tabs-animated .nav-link span,
+    .body-tabs-animated .nav-link i {
+        color: #fff !important;
+    }
+</style>
 <ul class="body-tabs body-tabs-layout tabs-animated body-tabs-animated nav">
 	<li class="nav-item">
 		<a class="nav-link <?=($slug == 'profile')?'active':''?>" href="<?=base_url('anggota/online?slug=profile')?>">

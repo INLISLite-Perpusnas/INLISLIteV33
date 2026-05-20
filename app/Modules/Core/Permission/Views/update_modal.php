@@ -11,7 +11,6 @@
             </div>
             <form id="frm_edit" method="post" data-action="<?= base_url('api/permission/edit') ?>" data-id="">
                 <div class="modal-body">
-                    <div id="frm_edit_message"></div>
                     <div class="form-row">
                         <div class="form-group col">
                             <label for="name">Nama Method</label>
@@ -63,8 +62,15 @@
                 $('#frm_edit').attr("data-id", response.id);
                 $('#frm_edit_name').val(response.name);
                 $('#frm_edit_route').val(response.route);
-                $('#frm_edit_menu').val(response.menu);
                 $('#frm_edit_description').val(response.description);
+
+                // Cari option yang textnya match dengan response.menu
+                $('#frm_edit_menu option').each(function() {
+                    if($(this).text().trim() === response.menu.trim()) {
+                        $('#frm_edit_menu').val($(this).val());
+                        return false;
+                    }
+                });
 
                 $('#modal_edit').modal('show');
             }
@@ -73,7 +79,6 @@
 
     $('#modal_edit').on('hidden.bs.modal', function() {
         $(this).find('form').trigger('reset');
-        $('#frm_edit_message').html('');
     });
 
     $('#frm_edit').submit(function(event) {
@@ -93,9 +98,9 @@
                 console.log(res)
                 if (res.status === 201) {
                     Swal.fire({
-                        title: 'Success',
+                        title: 'Berhasil',
                         text: 'Permission berhasil disimpan',
-                        type: 'success',
+                        icon: 'success',
                         showConfirmButton: false,
                         timer: 3000
                     });
@@ -104,12 +109,26 @@
                         window.location.href = '<?= base_url('permission') ?>';
                     }, 2000);
                 } else {
-                    $('#frm_edit_message').html(res.messages.error);
+                    Swal.fire({
+                        title: 'Gagal',
+                        text: res.messages.error,
+                        icon: 'error',
+                        showConfirmButton: true
+                    });
                 }
             })
             .fail(function(res) {
                 console.log(res);
-                $('#frm_edit_message').html(res.responseJSON.messages.error);
+                let errorMsg = 'Terjadi kesalahan pada server';
+                if(res.responseJSON && res.responseJSON.messages && res.responseJSON.messages.error) {
+                    errorMsg = res.responseJSON.messages.error;
+                }
+                Swal.fire({
+                    title: 'Gagal',
+                    text: errorMsg,
+                    icon: 'error',
+                    showConfirmButton: true
+                });
             })
             .always(function() {
                 $('.loading').hide();

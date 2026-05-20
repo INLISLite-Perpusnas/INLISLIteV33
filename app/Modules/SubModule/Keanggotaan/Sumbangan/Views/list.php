@@ -94,7 +94,7 @@
 <?= $this->section('script'); ?>
 
 <script>
-    setDataTable('#tbl_sumbangans', disableOrderCols = [0, 7], defaultOrderCols = [6, 'desc'], autoNumber = true);
+    setDataTable('#tbl_sumbangans', disableOrderCols = [0, 6], defaultOrderCols = [1, 'asc'], autoNumber = true);
 
     $("body").on("click", ".remove-data", function() {
         var url = $(this).attr('data-href');

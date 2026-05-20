@@ -8,15 +8,15 @@ if (!function_exists('get_groups')) {
 		$groups = $model->where('level >', 0)->findAll();
 
 		if (is_member('admin')) {
-			$include = ['admin', 'sa_prov', 'sa_kabkot', 'sa_umum', 'sa_pkpt', 'sa_psm', 'anggota', 'kataloger'];
+			$include = ['admin', 'sa_prov', 'sa_kabkot', 'sa_umum', 'sa_pkpt', 'sa_psm', 'anggota', 'kataloger', 'layanan'];
 		} elseif (is_member('sa_prov')) {
-			$include = ['sa_prov', 'sa_kabkot', 'sa_umum', 'sa_pkpt', 'sa_psm', 'keanggotaan', 'kataloger'];
+			$include = ['sa_prov', 'sa_kabkot', 'sa_umum', 'sa_pkpt', 'sa_psm', 'keanggotaan', 'kataloger', 'layanan'];
 		} elseif (is_member('sa_kabkot')) {
-			$include = ['sa_kabkot', 'sa_umum', 'sa_pkpt', 'sa_psm', 'keanggotaan', 'kataloger'];
+			$include = ['sa_kabkot', 'sa_umum', 'sa_pkpt', 'sa_psm', 'keanggotaan', 'kataloger', 'layanan'];
 		} elseif (is_member('sa_pkpt')) {
-			$include = ['sa_pkpt', 'keanggotaan', 'kataloger'];
+			$include = ['sa_pkpt', 'keanggotaan', 'kataloger', 'layanan'];
 		} elseif (is_member('sa_psm')) {
-			$include = ['sa_psm', 'keanggotaan', 'kataloger'];
+			$include = ['sa_psm', 'keanggotaan', 'kataloger', 'layanan'];
 		} elseif (is_member('keanggotaan')) {
 			$include = ['anggota'];
 		} else {
