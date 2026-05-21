@@ -48,8 +48,9 @@ $routes->group('katalog', ['namespace' => 'Katalog\Controllers'], function ($sub
     $subroutes->add('create_marc',             'KatalogMarcController::create_marc');
     $subroutes->add('edit_marc/(:any)',         'KatalogMarcController::edit_marc/$1');
     $subroutes->add('ekspor_marc',             'KatalogMarcController::ekspor_marc');
-    $subroutes->add('marc-import',             'KatalogMarcController::showCreateForm');
-    $subroutes->add('create-marc-from-file',   'KatalogMarcController::createFromMarcFile');
+    $subroutes->add('marc-import',              'KatalogMarcController::showCreateForm');
+    $subroutes->post('preview-marc-file',       'KatalogMarcController::previewMarcFile');
+    $subroutes->post('create-marc-from-file',   'KatalogMarcController::createFromMarcFile');
 
     // === KatalogArtikelController (artikel serial) ===
     $subroutes->add('create_artikel',          'KatalogArtikelController::create_artikel');

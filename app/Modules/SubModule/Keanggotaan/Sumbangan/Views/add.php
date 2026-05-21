@@ -70,9 +70,9 @@ $request = service('request');
                     </div>
                     <div class="col-md-6">
                         <div class="position-relative form-group">
-                            <label for="name"><?= lang('Sumbangan.field.total') ?></label>
+                            <label for="name">Jumlah Sumbangan</label>
                             <div>
-                                <input type="text" class="form-control" id="frm_create_jumlah" name="Jumlah" placeholder="<?= lang('Sumbangan.field.total') ?> " value="<?= set_value('Jumlah'); ?>" />
+                                <input type="text" class="form-control" id="frm_create_jumlah" name="Jumlah" placeholder="Jumlah Sumbangan" value="<?= set_value('Jumlah'); ?>" />
 
                             </div>
                         </div>
@@ -81,9 +81,9 @@ $request = service('request');
                 </div>
 
                 <div class="form-group">
-                    <label for="description"><?= lang('Sumbangan.field.description') ?> </label>
+                    <label for="description">Keterangan </label>
                     <div>
-                        <textarea id="frm_create_description" name="keterangan" placeholder="<?= lang('Sumbangan.field.description') ?> " rows="2" class="form-control autosize-input" style="min-height: 38px;"><?= set_value('Keterangan') ?></textarea>
+                        <textarea id="frm_create_description" name="keterangan" placeholder="Keterangan" rows="2" class="form-control autosize-input" style="min-height: 38px;"><?= set_value('Keterangan') ?></textarea>
                     </div>
                 </div>
 

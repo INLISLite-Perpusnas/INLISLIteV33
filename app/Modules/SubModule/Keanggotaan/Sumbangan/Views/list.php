@@ -20,7 +20,7 @@
                 <nav class="" aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('sumbangan') ?>"><i class="fa fa-home"></i> <?= lang('Sumbangan.label.home') ?></a></li>
-                        <li class="active breadcrumb-item" aria-current="page"><?= lang('Sumbangan.module') ?> </li>
+                        <li class="breadcrumb-item" aria-current="page"><?= lang('Sumbangan.module') ?> </li>
                     </ol>
                 </nav>
             </div>
@@ -42,7 +42,7 @@
                     <tr>
                         <th><?= lang('Sumbangan.field.no') ?> </th>
                         <th><?= lang('Sumbangan.field.name') ?></th>
-                        <th><?= lang('Sumbangan.field.MemberNo') ?></th>
+                        <th>Nomor Anggota</th>
                         <th><?= lang('Sumbangan.field.description') ?></th>
                   
                         <th><?= lang('Sumbangan.field.created_by') ?></th>

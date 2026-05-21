@@ -73,27 +73,27 @@ public function login()
 			
 			// Verifikasi hCaptcha terlebih dahulu
 			if (!$this->verifyHcaptcha($hcaptchaResponse)) {
-				session()->set('error', "Verifikasi hCaptcha gagal. Silakan coba lagi.");
-				return redirect()->back()->withInput();
+				return redirect()->back()->withInput()->with('error', 'Verifikasi hCaptcha gagal. Silakan coba lagi.');
 			}
-			
+
 			// Gunakan service authentication yang sudah ada
 			if (!service('authentication')->attempt([
 				'username' => $username,
 				'password' => $password
 			])) {
-				session()->set('error', "Maaf, username atau password anda salah.");
-				return redirect()->back()->withInput();
+				return redirect()->back()->withInput()->with('error', 'Maaf, username atau password anda salah.');
 			}
-			
+
 			// Jika autentikasi berhasil, ambil data user dari database
 			$db = db_connect();
 			$user = $db->table('users')->where('username', $username)->get()->getRowObject();
-			
+
 			if (is_null($user)) {
-				session()->set('error', "Maaf, username atau password anda salah.");
-				return redirect()->back()->withInput();
+				return redirect()->back()->withInput()->with('error', 'Maaf, username atau password anda salah.');
 			}
+
+			// Bersihkan error lama yang mungkin masih tersimpan di session
+			session()->remove('error');
 			
 			// Ambil permission data seperti di API
 			$auth_permissions = $db->table('auth_permissions')->get()->getResultObject();
@@ -190,8 +190,7 @@ public function login()
 			
 			return redirect()->to('/dashboard');
 		} catch (\Exception $e) {
-			session()->set('error', $e->getMessage());
-			return redirect()->back()->withInput();
+			return redirect()->back()->withInput()->with('error', $e->getMessage());
 		}
 	}
 

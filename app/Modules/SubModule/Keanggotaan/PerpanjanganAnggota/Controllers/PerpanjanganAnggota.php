@@ -62,25 +62,26 @@ class PerpanjanganAnggota extends \Base\Controllers\BaseController
         ]);
         if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
             $member_ids = (array) $this->request->getPost('Member_id');
-            $biaya = $this->request->getPost('biaya');
+            $biaya      = $this->request->getPost('biaya');
             $keterangan = $this->request->getPost('Keterangan');
-            $endDate = $this->request->getPost('EndDate');
-            $jenisId = $this->request->getPost('Jenisanggota_id');
+            $endDate    = $this->request->getPost('EndDate');
+            $jenisId    = $this->request->getPost('Jenisanggota_id');
             $fakultasId = $this->request->getPost('Fakultas_id');
-            $jurusanId = $this->request->getPost('Jurusan_id');
-            $isLunas = $this->request->getPost('is_lunas') ? 1 : 0;
+            $jurusanId  = $this->request->getPost('Jurusan_id');
+            $isLunas    = $this->request->getPost('is_lunas') ? 1 : 0;
 
             $db = \Config\Database::connect();
             $db->transStart();
 
             foreach ($member_ids as $id_anggota) {
                 $save_data = [
-                    'Member_id' => $id_anggota,
-                    'biaya' => $biaya,
-                    'Keterangan' => $keterangan,
-                    'IsLunas' => $isLunas,
-                    'Branch_id' => branch_id(),
-                    'UpdateBy' => user_id(),
+                    'Member_id'       => $id_anggota,
+                    'Tanggal'         => $endDate,
+                    'biaya'           => $biaya,
+                    'Keterangan'      => $keterangan,
+                    'IsLunas'         => $isLunas,
+                    'Branch_id'       => branch_id(),
+                    'UpdateBy'        => user_id(),
                 ];
 
                 $newPerpanjanganId = $this->perpanjanganModel->insert($save_data, true); // true = return insert ID
@@ -88,7 +89,7 @@ class PerpanjanganAnggota extends \Base\Controllers\BaseController
                 if ($newPerpanjanganId !== false && $newPerpanjanganId > 0) {
                     $data = [
                         'EndDate' => $endDate,
-                        'Jenisanggota_id' => $jenisId
+                        'JenisAnggota_id' => $jenisId
                     ];
 
                     if ($jenisId == '12') {
@@ -111,7 +112,6 @@ class PerpanjanganAnggota extends \Base\Controllers\BaseController
                 session()->setFlashdata('swal_icon', 'error');
                 session()->setFlashdata('swal_title', 'Gagal');
                 session()->setFlashdata('swal_text', 'Perpanjangan anggota gagal disimpan');
-                set_message('message', lang('PerpanjanganAnggota.info.failed_saved'));
                 echo view('PerpanjanganAnggota\Views\add', $this->data);
             }
         } else {
@@ -142,13 +142,14 @@ class PerpanjanganAnggota extends \Base\Controllers\BaseController
                 $perpanjanganUpdate = $this->anggotaModel->update($id, $update_data);
 
                 if ($perpanjanganUpdate) {
-                    set_message('toastr_msg', 'PerpanjanganAnggota berhasil diubah');
-                    set_message('toastr_type', 'success');
+                    session()->setFlashdata('swal_icon', 'success');
+                    session()->setFlashdata('swal_title', 'Berhasil');
+                    session()->setFlashdata('swal_text', 'Perpanjangan anggota berhasil diubah');
                     return redirect()->to('/perpanjangan-anggota');
                 } else {
-                    set_message('toastr_msg', 'PerpanjanganAnggota gagal diubah');
-                    set_message('toastr_type', 'warning');
-                    set_message('message', 'PerpanjanganAnggota gagal diubah');
+                    session()->setFlashdata('swal_icon', 'error');
+                    session()->setFlashdata('swal_title', 'Gagal');
+                    session()->setFlashdata('swal_text', 'Perpanjangan anggota gagal diubah');
                     return redirect()->to('/perpanjangan-anggota/edit/' . $id);
                 }
             }
@@ -162,21 +163,22 @@ class PerpanjanganAnggota extends \Base\Controllers\BaseController
     public function delete(int $id = 0)
     {
         if (!$id) {
-            set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-            set_message('toastr_type', 'error');
+            session()->setFlashdata('swal_icon', 'error');
+            session()->setFlashdata('swal_title', 'Gagal');
+            session()->setFlashdata('swal_text', 'ID tidak ditemukan');
             return redirect()->to('/perpanjangan-anggota');
         }
-        $perpanjanganDelete = $this->anggotaModel->delete($id);
+        $perpanjanganDelete = $this->perpanjanganModel->delete($id);
         if ($perpanjanganDelete) {
-            set_message('toastr_msg', lang('PerpanjanganAnggota.info.successfully_deleted'));
-            set_message('toastr_type', 'success');
-            return redirect()->to('/perpanjangan-anggota');
+            session()->setFlashdata('swal_icon', 'success');
+            session()->setFlashdata('swal_title', 'Berhasil');
+            session()->setFlashdata('swal_text', 'Perpanjangan anggota berhasil dihapus');
         } else {
-            set_message('toastr_msg', lang('PerpanjanganAnggota.info.failed_deleted'));
-            set_message('toastr_type', 'warning');
-            set_message('message', lang('PerpanjanganAnggota.info.failed_deleted'));
-            return redirect()->to('/perpanjangan-anggota/delete/' . $id);
+            session()->setFlashdata('swal_icon', 'error');
+            session()->setFlashdata('swal_title', 'Gagal');
+            session()->setFlashdata('swal_text', 'Perpanjangan anggota gagal dihapus');
         }
+        return redirect()->to('/perpanjangan-anggota');
     }
 
     public function apply_status($id)
@@ -184,16 +186,14 @@ class PerpanjanganAnggota extends \Base\Controllers\BaseController
         $field = $this->request->getGet('field');
         $value = $this->request->getGet('value');
 
-        $perpanjanganUpdate = $this->perpanjanganModel->update($id, array($field => $value));
+        $perpanjanganUpdate = $this->anggotaModel->update($id, array($field => $value));
 
         if ($perpanjanganUpdate) {
-            session()->setFlashdata('swal_icon', 'success');
-            session()->setFlashdata('swal_title', 'Berhasil');
-            session()->setFlashdata('swal_text', 'Status lunas berhasil diubah');
+            set_message('toastr_msg', ' PerpanjanganAnggota berhasil diubah');
+            set_message('toastr_type', 'success');
         } else {
-            session()->setFlashdata('swal_icon', 'error');
-            session()->setFlashdata('swal_title', 'Gagal');
-            session()->setFlashdata('swal_text', 'Status lunas gagal diubah');
+            set_message('toastr_msg', ' PerpanjanganAnggota gagal diubah');
+            set_message('toastr_type', 'warning');
         }
         return redirect()->to('/perpanjangan-anggota');
     }

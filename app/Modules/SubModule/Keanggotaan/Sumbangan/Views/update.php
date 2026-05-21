@@ -32,7 +32,7 @@ $request = service('request');
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
                         <li class="breadcrumb-item"><a href="<?= base_url('sumbangan') ?>"><?= lang('Sumbangan.module') ?></a></li>
-                        <li class="active breadcrumb-item" aria-current="page"><?= lang('Sumbangan.action.edit') ?></li>
+                        <li class="breadcrumb-item" aria-current="page"><?= lang('Sumbangan.action.edit') ?></li>
                     </ol>
                 </nav>
             </div>

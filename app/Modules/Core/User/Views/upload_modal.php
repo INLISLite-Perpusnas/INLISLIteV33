@@ -203,19 +203,8 @@
             processData: false,
             contentType: false,
             success: function(res) {
-                console.log(res);
                 if (res.status === 201) {
-                    Swal.fire({
-                        title: 'Success',
-                        text: 'File berhasil disimpan',
-                        icon: 'success',
-                        showConfirmButton: false,
-                        timer: 3000
-                    });
-
-                    setTimeout(function() {
-                        window.location.href = $('#upload_data_redirect').val();
-                    }, 2000);
+                    window.location.href = $('#upload_data_redirect').val();
                 } else {
                     $('#frm_upload_message').html('<div class="alert alert-danger">' + res.messages.error + '</div>');
                 }

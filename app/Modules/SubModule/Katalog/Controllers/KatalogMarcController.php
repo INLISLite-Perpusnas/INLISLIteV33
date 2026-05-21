@@ -251,102 +251,235 @@ class KatalogMarcController extends \Base\Controllers\BaseController
         echo view('Katalog\Views\marc_import_form');
     }
 
-    public function createFromMarcFile()
+    public function previewMarcFile()
     {
-        if ($this->request->getMethod() !== 'post') {
-            return $this->response->setStatusCode(405)->setJSON(['success' => false, 'message' => 'Metode tidak diizinkan']);
+        $files = $this->request->getFileMultiple('marc_file');
+        if (empty($files) || !$files[0]->isValid()) {
+            return $this->response->setJSON(['success' => false, 'message' => 'File tidak valid atau tidak ditemukan']);
         }
 
-        $file        = $this->request->getFile('marc_file');
-        $marcContent = file_get_contents($file->getTempName());
+        $preview = [];
+        $store   = [];
 
-        // Normalisasi karakter INLISLite
-        if (strpos($marcContent, '^') !== false && strpos($marcContent, '$') !== false) {
-            $marcContent = str_replace(['^', '$'], [chr(30), chr(31)], $marcContent);
-        } elseif (strpos($marcContent, '▲') !== false) {
-            $marcContent = str_replace(['▲', '▼', '↔'], [chr(30), chr(31), chr(29)], $marcContent);
+        foreach ($files as $file) {
+            if (!$file->isValid()) continue;
+
+            $content  = file_get_contents($file->getTempName());
+            $filename = $file->getName();
+            $ext      = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+            try {
+                if ($ext === 'xml') {
+                    $result  = $this->_parseMarcXmlRecords($content, $filename);
+                    $store   = array_merge($store,   $result['store']);
+                    $preview = array_merge($preview, $result['preview']);
+                } else {
+                    $marcContent = $this->_normalizeMarcContent($content);
+                    $marc = new \File_MARC($marcContent, \File_MARC::SOURCE_STRING);
+                    while ($record = $marc->next()) {
+                        $taglistData = $this->_parseFieldsToTaglist($record);
+                        $catalogData = $this->_mapTagsToCatalogData($taglistData);
+
+                        $store[]   = ['catalog' => $catalogData, 'taglist' => $taglistData];
+                        $preview[] = [
+                            'title'     => $catalogData['Title']       ?? '-',
+                            'author'    => $catalogData['Author']      ?? '-',
+                            'publisher' => $catalogData['Publisher']   ?? '-',
+                            'year'      => $catalogData['PublishYear'] ?? '-',
+                            'isbn'      => $catalogData['ISBN']        ?? '-',
+                            'file'      => $filename,
+                        ];
+                    }
+                }
+            } catch (\Exception $e) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Error pada file ' . $filename . ': ' . $e->getMessage(),
+                ]);
+            }
+        }
+
+        if (empty($store)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Tidak ada record MARC yang valid dalam file yang dipilih']);
+        }
+
+        session()->set('marc_import_data', $store);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'total'   => count($preview),
+            'records' => $preview,
+        ]);
+    }
+
+    public function createFromMarcFile()
+    {
+        $store = session()->get('marc_import_data');
+
+        if (empty($store)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Tidak ada data preview. Silakan upload ulang file.']);
         }
 
         $this->db->transStart();
 
         try {
-            $marc   = new \File_MARC($marcContent, \File_MARC::SOURCE_STRING);
-            $record = $marc->next();
+            $results    = [];
+            $tableFields = $this->db->getFieldNames('catalogs');
 
-            if (!$record) {
-                throw new \Exception("Record MARC tidak valid.");
+            foreach ($store as $parsed) {
+                $catalogData = $parsed['catalog'];
+                $taglistData = $parsed['taglist'];
+
+                $catalogData['Worksheet_id']   = 1;
+                $catalogData['Branch_id']      = user()->branch_id ?? 2522;
+                $catalogData['CreateBy']       = user_id();
+                $catalogData['CreateDate']     = date('Y-m-d H:i:s');
+                $catalogData['UpdateBy']       = user_id();
+                $catalogData['UpdateDate']     = date('Y-m-d H:i:s');
+                $catalogData['CreateTerminal'] = $this->request->getIPAddress();
+                $catalogData['active']         = 1;
+
+                $filteredData = array_intersect_key($catalogData, array_flip($tableFields));
+                $this->db->table('catalogs')->insert($filteredData);
+                $newCatalogId = $this->db->insertID();
+
+                if (!$newCatalogId) throw new \Exception('Gagal menyimpan: ' . ($catalogData['Title'] ?? '?'));
+
+                if (!empty($catalogData['BIBID'])) {
+                    $this->db->table('catalog_ruas')->insert([
+                        'CatalogId'  => $newCatalogId,
+                        'Tag'        => '035',
+                        'Indicator1' => '#',
+                        'Indicator2' => '#',
+                        'Value'      => '$a ' . $catalogData['BIBID'],
+                        'Sequence'   => 0,
+                    ]);
+                }
+
+                $ruasBatch = [];
+                $seq       = 1;
+                foreach ($taglistData as $dataruas) {
+                    if ($dataruas['tag'] == '035' || strtolower($dataruas['tag']) == 'leader') continue;
+                    $ruasBatch[] = [
+                        'CatalogId'  => $newCatalogId,
+                        'Tag'        => $dataruas['tag'],
+                        'Indicator1' => ($dataruas['ind1'] === ' ' || $dataruas['ind1'] === null) ? '#' : $dataruas['ind1'],
+                        'Indicator2' => ($dataruas['ind2'] === ' ' || $dataruas['ind2'] === null) ? '#' : $dataruas['ind2'],
+                        'Value'      => $dataruas['value'],
+                        'Sequence'   => $seq++,
+                    ];
+                }
+
+                if (!empty($ruasBatch)) {
+                    $this->db->table('catalog_ruas')->insertBatch($ruasBatch);
+                }
+
+                $results[] = ['id' => $newCatalogId, 'title' => $catalogData['Title'] ?? 'Tanpa Judul'];
             }
 
-            $taglistData = $this->_parseFieldsToTaglist($record);
-            $catalogData = $this->_mapTagsToCatalogData($taglistData);
+            $this->db->transComplete();
 
-            $catalogData['Worksheet_id']    = 1;
-            $catalogData['Branch_id']       = 2522;
-            $catalogData['CreateBy']        = user_id();
-            $catalogData['CreateDate']      = date("Y-m-d H:i:s");
-            $catalogData['UpdateBy']        = user_id();
-            $catalogData['UpdateDate']      = date("Y-m-d H:i:s");
-            $catalogData['CreateTerminal']  = $this->request->getIPAddress();
-            $catalogData['active']          = 1;
-
-            $tableFields  = $this->db->getFieldNames('catalogs');
-            $filteredData = array_intersect_key($catalogData, array_flip($tableFields));
-
-            $this->db->table('catalogs')->insert($filteredData);
-            $newCatalogId = $this->db->insertID();
-
-            if (!$newCatalogId) throw new \Exception("Gagal menyimpan data katalog utama.");
-
-            // Simpan BIBID manual (Tag 035)
-            if (!empty($catalogData['BIBID'])) {
-                $this->db->table('catalog_ruas')->insert([
-                    'CatalogId'  => $newCatalogId,
-                    'Tag'        => '035',
-                    'Indicator1' => '#',
-                    'Indicator2' => '#',
-                    'Value'      => '$a ' . $catalogData['BIBID'],
-                    'Sequence'   => 0,
-                ]);
+            if ($this->db->transStatus() === false) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Transaksi database gagal']);
             }
 
-            // Simpan semua ruas
-            $ruasBatch = [];
-            $seq       = 1;
-            foreach ($taglistData as $dataruas) {
-                if ($dataruas['tag'] == '035' || strtolower($dataruas['tag']) == 'leader') continue;
-
-                $ind1 = ($dataruas['ind1'] === ' ' || $dataruas['ind1'] === null) ? '#' : $dataruas['ind1'];
-                $ind2 = ($dataruas['ind2'] === ' ' || $dataruas['ind2'] === null) ? '#' : $dataruas['ind2'];
-
-                $ruasBatch[] = [
-                    'CatalogId'  => $newCatalogId,
-                    'Tag'        => $dataruas['tag'],
-                    'Indicator1' => $ind1,
-                    'Indicator2' => $ind2,
-                    'Value'      => $dataruas['value'],
-                    'Sequence'   => $seq++,
-                ];
-            }
-
-            if (!empty($ruasBatch)) {
-                $this->db->table('catalog_ruas')->insertBatch($ruasBatch);
-            }
-
-            $this->db->transCommit();
+            session()->remove('marc_import_data');
 
             return $this->response->setJSON([
-                'success'    => true,
-                'message'    => 'Berhasil submit data pada judul: ' . ($catalogData['Title'] ?? 'Tanpa Judul'),
-                'catalog_id' => $newCatalogId,
+                'success' => true,
+                'total'   => count($results),
+                'results' => $results,
+                'message' => 'Berhasil mengimpor ' . count($results) . ' katalog',
             ]);
 
         } catch (\Exception $e) {
             $this->db->transRollback();
-            return $this->response->setJSON([
-                'success' => false,
-                'message' => 'Error: ' . $e->getMessage() . ' | Line: ' . $e->getLine(),
-            ]);
+            return $this->response->setJSON(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
         }
+    }
+
+    private function _normalizeMarcContent(string $content): string
+    {
+        if (strpos($content, '^') !== false && strpos($content, '$') !== false) {
+            return str_replace(['^', '$'], [chr(30), chr(31)], $content);
+        }
+        if (strpos($content, '▲') !== false) {
+            return str_replace(['▲', '▼', '↔'], [chr(30), chr(31), chr(29)], $content);
+        }
+        return $content;
+    }
+
+    private function _parseMarcXmlRecords(string $xmlContent, string $filename): array
+    {
+        // Strip namespace declarations so SimpleXML can parse without namespace handling
+        $xmlContent = preg_replace('/\s+xmlns[^=]*="[^"]*"/', '', $xmlContent);
+
+        libxml_use_internal_errors(true);
+        $xml = simplexml_load_string($xmlContent);
+        if ($xml === false) {
+            $errors = libxml_get_errors();
+            $msg    = !empty($errors) ? $errors[0]->message : 'Unknown XML error';
+            libxml_clear_errors();
+            throw new \Exception('XML tidak valid: ' . trim($msg));
+        }
+
+        $store   = [];
+        $preview = [];
+
+        foreach ($xml->record as $record) {
+            $taglist = [];
+
+            // Leader
+            if (isset($record->leader)) {
+                $taglist[] = ['tag' => 'leader', 'ind1' => ' ', 'ind2' => ' ', 'value' => (string)$record->leader];
+            }
+
+            // Control fields (tag < 010)
+            foreach ($record->controlfield as $cf) {
+                $taglist[] = [
+                    'tag'   => (string)($cf['tag'] ?? ''),
+                    'ind1'  => ' ',
+                    'ind2'  => ' ',
+                    'value' => (string)$cf,
+                ];
+            }
+
+            // Data fields
+            foreach ($record->datafield as $df) {
+                $ind1 = (string)($df['ind1'] ?? ' ');
+                $ind2 = (string)($df['ind2'] ?? ' ');
+                $ind1 = ($ind1 === '#') ? ' ' : $ind1;
+                $ind2 = ($ind2 === '#') ? ' ' : $ind2;
+
+                $parts = [];
+                foreach ($df->subfield as $sf) {
+                    $parts[] = '$' . (string)($sf['code'] ?? '') . ' ' . (string)$sf;
+                }
+
+                $taglist[] = [
+                    'tag'   => (string)($df['tag'] ?? ''),
+                    'ind1'  => $ind1,
+                    'ind2'  => $ind2,
+                    'value' => implode(' ', $parts),
+                ];
+            }
+
+            if (empty($taglist)) continue;
+
+            $catalogData = $this->_mapTagsToCatalogData($taglist);
+
+            $store[]   = ['catalog' => $catalogData, 'taglist' => $taglist];
+            $preview[] = [
+                'title'     => $catalogData['Title']       ?? '-',
+                'author'    => $catalogData['Author']      ?? '-',
+                'publisher' => $catalogData['Publisher']   ?? '-',
+                'year'      => $catalogData['PublishYear'] ?? '-',
+                'isbn'      => $catalogData['ISBN']        ?? '-',
+                'file'      => $filename,
+            ];
+        }
+
+        return ['store' => $store, 'preview' => $preview];
     }
 
     // ----------------------------------------------------------------

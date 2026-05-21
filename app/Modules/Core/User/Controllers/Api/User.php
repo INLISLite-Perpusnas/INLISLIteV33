@@ -338,9 +338,6 @@ public function create()
                 }
             }
             
-            $this->session->setFlashdata('toastr_msg', 'Profil User berhasil disimpan');
-            $this->session->setFlashdata('toastr_type', 'success');
-            
             $response = [
                 'status'   => 201,
                 'error'    => null,
@@ -507,9 +504,10 @@ public function create()
     $updateuser = $userModel->update($upload_id, $update_data);
     
     if ($updateuser) {
-        $this->session->setFlashdata('toastr_msg', 'Upload file berhasil');
-        $this->session->setFlashdata('toastr_type', 'success');
-        
+        $this->session->setFlashdata('swal_icon', 'success');
+        $this->session->setFlashdata('swal_title', 'Berhasil');
+        $this->session->setFlashdata('swal_text', 'Avatar berhasil diperbarui.');
+
         $response = [
             'status'   => 201,
             'error'    => null,

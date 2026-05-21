@@ -29,7 +29,7 @@
     </div>
 
     <div class="main-card mb-3 card">
-        <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Anggota
+        <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Perpanajangan Anggota
             <div class="btn-actions-pane-right actions-icon-btn">
                 <?php if (is_allowed('perpanjangan-anggota/create')): ?>
                     <a href="<?= base_url('perpanjangan-anggota/create') ?>" class=" btn btn-success" title=""><i
@@ -152,7 +152,7 @@
         Swal.fire({
             title: '<?= lang('App.swal.are_you_sure') ?>',
             text: "<?= lang('App.swal.can_not_be_restored') ?>",
-            type: 'warning',
+            icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#dd6b55',
