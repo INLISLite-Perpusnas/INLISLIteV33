@@ -215,14 +215,14 @@ class Home extends \Base\Controllers\BaseController
                 'link' => base_url('baca-ditempat'),
                 'color' => 'info'
             ],
-            [
+            ...(env('Is_keanggotaan_online') == 1 ? [[
                 'name' => 'Keanggotaan Online',
                 'description' => 'Daftar menjadi anggota perpustakaan',
                 'img' => base_url('assets/img/anggota.png'),
                 'icon' => 'fas fa-user-plus',
                 'link' => base_url('home/pendaftaran_online'),
                 'color' => 'warning'
-            ],
+            ]] : []),
             [
                 'name' => 'Peminjaman Mandiri',
                 'description' => 'Pinjam buku secara mandiri',
@@ -281,6 +281,9 @@ class Home extends \Base\Controllers\BaseController
 
     public function pendaftaran_online()
     {
+        if (env('Is_keanggotaan_online') != 1) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
         $this->data['title'] = 'Pendaftaran Online';
         return view('Home\Views\pendaftaran-online', $this->data);
     }

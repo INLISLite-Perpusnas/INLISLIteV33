@@ -45,7 +45,7 @@ class BacaDitempat extends \Base\Controllers\BaseResourceController
 			->join('members', 'members.ID = a.Member_id', 'left')
 			->join('locations', 'locations.ID = a.Location_id', 'left')
 			->join('location_library', 'location_library.ID = locations.LocationLibrary_id', 'left')
-			->groupBy('a.ID','desc');
+			->orderBy('a.ID', 'desc');
 		
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
@@ -73,6 +73,7 @@ class BacaDitempat extends \Base\Controllers\BaseResourceController
 			})
 			->edit('Barcode_no', function ($row) {
 				$data = get_ref_single('collections', 'ID="' . $row->Collection_id . '"', 'data');
+				$barcode = ($data && isset($data->NomorBarcode)) ? $data->NomorBarcode : '';
 				$html   =
 					'<div class="widget-content p-0">
 					<div class="widget-content-wrapper">
@@ -80,7 +81,7 @@ class BacaDitempat extends \Base\Controllers\BaseResourceController
 							<i class="far fa-qrcode fa-2x text-info"></i>
 						</div>
 						<div class="widget-content-left">
-							<div class="widget-heading">' . $data->NomorBarcode ?? '' . '</div>
+							<div class="widget-heading">' . $barcode . '</div>
 						</div>
 					</div>
 				</div>';

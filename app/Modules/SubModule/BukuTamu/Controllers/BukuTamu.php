@@ -50,8 +50,9 @@ class BukuTamu extends \Base\Controllers\BaseController
     public function delete(int $id = 0)
     {
         if (!$id) {
-            set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-            set_message('toastr_type', 'error');
+            session()->setFlashdata('swal_icon', 'error');
+            session()->setFlashdata('swal_title', 'Gagal');
+            session()->setFlashdata('swal_text', 'Parameter ID tidak ditemukan');
             return redirect()->to('bukutamu');
         }
 
@@ -63,13 +64,14 @@ class BukuTamu extends \Base\Controllers\BaseController
         }
 
         if ($bukutamuDelete) {
-            set_message('toastr_msg', 'Buku Tamu berhasil dihapus');
-            set_message('toastr_type', 'success');
+            session()->setFlashdata('swal_icon', 'success');
+            session()->setFlashdata('swal_title', 'Berhasil');
+            session()->setFlashdata('swal_text', 'Buku Tamu berhasil dihapus');
             return redirect()->to('bukutamu?slug=' . $slug);
         } else {
-            set_message('toastr_msg', 'Buku Tamu gagal dihapus');
-            set_message('toastr_type', 'warning');
-            set_message('message', 'Buku Tamu gagal dihapus');
+            session()->setFlashdata('swal_icon', 'error');
+            session()->setFlashdata('swal_title', 'Gagal');
+            session()->setFlashdata('swal_text', 'Buku Tamu gagal dihapus');
             return redirect()->to('bukutamu?slug=' . $slug);
         }
     }

@@ -21,7 +21,7 @@
                         <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i
                                     class="fa fa-home"></i></a></li>
                         <li class="breadcrumb-item">Keanggotaan</li>
-                        <li class="breadcrumb-item active">Perpanjangan Anggota</li>
+                        <li class="breadcrumb-item">Perpanjangan Anggota</li>
                     </ol>
                 </nav>
             </div>
@@ -98,7 +98,54 @@
 <?= $this->section('script'); ?>
 
 <script>
-    setDataTable('#tbl_perpanjangans', disableOrderCols = [0, 6], defaultOrderCols = [6, 'desc'], autoNumber = true);
+    $(document).ready(function() {
+        <?php if (session()->getFlashdata('swal_icon')) : ?>
+        Swal.fire({
+            icon: '<?= session()->getFlashdata('swal_icon') ?>',
+            title: '<?= session()->getFlashdata('swal_title') ?>',
+            text: '<?= session()->getFlashdata('swal_text') ?>',
+            showConfirmButton: false,
+            timer: 3000
+        });
+        <?php endif; ?>
+    });
+</script>
+
+<script>
+    var t = $('#tbl_perpanjangans').DataTable({
+        "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
+               "<'row'<'col-md-12'tr>>" +
+               "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
+        "pagingType": "full_numbers",
+        "oLanguage": {
+            "sSearch": "<i class='fa fa-search'></i> _INPUT_",
+            "sLengthMenu": "_MENU_",
+            "oPaginate": {
+                "sNext"    : "<i class='fa fa-chevron-right'></i>",
+                "sPrevious": "<i class='fa fa-chevron-left'></i>",
+                "sLast"    : "<i class='fa fa-chevron-double-right'></i>",
+                "sFirst"   : "<i class='fa fa-chevron-double-left'></i>",
+            }
+        },
+        "columnDefs": [
+            { "targets": [0, 5, 6], "orderable": false }
+        ],
+        "order": [[1, "asc"]],
+        "drawCallback": function() {
+            var api = this.api();
+            api.column(0, { page: 'current' }).nodes().each(function(cell, i) {
+                cell.innerHTML = api.page.info().start + i + 1;
+            });
+            $('.apply-status').bootstrapToggle();
+            $(".apply-status").off('change').on('change', function() {
+                var href = $(this).attr('data-href');
+                var field = $(this).attr('data-field');
+                var id = $(this).attr('data-id');
+                var value = $(this).is(':checked') ? 1 : 0;
+                window.location.href = href + '/' + id + '?field=' + field + '&value=' + value;
+            });
+        }
+    });
 
     $("body").on("click", ".remove-data", function () {
         var url = $(this).attr('data-href');

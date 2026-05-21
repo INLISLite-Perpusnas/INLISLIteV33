@@ -51,52 +51,72 @@ if (!function_exists('member_register')) {
     function member_register($email, $username, $password, $activate_hash = '', $form_data)
     {
         helper('parameter');
-		$memberModel = new \Member\Models\MemberModel();
+        $memberModel = new \Member\Models\MemberModel();
 
-		$existing = $memberModel
-                ->where('Email', $email)
-                ->orWhere('IdentityNo', $username)
-                ->first();
+        $existing = $memberModel
+            ->where('Email', $email)
+            ->orWhere('IdentityNo', $username)
+            ->first();
 
-		if (!empty($existing)) {
-			$response = [
-				'error' => true,
-				'message' => 'Email atau Nomor Identitas sudah terdaftar',
-			];
-		} else {	
-			$users = model(Myth\Auth\Models\UserModel::class);
-			$data_user = [
-				'username' => $username,
-				'password' => $password,
-				'email' => $email,
-				'activate_hash' => $activate_hash,
-				'active' => 0
-			];
-			$user = new Myth\Auth\Entities\User($data_user);
-			
-			$users->withGroup('anggota');
+        if (!empty($existing)) {
+            return [
+                'error' => true,
+                'message' => 'Email atau Nomor Identitas sudah terdaftar',
+            ];
+        }
 
-			try {
-				$users->save($user);
-				$form_data['MemberNo'] = $username;
-				$form_data['RegisterDate'] = date('Y-m-d');
-				$form_data['StatusAnggota_id'] = 1;
+        $db = \Config\Database::connect();
+        $db->transStart();
 
-				$member_id = $memberModel->insert($form_data);
-				$response = member_notify($email,$username, $password, $activate_hash, $form_data);
-				
-			} catch (\Exception $e) {
-				// rollback user here
-				$response = [
-					'error' => true,
-					'message' => 'Error, data anggota gagal disimpan. Silakan coba lagi',
-					'description' => $e->getMessage(),
-				];
-				exit($e->getMessage());
-			}
-		}
+        try {
+            $users = model(Myth\Auth\Models\UserModel::class);
+            $data_user = [
+                'username' => $username,
+                'password' => $password,
+                'email'    => $email,
+                'activate_hash' => $activate_hash,
+                'active'   => 0,
+            ];
+            $user = new Myth\Auth\Entities\User($data_user);
+            $users->withGroup('anggota');
+            $users->save($user);
 
-        return $response;
+            $form_data['MemberNo']        = $username;
+            $form_data['RegisterDate']    = date('Y-m-d');
+            $form_data['StatusAnggota_id'] = 1;
+
+            $memberModel->insert($form_data);
+
+        } catch (\Exception $e) {
+            $db->transRollback();
+            return [
+                'error'       => true,
+                'message'     => 'Error, data anggota gagal disimpan. Silakan coba lagi',
+                'description' => $e->getMessage(),
+            ];
+        }
+
+        $db->transComplete();
+
+        if ($db->transStatus() === false) {
+            return [
+                'error'   => true,
+                'message' => 'Error, data anggota gagal disimpan. Silakan coba lagi',
+            ];
+        }
+
+        // Data berhasil disimpan, sekarang kirim email notifikasi
+        $email_response = member_notify($email, $username, $password, $activate_hash, $form_data);
+
+        if ($email_response['error'] === true) {
+            // Data sudah tersimpan — kembalikan sukses dengan pesan email gagal
+            return [
+                'error'   => false,
+                'message' => 'Pendaftaran berhasil disimpan. Namun email verifikasi gagal dikirim, silakan hubungi admin untuk aktivasi akun.',
+            ];
+        }
+
+        return $email_response;
     }
 }
 

@@ -37,23 +37,25 @@ class BacaDitempat extends \Base\Controllers\BaseController
     public function delete(int $id = 0)
     {
         if (!$id) {
-            set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-            set_message('toastr_type', 'error');
-            return redirect()->to('bacaditempat');
+            session()->setFlashdata('swal_icon', 'error');
+            session()->setFlashdata('swal_title', 'Gagal');
+            session()->setFlashdata('swal_text', 'Parameter ID tidak ditemukan');
+            return redirect()->to('baca-di-tempat');
         }
 
         $slug = $this->request->getGet('slug') ?? 'anggota';
 
         $bacaditempatDelete = $this->bacaditempatModel->delete($id);
         if ($bacaditempatDelete) {
-            set_message('toastr_msg', 'Baca Ditempat berhasil dihapus');
-            set_message('toastr_type', 'success');
-            return redirect()->to('bacaditempat?slug=' . $slug);
+            session()->setFlashdata('swal_icon', 'success');
+            session()->setFlashdata('swal_title', 'Berhasil');
+            session()->setFlashdata('swal_text', 'Baca Ditempat berhasil dihapus');
+            return redirect()->to('baca-di-tempat');
         } else {
-            set_message('toastr_msg', 'Baca Ditempat gagal dihapus');
-            set_message('toastr_type', 'warning');
-            set_message('message', 'Baca Ditempat gagal dihapus');
-            return redirect()->to('bacaditempat?slug=' . $slug);
+            session()->setFlashdata('swal_icon', 'error');
+            session()->setFlashdata('swal_title', 'Gagal');
+            session()->setFlashdata('swal_text', 'Baca Ditempat gagal dihapus');
+            return redirect()->to('baca-di-tempat');
         }
     }
 }

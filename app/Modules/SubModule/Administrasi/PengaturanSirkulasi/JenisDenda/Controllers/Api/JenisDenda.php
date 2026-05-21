@@ -88,8 +88,6 @@ class JenisDenda extends \Base\Controllers\BaseResourceController
 
 		$save_data_id = $this->jenisdendaModel->insert($save_data);
 		if ($save_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Jenis Denda berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
 				'message' => 'Jenis Denda berhasil disimpan',
@@ -113,8 +111,6 @@ class JenisDenda extends \Base\Controllers\BaseResourceController
 
 		$update_data_id = $this->jenisdendaModel->update($id, $update_data);
 		if ($update_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Jenis Denda berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
 				'message' => 'Jenis Denda berhasil disimpan',

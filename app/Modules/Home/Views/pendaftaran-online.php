@@ -557,7 +557,7 @@
       <p class="mb-0">
         <i class="fas fa-info-circle me-2"></i>
         Sudah memiliki Nomor Anggota?
-        <a href="#" class="text-decoration-none fw-bold">Login Anggota</a>
+        <a href="<?= base_url('login') ?>" class="text-decoration-none fw-bold">Login Anggota</a>
       </p>
     </div>
   </div>
@@ -565,10 +565,8 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('script') ?>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/1000hz-bootstrap-validator/0.11.9/validator.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.7.3/sweetalert2.all.min.js"></script>
 
 <script>
     // Initialize form
@@ -716,14 +714,21 @@
       return false;
     });
 
-    // Form validation with Bootstrap validator
-    $("#frm_register").validator().on("submit", function(event) {
-      if (event.isDefaultPrevented()) {
+    $("#frm_register").on("submit", function(event) {
+      event.preventDefault();
+
+      if (!$('#check_agree').is(':checked')) {
         formError();
-      } else {
-        event.preventDefault();
-        submitForm();
+        Swal.fire({
+          title: 'Peringatan',
+          text: 'Anda harus menyetujui pernyataan terlebih dahulu',
+          icon: 'warning',
+          showConfirmButton: true,
+        });
+        return false;
       }
+
+      submitForm();
     });
 
     function submitForm() {
@@ -744,12 +749,15 @@
             updateProgress(100);
             Swal.fire({
               title: 'Berhasil',
-              html: 'Link verifikasi anggota berhasil terkirim.<br>Silakan cek email Anda segera!',
+              html: 'Pendaftaran berhasil.<br>Silakan cek email Anda untuk verifikasi akun!',
               icon: 'success',
-              showConfirmButton: false,
-              timer: 5000,
+              showConfirmButton: true,
+              confirmButtonText: 'OK',
             }).then(() => {
-              window.location.href = `${baseUrl}/`;
+              $('#frm_register')[0].reset();
+              updateProgress(33);
+              $('#btnSubmit').attr('disabled', false);
+              $('#btnSubmit').html('<i class="fas fa-user-plus me-2"></i>Daftar Sebagai Anggota');
             });
           } else {
             formError();

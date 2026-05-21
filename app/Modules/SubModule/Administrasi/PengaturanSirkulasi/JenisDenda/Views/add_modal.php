@@ -64,7 +64,7 @@
 				Swal.fire({
 					title: 'Berhasil',
 					html: 'Jenis Denda berhasil ditambah.',
-					type: 'success',
+					icon: 'success',
 					showConfirmButton: false,
 					timer: 5000,
 				}).then(() => {
@@ -74,7 +74,7 @@
 				Swal.fire({
 					title: 'Oups',
 					text: res.message,
-					type: 'error',
+					icon: 'error',
 					showConfirmButton: false,
 					timer: 5000
 				}).then(() => {
@@ -89,7 +89,7 @@
 			Swal.fire({
 				title: 'Oups',
 				text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
-				type: 'error',
+				icon: 'error',
 				showConfirmButton: false,
 				timer: 5000
 			}).then(() => {
