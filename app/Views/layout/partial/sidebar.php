@@ -27,7 +27,7 @@ $group = user()->category ?? 'admin';
     .sidebar-brand {
         position: relative;
         padding: 10px 45px 10px 15px;
-        margin-bottom: 30px;
+        margin-bottom: 8px;
         display: flex;
         align-items: center;
         gap: 12px;
