@@ -71,17 +71,20 @@ class FormSabtuMinggu extends \Base\Controllers\BaseController
         }
 
         if ($success) {
-            set_message('toastr_msg', 'Form Entri Sabtu Minggu berhasil disimpan');
-            set_message('toastr_type', 'success');
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Form Entri Sabtu Minggu berhasil disimpan');
         } else {
-            set_message('toastr_msg', 'Form Entri Sabtu Minggu gagal disimpan');
-            set_message('toastr_type', 'error');
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Gagal');
+            $this->session->setFlashdata('swal_text', 'Form Entri Sabtu Minggu gagal disimpan');
         }
 
         return redirect()->to('/master-form-sabtuminggu');
     } else {
-        set_message('toastr_msg', 'Validasi gagal');
-        set_message('toastr_type', 'error');
+        $this->session->setFlashdata('swal_icon', 'error');
+        $this->session->setFlashdata('swal_title', 'Validasi Gagal');
+        $this->session->setFlashdata('swal_text', 'Validasi gagal');
         return redirect()->back()->withInput();
     }
 }

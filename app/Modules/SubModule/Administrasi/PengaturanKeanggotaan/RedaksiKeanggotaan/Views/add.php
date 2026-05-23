@@ -6,6 +6,14 @@ $slug = $request->getGet('slug');
 
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style') ?>
+<style>
+	.tox.tox-tinymce.tox-fullscreen {
+		z-index: 1050;
+		top: 60px !important;
+		left: 85px !important;
+		width: calc(100% - 85px) !important;
+	}
+</style>
 <?= $this->endSection('style') ?>
 
 <?= $this->section('page') ?>
@@ -39,7 +47,7 @@ $slug = $request->getGet('slug');
 		</div>
 		<div class="card-body">
 			<div id="infoMessage"><?= $message ?? '' ?></div> <?= get_message('message') ?>
-			<form id="frm_create" method="post" action="<?= base_url('master-redaksi-keanggotaan/create') ?>" onsubmit="return validateForm()">
+			<form id="frm_create" method="post" action="<?= base_url('master-redaksi-keanggotaan/create') ?>">
 				<div class="form-row">
 					<div class="col-md-6">
 						<div class="position-relative form-group">
@@ -89,48 +97,45 @@ $slug = $request->getGet('slug');
 <?= $this->endSection('page') ?>
 
 <?= $this->section('script') ?>
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
+	if (!jQuery.now) {
+		jQuery.now = function() {
+			return Date.now();
+		};
+	}
+
 	$(document).ready(function() {
 		$('#yourTextareaId').summernote({
-            height: 300,
-            minHeight: null,
-            maxHeight: null,
-            focus: true,
-            toolbar: [
-                ['style', ['style', 'undo', 'redo', 'codeview']],
-                ['font', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
-                ['fontname', ['fontname']],
-                ['fontsize', ['fontsize']],
-                ['color', ['color']],
-                ['para', ['ul', 'ol', 'paragraph', 'table']],
-                ['insert', ['link', 'picture', 'video', 'hr']],
-            ],
-            fontNames: ['System Font',
-                'Dosis', 'Andale Mono', 'Arial', 'Arial Black', 'Book Antiqua',
-                'Comic Sans MS', 'Courier New', 'Georgia', 'Helvetica', 'Impact',
-                'Symbol', 'Tahoma', 'Times New Roman', 'Trebuchet MS', 'Verdana'
-            ],
-            fontSizes: [
-                '12', '13', '14', '15', '16', '17', '18', '19', '20', '24',
-                '28', '32', '34', '36', '72'
-            ],
-            styleTags: ['p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-            callbacks: {
-                onInit: function() {
-                    // Untuk set font awal, biasanya dilakukan melalui CSS atau konfigurasi khusus.
-                    // Jika Anda ingin melakukan sesuatu setelah editor siap:
-                    console.log('Summernote is initialized');
-                }
-            },
-        });
+			height: 430,
+			minHeight: null,
+			maxHeight: null,
+			focus: true,
+			toolbar: [
+				['style', ['style', 'undo', 'redo', 'codeview']],
+				['font', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+				['fontname', ['fontname']],
+				['fontsize', ['fontsize']],
+				['color', ['color']],
+				['para', ['ul', 'ol', 'paragraph', 'table']],
+				['insert', ['link', 'picture', 'video', 'hr']],
+			],
+			fontNames: ['System Font',
+				'Dosis', 'Andale Mono', 'Arial', 'Arial Black', 'Book Antiqua',
+				'Comic Sans MS', 'Courier New', 'Georgia', 'Helvetica', 'Impact',
+				'Symbol', 'Tahoma', 'Times New Roman', 'Trebuchet MS', 'Verdana'
+			],
+			fontSizes: [
+				'12', '13', '14', '15', '16', '17', '18', '19', '20', '24',
+				'28', '32', '34', '36', '72'
+			],
+			styleTags: ['p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+			callbacks: {
+				onInit: function() {
+					console.log('Summernote is initialized on #yourTextareaId');
+				}
+			},
+		});
 	});
-	// tinymce.init({
-	// 	selector: '#yourTextareaId',
-	// 	height: 300, // Adjust the height as needed
-	// 	plugins: 'link image code', // Add any additional plugins you want to use
-	// 	toolbar: 'undo redo | formatselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | code',
-	// });
 </script>
 <script>
 	$(document).ready(function() {

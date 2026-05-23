@@ -84,7 +84,7 @@ div.dataTables_wrapper div.dataTables_paginate {
     padding: 0.675rem 1rem !important;
     color: #67748e !important;
     font-weight: 500;
-    font-size: 0.875rem;
+    font-size: 1.1rem;
     border-radius: 0.5rem;
     margin: 0 1rem !important;
     transition: all 0.2s ease;
@@ -115,7 +115,7 @@ div.dataTables_wrapper div.dataTables_paginate {
 /* Meratakan Sub-menu (Dropdown) */
 .vertical-nav-menu ul li a {
     margin-left: 2.5rem !important;
-    font-size: 0.8rem !important;
+    font-size: 0.95rem !important;
     padding: 0.5rem 1rem !important;
 }
 

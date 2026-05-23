@@ -33,51 +33,40 @@ class HariLibur extends \Base\Controllers\BaseResourceController
 
 	public function datatable($slug = null)
 	{
+		
+
 		$db = db_connect();
-		$builder = $db->table('holidays as a')
-			->select('a.ID, a.ID as action,a.Dates,a.Names, a.UpdateDate')
-			->select('a.active');
-    $search = $this->request->getPost('search')['value'] ?? null;
+    $builder = $db->table('holidays as a')
+        ->select('a.ID, a.ID as action, a.Dates, a.Names, a.UpdateDate, a.active')
+        ->where('a.active', 1); // ← tambahkan ini
+  
+    $dataTable = DataTable::of($builder)
+        ->addNumbering('no')
+        ->edit('Names', function ($row) {
+            return '<b>' . $row->Names . '</b>';
+        })
+        ->edit('Dates', function ($row) {
+            return '<b>' . substr($row->Dates, 0, 10) . '</b>';
+        })
+        ->edit('active', function ($row) {
+            $status = $row->active == 1 ? 'Aktif' : 'Non Aktif';
+            $class  = $row->active == 1 ? 'success' : 'danger';
+            return '<span class="badge badge-' . $class . ' badge-pill">' . $status . '</span>';
+        })
+        ->edit('UpdateDate', function ($row) {
+            return '<badge class="badge badge-info">' . $row->UpdateDate . '</badge>';
+        })
+        ->edit('action', function ($row) {
+            $edit     = '<a href="javascript:void(0);" data-href="' . base_url('api/hari-libur/detail/' . $row->ID) . '" data-toggle="tooltip" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"></i></a>';
+            $active   = '<a href="' . base_url('master-hari-libur/apply_status/' . $row->ID . '?field=active&value=1') . '" data-toggle="tooltip" title="Active" class="btn btn-success active-data"><i class="pe-7s-check font-weight-bold"></i></a>';
+            $inactive = '<a href="' . base_url('master-hari-libur/apply_status/' . $row->ID . '?field=active&value=0') . '" data-toggle="tooltip" title="Inactive" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"></i></a>';
+            $delete   = '<a href="javascript:void(0);" data-href="' . base_url('master-hari-libur/delete/' . $row->ID) . '" data-toggle="tooltip" title="Hapus" class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"></i></a>';
+            return $edit . ' ' . $active . ' ' . $inactive . ' ' . $delete;
+        })
+        ->toJson();
 
-if (!empty($search)) {
-    $builder->groupStart()
-        ->like('a.Names', $search)
-        ->orLike('a.Dates', $search) // harus pastikan format 'Y-m-d'
-        ->groupEnd();
+    return $dataTable;
 }
-// ✅ Tambahkan ini untuk melihat query di log:
-//log_message('debug', 'QUERY: ' . $builder->getCompiledSelect());
-
-		$dataTable = DataTable::of($builder)
-			->addNumbering('no')
-			->edit('Names', function ($row) {
-				$html  =  '<b>' . $row->Names . '</b>';
-				return $html;
-			})
-			->edit('Dates', function ($row) {
-				$html  =  '<b>' . (substr(($row->Dates), 0, 10)) . '</b>';
-				return $html;
-			})
-			->edit('active', function ($row) {
-				$status = $row->active == 1 ? 'Aktif' : 'Non Aktif';
-				$class = $row->active == 1 ? 'success' : 'danger';
-				$html = '<span class="badge badge-' . $class . '  badge-pill">' . $status . '</span>';
-				return $html;
-			})
-			->edit('UpdateDate', function ($row) {
-				$html  =  '<badge class="badge badge-info">' . $row->UpdateDate . '</badge>';
-				return $html;
-			})
-			->edit('action', function ($row) {
-				$edit = '<a href="javascript:voID(0);" data-href="' . base_url('api/hari-libur/detail/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-				$active = '<a href="' . base_url('master-hari-libur/apply_status/' . $row->ID . '?field=active&value=1') . '"  data-ID="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Active" class="btn btn-success active-data"><i class="pe-7s-check font-weight-bold"> </i> </a>';
-				$inactive = '<a href="' . base_url('master-hari-libur/apply_status/' . $row->ID . '?field=active&value=0') . '" data-ID="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Inactive" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"> </i> </a>';
-				$delete = '<a href="javascript:voID(0);" data-href="' . base_url('master-hari-libur/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
-				return $edit . ' ' . $active . ' ' . $inactive . ' ' . $delete;
-			})
-			->toJson();
-		return $dataTable;
-	}
 
 	public function index()
 	{
@@ -105,8 +94,9 @@ if (!empty($search)) {
 
 		$save_data_ID = $this->hariliburModel->insert($save_data);
 		if ($save_data_ID) {
-			$this->session->setFlashdata('toastr_msg', 'Hari Libur berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
+			$this->session->setFlashdata('swal_icon', 'success');
+			$this->session->setFlashdata('swal_title', 'Berhasil');
+			$this->session->setFlashdata('swal_text', 'Hari Libur berhasil disimpan');
 			$response = [
 				'error' => false,
 				'message' => 'Hari Libur berhasil disimpan',
@@ -173,8 +163,9 @@ if (!empty($search)) {
 		);
 		$update_data_ID = $this->hariliburModel->update($ID, $update_data);
 		if ($update_data_ID) {
-			$this->session->setFlashdata('toastr_msg', 'Hari Libur berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
+			$this->session->setFlashdata('swal_icon', 'success');
+			$this->session->setFlashdata('swal_title', 'Berhasil');
+			$this->session->setFlashdata('swal_text', 'Hari Libur berhasil disimpan');
 			$response = [
 				'error' => false,
 				'message' => 'Hari Libur berhasil disimpan',

@@ -55,19 +55,21 @@ class JenisPerpustakaan extends \Base\Controllers\BaseController
     public function delete(int $id = 0)
     {
         if (!$id) {
-            set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-            set_message('toastr_type', 'error');
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Error');
+            $this->session->setFlashdata('swal_text', 'Sorry you have to provide parameter (id)');
             return redirect()->to('master-jenis-perpustakaan');
         }
         $jenisperpustakaanDelete = $this->jenisperpustakaanModel->delete($id);
         if ($jenisperpustakaanDelete) {
-            set_message('toastr_msg', 'Jenis Perpustakaan berhasil dihapus');
-            set_message('toastr_type', 'success');
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Jenis Perpustakaan berhasil dihapus');
             return redirect()->to('master-jenis-perpustakaan');
         } else {
-            set_message('toastr_msg', 'Jenis Perpustakaan gagal dihapus');
-            set_message('toastr_type', 'warning');
-            set_message('message', 'Jenis Perpustakaan gagal dihapus');
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Jenis Perpustakaan gagal dihapus');
             return redirect()->to('master-jenis-perpustakaan');
         }
     }
@@ -78,11 +80,13 @@ class JenisPerpustakaan extends \Base\Controllers\BaseController
         $value = $this->request->getGet('value');
         $jenisperpustakaanUpdate = $this->jenisperpustakaanModel->update($id, array($field => $value));
         if ($jenisperpustakaanUpdate) {
-            set_message('toastr_msg', 'Jenis Perpustakaan berhasil diubah');
-            set_message('toastr_type', 'success');
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Jenis Perpustakaan berhasil diubah');
         } else {
-            set_message('toastr_msg', 'Jenis Perpustakaan gagal diubah');
-            set_message('toastr_type', 'warning');
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Jenis Perpustakaan gagal diubah');
         }
         return redirect()->to('master-jenis-perpustakaan');
     }

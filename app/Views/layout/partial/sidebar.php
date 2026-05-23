@@ -65,7 +65,7 @@ $group = user()->category ?? 'admin';
         color: #67748e;
         text-decoration: none;
         border-radius: 8px;
-        font-size: 14px;
+        font-size: 16px;
         transition: all 0.2s;
         margin-bottom: 4px;
     }
@@ -110,7 +110,7 @@ $group = user()->category ?? 'admin';
     }
 
     .submenu-argon li a {
-        font-size: 13px;
+        font-size: 15px;
         padding: 8px 15px;
     }
 

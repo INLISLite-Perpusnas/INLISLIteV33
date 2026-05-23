@@ -43,19 +43,21 @@ class JenisAnggota extends \Base\Controllers\BaseController
     public function delete(int $id = 0)
     {
         if (!$id) {
-            set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-            set_message('toastr_type', 'error');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Sorry you have to provide parameter (id)');
             return redirect()->to('master-jenis-anggotaa');
         }
         $jenisanggotaDelete = $this->jenisanggotaModel->delete($id);
         if ($jenisanggotaDelete) {
-            set_message('toastr_msg', 'Jenis Anggota berhasil dihapus');
-            set_message('toastr_type', 'success');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Jenis Anggota berhasil dihapus');
             return redirect()->to('master-jenis-anggota');
         } else {
-            set_message('toastr_msg', 'Jenis Anggota gagal dihapus');
-            set_message('toastr_type', 'warning');
-            set_message('message', 'Jenis Anggota gagal dihapus');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Jenis Anggota gagal dihapus');
             return redirect()->to('master-jenis-anggota');
         }
     }
@@ -68,11 +70,13 @@ class JenisAnggota extends \Base\Controllers\BaseController
         $jenisanggotaUpdate = $this->jenisanggotaModel->update($id, array($field => $value));
 
         if ($jenisanggotaUpdate) {
-            set_message('toastr_msg', 'Jenis Anggota berhasil diubah');
-            set_message('toastr_type', 'success');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Status Jenis Anggota berhasil diubah');
         } else {
-            set_message('toastr_msg', 'Jenis Anggota gagal diubah');
-            set_message('toastr_type', 'warning');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Status Jenis Anggota gagal diubah');
         }
         return redirect()->to('/master-jenis-anggota');
     }

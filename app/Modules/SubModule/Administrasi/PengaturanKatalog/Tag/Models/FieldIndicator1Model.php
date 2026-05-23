@@ -5,7 +5,7 @@ namespace Tag\Models;
 class FieldIndicator1Model extends \Base\Models\DataModel
 {
     protected $table      			= 'fieldindicator1s';
-    protected $primaryKey 			= 'ID';
+    protected $primaryKey 			= 'Field_id';
     protected $returnType     		= 'object';
     protected $useSoftDeletes 		= false;
     protected $protectFields 		= false;

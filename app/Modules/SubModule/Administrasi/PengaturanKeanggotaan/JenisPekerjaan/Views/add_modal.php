@@ -53,20 +53,22 @@
 			if (res.error == false) {
 				Swal.fire({
 					title: 'Berhasil',
+					icon: 'success',
 					html: 'Jenis Pekerjaan berhasil ditambah.',
 					type: 'success',
 					showConfirmButton: false,
-					timer: 5000,
+					timer: 3000,
 				}).then(() => {
 					window.location.href = `<?=base_url('master-jenis-pekerjaan')?>`;
 				});
 			} else {				
 				Swal.fire({
 					title: 'Oups',
+					icon: 'error',
 					text: res.message,
 					type: 'error',
 					showConfirmButton: false,
-					timer: 5000
+					timer: 3000
 				}).then(() => {
 					$("#btnAdd").attr('disabled', false);
 					$("#btnAdd").html('Simpan');

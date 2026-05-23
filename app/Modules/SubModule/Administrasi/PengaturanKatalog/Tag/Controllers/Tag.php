@@ -161,116 +161,65 @@ class Tag extends \Base\Controllers\BaseController
 			$updateTag = $this->fieldModel->update($id, $update_data);
 
 			// Field Data
+			$this->fieldDataModel->where('Field_id', $id)->delete();
 			$index_arr = $this->request->getPost('index0');
 			if (!empty($index_arr)) {
-				$save_data = array();
-				$update_data = array();
+				$save_data = [];
 				foreach ($index_arr as $index => $value) {
 					$repeatable0 = $this->request->getPost('repeatable0')[$value];
 					$isshow0 = $this->request->getPost('isshow0')[$value];
-					$existing = $this->fieldDataModel->find($value);
-					if (!empty($existing)) {
-						$update_data[] = [
-							'ID' => $value,
-							'Field_id' => $id,
-							'Code' => $this->request->getPost('code0')[$value],
-							'Name' => $this->request->getPost('name0')[$value],
-							'Delimiter' => $this->request->getPost('delimiter0')[$value],
-							'SortNo' => $this->request->getPost('sortno0')[$value],
-							'IsShow' => $isshow0 ? 1 : 0,
-							'Repeatable' => $repeatable0 ? 1 : 0,
-							'UpdateBy' => user_id(),
-							'UpdateTerminal' => getClientIpAddress(),
-						];
-					} else {
-						$save_data[] = [
-							'Field_id' => $id,
-							'Code' => $this->request->getPost('code0')[$value],
-							'Name' => $this->request->getPost('name0')[$value],
-							'Delimiter' => $this->request->getPost('delimiter0')[$value],
-							'SortNo' => $this->request->getPost('sortno0')[$value],
-							'IsShow' => $isshow0 ? 1 : 0,
-							'Repeatable' => $repeatable0 ? 1 : 0,
-							'CreateBy' => user_id(),
-							'CreateTerminal' => getClientIpAddress(),
-						];
-					}
+					$save_data[] = [
+						'Field_id' => $id,
+						'Code' => $this->request->getPost('code0')[$value],
+						'Name' => $this->request->getPost('name0')[$value],
+						'Delimiter' => $this->request->getPost('delimiter0')[$value],
+						'SortNo' => $this->request->getPost('sortno0')[$value],
+						'IsShow' => $isshow0 ? 1 : 0,
+						'Repeatable' => $repeatable0 ? 1 : 0,
+						'CreateBy' => user_id(),
+						'CreateTerminal' => getClientIpAddress(),
+					];
 				}
-
 				if (!empty($save_data)) {
 					$this->fieldDataModel->insertBatch($save_data);
-				}
-
-				if (!empty($update_data)) {
-					$this->fieldDataModel->updateBatch($update_data, 'ID');
 				}
 			}
 
 			// Field Indicator 1
+			$this->fieldIndicator1Model->where('Field_id', $id)->delete();
 			$index_arr = $this->request->getPost('index1');
 			if (!empty($index_arr)) {
-				$save_data = array();
-				$update_data = array();
+				$save_data = [];
 				foreach ($index_arr as $index => $value) {
-					$existing = $this->fieldIndicator1Model->find($value);
-					if (!empty($existing)) {
-						$update_data[] = [
-							'ID' => $value,
-							'Field_id' => $id,
-							'Code' => $this->request->getPost('code1')[$value],
-							'Name' => $this->request->getPost('name1')[$value],
-							'UpdateBy' => user_id(),
-							'UpdateTerminal' => getClientIpAddress(),
-						];
-					} else {
-						$save_data[] = [
-							'Field_id' => $id,
-							'Code' => $this->request->getPost('code1')[$value],
-							'Name' => $this->request->getPost('name1')[$value],
-							'CreateBy' => user_id(),
-							'CreateTerminal' => getClientIpAddress(),
-						];
-					}
+					$save_data[] = [
+						'Field_id' => $id,
+						'Code' => $this->request->getPost('code1')[$value],
+						'Name' => $this->request->getPost('name1')[$value],
+						'CreateBy' => user_id(),
+						'CreateTerminal' => getClientIpAddress(),
+					];
 				}
 				if (!empty($save_data)) {
 					$this->fieldIndicator1Model->insertBatch($save_data);
 				}
-				if (!empty($update_data)) {
-					$this->fieldIndicator1Model->updateBatch($update_data, 'ID');
-				}
 			}
 
 			// Field Indicator 2
+			$this->fieldIndicator2Model->where('Field_id', $id)->delete();
 			$index_arr = $this->request->getPost('index2');
 			if (!empty($index_arr)) {
-				$save_data = array();
-				$update_data = array();
+				$save_data = [];
 				foreach ($index_arr as $index => $value) {
-					$existing = $this->fieldIndicator2Model->find($value);
-					if (!empty($existing)) {
-						$update_data[] = [
-							'ID' => $value,
-							'Field_id' => $id,
-							'Code' => $this->request->getPost('code2')[$value],
-							'Name' => $this->request->getPost('name2')[$value],
-							'UpdateBy' => user_id(),
-							'UpdateTerminal' => getClientIpAddress(),
-						];
-					} else {
-						$save_data[] = [
-							'Field_id' => $id,
-							'Code' => $this->request->getPost('code2')[$value],
-							'Name' => $this->request->getPost('name2')[$value],
-							'CreateBy' => user_id(),
-							'CreateTerminal' => getClientIpAddress(),
-						];
-					}
+					$save_data[] = [
+						'Field_id' => $id,
+						'Code' => $this->request->getPost('code2')[$value],
+						'Name' => $this->request->getPost('name2')[$value],
+						'CreateBy' => user_id(),
+						'CreateTerminal' => getClientIpAddress(),
+					];
 				}
 				if (!empty($save_data)) {
 					$this->fieldIndicator2Model->insertBatch($save_data);
-				}
-				if (!empty($update_data)) {
-					$this->fieldIndicator2Model->updateBatch($update_data, 'ID');
 				}
 			}
 
@@ -284,9 +233,9 @@ class Tag extends \Base\Controllers\BaseController
 			}
 		} else {
 			$tag = $this->fieldModel->find($id);
-			$indicator1s = get_table('fieldindicator1s', 'ID, Field_id, Code, Name', 'Field_id=' . $tag->ID, 'data');
-			$indicator2s = get_table('fieldindicator2s', 'ID, Field_id, Code, Name', 'Field_id=' . $tag->ID, 'data');
-			$fielddatas = get_table('fielddatas', 'ID, Field_id, Code, Name, Delimiter, SortNo, IsShow, Repeatable', 'Field_id=' . $tag->ID, 'data');
+			$indicator1s = get_table('fieldindicator1s', 'Field_id, Code, Name', 'Field_id=' . $tag->ID, 'data');
+			$indicator2s = get_table('fieldindicator2s', 'Field_id, Code, Name', 'Field_id=' . $tag->ID, 'data');
+			$fielddatas = get_table('fielddatas', 'Field_id, Code, Name, Delimiter, SortNo, IsShow, Repeatable', 'Field_id=' . $tag->ID, 'data');
 			$this->data['tag'] = $tag;
 			$this->data['indicator1s'] = $indicator1s;
 			$this->data['indicator2s'] = $indicator2s;

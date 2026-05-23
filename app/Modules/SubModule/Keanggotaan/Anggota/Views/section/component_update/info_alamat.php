@@ -4,7 +4,7 @@
 			<div class="card">
 				<div class="card-header-tab card-header">
 					<button type="button" data-bs-toggle="collapse" data-bs-target="#collapse_madatory1"
-						aria-expanded="false" aria-controls="collapse_madatory1"
+						aria-expanded="true" aria-controls="collapse_madatory1"
 						class="text-left m-0 p-0 btn btn-link">
 						<h5 class="m-0 p-0">
 							<i class="header-icon lnr-home icon-gradient bg-primary"></i>
@@ -12,7 +12,7 @@
 						</h5>
 					</button>
 				</div>
-				<div data-bs-parent="#accordion_alamat" id="collapse_madatory1" class="collapse">
+				<div data-bs-parent="#accordion_alamat" id="collapse_madatory1" class="collapse show">
 					<div class="card-body">
 						<!-- ALAMAT SESUAI IDENTITAS -->
 						<div class="form-row">

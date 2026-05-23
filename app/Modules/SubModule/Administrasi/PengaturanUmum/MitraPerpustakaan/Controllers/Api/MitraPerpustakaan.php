@@ -170,8 +170,9 @@ class MitraPerpustakaan extends \Base\Controllers\BaseResourceController
 
 		$save_data_id = $this->mitraperpustakaanModel->insert($save_data);
 		if ($save_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Mitra Perpustakaan berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
+			$this->session->setFlashdata('swal_icon', 'success');
+			$this->session->setFlashdata('swal_title', 'Berhasil');
+			$this->session->setFlashdata('swal_text', 'Mitra Perpustakaan berhasil disimpan');
 			$response = [
 				'error' => false,
 				'message' => 'Mitra Perpustakaan berhasil disimpan',
@@ -196,8 +197,9 @@ class MitraPerpustakaan extends \Base\Controllers\BaseResourceController
 
 		$update_data_id = $this->mitraperpustakaanModel->update($id, $update_data);
 		if ($update_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Mitra Perpustakaan berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
+			$this->session->setFlashdata('swal_icon', 'success');
+			$this->session->setFlashdata('swal_title', 'Berhasil');
+			$this->session->setFlashdata('swal_text', 'Mitra Perpustakaan berhasil disimpan');
 			$response = [
 				'error' => false,
 				'message' => 'Mitra Perpustakaan berhasil disimpan',

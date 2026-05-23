@@ -31,7 +31,7 @@ $slug = $request->getGet('slug') ?? '';
 						<li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i></a></li>
 						<li class="breadcrumb-item">Administrasi</li>
 						<li class="breadcrumb-item">Pengaturan Katalog</li>
-						<li class="breadcrumb-item active">Form Entri</li>
+						<li class="breadcrumb-item">Form Entri</li>
 					</ol>
 				</nav>
 			</div>
@@ -77,4 +77,5 @@ $slug = $request->getGet('slug') ?? '';
 <?= $this->endSection('page') ?>
 
 <?= $this->section('script') ?>
+
 <?= $this->endSection('script') ?>

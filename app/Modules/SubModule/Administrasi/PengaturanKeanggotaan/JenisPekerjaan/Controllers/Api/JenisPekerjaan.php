@@ -88,8 +88,7 @@ class JenisPekerjaan extends \Base\Controllers\BaseResourceController
 
 		$save_data_id = $this->jenispekerjaanModel->insert($save_data);
 		if ($save_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Jenis Pekerjaan berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
+	
 			$response = [
 				'error' => false,
 				'message' => 'Jenis Pekerjaan berhasil disimpan',
@@ -112,8 +111,7 @@ class JenisPekerjaan extends \Base\Controllers\BaseResourceController
 
 		$update_data_id = $this->jenispekerjaanModel->update($id, $update_data);
 		if ($update_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Jenis Pekerjaan berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
+			
 			$response = [
 				'error' => false,
 				'message' => 'Jenis Pekerjaan berhasil disimpan',

@@ -37,20 +37,22 @@ class MasterJurusan extends \Base\Controllers\BaseController
     public function delete(int $id = 0)
     {
         if (!$id) {
-            set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-            set_message('toastr_type', 'error');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Sorry you have to provide parameter (id)');
             return redirect()->to('master-jurusan');
         }
         $jurusanDelete = $this->jurusanModel->delete($id);
         if ($jurusanDelete) {
-            set_message('toastr_msg', 'Master Jurusan berhasil dihapus');
-            set_message('toastr_type', 'success');
+          set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Master Jurusan berhasil dihapus');
             return redirect()->to('master-jurusan');
         } else {
-            set_message('toastr_msg', 'Master Jurusan gagal dihapus');
-            set_message('toastr_type', 'warning');
-            set_message('message', 'Master Jurusan gagal dihapus');
-            return redirect()->to('jmaster-jurusan');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Master Jurusan gagal dihapus');
+            return redirect()->to('master-jurusan');
         }
     }
 
@@ -62,11 +64,13 @@ class MasterJurusan extends \Base\Controllers\BaseController
         $jurusanUpdate = $this->jurusanModel->update($id, array($field => $value));
 
         if ($jurusanUpdate) {
-            set_message('toastr_msg', 'Master Jurusan berhasil diubah');
-            set_message('toastr_type', 'success');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Master Jurusan berhasil diubah');
         } else {
-            set_message('toastr_msg', 'Master Jurusan gagal diubah');
-            set_message('toastr_type', 'warning');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Master Jurusan gagal diubah');
         }
         return redirect()->to('master-jurusan');
     }

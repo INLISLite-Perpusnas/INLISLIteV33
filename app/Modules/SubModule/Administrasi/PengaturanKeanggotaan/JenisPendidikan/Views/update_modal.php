@@ -74,20 +74,22 @@
 			if (res.error == false) {
 				Swal.fire({
 					title: 'Berhasil',
-					html: 'Jenis Pekerjaab berhasil disimpan.',
+					icon: 'success',
+					html: 'Jenis Pendidikan berhasil diubah.',
 					type: 'success',
 					showConfirmButton: false,
-					timer: 5000,
+					timer: 3000,
 				}).then(() => {
 					window.location.href = `<?=base_url('master-jenis-pendidikan')?>`;
 				});
 			} else {				
 				Swal.fire({
 					title: 'Oups',
+					icon: 'error',
 					text: res.message,
 					type: 'error',
 					showConfirmButton: false,
-					timer: 5000
+					timer: 3000
 				}).then(() => {
 					$("#btnUpdate").attr('disabled', false);
 					$("#btnUpdate").html('Simpan');
@@ -99,10 +101,11 @@
 
 			Swal.fire({
 				title: 'Oups',
+				icon: 'error',
 				text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
 				type: 'error',
 				showConfirmButton: false,
-				timer: 5000
+				timer: 3000
 			}).then(() => {
 				$("#btnUpdate").attr('disabled', false);
 				$("#btnUpdate").html('Simpan');

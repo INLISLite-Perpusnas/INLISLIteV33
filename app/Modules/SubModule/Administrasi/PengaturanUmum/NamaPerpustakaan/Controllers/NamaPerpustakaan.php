@@ -289,8 +289,9 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 			return redirect()->back();
 		} else {
 			$errors = implode(', ', $this->validation->getErrors());
-			set_message('toastr_msg', $errors);
-			set_message('toastr_type', 'error');
+			$this->session->setFlashdata('swal_icon', 'error');
+			$this->session->setFlashdata('swal_title', 'Validasi Gagal');
+			$this->session->setFlashdata('swal_text', $errors);
 			return redirect()->back();
 		}
 	}

@@ -31,7 +31,7 @@ $slug = $request->getGet('slug') ?? '';
 						<li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i></a></li>
 						<li class="breadcrumb-item">Administrasi</li>
 						<li class="breadcrumb-item">Pengaturan Umum</li>
-						<li class="breadcrumb-item active">Libur Sabtu/Minggu</li>
+						<li class="breadcrumb-item">Libur Sabtu/Minggu</li>
 					</ol>
 				</nav>
 			</div>

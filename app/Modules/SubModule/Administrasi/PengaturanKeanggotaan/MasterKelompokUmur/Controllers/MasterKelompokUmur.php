@@ -28,19 +28,21 @@ class MasterKelompokUmur extends \Base\Controllers\BaseController
     public function delete(int $id = 0)
     {
         if (!$id) {
-            set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-            set_message('toastr_type', 'error');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Error');
+            set_message('swal_text', 'Sorry you have to provide parameter (id)');
             return redirect()->to('master-kelompok-umur');
         }
         $masterKelompokUmurDelete = $this->masterKelompokUmurModel->delete($id);
         if ($masterKelompokUmurDelete) {
-            set_message('toastr_msg', 'Master Kelompok Umur berhasil dihapus');
-            set_message('toastr_type', 'success');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Master Kelompok Umur berhasil dihapus');
             return redirect()->to('master-kelompok-umur');
         } else {
-            set_message('toastr_msg', 'Master Kelompok Umur gagal dihapus');
-            set_message('toastr_type', 'warning');
-            set_message('message', 'Master Kelompok Umur gagal dihapus');
+            set_message('swal_icon', 'warning');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Master Kelompok Umur gagal dihapus');
             return redirect()->to('master-kelompok-umur');
         }
     }
@@ -53,11 +55,13 @@ class MasterKelompokUmur extends \Base\Controllers\BaseController
         $masterKelompokUmurUpdate = $this->masterKelompokUmurModel->update($id, array($field => $value));
 
         if ($masterKelompokUmurUpdate) {
-            set_message('toastr_msg', 'Master Kelompok Umur berhasil diubah');
-            set_message('toastr_type', 'success');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Master Kelompok Umur berhasil diubah');
         } else {
-            set_message('toastr_msg', 'Master Kelompok Umur diubah');
-            set_message('toastr_type', 'warning');
+            set_message('swal_icon', 'warning');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Master Kelompok Umur gagal diubah');
         }
         return redirect()->to('master-kelompok-umur');
     }

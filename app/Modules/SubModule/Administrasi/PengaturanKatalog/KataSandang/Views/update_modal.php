@@ -142,6 +142,7 @@ $(document).ready(function() {
                 if (!res.error) {
                     Swal.fire({
                         title: 'Success',
+                        icon: 'success',
                         text: 'Kata Sandang berhasil disimpan',
                         type: 'success',
                         showConfirmButton: false,

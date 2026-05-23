@@ -35,9 +35,9 @@ $slug = $request->getGet('slug') ?? '';
 	<div class="main-card mb-3 card">
 		<div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Jenis Anggota
 			<div class="btn-actions-pane-right actions-icon-btn">
-				<?php if (is_allowed('jenisanggota/create')) : ?>
+				
 					 <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Jenis Anggota</a>
-				<?php endif; ?>
+				
 			</div>
 		</div>
 		<div class="card-body">
@@ -55,6 +55,7 @@ $slug = $request->getGet('slug') ?? '';
 						<th class="text-center" width="90">Upload Dokumen Keanggotaan</th>
 						<th class="text-center" width="90">Default Lokasi</th>
 						<th class="text-center" width="90">Default Jenis Bahan</th>
+						<th class="text-center" width="90">Status</th>
 						<th class="text-center" width="180">Aksi</th>
 					</tr>
 				</thead>
@@ -146,6 +147,13 @@ $slug = $request->getGet('slug') ?? '';
 					width: "200px"
 				},
 				{
+					data: 'active',
+					className: 'text-center',
+					orderable: false,
+					searchable: false,
+					width: "100px"
+				},
+				{
 					data: 'action',
 					className: 'text-center',
 					orderable: false,
@@ -186,6 +194,7 @@ $slug = $request->getGet('slug') ?? '';
 							if (res.error == false) {
 								Swal.fire({
 									title: 'Berhasil',
+									icon: 'success',
 									html: res.message,
 									type: 'success',
 									showConfirmButton: false,
@@ -194,6 +203,7 @@ $slug = $request->getGet('slug') ?? '';
 							} else {
 								Swal.fire({
 									title: 'Gagal',
+									icon: 'error',
 									text: res.message,
 									type: 'error',
 									showConfirmButton: false,

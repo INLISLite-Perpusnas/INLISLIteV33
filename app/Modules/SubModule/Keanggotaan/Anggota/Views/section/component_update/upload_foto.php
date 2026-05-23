@@ -61,7 +61,7 @@
 						</h5>
 					</button>
 				</div>
-				<div data-bs-parent="#accordion_upload" id="collapse_upload" class="collapse">
+				<div data-bs-parent="#accordion_upload" id="collapse_upload" class="collapse show">
 					<div class="card-body">
 						<div class="form-row">
 							<div class="col-md-12">

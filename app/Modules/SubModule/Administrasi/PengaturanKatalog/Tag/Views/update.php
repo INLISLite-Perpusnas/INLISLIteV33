@@ -156,7 +156,7 @@ $slug = $request->getGet('slug');
 							</thead>
 							<tbody id="subruas-tbody">
 								<?php foreach ($fielddatas as $row) : ?>
-									<?php $index = $row->ID; ?>
+									<?php $index = $row->Code; ?>
 									<tr class="rm-row">
 										<td>
 											<input type="hidden" name="index0[]" value="<?= $index ?>">
@@ -180,7 +180,7 @@ $slug = $request->getGet('slug');
 											<input type="checkbox" class="form-control" name="repeatable0[<?= $index ?>]" data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="mini" <?= $row->Repeatable == 1 ? 'checked' : '' ?>>
 										</td>
 										<td class="text-center">
-											<button type="button" class="btn btn-danger subruas-btn-remove" data-href="<?= base_url('api/master-tag/field_data_delete/' . $row->ID) ?>"><i class="fa fa-times"></i></button>
+											<button type="button" class="btn btn-danger subruas-btn-remove" data-href="<?= base_url('api/master-tag/field_data_delete/' . $tag->ID . '/' . $row->Code) ?>"><i class="fa fa-times"></i></button>
 										</td>
 									</tr>
 								<?php endforeach; ?>
@@ -209,7 +209,7 @@ $slug = $request->getGet('slug');
 									</thead>
 									<tbody id="indikator1-tbody">
 										<?php foreach ($indicator1s as $row) : ?>
-											<?php $index = $row->ID; ?>
+											<?php $index = $row->Code; ?>
 											<tr class="rm-row">
 												<td>
 													<input type="hidden" name="index1[]" value="<?= $index ?>">
@@ -219,7 +219,7 @@ $slug = $request->getGet('slug');
 													<input type="text" class="form-control" name="name1[<?= $index ?>]" placeholder="" value="<?= $row->Name ?>" required />
 												</td>
 												<td class="text-center">
-													<button type="button" class="btn btn-danger indikator1-btn-remove" data-href="<?= base_url('api/master-tag/field_indicator1_delete/' . $row->ID) ?>"><i class="fa fa-times"></i></button>
+													<button type="button" class="btn btn-danger indikator1-btn-remove" data-href="<?= base_url('api/master-tag/field_indicator1_delete/' . $tag->ID . '/' . $row->Code) ?>"><i class="fa fa-times"></i></button>
 												</td>
 											</tr>
 										<?php endforeach; ?>
@@ -247,7 +247,7 @@ $slug = $request->getGet('slug');
 									</thead>
 									<tbody id="indikator2-tbody">
 										<?php foreach ($indicator2s as $row) : ?>
-											<?php $index = $row->ID; ?>
+											<?php $index = $row->Code; ?>
 											<tr class="rm-row">
 												<td>
 													<input type="hidden" name="index2[]" value="<?= $index ?>">
@@ -257,7 +257,7 @@ $slug = $request->getGet('slug');
 													<input type="text" class="form-control" name="name2[<?= $index ?>]" placeholder="" value="<?= $row->Name ?>" required />
 												</td>
 												<td class="text-center">
-													<button type="button" class="btn btn-danger indikator2-btn-remove" data-href="<?= base_url('api/master-tag/field_indicator2_delete/' . $row->ID) ?>"><i class="fa fa-times"></i></button>
+													<button type="button" class="btn btn-danger indikator2-btn-remove" data-href="<?= base_url('api/master-tag/field_indicator2_delete/' . $tag->ID . '/' . $row->Code) ?>"><i class="fa fa-times"></i></button>
 												</td>
 											</tr>
 										<?php endforeach; ?>

@@ -35,19 +35,21 @@ class JenisIdentitas extends \Base\Controllers\BaseController
     public function delete(int $id = 0)
     {
         if (!$id) {
-            set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-            set_message('toastr_type', 'error');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Sorry you have to provide parameter (id)');
             return redirect()->to('master-jenis-identitas');
         }
         $jenisidentitasDelete = $this->jenisidentitasModel->delete($id);
         if ($jenisidentitasDelete) {
-            set_message('toastr_msg', 'Jenis Identitas berhasil dihapus');
-            set_message('toastr_type', 'success');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Jenis Identitas berhasil dihapus');
             return redirect()->to('master-jenis-identitas');
         } else {
-            set_message('toastr_msg', 'Jenis Identitas gagal dihapus');
-            set_message('toastr_type', 'warning');
-            set_message('message', 'Jenis Identitas gagal dihapus');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Jenis Identitas gagal dihapus');
             return redirect()->to('master-jenis-identitas');
         }
     }
@@ -60,11 +62,13 @@ class JenisIdentitas extends \Base\Controllers\BaseController
         $jenisidentitasUpdate = $this->jenisidentitasModel->update($id, array($field => $value));
 
         if ($jenisidentitasUpdate) {
-            set_message('toastr_msg', 'Jenis Identitas berhasil diubah');
-            set_message('toastr_type', 'success');
+             set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Status Jenis Identitas berhasil diubah');
         } else {
-            set_message('toastr_msg', 'Jenis Identitas gagal diubah');
-            set_message('toastr_type', 'warning');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Status Jenis Identitas gagal diubah');
         }
         return redirect()->to('master-jenis-identitas');
     }

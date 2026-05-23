@@ -91,7 +91,8 @@
 			if (res.error == false) {
 				Swal.fire({
 					title: 'Berhasil',
-					html: 'Master Jurusan berhasil disimpan.',
+					icon: 'success',
+					html: 'Master Jurusan berhasil diubah.',
 					type: 'success',
 					showConfirmButton: false,
 					timer: 5000,
@@ -101,6 +102,7 @@
 			} else {				
 				Swal.fire({
 					title: 'Oups',
+					icon: 'error',
 					text: res.message,
 					type: 'error',
 					showConfirmButton: false,

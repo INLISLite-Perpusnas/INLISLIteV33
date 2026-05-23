@@ -129,7 +129,8 @@
 			if (res.error == false) {
 				Swal.fire({
 					title: 'Berhasil',
-					html: 'Jenis Anggota berhasil disimpan.',
+					icon: 'success',
+					html: 'Jenis Anggota berhasil diubah.',
 					type: 'success',
 					showConfirmButton: false,
 					timer: 5000,
@@ -139,6 +140,7 @@
 			} else {				
 				Swal.fire({
 					title: 'Oups',
+					icon: 'error',
 					text: res.message,
 					type: 'error',
 					showConfirmButton: false,

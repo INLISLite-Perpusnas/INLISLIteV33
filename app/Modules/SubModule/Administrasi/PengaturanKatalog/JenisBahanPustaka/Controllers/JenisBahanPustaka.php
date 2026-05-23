@@ -63,8 +63,9 @@ class JenisBahanPustaka extends \Base\Controllers\BaseController
 			}
 
 			if ($newJenisBahanPustakaId) {
-				set_message('toastr_msg', 'Jenis Bahan Pustaka berhasil disimpan');
-				set_message('toastr_type', 'success');
+				set_message('swal_icon', 'success');
+				set_message('swal_title', 'Berhasil');
+				set_message('swal_text', 'Jenis Bahan Pustaka berhasil disimpan');
 				return redirect()->to('/master-jenis-bahan-pustaka');
 			} else {
 				set_message('message', 'Jenis Bahan Pustaka gagal disimpan');
@@ -113,8 +114,9 @@ class JenisBahanPustaka extends \Base\Controllers\BaseController
 			}
 
 			if ($updateJenisBahanPustaka) {
-				set_message('toastr_msg', 'Jenis Bahan Pustaka berhasil disimpan');
-				set_message('toastr_type', 'success');
+				set_message('swal_icon', 'success');
+				set_message('swal_title', 'Berhasil');
+				set_message('swal_text', 'Jenis Bahan Pustaka berhasil disimpan');
 				return redirect()->to('/master-jenis-bahan-pustaka');
 			} else {
 				set_message('message', 'Jenis Bahan Pustaka gagal disimpan');
@@ -150,20 +152,22 @@ class JenisBahanPustaka extends \Base\Controllers\BaseController
 	public function delete(int $id = 0)
 	{
 		if (!$id) {
-			set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-			set_message('toastr_type', 'error');
+			set_message('swal_icon', 'error');
+			set_message('swal_title', 'Error');
+			set_message('swal_text', 'Sorry you have to provide parameter (id)');
 			return redirect()->to('master-jenis-bahan-pustaka');
 		}
 		$wsDelete = $this->wsModel->delete($id);
 		if ($wsDelete) {
 			$this->wsfItemModel->where('WorksheetField_id', $id)->delete();
-			set_message('toastr_msg', 'Jenis Bahan Pustaka berhasil dihapus');
-			set_message('toastr_type', 'success');
+			set_message('swal_icon', 'success');
+			set_message('swal_title', 'Berhasil');
+			set_message('swal_text', 'Jenis Bahan Pustaka berhasil dihapus');
 			return redirect()->to('master-jenis-bahan-pustaka');
 		} else {
-			set_message('toastr_msg', 'Jenis Bahan Pustaka gagal dihapus');
-			set_message('toastr_type', 'warning');
-			set_message('message', 'Jenis Bahan Pustaka gagal dihapus');
+			set_message('swal_icon', 'warning');
+			set_message('swal_title', 'Gagal');
+			set_message('swal_text', 'Jenis Bahan Pustaka gagal dihapus');
 			return redirect()->to('master-jenis-bahan-pustaka');
 		}
 	}

@@ -94,8 +94,7 @@ class JenisIdentitas extends \Base\Controllers\BaseResourceController
 
 		$save_data_id = $this->jenisidentitasModel->insert($save_data);
 		if ($save_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Jenis Identitas berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
+		
 			$response = [
 				'error' => false,
 				'message' => 'Jenis Identitas berhasil disimpan',
@@ -118,8 +117,7 @@ class JenisIdentitas extends \Base\Controllers\BaseResourceController
 
 		$update_data_id = $this->jenisidentitasModel->update($id, $update_data);
 		if ($update_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Jenis Identitas berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
+			
 			$response = [
 				'error' => false,
 				'message' => 'Jenis Identitas berhasil disimpan',

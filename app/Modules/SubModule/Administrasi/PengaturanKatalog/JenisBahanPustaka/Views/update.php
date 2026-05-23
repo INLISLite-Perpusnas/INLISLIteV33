@@ -33,7 +33,7 @@ $slug = $request->getGet('slug');
 						<li class="breadcrumb-item">Administrasi</li>
 						<li class="breadcrumb-item">Pengaturan Katalog</li>
 						<li class="breadcrumb-item">Jenis Bahan Pustaka</li>
-						<li class="active breadcrumb-item" aria-current="page">Edit</li>
+						<li class="breadcrumb-item" aria-current="page">Edit</li>
 					</ol>
 				</nav>
 			</div>

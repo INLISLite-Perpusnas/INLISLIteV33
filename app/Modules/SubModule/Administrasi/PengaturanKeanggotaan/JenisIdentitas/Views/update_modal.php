@@ -74,20 +74,22 @@
 			if (res.error == false) {
 				Swal.fire({
 					title: 'Berhasil',
-					html: 'Jenis Identitas berhasil disimpan.',
+					icon: 'success',
+					html: 'Jenis Identitas berhasil diubah.',
 					type: 'success',
 					showConfirmButton: false,
-					timer: 5000,
+					timer: 3000,
 				}).then(() => {
 					window.location.href = `<?=base_url('master-jenis-identitas')?>`;
 				});
 			} else {				
 				Swal.fire({
 					title: 'Oups',
+					icon: 'error',
 					text: res.message,
 					type: 'error',
 					showConfirmButton: false,
-					timer: 5000
+					timer: 3000
 				}).then(() => {
 					$("#btnUpdate").attr('disabled', false);
 					$("#btnUpdate").html('Simpan');

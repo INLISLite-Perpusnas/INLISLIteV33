@@ -86,8 +86,6 @@ class MasterKelompokUmur extends \Base\Controllers\BaseResourceController
 
 		$save_data_id = $this->masterKelompokUmurModel->insert($save_data);
 		if ($save_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Master Kelompok Umur berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
 				'message' => 'Master Kelompok Umur berhasil disimpan',
@@ -112,8 +110,6 @@ class MasterKelompokUmur extends \Base\Controllers\BaseResourceController
 
 		$update_data_id = $this->masterKelompokUmurModel->update($id, $update_data);
 		if ($update_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Master Kelompok Umur disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
 				'message' => 'Master Kelompok Umur berhasil disimpan',
@@ -130,7 +126,7 @@ class MasterKelompokUmur extends \Base\Controllers\BaseResourceController
 
 	public function delete($id = null)
 	{
-		$data = $this->masterKelompokUmurModel>find($id);
+		$data = $this->masterKelompokUmurModel->find($id);
 		if ($data) {
 			$this->masterKelompokUmurModel->delete($id);
 			$response = [

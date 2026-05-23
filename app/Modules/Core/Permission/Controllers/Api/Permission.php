@@ -47,9 +47,6 @@ class Permission extends \Base\Controllers\BaseResourceController
         try {
             $this->permissionModel->insert($data);
 
-            $this->session->setFlashdata('toastr_msg', 'Permission berhasil disimpan');
-            $this->session->setFlashdata('toastr_type', 'success');
-
             $response = [
                 'status'   => 200,
                 'error'    => null,
@@ -92,8 +89,6 @@ class Permission extends \Base\Controllers\BaseResourceController
 			);
 			$updatePermission = $this->permissionModel->update($id, $update_data);
 			if ($updatePermission) {
-				$this->session->setFlashdata('toastr_msg', 'Permission berhasil disimpan');
-				$this->session->setFlashdata('toastr_type', 'success');
 				$response = [
 					'status'   => 201,
 					'error'    => null,

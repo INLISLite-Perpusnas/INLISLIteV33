@@ -23,11 +23,13 @@ class FormEntri extends \Base\Controllers\BaseController
 			$updateParam = set_setting_parameter($paramName, $paramValue, is_profiling());
 
 			if ($updateParam) {
-				set_message('toastr_msg', 'Form Entri Katalog berhasil disimpan');
-				set_message('toastr_type', 'success');
+				set_message('swal_icon', 'success');
+				set_message('swal_title', 'Berhasil');
+				set_message('swal_text', 'Form Entri Katalog berhasil disimpan');
 			} else {
-				set_message('toastr_msg', 'Form Entri Katalog gagal disimpan');
-				set_message('toastr_type', 'error');
+				set_message('swal_icon', 'error');
+				set_message('swal_title', 'Gagal');
+				set_message('swal_text', 'Form Entri Katalog gagal disimpan');
 			}
 			return redirect()->to('/master-form-entri');
 		}

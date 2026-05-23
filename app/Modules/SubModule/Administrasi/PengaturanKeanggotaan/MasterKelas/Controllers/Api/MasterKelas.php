@@ -86,8 +86,9 @@ class MasterKelas extends \Base\Controllers\BaseResourceController
 
 		$save_data_id = $this->kelasModel->insert($save_data);
 		if ($save_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Master Kelas berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
+			$this->session->setFlashdata('swal_icon', 'success');
+			$this->session->setFlashdata('swal_title', 'Berhasil');
+			$this->session->setFlashdata('swal_text', 'Master Kelas berhasil disimpan');
 			$response = [
 				'error' => false,
 				'message' => 'Master Kelas berhasil disimpan',
@@ -110,8 +111,9 @@ class MasterKelas extends \Base\Controllers\BaseResourceController
 
 		$update_data_id = $this->kelasModel->update($id, $update_data);
 		if ($update_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Jenis Pendidikan berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
+			$this->session->setFlashdata('swal_icon', 'success');
+			$this->session->setFlashdata('swal_title', 'Berhasil');
+			$this->session->setFlashdata('swal_text', 'Master Kelas berhasil disimpan');
 			$response = [
 				'error' => false,
 				'message' => 'Jenis Pendidikan berhasil disimpan',

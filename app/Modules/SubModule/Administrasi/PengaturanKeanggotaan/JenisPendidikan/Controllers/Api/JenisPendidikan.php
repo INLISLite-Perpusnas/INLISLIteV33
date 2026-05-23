@@ -86,8 +86,6 @@ class JenisPendidikan extends \Base\Controllers\BaseResourceController
 
 		$save_data_id = $this->jenispendidikanModel->insert($save_data);
 		if ($save_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Jenis Pendidikan berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
 				'message' => 'Jenis Pendidikan berhasil disimpan',
@@ -110,8 +108,6 @@ class JenisPendidikan extends \Base\Controllers\BaseResourceController
 
 		$update_data_id = $this->jenispendidikanModel->update($id, $update_data);
 		if ($update_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Jenis Pendidikan berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
 				'message' => 'Jenis Pendidikan berhasil disimpan',

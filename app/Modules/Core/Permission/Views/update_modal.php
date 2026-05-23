@@ -99,7 +99,7 @@
                 if (res.status === 201) {
                     Swal.fire({
                         title: 'Berhasil',
-                        text: 'Permission berhasil disimpan',
+                        text: 'Permission berhasil diubah.',
                         icon: 'success',
                         showConfirmButton: false,
                         timer: 3000

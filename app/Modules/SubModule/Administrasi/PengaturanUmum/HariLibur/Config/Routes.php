@@ -15,7 +15,7 @@ $routes->group('master-hari-libur', ['namespace' => 'HariLibur\Controllers'], fu
 	$subroutes->add('flip', 'HariLibur::flip');
 });
 
-$routes->group('api/hari-libur', ['namespace' => 'HariLibur\Controllers\Api'], function ($subroutes) {
+$routes->group('api/master-hari-libur', ['namespace' => 'HariLibur\Controllers\Api'], function ($subroutes) {
 	$subroutes->get('', 'HariLibur::index');
 	$subroutes->add('detail/(:any)', 'HariLibur::detail/$1');
 	$subroutes->add('create', 'HariLibur::create');

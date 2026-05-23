@@ -5,7 +5,7 @@ namespace Tag\Models;
 class FieldDataModel extends \Base\Models\DataModel
 {
     protected $table      			= 'fielddatas';
-    protected $primaryKey 			= 'ID';
+    protected $primaryKey 			= 'Field_id';
     protected $returnType     		= 'object';
     protected $useSoftDeletes 		= false;
     protected $protectFields 		= false;

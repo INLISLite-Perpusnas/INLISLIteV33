@@ -92,8 +92,6 @@ class MasterJurusan extends \Base\Controllers\BaseResourceController
 
 		$save_data_id = $this->jurusanModel->insert($save_data);
 		if ($save_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Master Jurusan berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
 				'message' => 'Master Jurusan berhasil disimpan',
@@ -149,14 +147,17 @@ class MasterJurusan extends \Base\Controllers\BaseResourceController
 		];
 
 		$update_data_id = $this->jurusanModel->update($id, $update_data);
-		$response = [
-			'error' => $update_data_id ? false : true,
-			'message' => $update_data_id ? 'Master Jurusan berhasil disimpan' : 'Master Jurusan gagal disimpan. Silakan coba lagi'
-		];
-
-		$this->session->setFlashdata('toastr_msg', $response['message']);
-		$this->session->setFlashdata('toastr_type', $response['error'] ? 'error' : 'success');
-
+		if ($update_data_id) {
+			$response = [
+				'error' => false,
+				'message' => 'Master Jurusan berhasil diubah',
+			];
+		} else {
+			$response = [
+				'error' => true,
+				'message' => 'Master Jurusan gagal diubah. Silakan coba lagi',
+			];
+		}
 		return $this->simpleResponse($response);
 	}
 

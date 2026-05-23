@@ -47,7 +47,7 @@
 	$('#frm_add').submit(function(event) {
 		event.preventDefault();
 
-		var url = "<?= base_url('api/hari-libur/create') ?>";
+		var url = "<?= base_url('api/master-hari-libur/create') ?>";
 		var data_post = $(this).serializeArray();
 
 		$("#btnAdd").html('<i class="fa fa-spinner fa-spin loading"></i> Mohon menunggu...');

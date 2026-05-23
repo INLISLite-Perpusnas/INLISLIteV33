@@ -86,8 +86,6 @@ class JenisKelamin extends \Base\Controllers\BaseResourceController
 
 		$save_data_id = $this->jeniskelaminModel->insert($save_data);
 		if ($save_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Jenis Kelamin berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
 				'message' => 'Jenis Kelamin berhasil disimpan',
@@ -110,16 +108,14 @@ class JenisKelamin extends \Base\Controllers\BaseResourceController
 
 		$update_data_id = $this->jeniskelaminModel->update($id, $update_data);
 		if ($update_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Jenis Kelamin berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
-				'message' => 'Jenis Kelamin berhasil disimpan',
+				'message' => 'Jenis Kelamin berhasil diubah',
 			];
 		} else {
 			$response = [
 				'error' => true,
-				'message' => 'Jenis Kelamin gagal disimpan. Silakan coba lagi',
+				'message' => 'Jenis Kelamin gagal diubah. Silakan coba lagi',
 			];
 		}
 

@@ -60,8 +60,9 @@ class RedaksiKeanggotaan extends \Base\Controllers\BaseController
 
 
             if ($newRedaksiKeanggotaanId) {
-                set_message('toastr_msg', 'Redaksi Keanggotaan berhasil ditambah');
-                set_message('toastr_type', 'success');
+                set_message('swal_icon', 'success');
+                set_message('swal_title', 'Berhasil');
+                set_message('swal_text', 'Redaksi Keanggotaan berhasil ditambah');
                 return redirect()->to('/master-redaksi-keanggotaan');
             } else {
                 set_message('message', $this->validation->getErrors() ? $this->validation->listErrors() : lang('RedaksiKeanggotaan.info.failed_saved'));
@@ -94,8 +95,9 @@ class RedaksiKeanggotaan extends \Base\Controllers\BaseController
             $updateRedaksiKeanggotaan = $this->RedaksiKeanggotaanModel->update($ID, $update_data);
 
             if ($updateRedaksiKeanggotaan) {
-                set_message('toastr_msg', 'Redaksi Keanggotaan berhasil diubah');
-                set_message('toastr_type', 'success');
+                set_message('swal_icon', 'success');
+                set_message('swal_title', 'Berhasil');
+                set_message('swal_text', 'Redaksi Keanggotaan berhasil diubah');
                 return redirect()->to('/master-redaksi-keanggotaan');
             } else {
                 set_message('message', $this->validation->getErrors() ? $this->validation->listErrors() : lang('RedaksiKeanggotaan.info.failed_saved'));
@@ -114,19 +116,21 @@ class RedaksiKeanggotaan extends \Base\Controllers\BaseController
     public function delete(int $id = 0)
     {
         if (!$id) {
-            set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-            set_message('toastr_type', 'error');
-            return redirect()->to('RedaksiKeanggotaan');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Sorry you have to provide parameter (id)');
+            return redirect()->to('master-redaksi-keanggotaan');
         }
         $RedaksiKeanggotaanDelete = $this->RedaksiKeanggotaanModel->delete($id);
         if ($RedaksiKeanggotaanDelete) {
-            set_message('toastr_msg', 'Redaksi Keanggotaan berhasil dihapus');
-            set_message('toastr_type', 'success');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Redaksi Keanggotaan berhasil dihapus');
             return redirect()->to('master-redaksi-keanggotaan');
         } else {
-            set_message('toastr_msg', 'Redaksi Keanggotaan gagal dihapus');
-            set_message('toastr_type', 'warning');
-            set_message('message', 'Redaksi Keanggotaan gagal dihapus');
+            set_message('swal_icon', 'warning');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Redaksi Keanggotaan gagal dihapus');
             return redirect()->to('master-redaksi-keanggotaan');
         }
     }

@@ -35,19 +35,21 @@ class JenisKelamin extends \Base\Controllers\BaseController
     public function delete(int $id = 0)
     {
         if (!$id) {
-            set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-            set_message('toastr_type', 'error');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Sorry you have to provide parameter (id)');
             return redirect()->to('master-jenis-kelamin');
         }
         $jeniskelaminDelete = $this->jeniskelaminModel->delete($id);
         if ($jeniskelaminDelete) {
-            set_message('toastr_msg', 'Jenis Kelamin berhasil dihapus');
-            set_message('toastr_type', 'success');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Jenis Kelamin berhasil dihapus');
             return redirect()->to('master-jenis-kelamin');
         } else {
-            set_message('toastr_msg', 'Jenis Kelamin gagal dihapus');
-            set_message('toastr_type', 'warning');
-            set_message('message', 'Jenis Kelamin gagal dihapus');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Jenis Kelamin gagal dihapus');
             return redirect()->to('master-jenis-kelamin');
         }
     }
@@ -60,11 +62,13 @@ class JenisKelamin extends \Base\Controllers\BaseController
         $jeniskelaminUpdate = $this->jeniskelaminModel->update($id, array($field => $value));
 
         if ($jeniskelaminUpdate) {
-            set_message('toastr_msg', 'Jenis Kelamin berhasil diubah');
-            set_message('toastr_type', 'success');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Jenis Kelamin berhasil diubah');
         } else {
-            set_message('toastr_msg', 'Jenis Kelamin gagal diubah');
-            set_message('toastr_type', 'warning');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Jenis Kelamin gagal diubah');
         }
         return redirect()->to('master-jenis-kelamin');
     }

@@ -35,18 +35,21 @@ class JenisPendidikan extends \Base\Controllers\BaseController
     public function delete(int $id = 0)
     {
         if (!$id) {
-            set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-            set_message('toastr_type', 'error');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Sorry you have to provide parameter (id)');
             return redirect()->to('jenis-pendidikan');
         }
         $jenispendidikanDelete = $this->jenispendidikanModel->delete($id);
         if ($jenispendidikanDelete) {
-            set_message('toastr_msg', 'Jenis Pendidikan berhasil dihapus');
-            set_message('toastr_type', 'success');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Jenis Pendidikan berhasil dihapus');
             return redirect()->to('jenis-pendidikan');
         } else {
-            set_message('toastr_msg', 'Jenis Pendidikan gagal dihapus');
-            set_message('toastr_type', 'warning');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Jenis Pendidikan gagal dihapus');
             set_message('message', 'Jenis Pendidikan gagal dihapus');
             return redirect()->to('jenis-pendidikan');
         }
@@ -60,11 +63,13 @@ class JenisPendidikan extends \Base\Controllers\BaseController
         $jenispendidikanUpdate = $this->jenispendidikanModel->update($id, array($field => $value));
 
         if ($jenispendidikanUpdate) {
-            set_message('toastr_msg', 'Jenis Pendidikan berhasil diubah');
-            set_message('toastr_type', 'success');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Jenis Pendidikan berhasil diubah');
         } else {
-            set_message('toastr_msg', 'Jenis Pendidikan gagal diubah');
-            set_message('toastr_type', 'warning');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Jenis Pendidikan gagal diubah');
         }
         return redirect()->to('master-jenis-pendidikan');
     }

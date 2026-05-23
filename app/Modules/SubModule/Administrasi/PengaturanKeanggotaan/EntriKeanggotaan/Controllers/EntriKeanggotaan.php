@@ -91,17 +91,20 @@ public function index()
         }
 
         if ($success) {
-            set_message('toastr_msg', 'Form Entri Katalog berhasil disimpan');
-            set_message('toastr_type', 'success');
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Form Entri Keanggotaan berhasil disimpan');
         } else {
-            set_message('toastr_msg', 'Form Entri Katalog gagal disimpan');
-            set_message('toastr_type', 'error');
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Gagal');
+            $this->session->setFlashdata('swal_text', 'Form Entri Keanggotaan gagal disimpan');
         }
 
         return redirect()->to('/master-entri-keanggotaan');
     } else {
-        set_message('toastr_msg', 'Validasi gagal');
-        set_message('toastr_type', 'error');
+        $this->session->setFlashdata('swal_icon', 'error');
+        $this->session->setFlashdata('swal_title', 'Validasi Gagal');
+        $this->session->setFlashdata('swal_text', 'Harap lengkapi form dengan benar');
         return redirect()->back()->withInput();
     }
 }

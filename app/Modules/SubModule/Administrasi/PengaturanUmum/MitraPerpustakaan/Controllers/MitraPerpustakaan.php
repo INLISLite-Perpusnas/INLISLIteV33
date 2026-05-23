@@ -140,8 +140,9 @@ class MitraPerpustakaan extends \Base\Controllers\BaseController
                 $this->mitraperpustakaanModel->updateBatch($update_data, 'ID');
             }
 
-            set_message('toastr_msg', 'Sinkronisasi Mitra Perpustakaan berhasil');
-            set_message('toastr_type', 'success');
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Sinkronisasi Mitra Perpustakaan berhasil');
 
             return redirect()->back()->withInput();
         } else {
@@ -153,19 +154,21 @@ class MitraPerpustakaan extends \Base\Controllers\BaseController
     public function delete(int $id = 0)
     {
         if (!$id) {
-            set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-            set_message('toastr_type', 'error');
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Error');
+            $this->session->setFlashdata('swal_text', 'Sorry you have to provide parameter (id)');
             return redirect()->to('master-mitra-perpustakaan');
         }
         $mitraperpustakaanDelete = $this->mitraperpustakaanModel->delete($id);
         if ($mitraperpustakaanDelete) {
-            set_message('toastr_msg', 'Mitra Perpustakaan berhasil dihapus');
-            set_message('toastr_type', 'success');
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Mitra Perpustakaan berhasil dihapus');
             return redirect()->to('master-mitra-perpustakaan');
         } else {
-            set_message('toastr_msg', 'Mitra Perpustakaan gagal dihapus');
-            set_message('toastr_type', 'warning');
-            set_message('message', 'Mitra Perpustakaan gagal dihapus');
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Mitra Perpustakaan gagal dihapus');
             return redirect()->to('master-mitra-perpustakaan');
         }
     }
@@ -178,11 +181,13 @@ class MitraPerpustakaan extends \Base\Controllers\BaseController
         $mitraperpustakaanUpdate = $this->mitraperpustakaanModel->update($id, array($field => $value));
 
         if ($mitraperpustakaanUpdate) {
-            set_message('toastr_msg', 'Mitra Perpustakaan berhasil diubah');
-            set_message('toastr_type', 'success');
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Mitra Perpustakaan berhasil diubah');
         } else {
-            set_message('toastr_msg', 'Mitra Perpustakaan gagal diubah');
-            set_message('toastr_type', 'warning');
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Mitra Perpustakaan gagal diubah');
         }
         return redirect()->to('master-mitra-perpustakaan');
     }

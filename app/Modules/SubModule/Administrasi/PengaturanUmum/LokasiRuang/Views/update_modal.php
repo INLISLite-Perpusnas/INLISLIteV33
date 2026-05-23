@@ -42,7 +42,7 @@
 					<div class="position-relative form-group">
 						<label>Lokasi Perpustakaan</label>
 						<select class="form-control" name="LocationLibrary_id" id="frm_update_LocationLibrary_id" tabindex="-1" aria-hidden="true">
-							<?php foreach (get_ref_table('location_library', 'ID, Code, Name','Branch_id = ' . user()->branch_id ?? '', 'data') as $row) : ?>
+							<?php foreach (get_ref_table('location_library', 'ID, Code, Name', null, 'data') as $row) : ?>
 								<option value="<?= $row->ID ?>"><?= $row->Code ?> <?= $row->Name ?></option>
 							<?php endforeach; ?>
 						</select>

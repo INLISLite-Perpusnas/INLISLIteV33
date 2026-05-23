@@ -9,7 +9,7 @@
 						</h5>
 					</button>
 				</div>
-				<div data-bs-parent="#accordion_tambahan" id="collapse_tambahan" class="collapse">
+				<div data-bs-parent="#accordion_tambahan" id="collapse_tambahan" class="collapse show">
 					<div class="card-body">
 						<div class="form-row">
 							<div class="col-md-12">

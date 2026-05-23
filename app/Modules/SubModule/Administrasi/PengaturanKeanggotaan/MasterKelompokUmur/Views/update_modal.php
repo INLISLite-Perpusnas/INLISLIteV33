@@ -76,6 +76,7 @@
 			if (res.error == false) {
 				Swal.fire({
 					title: 'Berhasil',
+					'icon': 'success',
 					html: 'Master Kelompok Umur berhasil diubah.',
 					type: 'success',
 					showConfirmButton: false,
@@ -86,6 +87,7 @@
 			} else {				
 				Swal.fire({
 					title: 'Oups',
+					icon: 'error',
 					text: res.message,
 					type: 'error',
 					showConfirmButton: false,

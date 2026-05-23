@@ -110,8 +110,9 @@ class LokasiRuang extends \Base\Controllers\BaseResourceController
 
 		$save_data_id = $this->lokasiruangModel->insert($save_data);
 		if ($save_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Lokasi Ruang berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
+			$this->session->setFlashdata('swal_icon', 'success');
+			$this->session->setFlashdata('swal_title', 'Berhasil');
+			$this->session->setFlashdata('swal_text', 'Lokasi Ruang berhasil disimpan');
 			$response = [
 				'error' => false,
 				'message' => 'Lokasi Ruang berhasil disimpan',
@@ -136,8 +137,9 @@ class LokasiRuang extends \Base\Controllers\BaseResourceController
 
 		$update_data_id = $this->lokasiruangModel->update($id, $update_data);
 		if ($update_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Lokasi Ruang berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
+			$this->session->setFlashdata('swal_icon', 'success');
+			$this->session->setFlashdata('swal_title', 'Berhasil');
+			$this->session->setFlashdata('swal_text', 'Lokasi Ruang berhasil disimpan');
 			$response = [
 				'error' => false,
 				'message' => 'Lokasi Ruang berhasil disimpan',

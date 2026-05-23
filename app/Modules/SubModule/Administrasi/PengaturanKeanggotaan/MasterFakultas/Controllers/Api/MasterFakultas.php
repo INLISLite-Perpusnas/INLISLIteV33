@@ -90,8 +90,6 @@ class MasterFakultas extends \Base\Controllers\BaseResourceController
 
 		$save_data_id = $this->fakultasModel->insert($save_data);
 		if ($save_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Master Kelas berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
 				'message' => 'Master Fakultas berhasil disimpan',
@@ -114,16 +112,14 @@ class MasterFakultas extends \Base\Controllers\BaseResourceController
 
 		$update_data_id = $this->fakultasModel->update($id, $update_data);
 		if ($update_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Master Fakultas berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
-				'message' => 'Master Fakultas berhasil disimpan',
+				'message' => 'Master Fakultas berhasil diubah',
 			];
 		} else {
 			$response = [
 				'error' => true,
-				'message' => 'Master Fakultas gagal disimpan. Silakan coba lagi',
+				'message' => 'Master Fakultas gagal diubah. Silakan coba lagi',
 			];
 		}
 

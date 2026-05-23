@@ -85,6 +85,7 @@
 				if (res.error == false) {
 					Swal.fire({
 						title: 'Berhasil',
+						'icon': 'success',
 						html: 'Kategori Koleksi berhasil disimpan.',
 						type: 'success',
 						showConfirmButton: false,
@@ -95,6 +96,7 @@
 				} else {
 					Swal.fire({
 						title: 'Oups',
+						'icon': 'error',
 						text: res.message,
 						type: 'error',
 						showConfirmButton: false,

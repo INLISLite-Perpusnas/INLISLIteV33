@@ -47,9 +47,17 @@
 						</div>
 						<div class="col-lg-6">
 							<div class="form-group">
-								<label for="MaxLoanDays">Maksimal Pinjam Koleksi</label>
+								<label for="MaxPinjamKoleksi">Maksimal Pinjam Koleksi</label>
 								<div>
-									<input required type="text" class="form-control" id="frm_add_MaxLoanDays" name="MaxLoanDays" placeholder="Maksimal Pinjam Koleksi" value="" />
+									<input required type="text" class="form-control" id="frm_add_MaxPinjamKoleksi" name="MaxPinjamKoleksi" placeholder="Maksimal Pinjam Koleksi" value="" />
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-6">
+							<div class="form-group">
+								<label for="MaxLoanDays">Maksimal Lama Pinjam Koleksi</label>
+								<div>
+									<input required type="text" class="form-control" id="frm_add_MaxLoanDays" name="MaxLoanDays" placeholder="Maksimal Lama Pinjam Koleksi" value="" />
 								</div>
 							</div>
 						</div>
@@ -96,6 +104,7 @@
 			if (res.error == false) {
 				Swal.fire({
 					title: 'Berhasil',
+					icon: 'success',
 					html: 'Jenis Anggota berhasil ditambah.',
 					type: 'success',
 					showConfirmButton: false,
@@ -106,6 +115,7 @@
 			} else {				
 				Swal.fire({
 					title: 'Oups',
+					icon: 'error',
 					text: res.message,
 					type: 'error',
 					showConfirmButton: false,

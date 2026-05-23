@@ -124,8 +124,9 @@ class JenisPerpustakaan extends \Base\Controllers\BaseResourceController
 
 		$save_data_id = $this->jenisperpustakaanModel->insert($save_data);
 		if ($save_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Jenis Perpustakaan berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
+			$this->session->setFlashdata('swal_icon', 'success');
+			$this->session->setFlashdata('swal_title', 'Berhasil');
+			$this->session->setFlashdata('swal_text', 'Jenis Perpustakaan berhasil disimpan');
 			$response = [
 				'error' => false,
 				'message' => 'Jenis Perpustakaan berhasil disimpan',
@@ -148,8 +149,9 @@ class JenisPerpustakaan extends \Base\Controllers\BaseResourceController
 
 		$update_data_id = $this->jenisperpustakaanModel->update($id, $update_data);
 		if ($update_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Jenis Perpustakaan berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
+			$this->session->setFlashdata('swal_icon', 'success');
+			$this->session->setFlashdata('swal_title', 'Berhasil');
+			$this->session->setFlashdata('swal_text', 'Jenis Perpustakaan berhasil disimpan');
 			$response = [
 				'error' => false,
 				'message' => 'Jenis Perpustakaan berhasil disimpan',

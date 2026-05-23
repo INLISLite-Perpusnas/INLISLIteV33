@@ -38,19 +38,21 @@ class LokasiPerpustakaan extends \Base\Controllers\BaseController
     public function delete(int $id = 0)
     {
         if (!$id) {
-            set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-            set_message('toastr_type', 'error');
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Error');
+            $this->session->setFlashdata('swal_text', 'Sorry you have to provide parameter (id)');
             return redirect()->to('master-lokasi-perpustakaan');
         }
         $lokasiperpustakaanDelete = $this->lokasiperpustakaanModel->delete($id);
         if ($lokasiperpustakaanDelete) {
-            set_message('toastr_msg', 'Lokasi Perpustakaan berhasil dihapus');
-            set_message('toastr_type', 'success');
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Lokasi Perpustakaan berhasil dihapus');
             return redirect()->to('master-lokasi-perpustakaan');
         } else {
-            set_message('toastr_msg', 'Lokasi Perpustakaan gagal dihapus');
-            set_message('toastr_type', 'warning');
-            set_message('message', 'Lokasi Perpustakaan gagal dihapus');
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Lokasi Perpustakaan gagal dihapus');
             return redirect()->to('master-lokasi-perpustakaan');
         }
     }
@@ -63,11 +65,13 @@ class LokasiPerpustakaan extends \Base\Controllers\BaseController
         $lokasiperpustakaanUpdate = $this->lokasiperpustakaanModel->update($id, array($field => $value));
 
         if ($lokasiperpustakaanUpdate) {
-            set_message('toastr_msg', 'Lokasi Perpustakaan berhasil diubah');
-            set_message('toastr_type', 'success');
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Lokasi Perpustakaan berhasil diubah');
         } else {
-            set_message('toastr_msg', 'Lokasi Perpustakaan gagal diubah');
-            set_message('toastr_type', 'warning');
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Lokasi Perpustakaan gagal diubah');
         }
         return redirect()->to('master-lokasi-perpustakaan');
     }

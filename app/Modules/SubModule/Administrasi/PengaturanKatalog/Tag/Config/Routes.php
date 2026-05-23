@@ -14,7 +14,7 @@ $routes->group('api/master-tag', ['namespace' => 'Tag\Controllers\Api'], functio
 	$subroutes->add('datatable', 'Tag::datatable');
 	$subroutes->add('datatable/(:any)', 'Tag::datatable/$1');
 	$subroutes->add('switch/(:any)', 'Tag::switch/$1');
-	$subroutes->add('field_data_delete/(:any)', 'Tag::field_data_delete/$1');
-	$subroutes->add('field_indicator1_delete/(:any)', 'Tag::field_indicator1_delete/$1');
-	$subroutes->add('field_indicator2_delete/(:any)', 'Tag::field_indicator2_delete/$1');
+	$subroutes->add('field_data_delete/(:any)/(:any)', 'Tag::field_data_delete/$1/$2');
+	$subroutes->add('field_indicator1_delete/(:any)/(:any)', 'Tag::field_indicator1_delete/$1/$2');
+	$subroutes->add('field_indicator2_delete/(:any)/(:any)', 'Tag::field_indicator2_delete/$1/$2');
 });

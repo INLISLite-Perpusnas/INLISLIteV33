@@ -103,11 +103,11 @@ class Tag extends \Base\Controllers\BaseResourceController
 		return $this->simpleResponse($response);
 	}
 
-	public function field_data_delete($id = null)
+	public function field_data_delete($field_id = null, $code = null)
 	{
-		$data = $this->fieldDataModel->find($id);
+		$data = $this->fieldDataModel->where('Field_id', $field_id)->where('Code', $code)->first();
 		if ($data) {
-			$this->fieldDataModel->delete($id);
+			$this->fieldDataModel->where('Field_id', $field_id)->where('Code', $code)->delete();
 			$response = [
 				'status'   => 200,
 				'error'    => null,
@@ -117,15 +117,15 @@ class Tag extends \Base\Controllers\BaseResourceController
 			];
 			return $this->respondDeleted($response);
 		} else {
-			return $this->failNotFound('Data tidak ditemukan' . ' ID:' . $id);
+			return $this->failNotFound('Data tidak ditemukan Field_id:' . $field_id . ' Code:' . $code);
 		}
 	}
 
-	public function field_indicator1_delete($id = null)
+	public function field_indicator1_delete($field_id = null, $code = null)
 	{
-		$data = $this->fieldIndicator1Model->find($id);
+		$data = $this->fieldIndicator1Model->where('Field_id', $field_id)->where('Code', $code)->first();
 		if ($data) {
-			$this->fieldIndicator1Model->delete($id);
+			$this->fieldIndicator1Model->where('Field_id', $field_id)->where('Code', $code)->delete();
 			$response = [
 				'status'   => 200,
 				'error'    => null,
@@ -135,15 +135,15 @@ class Tag extends \Base\Controllers\BaseResourceController
 			];
 			return $this->respondDeleted($response);
 		} else {
-			return $this->failNotFound('Data tidak ditemukan' . ' ID:' . $id);
+			return $this->failNotFound('Data tidak ditemukan Field_id:' . $field_id . ' Code:' . $code);
 		}
 	}
 
-	public function field_indicator2_delete($id = null)
+	public function field_indicator2_delete($field_id = null, $code = null)
 	{
-		$data = $this->fieldIndicator2Model->find($id);
+		$data = $this->fieldIndicator2Model->where('Field_id', $field_id)->where('Code', $code)->first();
 		if ($data) {
-			$this->fieldIndicator2Model->delete($id);
+			$this->fieldIndicator2Model->where('Field_id', $field_id)->where('Code', $code)->delete();
 			$response = [
 				'status'   => 200,
 				'error'    => null,
@@ -153,7 +153,7 @@ class Tag extends \Base\Controllers\BaseResourceController
 			];
 			return $this->respondDeleted($response);
 		} else {
-			return $this->failNotFound('Data tidak ditemukan' . ' ID:' . $id);
+			return $this->failNotFound('Data tidak ditemukan Field_id:' . $field_id . ' Code:' . $code);
 		}
 	}
 

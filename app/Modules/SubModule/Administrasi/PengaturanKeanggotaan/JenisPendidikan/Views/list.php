@@ -23,7 +23,7 @@ $slug = $request->getGet('slug') ?? '';
                 <nav class="" aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('jenispendidikan') ?>"><i class="fa fa-home"></i> Home</a></li>
-                        <li class="active breadcrumb-item" aria-current="page">Jenis Pendidikan</li>
+                        <li class="breadcrumb-item" aria-current="page">Jenis Pendidikan</li>
                     </ol>
                 </nav>
             </div>
@@ -33,9 +33,9 @@ $slug = $request->getGet('slug') ?? '';
     <div class="main-card mb-3 card col-md-8">
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Jenis Pendidikan
             <div class="btn-actions-pane-right actions-icon-btn">
-                <?php if (is_allowed('jenispendidikan/create')) : ?>
-                    <a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Jenis Pendidikan</a>
-                <?php endif; ?>
+               
+                     <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Jenis Pendidikan</a>
+               
             </div>
         </div>
         <div class="card-body">
@@ -47,7 +47,7 @@ $slug = $request->getGet('slug') ?? '';
                         <th class="text-center">Jenis Pendidikan</th>
                         <th class="text-center" width="100">Tanggal Update</th>
                         <th class="text-center" width="90">Status</th>
-                        <th class="text-center" width="180">Aksi</th>
+                        <th class="text-center" style="min-width: 150px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>

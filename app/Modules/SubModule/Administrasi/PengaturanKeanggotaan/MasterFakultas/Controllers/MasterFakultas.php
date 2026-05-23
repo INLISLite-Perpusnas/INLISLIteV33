@@ -37,19 +37,21 @@ class MasterFakultas extends \Base\Controllers\BaseController
     public function delete(int $id = 0)
     {
         if (!$id) {
-            set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-            set_message('toastr_type', 'error');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Error');
+            set_message('swal_text', 'Sorry you have to provide parameter (id)');
             return redirect()->to('master-fakultas');
         }
         $fakultasDelete = $this->fakultasModel->delete($id);
         if ($fakultasDelete) {
-            set_message('toastr_msg', 'Master Fakultas berhasil dihapus');
-            set_message('toastr_type', 'success');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Master Fakultas berhasil dihapus');
             return redirect()->to('master-fakultas');
         } else {
-            set_message('toastr_msg', 'Master Fakultas gagal dihapus');
-            set_message('toastr_type', 'warning');
-            set_message('message', 'Master Fakultas gagal dihapus');
+            set_message('swal_icon', 'warning');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Master Fakultas gagal dihapus');
             return redirect()->to('master-fakultas');
         }
     }
@@ -62,11 +64,13 @@ class MasterFakultas extends \Base\Controllers\BaseController
         $fakultasUpdate = $this->fakultasModel->update($id, array($field => $value));
 
         if ($fakultasUpdate) {
-            set_message('toastr_msg', 'Master Fakultas berhasil diubah');
-            set_message('toastr_type', 'success');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Master Fakultas berhasil diubah');
         } else {
-            set_message('toastr_msg', 'Master Fakultas gagal diubah');
-            set_message('toastr_type', 'warning');
+            set_message('swal_icon', 'warning');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Master Fakultas gagal diubah');
         }
         return redirect()->to('master-fakultas');
     }
