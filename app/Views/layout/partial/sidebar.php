@@ -99,6 +99,26 @@ $group = user()->category ?? 'admin';
         color: white;
     }
 
+    /* Parent menu highlight when child is active */
+    .has-submenu.open > a.submenu-toggle.active {
+        background: #f6f9fc;
+        color: #344767;
+        font-weight: 600;
+    }
+
+    .has-submenu.open > a.submenu-toggle.active i:first-child {
+        background: linear-gradient(135deg, #5e72e4, #825ee4);
+        color: white;
+    }
+
+    /* Active submenu item highlight */
+    .submenu-argon li a.active {
+        color: #5e72e4;
+        font-weight: 600;
+        background: #eef0fd;
+        border-radius: 8px;
+    }
+
     /* Submenu */
     .submenu-argon {
         display: none;

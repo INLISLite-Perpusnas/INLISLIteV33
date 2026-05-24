@@ -2,7 +2,7 @@
 
 <?= $this->section('content') ?>
 
-<section class="main-contact-area contact-info-area contact-info-three offer-area" style="background-color: #ffffff;margin-top: 90px;"  >
+<section class="main-contact-area contact-info-area contact-info-three offer-area" style="background-color: #ffffff;margin-top: 150px;"  >
 	
 	<div class="container">
 		<h2>Atur Lokasi Ruang Perpustakaan</h2>

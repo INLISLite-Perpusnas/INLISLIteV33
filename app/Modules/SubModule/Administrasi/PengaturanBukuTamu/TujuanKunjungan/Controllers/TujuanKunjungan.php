@@ -35,17 +35,22 @@ class TujuanKunjungan extends \Base\Controllers\BaseController
     public function delete(int $id = 0)
     {
         if (!$id) {
-            set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-            set_message('toastr_type', 'error');
+              set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Sorry you have to provide parameter (id)');
             return redirect()->to('master-tujuan-kunjungan');
         }
         $tujuankunjunganDelete = $this->tujuankunjunganModel->delete($id);
         if ($tujuankunjunganDelete) {
-            set_message('toastr_msg', 'Tujuan Kunjungan berhasil dihapus');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Tujuan Kunjungan berhasil dihapus');
             set_message('toastr_type', 'success');
             return redirect()->to('master-tujuan-kunjungan');
         } else {
-            set_message('toastr_msg', 'Tujuan Kunjungan gagal dihapus');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Tujuan Kunjungan gagal dihapus');
             set_message('toastr_type', 'warning');
             set_message('message', 'Tujuan Kunjungan gagal dihapus');
             return redirect()->to('master-tujuan-kunjungan');
@@ -63,8 +68,9 @@ class TujuanKunjungan extends \Base\Controllers\BaseController
             set_message('toastr_msg', 'Tujuan Kunjungan berhasil diubah');
             set_message('toastr_type', 'success');
         } else {
-            set_message('toastr_msg', 'Tujuan Kunjungan gagal diubah');
-            set_message('toastr_type', 'warning');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Tujuan Kunjungan gagal diubah');
         }
         return redirect()->to('master-tujuan-kunjungan');
     }

@@ -135,8 +135,6 @@ public function detail($id = null)
 			$db = db_connect();
 			// Insert the data as a batch
 			$db->table('collectioncategorysloanhari')->insertBatch($dataToInsert);
-			$this->session->setFlashdata('toastr_msg', 'Peraturan Peminjaman Hari berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
 				'message' => 'Peraturan Peminjaman Hari berhasil disimpan',
@@ -184,6 +182,7 @@ public function detail($id = null)
         'DendaTenorJumlah' => $this->request->getPost('DendaTenorJumlah'),
         'DendaTenorSatuan' => $this->request->getPost('DendaTenorSatuan'),
         'DendaTenorMultiply' => $this->request->getPost('DendaTenorMultiply'),
+        'SuspendMember' => $this->request->getPost('SuspendMember') ? 1 : 0,
         'SuspendType' => $this->request->getPost('SuspendType'),
         'DaySuspend' => $this->request->getPost('DaySuspend'),
         'SuspendTenorJumlah' => $this->request->getPost('SuspendTenorJumlah'),
@@ -191,10 +190,11 @@ public function detail($id = null)
         'SuspendTenorMultiply' => $this->request->getPost('SuspendTenorMultiply'),
     ];
 
-    // Remove null values to avoid updating with empty strings
-    $update_data = array_filter($update_data, function($value) {
+    // Remove null values to avoid updating with empty strings (except SuspendMember which can be 0)
+    $update_data = array_filter($update_data, function($value, $key) {
+        if ($key === 'SuspendMember') return true;
         return $value !== null && $value !== '';
-    });
+    }, ARRAY_FILTER_USE_BOTH);
 
     try {
         // Update main data

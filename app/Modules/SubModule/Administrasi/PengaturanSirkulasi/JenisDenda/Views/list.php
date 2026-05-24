@@ -33,9 +33,8 @@ $slug = $request->getGet('slug') ?? '';
     <div class="main-card mb-3 card col-md-8">
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Jenis Denda
             <div class="btn-actions-pane-right actions-icon-btn">
-                <?php if (is_allowed('jenisdenda/create')) : ?>
                   <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Jenis Denda</a>
-                <?php endif; ?>
+            
             </div>
         </div>
         <div class="card-body">
@@ -48,7 +47,7 @@ $slug = $request->getGet('slug') ?? '';
                         <th class="text-center">Jenis Denda</th>
                         <th class="text-center" width="100">Tanggal Update</th>
                         <th class="text-center" width="90">Status</th>
-                        <th class="text-center" width="180">Aksi</th>
+                        <th class="text-center" style="min-width: 150px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>

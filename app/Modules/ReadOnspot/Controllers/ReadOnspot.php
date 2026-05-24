@@ -102,7 +102,7 @@ class ReadOnSpot extends \App\Controllers\BaseController
 
         // Find collection by barcode
         $collection = $this->collectionModel->getByBarcode($barcode);
-        
+
         if (!$collection) {
             return $this->response->setJSON([
                 'status' => 'error',
@@ -110,9 +110,24 @@ class ReadOnSpot extends \App\Controllers\BaseController
             ]);
         }
 
+        // Cek status koleksi — hanya status 1 (Tersedia) yang boleh dibaca
+        if ($collection->Status_id != 1) {
+            $dbData    = \Config\Database::connect('data');
+            $statusRow = $dbData->table('collectionstatus')
+                                ->select('Name')
+                                ->where('ID', $collection->Status_id)
+                                ->get()
+                                ->getRow();
+            $statusName = $statusRow ? $statusRow->Name : 'Tidak Diketahui';
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Koleksi tidak dapat dibaca. Status saat ini: ' . $statusName
+            ]);
+        }
+
         // Get member data
         $member = $this->getMemberByNumber($memberNumber);
-        
+
         if (!$member) {
             return $this->response->setJSON([
                 'status' => 'error',
@@ -122,27 +137,103 @@ class ReadOnSpot extends \App\Controllers\BaseController
 
         // Save to database
         $data = [
-            'NoPengunjung' => $this->generateVisitorNumber(),
+            'NoPengunjung'  => $this->generateVisitorNumber(),
             'collection_id' => $collection->ID,
-            'CreateDate' => date('Y-m-d H:i:s'),
-            'Member_id' => $member['ID'],
-            'Location_Id' => $locationId,
-            'Is_return' => '0'
+            'CreateDate'    => date('Y-m-d H:i:s'),
+            'Member_id'     => $member['ID'],
+            'Location_Id'   => $locationId,
+            'Is_return'     => '0'
         ];
 
         $result = $this->bacaditempatModel->insert($data);
 
         if ($result) {
+            $this->collectionModel->update($collection->ID, [
+                'Status_id'      => 11,
+                'UpdateTerminal' => $this->request->getIPAddress()
+            ]);
+
             return $this->response->setJSON([
-                'status' => 'success',
+                'status'  => 'success',
                 'message' => 'Data berhasil disimpan'
             ]);
-        } else {
+        }
+
+        return $this->response->setJSON([
+            'status'  => 'error',
+            'message' => 'Gagal menyimpan data'
+        ]);
+    }
+
+    /**
+     * Add book via barcode for non-member (input name manually)
+     */
+    public function addByBarcodeNonMember()
+    {
+        $locationId = $this->request->getCookie('Location_id');
+        $barcode    = $this->request->getPost('barcode');
+        $nama       = trim($this->request->getPost('nama') ?? '');
+
+        if (!$locationId || !$barcode || !$nama) {
             return $this->response->setJSON([
-                'status' => 'error',
-                'message' => 'Gagal menyimpan data'
+                'status'  => 'error',
+                'message' => 'Nama dan barcode buku wajib diisi'
             ]);
         }
+
+        // Find collection by barcode
+        $collection = $this->collectionModel->getByBarcode($barcode);
+
+        if (!$collection) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Barcode buku tidak ditemukan'
+            ]);
+        }
+
+        // Cek status koleksi — hanya status 1 (Tersedia) yang boleh dibaca
+        if ($collection->Status_id != 1) {
+            $dbData    = \Config\Database::connect('data');
+            $statusRow = $dbData->table('collectionstatus')
+                                ->select('Name')
+                                ->where('ID', $collection->Status_id)
+                                ->get()
+                                ->getRow();
+            $statusName = $statusRow ? $statusRow->Name : 'Tidak Diketahui';
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Koleksi tidak dapat dibaca. Status saat ini: ' . $statusName
+            ]);
+        }
+
+        $data = [
+            'NoPengunjung'  => $this->generateVisitorNumber(),
+            'collection_id' => $collection->ID,
+            'CreateDate'    => date('Y-m-d H:i:s'),
+            'Member_id'     => null,
+            'Nama'          => $nama,
+            'Location_Id'   => $locationId,
+            'Is_return'     => '0'
+        ];
+
+        $result = $this->bacaditempatModel->insert($data);
+
+        if ($result) {
+            $this->collectionModel->update($collection->ID, [
+                'Status_id'      => 11,
+                'UpdateTerminal' => $this->request->getIPAddress()
+            ]);
+
+            return $this->response->setJSON([
+                'status'  => 'success',
+                'message' => 'Data berhasil disimpan'
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'status'  => 'error',
+            'message' => 'Gagal menyimpan data'
+        ]);
     }
 
     /**

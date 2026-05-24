@@ -110,9 +110,7 @@ class LokasiRuang extends \Base\Controllers\BaseResourceController
 
 		$save_data_id = $this->lokasiruangModel->insert($save_data);
 		if ($save_data_id) {
-			$this->session->setFlashdata('swal_icon', 'success');
-			$this->session->setFlashdata('swal_title', 'Berhasil');
-			$this->session->setFlashdata('swal_text', 'Lokasi Ruang berhasil disimpan');
+		
 			$response = [
 				'error' => false,
 				'message' => 'Lokasi Ruang berhasil disimpan',
@@ -137,10 +135,9 @@ class LokasiRuang extends \Base\Controllers\BaseResourceController
 
 		$update_data_id = $this->lokasiruangModel->update($id, $update_data);
 		if ($update_data_id) {
-			$this->session->setFlashdata('swal_icon', 'success');
-			$this->session->setFlashdata('swal_title', 'Berhasil');
-			$this->session->setFlashdata('swal_text', 'Lokasi Ruang berhasil disimpan');
-			$response = [
+	
+			
+			$response = [				
 				'error' => false,
 				'message' => 'Lokasi Ruang berhasil disimpan',
 			];
@@ -183,9 +180,7 @@ class LokasiRuang extends \Base\Controllers\BaseResourceController
     $builder = $db->table('locations as a')
         ->select('a.ID, a.Code, a.Name')
         ->select('b.Name as LocationLibrary_name, b.Code as LocationLibrary_code')
-        ->select('a.Branch_id, c.Name as Branch_name')
         ->join('location_library as b', 'b.ID = a.LocationLibrary_id', 'left')
-        ->join('branchs as c', 'c.ID = a.Branch_id', 'left')
         ->where('a.Code', $code);
 
     $data = $builder->get()->getRow();

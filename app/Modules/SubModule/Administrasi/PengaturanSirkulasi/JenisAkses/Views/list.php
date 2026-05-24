@@ -50,7 +50,7 @@ $slug = $request->getGet('slug') ?? '';
                         <th class="text-center">Jumlah Koleksi</th>
                         <th class="text-center" width="100">Tanggal Update</th>
                         <th class="text-center" width="90">Status</th>
-                        <th class="text-center" width="180">Aksi</th>
+                        <th class="text-center" style="min-width: 150px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>

@@ -80,6 +80,7 @@
 				if (res.error == false) {
 					Swal.fire({
 						title: 'Berhasil',
+						icon: 'success',
 						html: 'Lokasi Ruang berhasil ditambah.',
 						type: 'success',
 						showConfirmButton: false,
@@ -90,6 +91,7 @@
 				} else {
 					Swal.fire({
 						title: 'Oups',
+						icon: 'error',
 						text: res.message,
 						type: 'error',
 						showConfirmButton: false,
@@ -105,6 +107,7 @@
 
 				Swal.fire({
 					title: 'Oups',
+					icon: 'error',
 					text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
 					type: 'error',
 					showConfirmButton: false,

@@ -40,11 +40,11 @@ class GuestBook extends \App\Controllers\BaseController
 
 		$this->data['SettingBukuTamu'] = $this->settingModel->where('Name', 'SettingBukuTamu')->first()->Value ?? '0';
 		
-		// Get member number from request
-		$member_no = $this->request->getGet('member_no');
+		// Get member number from request — trim to handle barcode scanner spaces
+		$member_no = trim($this->request->getGet('member_no') ?? '');
 
 		// Get member data from database
-		$member = $this->db->table('members')->where('MemberNo', $member_no)->get()->getRow();
+		$member = $member_no ? $this->db->table('members')->where('MemberNo', $member_no)->get()->getRow() : null;
 
 		// Get location id from cookie
 		$locationId = $this->request->getCookie('Location_id');

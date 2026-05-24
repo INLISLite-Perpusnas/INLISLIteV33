@@ -35,19 +35,22 @@ class StatusPerkawinan extends \Base\Controllers\BaseController
     public function delete(int $id = 0)
     {
         if (!$id) {
-            set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-            set_message('toastr_type', 'error');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Error');
+            set_message('swal_text', 'Sorry you have to provide parameter (id)');
             return redirect()->to('master-status-perkawinan');
         }
         $statusperkawinanDelete = $this->statusperkawinanModel->delete($id);
         if ($statusperkawinanDelete) {
-            set_message('toastr_msg', 'Status Perkawinan berhasil dihapus');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Status Perkawinan berhasil dihapus');
             set_message('toastr_type', 'success');
             return redirect()->to('master-status-perkawinan');
         } else {
-            set_message('toastr_msg', 'Status Perkawinan gagal dihapus');
-            set_message('toastr_type', 'warning');
-            set_message('message', 'Status Perkawinan gagal dihapus');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Error');
+            set_message('swal_text', 'Status Perkawinan gagal dihapus');
             return redirect()->to('master-status-perkawinan');
         }
     }
@@ -60,11 +63,13 @@ class StatusPerkawinan extends \Base\Controllers\BaseController
         $statusperkawinanUpdate = $this->statusperkawinanModel->update($id, array($field => $value));
 
         if ($statusperkawinanUpdate) {
-            set_message('toastr_msg', 'Status Perkawinan berhasil diubah');
-            set_message('toastr_type', 'success');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Status Perkawinan berhasil diubah');
         } else {
-            set_message('toastr_msg', 'Status Perkawinan gagal diubah');
-            set_message('toastr_type', 'warning');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Error');
+            set_message('swal_text', 'Status Perkawinan gagal diubah');
         }
         return redirect()->to('master-status-perkawinan');
     }

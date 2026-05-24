@@ -4,6 +4,7 @@
 $routes->group('baca-di-tempat', ['namespace' => 'BacaDitempat\Controllers'], function ($subroutes) {
 	$subroutes->add('', 'BacaDitempat::index');
 	$subroutes->add('index', 'BacaDitempat::index');
+	$subroutes->add('non_anggota', 'BacaDitempat::non_anggota');
 	$subroutes->add('detail/(:any)', 'BacaDitempat::detail/$1');
 	$subroutes->add('create', 'BacaDitempat::create');
 	$subroutes->add('edit/(:any)', 'BacaDitempat::edit/$1');
@@ -24,4 +25,6 @@ $routes->group('api/baca-di-tempat', ['namespace' => 'BacaDitempat\Controllers\A
 	//custom
 	$subroutes->add('datatable', 'BacaDitempat::datatable');
 	$subroutes->add('datatable/(:any)', 'BacaDitempat::datatable/$1');
+	$subroutes->add('non_anggota_datatable', 'BacaDitempat::non_anggota_datatable');
+	$subroutes->add('process_return', 'BacaDitempat::process_return');
 });

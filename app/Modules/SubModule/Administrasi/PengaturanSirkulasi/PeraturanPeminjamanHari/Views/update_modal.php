@@ -98,10 +98,11 @@
                         <div class="col-lg-6 col-md-6">
                             <div class="form-group">
                                 <label for="frm_update_DendaType">Jenis Denda</label>
-                                <select class="form-control" id="frm_update_DendaType" name="DendaType" style="width:100%">
+                                 <select class="form-control" id="frm_update_DendaType" name="DendaType" style="width:100%">
                                     <option value="">-Pilih-</option>
-                                    <option value="Konstan">Konstan</option>
-                                    <option value="Berkelipatan">Berkelipatan</option>
+                                    <?php foreach (get_ref_table('jenis_denda', 'ID, Name', null, 'data') as $row): ?>
+                                        <option value="<?= $row->Name ?>"><?= $row->Name ?></option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
                         </div>
@@ -191,6 +192,18 @@
                         </div>
                     </div>
 
+                    <div class="form-row">
+                        <div class="col-lg-12 col-md-12">
+                            <div class="form-group">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="frm_update_SuspendMember"
+                                        name="SuspendMember" value="1">
+                                    <label class="custom-control-label" for="frm_update_SuspendMember">Suspend Member</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
                 <div class="modal-footer">
                     <!-- ✅ Perbaiki typo: data-bsdismiss → data-bs-dismiss -->
@@ -272,6 +285,9 @@ $(document).ready(function() {
                     $('#frm_update_DendaTenorSatuan').val(response.DendaTenorSatuan || '');
                     $('#frm_update_SuspendType').val(response.SuspendType || '');
                     $('#frm_update_SuspendTenorSatuan').val(response.SuspendTenorSatuan || '');
+
+                    // Isi checkbox SuspendMember (bit field: 1 = checked)
+                    $('#frm_update_SuspendMember').prop('checked', response.SuspendMember == 1);
 
                     // ✅ Isi Select2 multiple (kategori)
                     var categoryIds = [];

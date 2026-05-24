@@ -3,8 +3,8 @@
 <?= $this->section('content') ?>
 <style>
 	:root {
-		--primary: #039550;
-		--primary-dark: #027a42;
+		--primary: #1b3878;
+		--primary-dark: #1b3878;
 		--primary-light: #e6f4ee;
 		--accent: #f8c43a;
 		--light-gray: #f5f5f5;
@@ -350,7 +350,7 @@
 	}
 </style>
 
-<div class="page-container" style="padding-top: 100px !important; padding-bottom: 40px !important;">
+<div class="page-container" style="padding-top: 130px !important; padding-bottom: 40px !important;">
 	<div class="content-wrapper">
 		<!-- Header Section -->
 		<div class="page-header">
@@ -365,7 +365,7 @@
 					<span class="active">Anggota</span>
 				</nav>
 			</div><br>
-			<h2 style="background-color: #28a745; color: #fff; padding: 10px; border-radius: 5px;">Total Kunjungan Hari ini <?= $totalKunjungan ?? '0' ?></h2>
+			<h2 style="background-color: #1b3878; color: #fff; padding: 10px; border-radius: 5px;">Total Kunjungan Hari ini <?= $totalKunjungan ?? '0' ?></h2>
 		</div>
 
 		<!-- Navigation Tabs -->
@@ -391,7 +391,6 @@
 				<p class="search-subtitle">Masukkan nomor anggota untuk melanjutkan ke buku tamu</p>
 
 				<form method="get" action="<?= base_url('buku-tamu') ?>" class="search-form">
-					<?= csrf_field() ?>
 					<div class="search-input-group">
 						<input type="text"
 							class="search-input"
@@ -423,7 +422,7 @@
 			
 			<!-- Action Section -->
 			<div class="action-section">
-				<form method="post" action="<?php echo base_url('buku-tamu/store_anggota'); ?>">
+				<form id="frm_store_anggota" method="post" action="<?php echo base_url('buku-tamu/store_anggota'); ?>">
 					<?= csrf_field() ?>
 					<input type="hidden" name="member_no" value="<?= $member->MemberNo ?>">
 
@@ -523,37 +522,40 @@
 	</script>
 <?php endif; ?>
 
+<?php if (!empty($member)) : ?>
 <script>
     let countdown = 10;
     let timer;
 
-    // Tampilkan hitung mundur
     const countdownEl = document.getElementById('countdown');
-    
+    const storeForm   = document.getElementById('frm_store_anggota');
+
     function startTimer() {
         timer = setInterval(() => {
             countdown--;
-            countdownEl.textContent = countdown;
-            
+            if (countdownEl) countdownEl.textContent = countdown;
+
             if (countdown <= 0) {
                 clearInterval(timer);
-                // Kalau belum pilih, set ke value default "kunjungan"
                 const select = document.getElementById('TujuanKunjungan_id');
-                if (!select.value) {
-                    select.value = '<?= $tujuan_kunjungan[0]->ID ?>'; // otomatis pilih yang pertama
+                if (select && !select.value) {
+                    select.value = '<?= $tujuan_kunjungan[0]->ID ?? '' ?>';
                 }
-                document.querySelector('form').submit();
+                if (storeForm) storeForm.submit();
             }
         }, 1000);
     }
 
-    // Kalau user sudah pilih, langsung submit & stop timer
-    document.getElementById('TujuanKunjungan_id').addEventListener('change', function() {
-        clearInterval(timer);
-        document.querySelector('form').submit();
-    });
+    const selectEl = document.getElementById('TujuanKunjungan_id');
+    if (selectEl) {
+        selectEl.addEventListener('change', function() {
+            clearInterval(timer);
+            if (storeForm) storeForm.submit();
+        });
+    }
 
     startTimer();
 </script>
+<?php endif; ?>
 
 <?= $this->endsection() ?>

@@ -35,18 +35,21 @@ class PeraturanPeminjamanTanggal extends \Base\Controllers\BaseController
     public function delete(int $id = 0)
     {
         if (!$id) {
-            set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-            set_message('toastr_type', 'error');
+           set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Sorry you have to provide parameter (id)');
             return redirect()->to('/master-peraturan-peminjaman-tanggal');
         }
         $peraturanpeminjamantanggalDelete = $this->peraturanpeminjamantanggalModel->delete($id);
         if ($peraturanpeminjamantanggalDelete) {
-            set_message('toastr_msg', 'Jenis Bahan berhasil dihapus');
-            set_message('toastr_type', 'success');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Jenis Bahan berhasil dihapus');
             return redirect()->to('/master-peraturan-peminjaman-tanggal');
         } else {
-            set_message('toastr_msg', 'Jenis Bahan gagal dihapus');
-            set_message('toastr_type', 'warning');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Jenis Bahan gagal dihapus');
             set_message('message', 'Jenis Bahan gagal dihapus');
             return redirect()->to('/master-peraturan-peminjaman-tanggal');
         }
@@ -59,11 +62,13 @@ class PeraturanPeminjamanTanggal extends \Base\Controllers\BaseController
         $peraturanpeminjamantanggalUpdate = $this->peraturanpeminjamantanggalModel->update($id, array($field => $value));
 
         if ($peraturanpeminjamantanggalUpdate) {
-            set_message('toastr_msg', 'Jenis Bahan berhasil diubah');
-            set_message('toastr_type', 'success');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Jenis Bahan berhasil diubah');
         } else {
-            set_message('toastr_msg', 'Jenis Bahan gagal diubah');
-            set_message('toastr_type', 'warning');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Jenis Bahan gagal diubah');
         }
         return redirect()->to('/master-peraturan-peminjaman-tanggal');
     }

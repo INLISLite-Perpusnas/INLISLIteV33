@@ -63,20 +63,22 @@
 			if (res.error == false) {
 				Swal.fire({
 					title: 'Berhasil',
+					icon: 'success',
 					html: 'Jenis Denda berhasil ditambah.',
 					icon: 'success',
 					showConfirmButton: false,
-					timer: 5000,
+					timer: 3000,
 				}).then(() => {
 					window.location.href = `<?=base_url('master-jenis-denda')?>`;
 				});
 			} else {				
 				Swal.fire({
 					title: 'Oups',
+					html: res.message,
 					text: res.message,
 					icon: 'error',
 					showConfirmButton: false,
-					timer: 5000
+					timer: 3000
 				}).then(() => {
 					$("#btnAdd").attr('disabled', false);
 					$("#btnAdd").html('Simpan');

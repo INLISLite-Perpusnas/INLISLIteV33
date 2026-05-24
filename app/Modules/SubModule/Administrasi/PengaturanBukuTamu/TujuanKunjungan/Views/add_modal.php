@@ -74,6 +74,7 @@
                 if (res.error == false) {
                     Swal.fire({
                         title: 'Berhasil',
+                        icon: 'success',
                         html: 'Tujuan Kunjungan berhasil ditambah.',
                         type: 'success',
                         showConfirmButton: false,
@@ -84,10 +85,11 @@
                 } else {
                     Swal.fire({
                         title: 'Oups',
+                        icon: 'error',
                         text: res.message,
                         type: 'error',
                         showConfirmButton: false,
-                        timer: 5000
+                        timer: 3000
                     }).then(() => {
                         $("#btnAdd").attr('disabled', false);
                         $("#btnAdd").html('Simpan');
@@ -108,10 +110,11 @@
 
                 Swal.fire({
                     title: title,
+                    icon: 'error',
                     html: html,
                     type: 'error',
                     showConfirmButton: false,
-                    timer: 5000
+                    timer: 3000
                 }).then(() => {
                     $("#btnAdd").attr('disabled', false).html('Simpan');
                 });

@@ -386,11 +386,26 @@ $page_title = ucfirst($segment2 ?: $segment1);
 </head>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Toggle submenu on click
         document.querySelectorAll('.submenu-toggle').forEach(function(toggle) {
             toggle.addEventListener('click', function(e) {
                 e.preventDefault();
                 this.closest('.has-submenu').classList.toggle('open');
             });
+        });
+
+        // Auto-open parent menus and highlight them when a child is active
+        document.querySelectorAll('.nav-menu-argon a.active').forEach(function(activeLink) {
+            let parent = activeLink.closest('.has-submenu');
+            while (parent) {
+                parent.classList.add('open');
+                const parentToggle = parent.querySelector(':scope > a.submenu-toggle');
+                if (parentToggle) {
+                    parentToggle.classList.add('active');
+                }
+                const grandParent = parent.parentElement;
+                parent = grandParent ? grandParent.closest('.has-submenu') : null;
+            }
         });
     });
 </script>

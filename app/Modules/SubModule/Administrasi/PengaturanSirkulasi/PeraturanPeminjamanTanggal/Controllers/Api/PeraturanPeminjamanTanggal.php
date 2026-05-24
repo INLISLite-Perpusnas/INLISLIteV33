@@ -64,68 +64,40 @@ class PeraturanPeminjamanTanggal extends \Base\Controllers\BaseResourceControlle
 
 public function detail($id = null)
 {
-    if (empty($id)) {
-        return $this->failNotFound('ID parameter is required');
-    }
-
-    $db = db_connect();
-    
-    // Get main data from peraturan_peminjaman_tanggal
-    $mainData = $db->table('peraturan_peminjaman_tanggal')
-        ->where('ID', $id)
-        ->get()
-        ->getRowArray();
-    
-    if (!$mainData) {
+    $data = $this->peraturanpeminjamantanggalModel->find($id);
+    if (!$data) {
         return $this->failNotFound('No Data Found with id ' . $id);
     }
-    
-    // Get related categories
-    $categories = $db->table('collectioncategorysloantanggal')
-        ->select('Category_id')
-        ->where('peminjaman_tanggal_id', $id)
-        ->get()
-        ->getResultArray();
-    
-    // Extract category IDs into a simple array
-    $categoryIds = array_column($categories, 'Category_id');
-    
-    // Add categories to main data
-    $mainData['Category_id'] = $categoryIds;
-    
-    return $this->respond($mainData);
+    return $this->respond($data);
 }
 
 	public function create()
 	{
 		$save_data = [
-			'TanggalAwal' => $this->request->getPost('TanggalAwal'),
-			'TanggalAkhir' => $this->request->getPost('TanggalAkhir'),
-			'CreateTerminal' => $this->request->getPost('CreateTerminal'),
-			'UpdateTerminal' => $this->request->getPost('UpdateTerminal'),
-			'MaxPinjamKoleksi' => $this->request->getPost('MaxPinjamKoleksi'),
-			'MaxLoanDays' => $this->request->getPost('MaxLoanDays'),
-			'DendaType' => $this->request->getPost('DendaType'),
-			'DendaTenorJumlah' => $this->request->getPost('DendaTenorJumlah'),
-			'DendaTenorSatuan' => $this->request->getPost('DendaTenorSatuan'),
-			'DendaPerTenor' => $this->request->getPost('DendaPerTenor'),
+			'TanggalAwal'        => $this->request->getPost('TanggalAwal'),
+			'TanggalAkhir'       => $this->request->getPost('TanggalAkhir'),
+			'MaxPinjamKoleksi'   => $this->request->getPost('MaxPinjamKoleksi'),
+			'MaxLoanDays'        => $this->request->getPost('MaxLoanDays'),
+			'WarningLoanDueDay'    => $this->request->getPost('WarningLoanDueDay'),
+			'DayPerpanjang'      => $this->request->getPost('DayPerpanjang'),
+			'CountPerpanjang'    => $this->request->getPost('CountPerpanjang'),
+			'DendaPerTenor'      => $this->request->getPost('DendaPerTenor'),
+			'DendaType'          => $this->request->getPost('DendaType'),
+			'DendaTenorJumlah'   => $this->request->getPost('DendaTenorJumlah'),
+			'DendaTenorSatuan'   => $this->request->getPost('DendaTenorSatuan'),
 			'DendaTenorMultiply' => $this->request->getPost('DendaTenorMultiply'),
-			'SuspendMember' => $this->request->getPost('SuspendMember'),
-			'WarningLoanDueDay' => $this->request->getPost('WarningLoanDueDay'),
-			'SuspendType' => $this->request->getPost('SuspendType'),
-			'SuspendTenorJumlah' => $this->request->getPost('SuspendTenorJumlah'),
-			'SuspendTenorSatuan' => $this->request->getPost('SuspendTenorSatuan'),
-			'DaySuspend' => $this->request->getPost('DaySuspend'),
+			'SuspendMember'      => $this->request->getPost('SuspendMember') ? 1 : 0,
+			'SuspendType'        => $this->request->getPost('SuspendType'),
+			'DaySuspend'         => $this->request->getPost('DaySuspend'),
+			'SuspendTenorJumlah'   => $this->request->getPost('SuspendTenorJumlah'),
+			'SuspendTenorSatuan'   => $this->request->getPost('SuspendTenorSatuan'),
 			'SuspendTenorMultiply' => $this->request->getPost('SuspendTenorMultiply'),
-			'DayPerpanjang' => $this->request->getPost('DayPerpanjang'),
-			'CountPerpanjang' => $this->request->getPost('CountPerpanjang'),
 		];
 
 		if ($save_data) {
 			$save_data_id = $this->peraturanpeminjamantanggalModel->insert($save_data);
 			
-			$this->session->setFlashdata('toastr_msg', 'Peraturan Peminjaman Tanggal berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
+			
 			$response = [
 				'error' => false,
 				'message' => 'Peraturan Peminjaman Tanggal berhasil disimpan',
@@ -174,6 +146,7 @@ public function detail($id = null)
         'DendaTenorJumlah' => $this->request->getPost('DendaTenorJumlah'),
         'DendaTenorSatuan' => $this->request->getPost('DendaTenorSatuan'),
         'DendaTenorMultiply' => $this->request->getPost('DendaTenorMultiply'),
+        'SuspendMember' => $this->request->getPost('SuspendMember') ? 1 : 0,
         'SuspendType' => $this->request->getPost('SuspendType'),
         'DaySuspend' => $this->request->getPost('DaySuspend'),
         'SuspendTenorJumlah' => $this->request->getPost('SuspendTenorJumlah'),
@@ -181,10 +154,11 @@ public function detail($id = null)
         'SuspendTenorMultiply' => $this->request->getPost('SuspendTenorMultiply'),
     ];
 
-    // Remove null values to avoid updating with empty strings
-    $update_data = array_filter($update_data, function($value) {
+    // Remove null values to avoid updating with empty strings (except SuspendMember which can be 0)
+    $update_data = array_filter($update_data, function($value, $key) {
+        if ($key === 'SuspendMember') return true;
         return $value !== null && $value !== '';
-    });
+    }, ARRAY_FILTER_USE_BOTH);
 
     try {
         // Update main data

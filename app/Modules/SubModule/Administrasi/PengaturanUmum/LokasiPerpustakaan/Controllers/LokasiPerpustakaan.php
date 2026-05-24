@@ -43,6 +43,16 @@ class LokasiPerpustakaan extends \Base\Controllers\BaseController
             $this->session->setFlashdata('swal_text', 'Sorry you have to provide parameter (id)');
             return redirect()->to('master-lokasi-perpustakaan');
         }
+
+        $lokasiRuangModel = new \LokasiRuang\Models\LokasiRuangModel();
+        $childCount = $lokasiRuangModel->where('LocationLibrary_id', $id)->countAllResults();
+        if ($childCount > 0) {
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Tidak Dapat Dihapus');
+            $this->session->setFlashdata('swal_text', 'Lokasi Perpustakaan tidak dapat dihapus karena masih memiliki ' . $childCount . ' Lokasi Ruang.');
+            return redirect()->to('master-lokasi-perpustakaan');
+        }
+
         $lokasiperpustakaanDelete = $this->lokasiperpustakaanModel->delete($id);
         if ($lokasiperpustakaanDelete) {
             $this->session->setFlashdata('swal_icon', 'success');

@@ -87,8 +87,6 @@ class JenisPelanggaran extends \Base\Controllers\BaseResourceController
 
 		$save_data_id = $this->jenispelanggaranModel->insert($save_data);
 		if ($save_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Jenis Pelanggaran berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
 				'message' => 'Jenis Pelanggaran berhasil disimpan',
@@ -112,8 +110,6 @@ class JenisPelanggaran extends \Base\Controllers\BaseResourceController
 
 		$update_data_id = $this->jenispelanggaranModel->update($id, $update_data);
 		if ($update_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Jenis Pelanggaran berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
 				'message' => 'Jenis Pelanggaran berhasil disimpan',

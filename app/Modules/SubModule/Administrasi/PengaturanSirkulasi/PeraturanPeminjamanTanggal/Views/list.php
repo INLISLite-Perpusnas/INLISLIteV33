@@ -52,7 +52,7 @@ $slug = $request->getGet('slug') ?? '';
                         <th class="text-center">Maks.Lama Perpanjangan</th>
                         <th class="text-center">Maks.Banyaknya Perpanjangan</th>
                         <th class="text-center" width="80">Status</th>
-                        <th class="text-center" style="min-width: 100px;">Aksi</th>
+                        <th class="text-center" style="min-width: 200px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -129,6 +129,23 @@ $slug = $request->getGet('slug') ?? '';
         });
     });
 
-    // Script Hapus tetap sama...
+    $("body").on("click", ".remove-data", function() {
+        var url = $(this).attr('data-href');
+        Swal.fire({
+            title: '<?= lang('App.swal.are_you_sure') ?>',
+            text: "<?= lang('App.swal.can_not_be_restored') ?>",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#dd6b55',
+            confirmButtonText: '<?= lang('App.btn.yes') ?>',
+            cancelButtonText: '<?= lang('App.btn.no') ?>'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+        return false;
+    });
 </script>
 <?= $this->endSection('script'); ?>

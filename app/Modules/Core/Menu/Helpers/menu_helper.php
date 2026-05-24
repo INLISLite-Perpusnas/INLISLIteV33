@@ -214,7 +214,14 @@ if (!function_exists('is_accessed')) {
 if (!function_exists('display_menu_backend')) {
     function display_menu_backend($parent = 0, $level = 1, $group = null)
     {
-        $request = \Config\Services::request();
+        return _render_menu_backend($parent, $level, $group)['html'];
+    }
+}
+
+if (!function_exists('_render_menu_backend')) {
+    function _render_menu_backend($parent = 0, $level = 1, $group = null)
+    {
+        $request   = \Config\Services::request();
         $baseModel = new \App\Models\BaseModel();
 
         $sql = "
@@ -275,9 +282,18 @@ if (!function_exists('display_menu_backend')) {
 
         $result = $baseModel->query($sql, [$group, $parent, $group, $group])->getResult();
 
-        if (!$result) return '';
+        if (!$result) return ['html' => '', 'hasActive' => false];
 
-        $html = '<ul class="' . ($level === 1 ? 'nav-menu-argon' : 'submenu-argon') . '">';
+        // Compute current path relative to base_url once per call
+        $fullPath = $request->getUri()->getPath();
+        $basePath = rtrim(parse_url(base_url(), PHP_URL_PATH) ?? '', '/');
+        if ($basePath !== '' && strpos($fullPath, $basePath) === 0) {
+            $fullPath = substr($fullPath, strlen($basePath));
+        }
+        $currentPath = trim($fullPath, '/');
+
+        $html      = '<ul class="' . ($level === 1 ? 'nav-menu-argon' : 'submenu-argon') . '">';
+        $hasActive = false;
 
         foreach ($result as $row) {
 
@@ -286,26 +302,31 @@ if (!function_exists('display_menu_backend')) {
                 continue;
             }
 
-            $url = $row->controller ? base_url($row->controller) : '#';
-            $isActive = (trim((string)$request->getUri(), '/') === trim($row->controller, '/'));
-            $activeClass = $isActive ? 'active' : '';
+            $url            = $row->controller ? base_url($row->controller) : '#';
+            $controllerPath = trim($row->controller, '/');
+            $isActive       = ($currentPath === $controllerPath)
+                || ($controllerPath !== '' && strpos($currentPath, $controllerPath . '/') === 0);
 
             if ($row->childs > 0) {
+                $child         = _render_menu_backend($row->id, $level + 1, $group);
+                $childActive   = $child['hasActive'];
+                $liClasses     = 'has-submenu' . ($childActive ? ' open' : '');
+                $aClasses      = 'submenu-toggle' . ($childActive ? ' active' : '');
                 $html .= '
-                <li class="has-submenu ' . $activeClass . '">
-                    <a href="#" class="submenu-toggle">
+                <li class="' . $liClasses . '">
+                    <a href="#" class="' . $aClasses . '">
                         <i class="' . esc($row->icon) . '"></i>
                         <span>' . esc($row->name) . '</span>
                         <i class="fas fa-chevron-down caret"></i>
                     </a>';
-
-                $html .= display_menu_backend($row->id, $level + 1, $group);
-
+                $html .= $child['html'];
                 $html .= '</li>';
+                if ($childActive) $hasActive = true;
             } else {
+                if ($isActive) $hasActive = true;
                 $html .= '
                 <li>
-                    <a href="' . $url . '" class="' . $activeClass . '">
+                    <a href="' . $url . '" class="' . ($isActive ? 'active' : '') . '">
                         <i class="' . esc($row->icon) . '"></i>
                         <span>' . esc($row->name) . '</span>
                     </a>
@@ -315,7 +336,7 @@ if (!function_exists('display_menu_backend')) {
 
         $html .= '</ul>';
 
-        return $html;
+        return ['html' => $html, 'hasActive' => $hasActive];
     }
 }
 

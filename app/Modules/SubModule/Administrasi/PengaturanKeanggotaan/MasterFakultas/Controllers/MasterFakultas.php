@@ -42,6 +42,15 @@ class MasterFakultas extends \Base\Controllers\BaseController
             set_message('swal_text', 'Sorry you have to provide parameter (id)');
             return redirect()->to('master-fakultas');
         }
+        $jurusanModel = new \MasterJurusan\Models\MasterJurusanModel();
+        $childCount = $jurusanModel->where('id_fakultas', $id)->countAllResults();
+        if ($childCount > 0) {
+            set_message('swal_icon', 'warning');
+            set_message('swal_title', 'Tidak Dapat Dihapus');
+            set_message('swal_text', 'Master Fakultas tidak dapat dihapus karena masih memiliki ' . $childCount . ' Jurusan.');
+            return redirect()->to('master-fakultas');
+        }
+
         $fakultasDelete = $this->fakultasModel->delete($id);
         if ($fakultasDelete) {
             set_message('swal_icon', 'success');

@@ -89,7 +89,8 @@
 			if (res.error == false) {
 				Swal.fire({
 					title: 'Berhasil',
-					html: 'Lokasi Perpustakaan berhasil disimpan.',
+					icon: 'success',
+					html: 'Lokasi Perpustakaan berhasil diubah.',
 					type: 'success',
 					showConfirmButton: false,
 					timer: 5000,
@@ -99,6 +100,7 @@
 			} else {				
 				Swal.fire({
 					title: 'Oups',
+					icon: 'error',
 					text: res.message,
 					type: 'error',
 					showConfirmButton: false,
@@ -114,6 +116,7 @@
 
 			Swal.fire({
 				title: 'Oups',
+				icon: 'error',
 				text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
 				type: 'error',
 				showConfirmButton: false,

@@ -99,9 +99,6 @@ class LokasiPerpustakaan extends \Base\Controllers\BaseResourceController
 
 		$save_data_id = $this->lokasiperpustakaanModel->insert($save_data);
 		if ($save_data_id) {
-			$this->session->setFlashdata('swal_icon', 'success');
-			$this->session->setFlashdata('swal_title', 'Berhasil');
-			$this->session->setFlashdata('swal_text', 'Lokasi Perpustakaan berhasil disimpan');
 			$response = [
 				'error' => false,
 				'message' => 'Lokasi Perpustakaan berhasil disimpan',
@@ -126,9 +123,7 @@ class LokasiPerpustakaan extends \Base\Controllers\BaseResourceController
 
 		$update_data_id = $this->lokasiperpustakaanModel->update($id, $update_data);
 		if ($update_data_id) {
-			$this->session->setFlashdata('swal_icon', 'success');
-			$this->session->setFlashdata('swal_title', 'Berhasil');
-			$this->session->setFlashdata('swal_text', 'Lokasi Perpustakaan berhasil disimpan');
+		
 			$response = [
 				'error' => false,
 				'message' => 'Lokasi Perpustakaan berhasil disimpan',

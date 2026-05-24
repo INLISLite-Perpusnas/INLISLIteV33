@@ -67,6 +67,7 @@
 				if (res.error == false) {
 					Swal.fire({
 						title: 'Berhasil',
+						icon: 'success',
 						html: 'Lokasi Perpustakaan berhasil ditambah.',
 						type: 'success',
 						showConfirmButton: false,
@@ -77,6 +78,7 @@
 				} else {
 					Swal.fire({
 						title: 'Oups',
+						icon: 'error',
 						text: res.message,
 						type: 'error',
 						showConfirmButton: false,

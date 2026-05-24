@@ -29,11 +29,12 @@ class ReadOnSpotModel extends Model
             bacaditempat.*,
             catalogs.Title as JudulBuku,
             collections.NomorBarcode as Barcode,
-            members.Fullname as NamaAnggota,
-            members.MemberNo as NoAnggota
+            COALESCE(members.Fullname, bacaditempat.Nama) as NamaAnggota,
+            COALESCE(members.MemberNo, "-") as NoAnggota,
+            IF(bacaditempat.Member_id IS NULL, 1, 0) as IsNonAnggota
         ')
         ->join('collections', 'collections.ID = bacaditempat.collection_id', 'left')
-        ->join('catalogs', 'catalogs.ID = collections.Catalog_id', 'left') 
+        ->join('catalogs', 'catalogs.ID = collections.Catalog_id', 'left')
         ->join('members', 'members.ID = bacaditempat.Member_id', 'left')
         ->where('bacaditempat.Location_Id', $locationId)
         ->where('DATE(bacaditempat.CreateDate)', $today)

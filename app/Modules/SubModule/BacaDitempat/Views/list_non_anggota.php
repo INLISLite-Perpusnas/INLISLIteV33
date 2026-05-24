@@ -15,16 +15,16 @@ $slug = $request->getGet('slug') ?? '';
                 <div class="page-title-icon">
                     <i class="pe-7s-note icon-gradient bg-strong-bliss"></i>
                 </div>
-                <div>Baca Ditempat - Anggota
-                    <div class="page-title-subheading">Daftar semua Baca Ditempat Anggota</div>
+                <div>Baca Ditempat - Non Anggota
+                    <div class="page-title-subheading">Daftar semua Baca Ditempat Non Anggota</div>
                 </div>
             </div>
             <div class="page-title-actions">
                 <nav class="" aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="<?= base_url('bacaditempat') ?>"><i class="fa fa-home"></i> Home</a></li>
+                        <li class="breadcrumb-item"><a href="<?= base_url('baca-di-tempat') ?>"><i class="fa fa-home"></i> Home</a></li>
                         <li class="breadcrumb-item" aria-current="page">Baca Ditempat</li>
-                      
+                        <li class="breadcrumb-item" aria-current="page">Non Anggota</li>
                     </ol>
                 </nav>
             </div>
@@ -33,19 +33,19 @@ $slug = $request->getGet('slug') ?? '';
 
     <ul class="body-tabs body-tabs-layout tabs-animated body-tabs-animated nav">
         <li class="nav-item">
-            <a class="btn-header-argon active" href="<?= base_url('baca-di-tempat') ?>">
+            <a class="btn-header-argon" href="<?= base_url('baca-di-tempat') ?>">
                 <span>Anggota</span>
             </a>
         </li>
         <li class="nav-item">
-            <a style="padding-left: 10px !important;" class="btn-header-argon" href="<?= base_url('baca-di-tempat/non_anggota') ?>">
+            <a style="padding-left: 10px !important;" class="btn-header-argon active" href="<?= base_url('baca-di-tempat/non_anggota') ?>">
                 <span>Non Anggota</span>
             </a>
         </li>
     </ul>
 
     <div class="main-card mb-3 card">
-        <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Baca Ditempat
+        <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Baca Ditempat Non Anggota
             <div class="btn-actions-pane-right actions-icon-btn">
                 <a data-bs-toggle="modal" data-bs-target="#modalPengembalian" data-toggle="modal" data-target="#modalPengembalian" href="javascript:void(0);" class="btn btn-primary btn-sm"><i class="pe-7s-plus"></i> Tambah</a>
             </div>
@@ -57,8 +57,7 @@ $slug = $request->getGet('slug') ?? '';
                     <tr>
                         <th class="text-center" width="35">No</th>
                         <th class="text-center" width="120">Tgl. Kunjungan</th>
-                        <th class="text-center">Nama Anggota</th>
-                        <th class="text-center" width="100">Nomor Anggota</th>
+                        <th class="text-center">Nama Pengunjung</th>
                         <th class="text-center">Nomor Barcode Koleksi</th>
                         <th class="text-center">Lokasi Perpustakaan</th>
                         <th class="text-center">Lokasi Ruang</th>
@@ -109,7 +108,7 @@ $slug = $request->getGet('slug') ?? '';
             "processing": true,
             "serverSide": true,
             "ajax": {
-                "url": '<?php echo site_url('api/baca-di-tempat/datatable') ?>',
+                "url": '<?php echo site_url('api/baca-di-tempat/non_anggota_datatable') ?>',
             },
              "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
                 "<'row'<'col-md-12'tr>>" +
@@ -136,10 +135,7 @@ $slug = $request->getGet('slug') ?? '';
                     className: 'text-center'
                 },
                 {
-                    data: 'Member_name'
-                },
-                {
-                    data: 'Member_no'
+                    data: 'Nama'
                 },
                 {
                     data: 'Barcode_no'
@@ -163,11 +159,11 @@ $slug = $request->getGet('slug') ?? '';
                 },
             ],
             "columnDefs": [{
-                    targets: [0, 8],
+                    targets: [0, 7],
                     searchable: false
                 },
                 {
-                    targets: [0, 8],
+                    targets: [0, 7],
                     orderable: false
                 },
             ],

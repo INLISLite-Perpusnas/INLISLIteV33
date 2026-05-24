@@ -36,7 +36,7 @@ $slug = $request->getGet('slug') ?? '';
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Tujuan Kunjungan
             <div class="btn-actions-pane-right actions-icon-btn">
                
-                    <a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Tujuan Kunjungan</a>
+                   <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Tujuan Kunjungan</a>
             </div>
         </div>
         <div class="card-body">
@@ -50,7 +50,6 @@ $slug = $request->getGet('slug') ?? '';
                         <th class="text-center" width="90">Member</th>
                         <th class="text-center" width="90">Non Member</th>
                         <th class="text-center" width="90">Rombongan</th>
-                        <th class="text-center" width="90">Active</th>
                         <th class="text-center" style="min-width: 250px;">Aksi</th>
                     </tr>
                 </thead>
@@ -111,9 +110,7 @@ $slug = $request->getGet('slug') ?? '';
                 {
                     data: 'Rombongan'
                 },
-                {
-                    data: 'active'
-                },
+               
                 {
                     data: 'action',
                     className: 'text-center',
@@ -121,11 +118,11 @@ $slug = $request->getGet('slug') ?? '';
                 },
             ],
             "columnDefs": [{
-                    targets: [0, 4],
+                    targets: [0, 3],
                     searchable: false
                 },
                 {
-                    targets: [0, 4],
+                    targets: [0, 3],
                     orderable: false
                 },
             ],

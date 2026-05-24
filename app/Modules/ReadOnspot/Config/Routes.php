@@ -11,7 +11,8 @@ $routes->group('baca-ditempat', ['namespace' => 'ReadOnSpot\Controllers'], funct
     
     // AJAX endpoints - sesuai dengan method yang sudah dibuat
     $subroutes->post('addByMemberNumber', 'ReadOnSpot::addByMemberNumber');  // Search member
-    $subroutes->post('addByBarcode', 'ReadOnSpot::addByBarcode');            // Add book via barcode  
+    $subroutes->post('addByBarcode', 'ReadOnSpot::addByBarcode');            // Add book via barcode (anggota)
+    $subroutes->post('addByBarcodeNonMember', 'ReadOnSpot::addByBarcodeNonMember'); // Add book via barcode (non anggota)
     $subroutes->get('getTodayData', 'ReadOnSpot::getTodayData');             // Get today's data
     $subroutes->post('resetForm', 'ReadOnSpot::resetForm');                  // Reset form
     

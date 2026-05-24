@@ -53,8 +53,8 @@
                         <div class="col-lg-6 col-md-6">
                             <div class="form-group">
                                 <label>Jeda Peringatan Peminjaman</label>
-                                <input required type="number" min="0" class="form-control" id="frm_add_WarningLoanDays"
-                                    name="WarningLoanDays" placeholder="Jeda Peringatan Peminjaman" value="" />
+                                <input required type="number" min="0" class="form-control" id="frm_add_WarningLoanDueDay"
+                                    name="WarningLoanDueDay" placeholder="Jeda Peringatan Peminjaman" value="" />
                             </div>
                         </div>
                         <div class="col-lg-6 col-md-6">
@@ -99,11 +99,12 @@
                         <div class="col-lg-6 col-md-6">
                             <div class="form-group">
                                 <label>Jenis Denda</label>
-                                <select class="form-control" name="DendaType" style="width:100%">
-                                    <option value="">-Pilih-</option>
-                                    <option value="Konstan">Denda</option>
-                                    <option value="Berkelipatan">Berkelipatan</option>
-                                </select>
+                                 <select class="form-control" id="frm_add_DendaType" name="DendaType" style="width:100%">
+                                        <option value="">-Pilih-</option>
+                                        <?php foreach (get_ref_table('jenis_denda', 'ID, Name', null, 'data') as $row): ?>
+                                            <option value="<?= $row->Name ?>"><?= $row->Name ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
                             </div>
                         </div>
                     </div>
@@ -135,8 +136,8 @@
                         <div class="col-lg-12 col-md-12">
                             <div class="form-group">
                                 <label>Pengali Tenor Denda</label>
-                                <input required type="number" class="form-control" id="frm_add_DendaPerTenorMultiply"
-                                    name="DendaTenorMultipy" placeholder="Pengali Tenor Denda" value="" />
+                                <input required type="number" class="form-control" id="frm_add_DendaTenorMultiply"
+                                    name="DendaTenorMultiply" placeholder="Pengali Tenor Denda" value="" />
                             </div>
                         </div>
                     </div>
@@ -145,7 +146,7 @@
                         <div class="col-lg-6 col-md-6">
                             <div class="form-group">
                                 <label>Skorsing Tipe</label>
-                                <select required class="form-control" id="frm_add_SkorsingType" name="SkorsingType" style="width:100%">
+                                <select required class="form-control" id="frm_add_SuspendType" name="SuspendType" style="width:100%">
                                     <option value="">-- Pilih Tipe --</option>
                                     <option value="Konstan">Konstan</option>
                                     <option value="Berkelipatan">Berkelipatan</option>
@@ -189,7 +190,19 @@
                             <div class="form-group">
                                 <label>Pengali Tenor Skorsing</label>
                                 <input required type="number" class="form-control" id="frm_add_SuspendTenorMultiply"
-                                    name="SuspendTenorMultipy" placeholder="Pengali Tenor Skorsing" value="" />
+                                    name="SuspendTenorMultiply" placeholder="Pengali Tenor Skorsing" value="" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="col-lg-12 col-md-12">
+                            <div class="form-group">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="frm_add_SuspendMember"
+                                        name="SuspendMember" value="1">
+                                    <label class="custom-control-label" for="frm_add_SuspendMember">Suspend Member</label>
+                                </div>
                             </div>
                         </div>
                     </div>

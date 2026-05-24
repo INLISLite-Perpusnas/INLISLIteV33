@@ -35,18 +35,21 @@ class JenisDenda extends \Base\Controllers\BaseController
     public function delete(int $id = 0)
     {
         if (!$id) {
-            set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-            set_message('toastr_type', 'error');
+           set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Sorry you have to provide parameter (id)');
             return redirect()->to('/master-jenis-denda');
         }
         $jenisdendaDelete = $this->jenisdendaModel->delete($id);
         if ($jenisdendaDelete) {
-            set_message('toastr_msg', 'Jenis Denda berhasil dihapus');
-            set_message('toastr_type', 'success');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Jenis Denda berhasil dihapus');
             return redirect()->to('/master-jenis-denda');
         } else {
-            set_message('toastr_msg', 'Jenis Denda gagal dihapus');
-            set_message('toastr_type', 'warning');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Jenis Denda gagal dihapus');
             set_message('message', 'Jenis Denda gagal dihapus');
             return redirect()->to('/master-jenis-denda');
         }
@@ -60,11 +63,13 @@ class JenisDenda extends \Base\Controllers\BaseController
         $jenisdendaUpdate = $this->jenisdendaModel->update($id, array($field => $value));
 
         if ($jenisdendaUpdate) {
-            set_message('toastr_msg', 'Jenis Denda berhasil diubah');
-            set_message('toastr_type', 'success');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Jenis Denda berhasil diubah');
         } else {
-            set_message('toastr_msg', 'Jenis Denda gagal diubah');
-            set_message('toastr_type', 'warning');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Jenis Denda gagal diubah');
         }
         return redirect()->to('/master-jenis-denda');
     }

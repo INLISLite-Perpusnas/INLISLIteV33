@@ -35,18 +35,21 @@ class JenisAkses extends \Base\Controllers\BaseController
     public function delete(int $id = 0)
     {
         if (!$id) {
-            set_message('toastr_msg', 'Sorry you have to provide parameter (id)');
-            set_message('toastr_type', 'error');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Sorry you have to provide parameter (id)');
             return redirect()->to('master-jenis-akses');
         }
         $jenisaksesDelete = $this->jenisaksesModel->delete($id);
         if ($jenisaksesDelete) {
-            set_message('toastr_msg', 'Jenis Akses berhasil dihapus');
-            set_message('toastr_type', 'success');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Jenis Akses berhasil dihapus');
             return redirect()->to('master-jenis-akses');
         } else {
-            set_message('toastr_msg', 'Jenis Akses gagal dihapus');
-            set_message('toastr_type', 'warning');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Jenis Akses gagal dihapus');
             set_message('message', 'Jenis Akses gagal dihapus');
             return redirect()->to('master-jenis-akses');
         }
@@ -60,11 +63,13 @@ class JenisAkses extends \Base\Controllers\BaseController
         $jenisaksesUpdate = $this->jenisaksesModel->update($id, array($field => $value));
 
         if ($jenisaksesUpdate) {
-            set_message('toastr_msg', 'Jenis Akses berhasil diubah');
-            set_message('toastr_type', 'success');
+            set_message('swal_icon', 'success');
+            set_message('swal_title', 'Berhasil');
+            set_message('swal_text', 'Jenis Akses berhasil diubah');
         } else {
-            set_message('toastr_msg', 'Jenis Akses gagal diubah');
-            set_message('toastr_type', 'warning');
+            set_message('swal_icon', 'error');
+            set_message('swal_title', 'Gagal');
+            set_message('swal_text', 'Jenis Akses gagal diubah');
         }
         return redirect()->to('master-jenis-akses');
     }

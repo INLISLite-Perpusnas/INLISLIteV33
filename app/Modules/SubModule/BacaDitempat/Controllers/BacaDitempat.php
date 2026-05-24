@@ -34,6 +34,12 @@ class BacaDitempat extends \Base\Controllers\BaseController
         echo view('BacaDitempat\Views\list', $this->data);
     }
 
+    public function non_anggota()
+    {
+        $this->data['title'] = 'Baca Ditempat - Non Anggota';
+        echo view('BacaDitempat\Views\list_non_anggota', $this->data);
+    }
+
     public function delete(int $id = 0)
     {
         if (!$id) {

@@ -61,30 +61,17 @@
                             <div class="form-group">
                                 <label for="code">Jeda Peringatan peminjaman</label>
                                 <div>
-                                    <input required type="number" min="0" class="form-control" id="frm_add_WarningLoanDays"
-                                        name="WarningLoanDays" placeholder="Jeda Peringatan Peminjaman" value="" />
+                                    <input required type="number" min="0" class="form-control" id="frm_add_WarningLoanDueDay"
+                                        name="WarningLoanDueDay" placeholder="Jeda Peringatan Peminjaman" value="" />
                                 </div>
                             </div>
                         </div>
 
-                        <div class="col-lg-6 col-md-6">
-                            <div class="form-group">
-                                <label for="code">Koleksi Yang Dapat Dipinjam</label>
-                                <div>
-								<select class="form-control select2" name="Category_id[]" multiple="multiple" tabindex="-1" aria-hidden="true" style="width:100%">
-									<option value="">-Pilih-</option>
-										<?php foreach (get_ref_table('collectioncategorys', 'ID, Name',null,'data') as $row): ?>
-								<option value="<?=$row->ID?>"><?=$row->Name?></option>
-							    <?php endforeach;?>
-								</select>
-
-                                </div>
-                            </div>
-                        </div>
+                        
 
                     </div>
 
-					<div class="form-row">
+                    <div class="form-row">
                         <div class="col-lg-6 col-md-6">
                             <div class="form-group">
                                 <label for="code">Maks Lama Perpanjangan</label>
@@ -105,7 +92,7 @@
                         </div>
                     </div>
 
-					<div class="form-row">
+                    <div class="form-row">
                         <div class="col-lg-6 col-md-6">
                             <div class="form-group">
                                 <label for="code">Jumlah Denda</label>
@@ -120,23 +107,20 @@
                             <div class="form-group">
                                 <label for="code">Jenis Denda</label>
                                 <div>
-								<select class="form-control" name="DendaType"  tabindex="-1" aria-hidden="true" style="width:100%">
-									<option value="">-Pilih-</option>
-										<option value="Konstan">Denda</option>
-										<option value="Berkelipatan">Berkelipatan</option>
-								</select>
-
+                                    <select class="form-control" id="frm_add_DendaType" name="DendaType" style="width:100%">
+                                        <option value="">-Pilih-</option>
+                                        <?php foreach (get_ref_table('jenis_denda', 'ID, Name', null, 'data') as $row): ?>
+                                            <option value="<?= $row->Name ?>"><?= $row->Name ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
                                 </div>
                             </div>
                         </div>
 
                     </div>
 
-					
-            
-                   
 
-					<div class="form-row">
+                    <div class="form-row">
                         <div class="col-lg-6 col-md-6">
                             <div class="form-group">
                                 <label for="code">Satuan Tenor Denda</label>
@@ -149,16 +133,15 @@
 
                         <div class="col-lg-6 col-md-6">
                             <div class="form-group">
-                                <label for="code">Tenor Satuan</label>
+                                <label for="code">Tenor Satuan Denda</label>
                                 <div>
-								<select class="form-control" name="SuspendTenorSatuan"  tabindex="-1" aria-hidden="true" style="width:100%">
-									<option value="">-Pilih-</option>
-										<option value="Tanggal">Tanggal</option>
-										<option value="Minggu">Minggu</option>
-										<option value="Bulan">Bulan</option>
-										<opttion value="Tahun">Tahun</option>
-								</select>
-
+                                    <select class="form-control" id="frm_add_DendaTenorSatuan" name="DendaTenorSatuan" style="width:100%">
+                                        <option value="">-Pilih-</option>
+                                        <option value="Tanggal">Tanggal</option>
+                                        <option value="Minggu">Minggu</option>
+                                        <option value="Bulan">Bulan</option>
+                                        <option value="Tahun">Tahun</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -166,31 +149,27 @@
                     </div>
 
                     <div class="form-row">
-                        
                         <div class="col-lg-12 col-md-12">
                             <div class="form-group">
                                 <label for="name">Pengali Tenor Denda</label>
                                 <div>
-                                    <input required type="number" class="form-control" id="frm_add_DendaPerTenorMultiply"
-                                        name="DendaTenorMultipy" placeholder="Pengali Tenor Indah" value="" />
+                                    <input required type="number" class="form-control" id="frm_add_DendaTenorMultiply"
+                                        name="DendaTenorMultiply" placeholder="Pengali Tenor Denda" value="" />
                                 </div>
                             </div>
                         </div>
                     </div>
 
-					<div class="form-row">
+                    <div class="form-row">
                         <div class="col-lg-6 col-md-6">
                             <div class="form-group">
                                 <label for="code">Skorsing Tipe</label>
                                 <div>
-								<select required class="form-control" id="frm_add_DendaType" name="DendaType"
-                                        placeholder="Denda Type" value="">
-                                        <option value="">-- Pilih Denda --</option>
+                                    <select class="form-control" id="frm_add_SuspendType" name="SuspendType" style="width:100%">
+                                        <option value="">-- Pilih Skorsing --</option>
                                         <option value="Konstan">Konstan</option>
                                         <option value="Berkelipatan">Berkelipatan</option>
                                     </select>
-								
-                                    
                                 </div>
                             </div>
                         </div>
@@ -198,13 +177,13 @@
                             <div class="form-group">
                                 <label for="name">Lama Skorsing</label>
                                 <div>
-								<input required type="number" class="form-control" id="frm_add_DaySuspend"
+                                    <input required type="number" class="form-control" id="frm_add_DaySuspend"
                                         name="DaySuspend" placeholder="Lama Skorsing" value="" />
                                 </div>
                             </div>
                         </div>
                     </div>
-					<div class="form-row">
+                    <div class="form-row">
                         <div class="col-lg-6 col-md-6">
                             <div class="form-group">
                                 <label for="code">Satuan Tenor Skorsing</label>
@@ -217,35 +196,45 @@
 
                         <div class="col-lg-6 col-md-6">
                             <div class="form-group">
-                                <label for="code">Tenor Satuan</label>
+                                <label for="code">Tenor Satuan Skorsing</label>
                                 <div>
-								<select class="form-control" name="SuspendTenorSatuan"  tabindex="-1" aria-hidden="true" style="width:100%">
-									<option value="">-Pilih-</option>
-										<option value="Tanggal">Tanggal</option>
-										<option value="Minggu">Minggu</option>
-										<option value="Bulan">Bulan</option>
-										<opttion value="Tahun">Tahun</option>
-								</select>
-
+                                    <select class="form-control" id="frm_add_SuspendTenorSatuan" name="SuspendTenorSatuan" style="width:100%">
+                                        <option value="">-Pilih-</option>
+                                        <option value="Tanggal">Tanggal</option>
+                                        <option value="Minggu">Minggu</option>
+                                        <option value="Bulan">Bulan</option>
+                                        <option value="Tahun">Tahun</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
 
                     </div>
 
-					<div class="form-row">
-                        
+                    <div class="form-row">
                         <div class="col-lg-12 col-md-12">
                             <div class="form-group">
                                 <label for="name">Pengali Tenor Skorsing</label>
                                 <div>
                                     <input required type="number" class="form-control" id="frm_add_SuspendTenorMultiply"
-                                        name="SuspendTenorMultipy" placeholder="Pengali Tenor Indah" value="" />
+                                        name="SuspendTenorMultiply" placeholder="Pengali Tenor Skorsing" value="" />
                                 </div>
                             </div>
                         </div>
                     </div>
-                   
+
+                    <div class="form-row">
+                        <div class="col-lg-12 col-md-12">
+                            <div class="form-group">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="frm_add_SuspendMember"
+                                        name="SuspendMember" value="1">
+                                    <label class="custom-control-label" for="frm_add_SuspendMember">Suspend Member</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
 
@@ -258,42 +247,66 @@
     </div>
 </div>
 <script>
- $(document).ready(function() {
-	 $('.select2').select2();
- });
+    $('#modal_create').on('shown.bs.modal', function() {
+        if (!$('#frm_add_Category_id').hasClass('select2-hidden-accessible')) {
+            $('#frm_add_Category_id').select2({
+                dropdownParent: $('#modal_create'),
+                placeholder: '-Pilih-',
+                allowClear: true,
+            });
+        }
+    });
 </script>
 <script>
-$('#frm_add').submit(function(event) {
-    event.preventDefault();
+    $('#frm_add').submit(function(event) {
+        event.preventDefault();
 
-    var url = "<?=base_url('api/peraturan-peminjaman-tanggal/create')?>";
-    var data_post = $(this).serializeArray();
+        var url = "<?= base_url('api/peraturan-peminjaman-tanggal/create') ?>";
+        var data_post = $(this).serializeArray();
 
-    $("#btnAdd").html('<i class="fa fa-spinner fa-spin loading"></i> Mohon menunggu...');
-    $("#btnAdd").attr('disabled', true);
+        $("#btnAdd").html('<i class="fa fa-spinner fa-spin loading"></i> Mohon menunggu...');
+        $("#btnAdd").attr('disabled', true);
 
-    $.ajax({
-            url: url,
-            type: 'POST',
-            data: data_post,
-        })
-        .done(function(res) {
-            console.log(res)
+        $.ajax({
+                url: url,
+                type: 'POST',
+                data: data_post,
+            })
+            .done(function(res) {
+                console.log(res)
 
-            if (res.error == false) {
-                Swal.fire({
-                    title: 'Berhasil',
-                    html: 'Peraturan Peminjaman Tanggal berhasil ditambah.',
-                    type: 'success',
-                    showConfirmButton: false,
-                    timer: 5000,
-                }).then(() => {
-                    window.location.href = `<?=base_url('/master-peraturan-peminjaman-tanggal')?>`;
-                });
-            } else {
+                if (res.error == false) {
+                    Swal.fire({
+                        title: 'Berhasil',
+                        icon: 'success',
+                        html: 'Peraturan Peminjaman Tanggal berhasil ditambah.',
+                        type: 'success',
+                        showConfirmButton: false,
+                        timer: 5000,
+                    }).then(() => {
+                        window.location.href = `<?= base_url('/master-peraturan-peminjaman-tanggal') ?>`;
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Oups',
+                        icon: 'error',
+                        text: res.message,
+                        type: 'error',
+                        showConfirmButton: false,
+                        timer: 5000
+                    }).then(() => {
+                        $("#btnAdd").attr('disabled', false);
+                        $("#btnAdd").html('Simpan');
+                    });
+                }
+            })
+            .fail(function(res) {
+                console.log(res);
+
                 Swal.fire({
                     title: 'Oups',
-                    text: res.message,
+                    icon: 'error',
+                    text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
                     type: 'error',
                     showConfirmButton: false,
                     timer: 5000
@@ -301,28 +314,13 @@ $('#frm_add').submit(function(event) {
                     $("#btnAdd").attr('disabled', false);
                     $("#btnAdd").html('Simpan');
                 });
-            }
-        })
-        .fail(function(res) {
-            console.log(res);
-
-            Swal.fire({
-                title: 'Oups',
-                text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
-                type: 'error',
-                showConfirmButton: false,
-                timer: 5000
-            }).then(() => {
-                $("#btnAdd").attr('disabled', false);
-                $("#btnAdd").html('Simpan');
             });
-        });
 
-    return false;
-});
+        return false;
+    });
 
-$('#modal_create').on('hidden.bs.modal', function() {
-    $(this).find('form').trigger('reset');
-    $('#frm_add_message').html('');
-});
+    $('#modal_create').on('hidden.bs.modal', function() {
+        $(this).find('form').trigger('reset');
+        $('#frm_add_message').html('');
+    });
 </script>
