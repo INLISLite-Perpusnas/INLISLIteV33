@@ -1,3 +1,4 @@
+<?php /** @var string $parent_menus */ $parent_menus = $parent_menus ?? ''; ?>
 <div class="modal fade" id="modal_edit" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -64,9 +65,9 @@
                 $('#frm_edit_route').val(response.route);
                 $('#frm_edit_description').val(response.description);
 
-                // Cari option yang textnya match dengan response.menu
+                // Cari option berdasarkan data-name yang match dengan response.menu
                 $('#frm_edit_menu option').each(function() {
-                    if($(this).text().trim() === response.menu.trim()) {
+                    if ($(this).data('name') && $(this).data('name').trim() === response.menu.trim()) {
                         $('#frm_edit_menu').val($(this).val());
                         return false;
                     }

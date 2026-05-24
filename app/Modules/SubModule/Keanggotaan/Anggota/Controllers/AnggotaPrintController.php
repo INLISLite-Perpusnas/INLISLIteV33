@@ -78,12 +78,17 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
         $this->data['jenis_anggota_nama'] = $jenis_anggota ? $jenis_anggota->jenisanggota : 'UMUM';
 
         $background_image_filename = $db->table('settingparameters')
-            ->where('Name', 'KartuAnggota1')->get()->getRow()->Value ?? null;
+            ->where('Name', 'FileKartuAnggota')->get()->getRow()->Value ?? null;
 
         $backgroundStyle = '';
         if (!empty($background_image_filename)) {
-            $imageUrl        = base_url('uploads/card_backgrounds/' . $background_image_filename);
-            $backgroundStyle = "background: url('{$imageUrl}') no-repeat center center / cover;";
+            $bgPath = ROOTPATH . 'public/uploads/master-template/' . $background_image_filename;
+            if (file_exists($bgPath)) {
+                $ext   = strtolower(pathinfo($bgPath, PATHINFO_EXTENSION));
+                $mime  = $ext === 'jpg' ? 'image/jpeg' : 'image/' . $ext;
+                $bgB64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($bgPath));
+                $backgroundStyle = "background: url('{$bgB64}') no-repeat center center / cover;";
+            }
         }
         $this->data['backgroundStyle'] = $backgroundStyle;
 
@@ -256,40 +261,35 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
         $img = $this->request->getFile('bgImage');
 
         if ($img->isValid() && !$img->hasMoved()) {
-            $settingName = 'KartuAnggota1';
-            $setting     = $this->settingModel->where('Name', $settingName)->first();
-            $oldFileName = $setting->Value ?? null;
-
             $newName    = $img->getRandomName();
-            $uploadPath = FCPATH . 'uploads/card_backgrounds/';
+            $uploadPath = ROOTPATH . 'public/uploads/master-template/';
 
             if (!is_dir($uploadPath)) {
                 mkdir($uploadPath, 0777, true);
             }
 
-            $img->move($uploadPath, $newName);
-
             try {
-                if ($oldFileName && file_exists($uploadPath . $oldFileName)) {
-                    unlink($uploadPath . $oldFileName);
-                }
+                $img->move($uploadPath, $newName);
+
+                $db      = db_connect();
+                $setting = $db->table('settingparameters')->where('Name', 'FileKartuAnggota')->get()->getRow();
 
                 if ($setting) {
-                    $this->settingModel->update($setting->ID, ['Value' => $newName]);
+                    if ($setting->Value && file_exists($uploadPath . $setting->Value)) {
+                        unlink($uploadPath . $setting->Value);
+                    }
+                    $db->table('settingparameters')->where('ID', $setting->ID)->update(['Value' => $newName]);
                 } else {
-                    $data        = new \stdClass();
-                    $data->Name  = $settingName;
-                    $data->Value = $newName;
-                    $this->settingModel->insert($data);
+                    $db->table('settingparameters')->insert(['Name' => 'FileKartuAnggota', 'Value' => $newName]);
                 }
 
                 return $this->response->setJSON([
                     'success'  => true,
                     'message'  => 'Background kartu berhasil diupdate.',
-                    'file_url' => base_url('uploads/card_backgrounds/' . $newName),
+                    'file_url' => base_url('uploads/master-template/' . $newName),
                 ]);
             } catch (\Exception $e) {
-                return $this->response->setJSON(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+                return $this->response->setJSON(['success' => false, 'message' => $e->getMessage()]);
             }
         }
 

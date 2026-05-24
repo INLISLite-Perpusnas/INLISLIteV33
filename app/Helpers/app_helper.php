@@ -442,6 +442,8 @@ if (!function_exists('display_menu_option')) {
                 $result .=
                     '<option value="' .
                     $row->id .
+                    '" data-name="' .
+                    htmlspecialchars($row->name) .
                     '" ' .
                     $attribute_selected .
                     ' ' .
