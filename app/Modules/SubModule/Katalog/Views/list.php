@@ -167,7 +167,7 @@ $request = service('request');
                     className: 'text-center'
                 },
                 {
-                    data: 'ControlNumber',
+                    data: 'CallNumber',
                     className: 'text-center'
                 },
                 {

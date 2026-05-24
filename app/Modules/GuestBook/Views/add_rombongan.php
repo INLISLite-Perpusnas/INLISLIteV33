@@ -3,8 +3,8 @@
 <?= $this->section('content') ?>
 <style>
 	:root {
-		--primary: #039550;
-		--primary-dark: #027a42;
+		--primary: #1b3878;
+		--primary-dark: #1b3878;
 		--primary-light: #e6f4ee;
 		--accent: #f8c43a;
 		--light-gray: #f5f5f5;
@@ -459,7 +459,7 @@
 					<span class="active">Rombongan</span>
 				</nav>
 			</div><br>
-            	<h2 style="background-color: #28a745; color: #fff; padding: 10px; border-radius: 5px;">Total Kunjungan Hari ini <?=$totalKunjungan ?? '0'?></h2>
+            	<h2 style="background-color: #1b3878; color: #fff; padding: 10px; border-radius: 5px;">Total Kunjungan Hari ini <?=$totalKunjungan ?? '0'?></h2>
 		</div>
 
 		<!-- Navigation Tabs -->

@@ -433,11 +433,10 @@
     </div>
 
 
-  <!-- Bootstrap JS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
-    <script>
+<?= $this->endSection() ?>
+
+<?= $this->section('script') ?>
+<script>
         // Auto-focus on input when page loads
         document.addEventListener('DOMContentLoaded', function() {
             const inputs = document.querySelectorAll('input[autofocus]');
@@ -537,6 +536,4 @@
             }
         });
     </script>
-
-
-<?= $this->endsection() ?>
+<?= $this->endSection('script') ?>

@@ -146,7 +146,7 @@ $slug = $request->getGet('slug') ?? '';
 					data: 'PhysicalDescription'
 				},
 				{
-					data: 'ControlNumber'
+					data: 'CallNumber',
 				},
 				{
 					data: 'Eksemplar',
