@@ -553,15 +553,34 @@
         }
 
         // Load Front Background
-        function loadFrontBackground(event) {
+        async function loadFrontBackground(event) {
             const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.documentElement.style.setProperty('--front-bg', `url('${e.target.result}')`);
-                    showStatus('✅ Background depan berhasil diupload!');
-                };
-                reader.readAsDataURL(file);
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.documentElement.style.setProperty('--front-bg', `url('${e.target.result}')`);
+            };
+            reader.readAsDataURL(file);
+
+            const formData = new FormData();
+            formData.append('bgImage', file);
+
+            try {
+                showStatus('Mengupload background...', 'success');
+                const response = await fetch('<?= site_url("anggota/uploadBackground") ?>', {
+                    method: 'POST',
+                    body: formData,
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showStatus('✅ Background depan berhasil disimpan!', 'success');
+                } else {
+                    const msg = result.errors ? Object.values(result.errors).join(', ') : result.message;
+                    showStatus('Error: ' + msg, 'error');
+                }
+            } catch (error) {
+                showStatus('Terjadi kesalahan saat mengupload.', 'error');
             }
         }
 
@@ -691,7 +710,8 @@
 
         // Initialize CSS variables on page load
         window.addEventListener('load', function() {
-            document.documentElement.style.setProperty('--front-bg', 'linear-gradient(135deg, #ffe061 0%, #f4c430 50%, #e0a818 100%)');
+            const savedBg = <?= !empty($bg_b64) ? "\"url('" . $bg_b64 . "')\"" : 'null' ?>;
+            document.documentElement.style.setProperty('--front-bg', savedBg || 'linear-gradient(135deg, #ffe061 0%, #f4c430 50%, #e0a818 100%)');
             document.documentElement.style.setProperty('--back-bg', 'linear-gradient(135deg, #f4c430 0%, #f8c43a 50%, #e0a818 100%)');
             document.documentElement.style.setProperty('--front-overlay', 'rgba(255, 224, 97, 0.3)');
             document.documentElement.style.setProperty('--back-overlay', 'rgba(244, 196, 48, 0.3)');

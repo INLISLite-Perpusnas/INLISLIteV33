@@ -180,9 +180,21 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
             ];
         }
 
+        $bg_b64     = '';
+        $bg_setting = $db->table('settingparameters')->where('Name', 'FileKartuAnggota')->get()->getRow();
+        if ($bg_setting && $bg_setting->Value) {
+            $bgPath = ROOTPATH . 'public/uploads/master-template/' . $bg_setting->Value;
+            if (file_exists($bgPath)) {
+                $ext    = strtolower(pathinfo($bgPath, PATHINFO_EXTENSION));
+                $mime   = $ext === 'jpg' ? 'image/jpeg' : 'image/' . $ext;
+                $bg_b64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($bgPath));
+            }
+        }
+
         $this->data['members_data'] = $members_data;
         $this->data['perpus_name']  = $perpus_name;
         $this->data['logo_base64']  = $logo_base64;
+        $this->data['bg_b64']       = $bg_b64;
         $this->data['title']        = 'Cetak Kartu Anggota - Multiple';
 
         return view('Anggota\Views\pdf\multiple-pdf1', $this->data);
