@@ -3,9 +3,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> <span id="upload_title_header"></span>
+                    <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Upload Cover
                 </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -38,7 +38,7 @@
                     <input type="hidden" name="upload_data_max_size" id="upload_data_max_size" value="">
                     <input type="hidden" name="upload_data_redirect_url" id="upload_data_redirect_url" value="">
 
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal"><?= lang('App.btn.close') ?></button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= lang('App.btn.close') ?></button>
                     <button type="submit" class="btn btn-primary" name="submit"><?= lang('App.btn.save') ?></button>
                 </div>
             </form>

@@ -66,9 +66,12 @@ class Home extends \Base\Controllers\BaseController
     private function getFeaturedBooks()
     {
         try {
-            return $this->db->table('catalogs')->limit(8)->get()->getResult();
+            return $this->db->table('catalogs')
+                ->orderBy('CreateDate', 'DESC')
+                ->limit(8)
+                ->get()
+                ->getResult();
         } catch (\Exception $e) {
-            // Return empty array if error
             return [];
         }
     }

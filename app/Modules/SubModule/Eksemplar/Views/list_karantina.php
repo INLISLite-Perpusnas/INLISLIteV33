@@ -24,7 +24,7 @@ $slug = $request->getGet('slug') ?? '';
 					<ol class="breadcrumb">
 						<li class="breadcrumb-item"><a href="<?= base_url('Eksemplar') ?>"><i class="fa fa-home"></i> Home</a></li>
 						<li class="breadcrumb-item">Eksemplar</li>
-						<li class="active breadcrumb-item" aria-current="page">Karantina Eksemplar</li>
+						<li class="breadcrumb-item" aria-current="page">Karantina Eksemplar</li>
 					</ol>
 				</nav>
 			</div>
