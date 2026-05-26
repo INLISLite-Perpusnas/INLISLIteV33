@@ -598,10 +598,15 @@ $slug = $request->getGet('slug') ?? '';
 			savedKelurahanCode = selectedData.kelurahan_id || '';
 			loadProvinces(function() {
 				if (savedProvinsiCode) {
-					loadCities(savedProvinsiCode, function() {
+					var provCode = document.getElementById('provinsi_id').value;
+					loadCities(provCode, function() {
 						if (savedKabkotaCode) {
-							loadDistricts(savedKabkotaCode, function() {
-								if (savedKecamatanCode) loadSubDistricts(savedKecamatanCode);
+							var cityCode = document.getElementById('kabkota_id').value;
+							loadDistricts(cityCode, function() {
+								if (savedKecamatanCode) {
+									var distCode = document.getElementById('kecamatan_id').value;
+									loadSubDistricts(distCode);
+								}
 							});
 						}
 					});
@@ -676,8 +681,11 @@ function populateSelect(selectEl, items, savedCode) {
         var opt = document.createElement('option');
         opt.value = item.code;                              // dotted code, used for cascade API calls
         opt.dataset.stripped = stripDots(item.code);        // dots-removed code, sent to Flask
+        opt.dataset.id = item.id || '';                     // integer row ID from t_region
         opt.textContent = item.name;
-        if (item.code == savedCode || stripDots(item.code) === stripDots(savedCode)) {
+        if (item.code == savedCode ||
+            stripDots(item.code) === stripDots(savedCode) ||
+            String(item.id) === String(savedCode)) {
             opt.selected = true;
         }
         selectEl.appendChild(opt);
