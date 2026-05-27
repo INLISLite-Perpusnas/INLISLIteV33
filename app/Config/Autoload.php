@@ -22,5 +22,5 @@ class Autoload extends \CodeIgniter\Config\AutoloadConfig {
     }
     public $classmap = [];
     public $files    = [];
-    public $helpers  = ['url', 'text', 'form', 'html', 'file', 'cookie', 'auth', 'app','common'];
+    public $helpers  = ['url', 'text', 'form', 'html', 'file', 'cookie', 'auth', 'app', 'common', 'image'];
 }

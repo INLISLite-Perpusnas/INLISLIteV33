@@ -48,7 +48,6 @@ class MasterKelasBesar extends \Base\Controllers\BaseController
                 'CreateBy' => user()->id,
                 'CreateDate' => date('Y-m-d H:i:s'),
                 'CreateTerminal' => $this->request->getIPAddress(),
-                'Branch_id' => user()->branch_id ?? 0,
                 'active' => 1
             ];
 

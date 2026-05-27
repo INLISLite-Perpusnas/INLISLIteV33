@@ -82,7 +82,6 @@ class EksemplarFormController extends \Base\Controllers\BaseController
 
                     $save = [
                         'Catalog_id'          => $post['Catalog_id'],
-                        'Branch_id'           => $post['Branch_id'],
                         'ISDRM'               => $post['ISDRM'],
                         'Location_Library_id' => $post['Location_Library_id'],
                         'Location_id'         => $post['Location_id'],
@@ -312,7 +311,7 @@ class EksemplarFormController extends \Base\Controllers\BaseController
             $format3 = str_replace('{99999}', '', $format2);
 
             if (empty($no)) {
-                $no = 1;
+                $no = $increment;
             } else {
                 $no = intval($no) + $increment;
                 $no = str_pad($no, 5, "0", STR_PAD_LEFT);
@@ -383,7 +382,7 @@ class EksemplarFormController extends \Base\Controllers\BaseController
         $result = str_replace('{99999}', '', $result);
 
         if (empty($no)) {
-            $no = 1;
+            $no = $increment;
         } else {
             $no = intval($no) + $increment;
             $no = str_pad($no, 5, "0", STR_PAD_LEFT);

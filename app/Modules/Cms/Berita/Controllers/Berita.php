@@ -120,6 +120,15 @@ class Berita extends \Base\Controllers\BaseController
                 if ($fileCover->isValid() && !$fileCover->hasMoved()) {
                     $coverName = date('Ymd') . '_' . $fileCover->getRandomName();
                     $fileCover->move($this->modulePath, $coverName);
+
+                    // Konversi ke WebP
+                    if (is_webp_supported()) {
+                        $webpPath = convert_to_webp($this->modulePath . $coverName);
+                        if ($webpPath !== false) {
+                            $coverName = basename($webpPath);
+                        }
+                    }
+
                     create_thumbnail($this->modulePath, $coverName, 'thumb_', 250);
                     $save_data['file_cover'] = $coverName;
                 }
@@ -133,6 +142,15 @@ class Berita extends \Base\Controllers\BaseController
                         if ($img->isValid() && !$img->hasMoved()) {
                             $imgName = date('Ymd') . '_' . $img->getRandomName();
                             $img->move($this->modulePath, $imgName);
+
+                            // Konversi ke WebP
+                            if (is_webp_supported()) {
+                                $webpPath = convert_to_webp($this->modulePath . $imgName);
+                                if ($webpPath !== false) {
+                                    $imgName = basename($webpPath);
+                                }
+                            }
+
                             $uploadedImages[] = $imgName;
                         }
                     }
@@ -298,7 +316,15 @@ class Berita extends \Base\Controllers\BaseController
                     if ($fileCover && $fileCover->isValid() && !$fileCover->hasMoved()) {
                         $newCoverName = date('Ymd') . '_' . $fileCover->getRandomName();
                         $fileCover->move($this->modulePath, $newCoverName);
-                        
+
+                        // Konversi ke WebP
+                        if (is_webp_supported()) {
+                            $webpPath = convert_to_webp($this->modulePath . $newCoverName);
+                            if ($webpPath !== false) {
+                                $newCoverName = basename($webpPath);
+                            }
+                        }
+
                         create_thumbnail($this->modulePath, $newCoverName, 'thumb_', 250);
                         $update_data['file_cover'] = $newCoverName;
 
@@ -333,6 +359,15 @@ class Berita extends \Base\Controllers\BaseController
                             if ($img->isValid() && !$img->hasMoved()) {
                                 $imgName = date('Ymd') . '_' . $img->getRandomName();
                                 $img->move($this->modulePath, $imgName);
+
+                                // Konversi ke WebP
+                                if (is_webp_supported()) {
+                                    $webpPath = convert_to_webp($this->modulePath . $imgName);
+                                    if ($webpPath !== false) {
+                                        $imgName = basename($webpPath);
+                                    }
+                                }
+
                                 $current_gallery[] = $imgName;
                             }
                         }

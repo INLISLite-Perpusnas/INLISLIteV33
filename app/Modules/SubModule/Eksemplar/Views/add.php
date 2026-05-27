@@ -4,7 +4,6 @@ $request = service('request');
 $slug = $request->getGet('slug');
 $select2 = select_two();
 $nomor_manual = get_parameter('nomor-mode', 'manual') == 'manual';
-$branch_id = user()->branch_id ?? $request->getGet('branch_id');
 $return_catalog = $request->getGet('catalog_id') ?? '';
 $catalog_id = $request->getGet('catalog_id') ?? '';
 $worksheet_id = $db->table('catalogs')->where('ID', $catalog_id)->get()->getRow()->Worksheet_id ?? '';
@@ -365,7 +364,6 @@ $catalog = get_catalog($catalog_id);
             <div class="card-footer p-0 pt-3">
                 <div class="form-group">
                     <div class="form-check form-check-inline">
-                        <input type="hidden" name="Branch_id" id="Branch_id" value="<?= $branch_id ?>">
                         <input type="hidden" name="Catalog_id" id="Catalog_id" value="<?= $catalog_id ?>">
                         <input type="hidden" name="worksheet_id" id="worksheet_id" value="<?= $worksheet_id ?>">
                         <input type="hidden" name="IsRedirect" value="1">

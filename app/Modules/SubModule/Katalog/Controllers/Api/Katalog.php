@@ -102,23 +102,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 			->where('a.IsQUARANTINE', $IsQUARANTINE)
 			->orderBy('a.ID', 'DESC');
 
-		if (is_member('admin') || is_member('sa_prov') || is_member('sa_kabkot') || is_member('sa_psm')) {
-			if (!empty($branch_id)) {
-				$builder->where('a.Branch_id', $branch_id);
-			} else {
-				$builder->where('a.ID', 0);
-			}
-		}
-
-		if (is_member('pustakawan')) {
-			$builder->where('a.Branch_id', user()->branch_id);
-			if (!empty(user()->location_ids)) {
-				$locations = explode(',', user()->location_ids);
-				if (!empty($locations)) {
-					$builder->whereIn('a.Location_id', $locations);
-				}
-			}
-		}
+		
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
@@ -386,13 +370,32 @@ class Katalog extends \Base\Controllers\BaseResourceController
                         // Pindahkan ke folder module tujuan
                         $file->move($this->modulePath, $newFileName);
 
+                        // Konversi ke WebP
+                        if (is_webp_supported()) {
+                            $webpPath = convert_to_webp($this->modulePath . $newFileName);
+                            if ($webpPath !== false) {
+                                $newFileName = basename($webpPath);
+                            }
+                        }
+
                         // SECURITY 4: Cleanup (Hapus file cover lama agar server tidak penuh)
                         $old_catalog = $this->katalogModel->find($upload_id);
-                        // Menggunakan is_object atau is_array untuk fleksibilitas tipe balikan find()
-                        $old_cover = is_object($old_catalog) ? ($old_catalog->{$upload_field} ?? '') : ($old_catalog[$upload_field] ?? '');
-                        
-                        if (!empty($old_cover) && file_exists($this->modulePath . $old_cover)) {
-                            unlink($this->modulePath . $old_cover);
+                        $old_cover   = is_object($old_catalog)
+                            ? ($old_catalog->{$upload_field} ?? '')
+                            : ($old_catalog[$upload_field] ?? '');
+
+                        if (!empty($old_cover)) {
+                            // Hapus file utama
+                            if (file_exists($this->modulePath . $old_cover)) {
+                                unlink($this->modulePath . $old_cover);
+                            }
+
+                            // Hapus semua thumbnail cache (dibuat oleh get_catalog_thumb_url)
+                            // Pola nama: thumb_{width}x{height}_{stem}.webp
+                            $oldStem = pathinfo($old_cover, PATHINFO_FILENAME);
+                            foreach (glob($this->modulePath . 'thumb_*_' . $oldStem . '.webp') ?: [] as $thumbFile) {
+                                unlink($thumbFile);
+                            }
                         }
 
                         // Siapkan data untuk update DB

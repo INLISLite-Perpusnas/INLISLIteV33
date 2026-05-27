@@ -15,7 +15,7 @@ $email = $db->table('settingparameters')->where('Name', 'EmailPerpustakaan')->ge
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo isset($title) ? $title : 'OPAC - ' . $nama_perpustakaan; ?></title>
 
-    <link rel="icon" href="<?= !empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png') ?>">
+    <link rel="icon" href="<?= !empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/logo-inlislite-icon.webp') ?>">
 <link rel="stylesheet" href="<?= base_url('assets/css') ?>/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -438,7 +438,7 @@ $email = $db->table('settingparameters')->where('Name', 'EmailPerpustakaan')->ge
 
                 <div class="col-lg-4 mb-4 mb-lg-0">
                     <div class="d-flex align-items-center gap-3 mb-4">
-                        <img src="<?=  base_url('assets/img/Logo-Inlislite.png') ?>"
+                        <img src="<?=  base_url('assets/img/Logo-Inlislite.webp') ?>"
                             alt="Logo" class="rounded bg-white p-1" style="width:150px;height:70px;object-fit:cover;">
                         <h4 class="m-0 fw-bold"><?= esc($nama_perpustakaan) ?></h4>
                     </div>

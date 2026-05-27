@@ -64,7 +64,7 @@
     /* Image Utils */
     .book-cover {
         height: 240px;
-        object-fit: cover;
+        object-fit: contain;
         width: 100%;
         background-color: #e2e8f0;
     }
@@ -205,14 +205,20 @@
 
         <div class="row g-4">
             <?php if (!empty($featured_books)): ?>
-                <?php foreach (array_slice($featured_books, 0, 5) as $book): ?>
+                <?php foreach (array_slice($featured_books, 0, 5) as $i => $book): ?>
                     <?php
-                    $coverPath = base_url('uploads/katalog/' . ($book->CoverURL ?: 'default-cover.jpg'));
-                    $defaultCover = base_url('assets/img/default-cover.png');
+                    $defaultCover = base_url('assets/img/default-cover.webp');
+                    $thumbUrl     = get_catalog_thumb_url($book->CoverURL ?: '', 200, 340);
                     ?>
                     <div class="col-6 col-md-4 col-lg-2-4" style="width: 20%; min-width: 160px;">
                         <div class="card h-100 border-0 shadow-sm hover-card rounded-xl overflow-hidden bg-white">
-                            <img src="<?= $coverPath ?>" class="card-img-top book-cover" alt="<?= esc($book->Title) ?>" onerror="this.onerror=null; this.src='<?= $defaultCover ?>';">
+                            <img src="<?= $thumbUrl ?>"
+                                 class="card-img-top book-cover"
+                                 alt="<?= esc($book->Title) ?>"
+                                 width="200"
+                                 height="340"
+                                 <?= $i > 0 ? 'loading="lazy"' : 'fetchpriority="high"' ?>
+                                 onerror="this.onerror=null; this.src='<?= $defaultCover ?>';">
                             <div class="card-body d-flex flex-column p-3">
                                 <h6 class="card-title fw-bold fs-6 mb-1 line-clamp-2" title="<?= esc($book->Title) ?>"><?= esc($book->Title) ?></h6>
                                 <p class="card-text text-secondary small mb-3 text-truncate" title="<?= esc($book->Author) ?>">

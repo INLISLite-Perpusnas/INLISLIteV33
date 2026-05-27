@@ -2,9 +2,7 @@
 
 namespace NamaPerpustakaan\Controllers\Api;
 
-use CodeIgniter\Controller;
 use CodeIgniter\HTTP\Files\UploadedFile;
-use CodeIgniter\API\ResponseTrait;
 class NamaPerpustakaan extends  \Base\Controllers\BaseResourceController
 {
     // Property yang sudah ada...
@@ -142,10 +140,18 @@ class NamaPerpustakaan extends  \Base\Controllers\BaseResourceController
 
         // Generate nama file unik
         $newFileName = $this->generateLogoFileName($logoFile);
-        
+
         // Pindahkan file ke direktori tujuan
         if (!$logoFile->move($this->modulePath, $newFileName)) {
             throw new \Exception('Failed to move uploaded file');
+        }
+
+        // Konversi ke WebP jika server mendukung
+        if (is_webp_supported()) {
+            $webpPath = convert_to_webp($this->modulePath . $newFileName);
+            if ($webpPath !== false) {
+                $newFileName = basename($webpPath);
+            }
         }
 
         // Hapus file logo lama jika ada
@@ -192,32 +198,6 @@ private function generateLogoFileName(UploadedFile $file)
     
     return "logo_{$timestamp}_{$randomString}.{$extension}";
 }
-
-/**
- * Validasi gambar alternatif menggunakan GD library
- */
-private function isValidImage($filePath)
-{
-    try {
-        // Cek dengan getimagesize (lebih reliable di macOS)
-        $imageInfo = @getimagesize($filePath);
-        
-        if ($imageInfo === false) {
-            return false;
-        }
-
-        // Cek tipe gambar yang didukung
-        $supportedTypes = [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF];
-        
-        return in_array($imageInfo[2], $supportedTypes);
-        
-    } catch (\Exception $e) {
-        log_message('error', 'Image validation error: ' . $e->getMessage());
-        return false;
-    }
-}
-
-
 
     /**
      * Get current logo
@@ -338,25 +318,19 @@ private function isValidImage($filePath)
      */
     private function deleteOldLogoFile()
     {
-        $db = db_connect();
+        $db       = db_connect();
         $category = $this->request->getPost('category') ?? 'logo';
-        if($category === 'logo') {
-        $query = $db->table('settingparameters')
-                   ->select('Value')
-                   ->where('Name', 'Logo')
-                   ->get();
-        } else {
-        $query = $db->table('settingparameters')
-                   ->select('Value')
-                   ->where('Name', 'LogoKop')
-                   ->get();
-        
-        $result = $query->getRow();
+        $name     = ($category === 'logo') ? 'Logo' : 'LogoKop';
+
+        $result  = $db->table('settingparameters')
+                      ->select('Value')
+                      ->where('Name', $name)
+                      ->get()
+                      ->getRow();
         $oldFile = $result->Value ?? null;
 
         if ($oldFile && file_exists($this->modulePath . $oldFile)) {
             unlink($this->modulePath . $oldFile);
         }
     }
-}
 }

@@ -57,14 +57,14 @@ function gen_no_barcode($i = 1)
                      ->select('Value')
                      ->where('Name', 'FormatNomorInduk')
                      ->get();
-    
+
     $formatResult = $formatQuery->getRow();
 	$format = get_parameter('nomor-barcode', '{yyyy}/PN/{99999}');
 	$format2 = str_replace('{yyyy}', date('Y'), $format);
 	$format3 = str_replace('{99999}', '', $format2);
 
 	if (empty($no)) {
-		$no = 1;
+		$no = $i;
 	} else {
 		$no = intval($no) + $i;
 		$no = str_pad($no, 5, "0", STR_PAD_LEFT);
@@ -104,7 +104,7 @@ function gen_no_induk($i = 1)
 	$format3 = str_replace('{99999}', '', $format2);
 
 	if (empty($no)) {
-		$no = 1;
+		$no = $i;
 	} else {
 		$no = intval($no) + $i;
 		$no = str_pad($no, 5, "0", STR_PAD_LEFT);

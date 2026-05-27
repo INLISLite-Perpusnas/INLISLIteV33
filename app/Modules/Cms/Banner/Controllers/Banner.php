@@ -100,9 +100,17 @@ class Banner extends \Base\Controllers\BaseController
                 if ($file->isValid() && !$file->hasMoved()) {
                     // Generate nama file baru
                     $newFileName = date('Ymd') . '_' . $file->getRandomName();
-                    
+
                     // Pindahkan file ke folder tujuan
                     $file->move($this->modulePath, $newFileName);
+
+                    // Konversi ke WebP
+                    if (is_webp_supported()) {
+                        $webpPath = convert_to_webp($this->modulePath . $newFileName);
+                        if ($webpPath !== false) {
+                            $newFileName = basename($webpPath);
+                        }
+                    }
 
                     // Buat Thumbnail
                     create_thumbnail($this->modulePath, $newFileName, 'thumb_', 250);
@@ -254,10 +262,18 @@ class Banner extends \Base\Controllers\BaseController
 
                     if ($file && $file->isValid() && !$file->hasMoved()) {
                         $newFileName = date('Ymd') . '_' . $file->getRandomName();
-                        
-                        $file->move($this->modulePath, $newFileName);
-                        create_thumbnail($this->modulePath, $newFileName, 'thumb_', 250);
 
+                        $file->move($this->modulePath, $newFileName);
+
+                        // Konversi ke WebP
+                        if (is_webp_supported()) {
+                            $webpPath = convert_to_webp($this->modulePath . $newFileName);
+                            if ($webpPath !== false) {
+                                $newFileName = basename($webpPath);
+                            }
+                        }
+
+                        create_thumbnail($this->modulePath, $newFileName, 'thumb_', 250);
                         $update_data['file_cover'] = $newFileName;
 
                         if (!empty($oldCover) && file_exists($this->modulePath . $oldCover)) {
