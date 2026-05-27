@@ -286,7 +286,8 @@ if (!function_exists('_render_menu_backend')) {
 
         // Compute current path relative to base_url once per call
         $fullPath = $request->getUri()->getPath();
-        $basePath = rtrim(parse_url(base_url(), PHP_URL_PATH) ?? '', '/');
+        $basePath = parse_url(base_url(), PHP_URL_PATH);
+        $basePath = $basePath ? rtrim($basePath, '/') : '';
         if ($basePath !== '' && strpos($fullPath, $basePath) === 0) {
             $fullPath = substr($fullPath, strlen($basePath));
         }

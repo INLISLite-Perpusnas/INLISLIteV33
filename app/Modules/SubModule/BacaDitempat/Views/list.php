@@ -1,6 +1,8 @@
 <?php
 $request = service('request');
-$slug = $request->getGet('slug') ?? '';
+// Replace null coalescing operator for compatibility with older PHP versions
+$slug = $request->getGet('slug');
+$slug = ($slug !== null) ? $slug : '';
 ?>
 
 <?= $this->extend('App\Views\layout\main'); ?>
@@ -108,6 +110,8 @@ $slug = $request->getGet('slug') ?? '';
         t = $('#tbl_data').DataTable({
             "processing": true,
             "serverSide": true,
+            "scrollX": true,
+            "scrollCollapse": true,
             "ajax": {
                 "url": '<?php echo site_url('api/baca-di-tempat/datatable') ?>',
             },

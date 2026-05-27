@@ -1,6 +1,9 @@
 <?php
 $request = service('request');
-$slug = $request->getGet('slug') ?? '';
+$slug = $request->getGet('slug');
+if ($slug === null) {
+    $slug = '';
+}
 ?>
 
 <?= $this->extend('App\Views\layout\main'); ?>
@@ -66,7 +69,7 @@ $slug = $request->getGet('slug') ?? '';
                         <th class="text-center" width="100">Nomor Anggota</th>
                         <th class="text-center">Lokasi Perpustakaan</th>
                         <th class="text-center">Lokasi Ruang</th>
-                        <th class="text-center" width="50">Aksi</th>
+                        <th class="text-center" style="min-width: 150px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -84,6 +87,8 @@ $slug = $request->getGet('slug') ?? '';
         t = $('#tbl_data').DataTable({
             "processing": true,
             "serverSide": true,
+            "scrollX": true,
+            "scrollCollapse": true,
             "ajax": {
                 "url": '<?php echo site_url('api/bukutamu/datatable') ?>',
             },

@@ -27,6 +27,12 @@ class Dashboard extends \Base\Controllers\BaseController
 		$this->peminjamanModel=new \Peminjaman\Models\CollectionLoanItemModel();
 	}
 
+	private function getSettingValue($name, $default = null)
+	{
+		$setting = $this->settingModel->where('Name', $name)->first();
+		return $setting ? $setting->Value : $default;
+	}
+
 	public function index()
 {
     if(is_member('anggota')){
@@ -51,9 +57,9 @@ class Dashboard extends \Base\Controllers\BaseController
 
         if ($cachedData === null) {
             $cachedData = [
-                'nama_perpustakaan' => $this->settingModel->where('Name', 'NamaPerpustakaan')->first()->Value ?? 'Perpustakaan Mitra',
-                'nama_lokasi_perpustakaan' => $this->settingModel->where('Name', 'NamaLokasiPerpustakaan')->first()->Value ?? 'Alamat Perpustakaan Mitra',
-                'npp_perpustakaan' => $this->settingModel->where('Name', 'NPPPerpustakaan')->first()->Value ?? 'NPP Perpustakaan Mitra',
+                'nama_perpustakaan' => $this->getSettingValue('NamaPerpustakaan', 'Perpustakaan Mitra'),
+                'nama_lokasi_perpustakaan' => $this->getSettingValue('NamaLokasiPerpustakaan', 'Alamat Perpustakaan Mitra'),
+                'npp_perpustakaan' => $this->getSettingValue('NPPPerpustakaan', 'NPP Perpustakaan Mitra'),
                 'total_user_active' => $this->userModel->where('active', 1)->countAllResults(),
                 'total_user_inactive' => $this->userModel->where('active', 0)->countAllResults(),
                 'total_anggota' => $this->anggotaModel->countAllResults(),
@@ -90,14 +96,14 @@ class Dashboard extends \Base\Controllers\BaseController
 
     // 2. Hitung Ulang Data (Agar tidak bisa dimanipulasi user dari browser)
     $payload = [
-        'nama_perpustakaan' => $this->settingModel->where('Name', 'NamaPerpustakaan')->first()->Value ?? 'Perpustakaan Mitra', // Sebaiknya ambil dari Config/DB
-        'npp' => $this->settingModel->where('Name', 'NPPPerpustakaan')->first()->Value ?? 'NPP Perpustakaan Mitra',
-        'alamat' => $this->settingModel->where('Name', 'NamaLokasiPerpustakaan')->first()->Value ?? 'Alamat Perpustakaan Mitra',
-        'email' => $this->settingModel->where('Name', 'EmailPerpustakaan')->first()->Value ?? 'Email Perpustakaan Mitra',
-        'Provinsi_kode' => $this->settingModel->where('Name', 'ProvinsiID')->first()->Value ?? '32',
-        'kabkota_kode' => $this->settingModel->where('Name', 'KabKotaID')->first()->Value ?? '3171',
-        'kecamatan_kode' => $this->settingModel->where('Name', 'KecamatanID')->first()->Value ?? '3171010',
-        'kelurahan_kode' => $this->settingModel->where('Name', 'KelurahanID')->first()->Value ?? '3171010001',
+        'nama_perpustakaan' => $this->getSettingValue('NamaPerpustakaan', 'Perpustakaan Mitra'), // Sebaiknya ambil dari Config/DB
+        'npp' => $this->getSettingValue('NPPPerpustakaan', 'NPP Perpustakaan Mitra'),
+        'alamat' => $this->getSettingValue('NamaLokasiPerpustakaan', 'Alamat Perpustakaan Mitra'),
+        'email' => $this->getSettingValue('EmailPerpustakaan', 'Email Perpustakaan Mitra'),
+        'Provinsi_kode' => $this->getSettingValue('ProvinsiID', '32'),
+        'kabkota_kode' => $this->getSettingValue('KabKotaID', '3171'),
+        'kecamatan_kode' => $this->getSettingValue('KecamatanID', '3171010'),
+        'kelurahan_kode' => $this->getSettingValue('KelurahanID', '3171010001'),
         'periode' => date('Y-m-d'),
         'jumlah_anggota' => $this->anggotaModel->countAllResults(),
         'kunjungan_anggota' => $this->memberguestModel->where('NoAnggota !=', null)->countAllResults(),
@@ -140,7 +146,7 @@ class Dashboard extends \Base\Controllers\BaseController
         } else {
              return $this->response->setJSON([
                 'status' => 'error',
-                'message' => $body->error ?? 'Gagal mengirim data.'
+                'message' => isset($body->error) ? $body->error : 'Gagal mengirim data.'
             ])->setStatusCode(500);
         }
 

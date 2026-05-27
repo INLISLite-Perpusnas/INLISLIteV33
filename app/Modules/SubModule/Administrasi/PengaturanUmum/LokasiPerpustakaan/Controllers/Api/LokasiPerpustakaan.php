@@ -31,7 +31,6 @@ class LokasiPerpustakaan extends \Base\Controllers\BaseResourceController
 	public function datatable($slug = null)
 	{
 		$db = db_connect();
-		$branch_id = user()->branch_id ?? $this->request->getGet('branch_id');
 		$builder = $db->table('location_library as a')
 			->select('a.ID, a.ID as action, a.Code, a.Name, a.Address')
 			->select('a.active');

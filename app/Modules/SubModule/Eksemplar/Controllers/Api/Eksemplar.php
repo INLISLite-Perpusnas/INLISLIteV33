@@ -102,7 +102,8 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 		->select('Loc.Name as LocationLibraryName')
         ->join('collectionstatus as cs', 'a.Status_id = cs.ID', 'left')
         ->join('location_library as Loc', 'a.Location_Library_id = Loc.ID', 'left')
-        ->where('a.IsQUARANTINE', $IsQUARANTINE);
+        ->where('a.IsQUARANTINE', $IsQUARANTINE)
+		->groupBy('a.ID', 'DESC');
 
     if (!empty($catalog_id)) {
         $builder->where('a.Catalog_id', $catalog_id);

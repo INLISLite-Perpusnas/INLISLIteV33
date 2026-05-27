@@ -53,11 +53,12 @@
 				<div>
 				</div>
 			</div>
-			
+
 </section>
 
+<?= $this->endsection() ?>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<?= $this->section('script') ?>
 <script>
 	$("#btnCheck").click(function() {
        
@@ -117,4 +118,4 @@
 });
 </script>
 
-<?=$this->endsection() ?>
+<?= $this->endsection() ?>

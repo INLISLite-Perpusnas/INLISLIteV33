@@ -184,7 +184,7 @@ $catalog = get_catalog($catalog_id);
                                         <option value="">-Pilih-</option>
                                         <?php foreach (get_ref_table('collectionsources', 'ID, Code, Name', null, 'data') as $row) : ?>
                                             <option value="<?= $row->ID ?>" <?= set_value('Source_id') == $row->ID ? 'selected' : '' ?>>
-                                                <?= $row->Code ?> <?= $row->Name ?>
+                                                 <?= $row->Name ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -229,7 +229,7 @@ $catalog = get_catalog($catalog_id);
                                         <option value="">-Pilih-</option>
                                         <?php foreach (get_ref_table('collectionmedias', 'ID, Code, Name', null, 'data') as $row) : ?>
                                             <option value="<?= $row->ID ?>" <?= set_value('Media_id') == $row->ID ? 'selected' : '' ?>>
-                                                <?= $row->Code ?> <?= $row->Name ?>
+                                                 <?= $row->Name ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -247,7 +247,7 @@ $catalog = get_catalog($catalog_id);
                                         <option value="">-Pilih-</option>
                                         <?php foreach (get_ref_table('collectioncategorys', 'ID, Code, Name', null, 'data') as $row) : ?>
                                             <option value="<?= $row->ID ?>" <?= set_value('Category_id') == $row->ID ? 'selected' : '' ?>>
-                                                <?= $row->Code ?> <?= $row->Name ?>
+                                                <?= $row->Name ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>

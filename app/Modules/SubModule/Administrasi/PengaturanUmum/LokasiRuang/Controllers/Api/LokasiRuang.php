@@ -31,7 +31,6 @@ class LokasiRuang extends \Base\Controllers\BaseResourceController
 	public function datatable($slug = null)
 {
     $db = db_connect();
-    $branch_id = user()->branch_id ?? $this->request->getGet('branch_id');
     $builder = $db->table('locations as a')
         ->select('a.ID, a.ID as action, a.Code, a.Name, a.active');
 
@@ -48,10 +47,10 @@ class LokasiRuang extends \Base\Controllers\BaseResourceController
             return '<b>' . $row->Code . '</b>';
         })
         ->edit('location_library_name', function ($row) {
-            return $row->location_library_name ?? '';
+            return isset($row->location_library_name) ? $row->location_library_name : '';
         })
         ->edit('exemplar', function ($row) {
-            return $row->exemplar ?? 0;
+            return isset($row->exemplar) ? $row->exemplar : 0;
         })
 		->edit('active', function ($row) {
 				$status = $row->active == 1 ? 'Aktif' : 'Non Aktif';
@@ -172,14 +171,14 @@ class LokasiRuang extends \Base\Controllers\BaseResourceController
 	public function check($code = null)
 {
     if (!$code) {
-        return $this->failValidationError('Kode tidak boleh kosong');
+        return $this->fail('Kode tidak boleh kosong', 400);
     }
 
     $db = db_connect();
 
     $builder = $db->table('locations as a')
         ->select('a.ID, a.Code, a.Name')
-        ->select('b.Name as LocationLibrary_name, b.Code as LocationLibrary_code')
+        ->select('b.ID as LocationLibrary_id, b.Name as LocationLibrary_name, b.Code as LocationLibrary_code')
         ->join('location_library as b', 'b.ID = a.LocationLibrary_id', 'left')
         ->where('a.Code', $code);
 

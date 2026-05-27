@@ -49,7 +49,6 @@ $request = service('request');
                     <button type="button" id="proses_keranjang" class="btn btn-warning" data-toggle="tooltip" data-placement="top" title="Semua anggota yang terpilih"><i class="fa fa-shopping-cart"></i> Pindahkan ke Keranjang</button>
                     <button type="button" id="print_kartu" class="btn btn-primary ml-2" data-toggle="tooltip" data-placement="top" title="Print kartu anggota yang terpilih"><i class="fa fa-print"></i> Print Kartu</button>
                     <button type="button" id="aktifkan_online" class="btn btn-success ml-2" data-toggle="tooltip" data-placement="top" title="Aktifkan akses online untuk anggota yang terpilih"><i class="fa fa-globe"></i> Aktifkan Online</button>
-                    <button type="button" id="hapus_permanen" class="btn btn-danger ml-2" data-toggle="tooltip" data-placement="top" title="Semua anggota yang terpilih"><i class="fa fa-trash"></i> Hapus Permanen</button>
                 </div>
 
                 <table style="width: 100%;" id="tbl_data" class="table table-hover table-striped table-bordered">
@@ -85,7 +84,7 @@ $request = service('request');
             Swal.fire({
                 icon: '<?= session()->getFlashdata('swal_icon') ?>', // gunakan 'icon' jika SweetAlert2 versi terbaru
                 title: '<?= session()->getFlashdata('swal_title') ?>',
-                html: '<?= session()->getFlashdata('swal_html') ?? session()->getFlashdata('swal_text') ?>',
+                html: '<?= session()->getFlashdata('swal_html') ? session()->getFlashdata('swal_html') : session()->getFlashdata('swal_text') ?>',
                 showConfirmButton: false,
                 timer: 3000
             });

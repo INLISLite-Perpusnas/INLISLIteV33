@@ -5,7 +5,8 @@ use Dompdf\Css\Style;
 
 $request = service('request');
 helper('menu');
-$group = user()->category ?? 'admin';
+$user = user();
+$group = isset($user->category) ? $user->category : 'admin';
 ?>
 
 <style>
@@ -319,7 +320,7 @@ $group = user()->category ?? 'admin';
         <span class="brand-text">INLISLite</span>
     </div>
 
-    <?= display_menu_backend(0, 1, user()->category ?? 'admin'); ?>
+    <?= display_menu_backend(0, 1, isset(user()->category) ? user()->category : 'admin'); ?>
 
     <div class="sidebar-footer">
         <img src="<?= base_url('themes/uigniter/images/avatars/2.jpg') ?>" width="35" alt="User Avatar">
