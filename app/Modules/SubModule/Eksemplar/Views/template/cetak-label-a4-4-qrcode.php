@@ -30,7 +30,7 @@ foreach ($tempLabelData as $label) {
     $html .= '<td style="width:50%;">
                 <table cellpadding="0" cellspacing="0" style="width:255px;" nobr="true">
                     <tr style="vertical-align:center">
-                        <td style="border:solid 1px #CCC; height:47px; width:255px; text-align: center; background-color: #FFFF99;" colspan="2">' . 
+                        <td style="border:solid 1px #CCC; height:47px; width:255px; text-align: center; background-color: ' . htmlspecialchars($label['Warna1']) . ';" colspan="2">' . 
                         htmlspecialchars($label['NamaPerpustakaan']) . '</td>
                     </tr>
                     <tr>

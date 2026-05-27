@@ -75,12 +75,33 @@ class EksemplarLabelController extends \Base\Controllers\BaseController
         $db = db_connect();
 
         $eksemplarData = $db->table('collections as a')
-            ->select('a.ID, a.NomorBarcode, b.Title, b.CallNumber')
+            ->select('a.ID, a.NomorBarcode, b.Title, b.CallNumber, b.DeweyNo')
             ->join('catalogs b', 'b.ID = a.Catalog_id')
             ->whereIn('a.ID', $idsArr)
             ->get()
             ->getResultObject();
 
+        $firstChars = array_values(array_unique(array_filter(
+            array_map(fn($row) => strtoupper(substr((string) ($row->DeweyNo ?? ''), 0, 1)), $eksemplarData),
+            fn($c) => $c !== ''
+        )));
+
+        $warnaMap = [];
+        if (!empty($firstChars)) {
+            $placeholders = implode(',', array_fill(0, count($firstChars), '?'));
+            $kelasRows = $db->query(
+                "SELECT KdKelas, Warna FROM master_kelas_besar WHERE LEFT(KdKelas, 1) IN ($placeholders)",
+                $firstChars
+            )->getResultArray();
+            foreach ($kelasRows as $kelas) {
+                $key = strtoupper(substr((string) $kelas['KdKelas'], 0, 1));
+                if (!isset($warnaMap[$key])) {
+                    $warnaMap[$key] = $kelas['Warna'];
+                }
+            }
+        }
+      
+   
         if (empty($eksemplarData)) {
             $this->session->setFlashdata('swal_icon',  'error');
             $this->session->setFlashdata('swal_title', 'Gagal');
@@ -98,12 +119,13 @@ class EksemplarLabelController extends \Base\Controllers\BaseController
 
         $LabelData = [];
         foreach ($eksemplarData as $row) {
+            $firstChar = strtoupper(substr((string) ($row->DeweyNo ?? ''), 0, 1));
             $LabelData[] = [
                 'Title'            => character_limiter($row->Title, 50),
                 'Barcode'          => $row->NomorBarcode,
                 'CallNumber'       => $row->CallNumber,
                 'NamaPerpustakaan' => $namaPerpustakaan,
-                'Warna1'           => '#FFFF66',
+                'Warna1'           => $warnaMap[$firstChar] ?? '#FFFF66',
                 'BarcodePNG'       => $useQrCode
                                         ? get_qrcode_png($row->NomorBarcode)
                                         : get_barcode_png($row->NomorBarcode),
