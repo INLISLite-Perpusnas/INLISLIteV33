@@ -5,6 +5,7 @@ $routes->group('laporan-buku-tamu', ['namespace' => 'LaporanBukuTamu\Controllers
 	$subroutes->add('', 'LaporanBukuTamu::index');
 	$subroutes->add('index', 'LaporanBukuTamu::index');
 	$subroutes->add('export', 'LaporanBukuTamu::export');
+	$subroutes->add('export_pdf', 'LaporanBukuTamu::exportPdf');
 	$subroutes->add('preview', 'LaporanBukuTamu::preview');
 	$subroutes->add('visitor', 'LaporanBukuTamu::visitor');
 	$subroutes->add('visitor_export', 'LaporanBukuTamu::visitor_export');

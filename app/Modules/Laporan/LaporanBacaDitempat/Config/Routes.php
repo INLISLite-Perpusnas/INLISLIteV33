@@ -5,5 +5,6 @@ $routes->group('laporan-baca-ditempat', ['namespace' => 'LaporanBacaDitempat\Con
 	$subroutes->add('', 'LaporanBacaDitempat::index');
 	$subroutes->add('index', 'LaporanBacaDitempat::index');
 	$subroutes->add('export', 'LaporanBacaDitempat::export');
+	$subroutes->add('export_pdf', 'LaporanBacaDitempat::exportPdf');
 	$subroutes->add('preview', 'LaporanBacaDitempat::preview');
 });

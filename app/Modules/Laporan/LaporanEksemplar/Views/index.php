@@ -10,10 +10,12 @@ $request = service('request');
     border-top: 1px solid #dee2e6;
     padding-top: 20px;
 }
+
 .preview-table {
     max-height: 500px;
     overflow-y: auto;
 }
+
 .filter-section {
     border: 1px solid #dee2e6;
     border-radius: 8px;
@@ -21,11 +23,13 @@ $request = service('request');
     margin-bottom: 15px;
     background-color: #f8f9fa;
 }
+
 .filter-section h6 {
     color: #495057;
     font-weight: 600;
     margin-bottom: 15px;
 }
+
 .columns-section {
     background-color: #ffffff;
     border: 1px solid #dee2e6;
@@ -33,12 +37,14 @@ $request = service('request');
     padding: 20px;
     margin-bottom: 20px;
 }
+
 .filters-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     gap: 15px;
     margin-bottom: 20px;
 }
+
 @media (max-width: 768px) {
     .filters-container {
         grid-template-columns: 1fr;
@@ -62,7 +68,8 @@ $request = service('request');
             <div class="page-title-actions">
                 <nav class="" aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="<?= base_url('auth') ?>"><i class="fa fa-home"></i> Home</a></li>
+                        <li class="breadcrumb-item"><a href="<?= base_url('auth') ?>"><i class="fa fa-home"></i>
+                                Home</a></li>
                         <li class="breadcrumb-item"><a href="#">Laporan</a></li>
                         <li class="active breadcrumb-item" aria-current="page">Laporan Eksemplar</li>
                     </ol>
@@ -74,20 +81,21 @@ $request = service('request');
     <div class="card">
         <div class="card-header">
             <h5><strong>Export Data Eksemplar</strong></h5>
-            <p class="text-muted mb-0">Pilih kolom dan filter yang diinginkan. Anda dapat mengkombinasikan beberapa filter sekaligus.</p>
+            <p class="text-muted mb-0">Pilih kolom dan filter yang diinginkan. Anda dapat mengkombinasikan beberapa
+                filter sekaligus.</p>
         </div>
         <div class="card-body">
             <?php if (session('errors')) : ?>
-                <div class="alert alert-danger">
-                    <?php foreach (session('errors') as $error) : ?>
-                        <?= $error ?><br>
-                    <?php endforeach ?>
-                </div>
+            <div class="alert alert-danger">
+                <?php foreach (session('errors') as $error) : ?>
+                <?= $error ?><br>
+                <?php endforeach ?>
+            </div>
             <?php endif ?>
 
             <form action="<?= base_url('laporan-eksemplar/export') ?>" method="post">
                 <?= csrf_field() ?>
-                
+
                 <!-- Columns Selection -->
                 <div class="columns-section">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -101,14 +109,15 @@ $request = service('request');
                     </div>
                     <div class="row">
                         <?php foreach ($columns as $key => $label) : ?>
-                            <div class="col-md-4">
-                                <div class="form-check">
-                                    <input class="form-check-input column-checkbox" type="checkbox" name="columns[]" value="<?= $key ?>" id="<?= $key ?>">
-                                    <label class="form-check-label" for="<?= $key ?>">
-                                        <?= $label ?>
-                                    </label>
-                                </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input column-checkbox" type="checkbox" name="columns[]"
+                                    value="<?= $key ?>" id="<?= $key ?>">
+                                <label class="form-check-label" for="<?= $key ?>">
+                                    <?= $label ?>
+                                </label>
                             </div>
+                        </div>
                         <?php endforeach ?>
                     </div>
                 </div>
@@ -139,7 +148,7 @@ $request = service('request');
                                 <select name="month" class="form-control">
                                     <option value="">-- Pilih Bulan --</option>
                                     <?php for ($i = 1; $i <= 12; $i++) : ?>
-                                        <option value="<?= $i ?>"><?= date('F', mktime(0, 0, 0, $i, 1)) ?></option>
+                                    <option value="<?= $i ?>"><?= date('F', mktime(0, 0, 0, $i, 1)) ?></option>
                                     <?php endfor ?>
                                 </select>
                             </div>
@@ -148,7 +157,7 @@ $request = service('request');
                                 <select name="year" class="form-control">
                                     <option value="">-- Pilih Tahun --</option>
                                     <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
-                                        <option value="<?= $i ?>"><?= $i ?></option>
+                                    <option value="<?= $i ?>"><?= $i ?></option>
                                     <?php endfor ?>
                                 </select>
                             </div>
@@ -162,7 +171,7 @@ $request = service('request');
                         <select name="year_only" class="form-control">
                             <option value="">-- Pilih Tahun --</option>
                             <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
-                                <option value="<?= $i ?>"><?= $i ?></option>
+                            <option value="<?= $i ?>"><?= $i ?></option>
                             <?php endfor ?>
                         </select>
                     </div>
@@ -190,7 +199,7 @@ $request = service('request');
                             <select class="form-control" name="location">
                                 <option value="">-- Pilih Lokasi --</option>
                                 <?php foreach (get_ref_table('location_library', 'ID, Name') as $row) : ?>
-                                    <option value="<?= $row->ID ?>"><?= $row->Name ?></option>
+                                <option value="<?= $row->ID ?>"><?= $row->Name ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -214,7 +223,8 @@ $request = service('request');
                     <div class="filter-section">
                         <h6><i class="fas fa-globe"></i> Filter Berdasarkan Tempat Terbit</h6>
                         <label>Tempat Terbit</label>
-                        <input type="text" name="publishlocation" class="form-control" placeholder="Masukkan tempat terbit...">
+                        <input type="text" name="publishlocation" class="form-control"
+                            placeholder="Masukkan tempat terbit...">
                     </div>
 
                     <!-- Filter Subjek -->
@@ -228,7 +238,8 @@ $request = service('request');
                     <div class="filter-section">
                         <h6><i class="fas fa-building"></i> Filter Berdasarkan Penerbit</h6>
                         <label>Penerbit</label>
-                        <input type="text" name="publisher" class="form-control" placeholder="Masukkan nama penerbit...">
+                        <input type="text" name="publisher" class="form-control"
+                            placeholder="Masukkan nama penerbit...">
                     </div>
 
                     <!-- Filter CreateBy -->
@@ -238,11 +249,11 @@ $request = service('request');
                         <select name="createby" class="form-control">
                             <option value="">-- Semua User --</option>
                             <?php if (isset($userOptions)) : ?>
-                                <?php foreach ($userOptions as $user) : ?>
-                                    <option value="<?= $user->id ?>">
-                                        <?= $user->username ?>
-                                    </option>
-                                <?php endforeach ?>
+                            <?php foreach ($userOptions as $user) : ?>
+                            <option value="<?= $user->id ?>">
+                                <?= $user->username ?>
+                            </option>
+                            <?php endforeach ?>
                             <?php endif ?>
                         </select>
                     </div>
@@ -254,11 +265,11 @@ $request = service('request');
                         <select name="updateby" class="form-control">
                             <option value="">-- Semua User --</option>
                             <?php if (isset($userOptions)) : ?>
-                                <?php foreach ($userOptions as $user) : ?>
-                                    <option value="<?= $user->id ?>">
-                                        <?= $user->username ?>
-                                    </option>
-                                <?php endforeach ?>
+                            <?php foreach ($userOptions as $user) : ?>
+                            <option value="<?= $user->id ?>">
+                                <?= $user->username ?>
+                            </option>
+                            <?php endforeach ?>
                             <?php endif ?>
                         </select>
                     </div>
@@ -266,8 +277,13 @@ $request = service('request');
 
                 <!-- Export Button -->
                 <div class="text-center mb-4">
-                    <button type="submit" class="btn btn-success btn-lg px-5" id="exportBtn">
-                        <i class="fas fa-download"></i> Export to Excel
+                    <button type="submit" class="btn btn-success btn-lg px-5" id="exportBtn"
+                        onclick="setExportAction('excel')">
+                        <i class="fas fa-file-excel"></i> Export Excel
+                    </button>
+                    <button type="submit" class="btn btn-danger btn-lg px-5 ml-2" id="exportPdfBtn"
+                        onclick="setExportAction('pdf')">
+                        <i class="fas fa-file-pdf"></i> Export PDF
                     </button>
                     <button type="button" class="btn btn-secondary btn-lg px-5 ml-2" onclick="clearAllFilters()">
                         <i class="fas fa-eraser"></i> Clear All Filters
@@ -275,12 +291,13 @@ $request = service('request');
                 </div>
 
                 <!-- Export Warning -->
-                <div class="alert alert-warning" style="display: none;" id="exportWarning">
+                <div class="alert alert-warning"  id="exportWarning">
                     <div class="d-flex align-items-center">
                         <i class="fas fa-exclamation-triangle fa-2x mr-3"></i>
                         <div>
                             <strong>Perhatian:</strong> Export data dalam jumlah besar membutuhkan waktu lebih lama.<br>
-                            <small>Maksimum export: <strong>50,000 records</strong>. Gunakan filter untuk mengurangi jumlah data jika diperlukan.</small>
+                            <small>Maksimum export: <strong>50,000 records</strong>. Gunakan filter untuk mengurangi
+                                jumlah data jika diperlukan.</small>
                         </div>
                     </div>
                 </div>
@@ -288,9 +305,10 @@ $request = service('request');
 
             <!-- Preview Section -->
             <div class="preview-container">
-                <h5><i class="fas fa-eye"></i> Preview Data (20 Baris Pertama)</h5>
+                <h5><i class="fas fa-eye"></i> Preview Data (100 Baris Pertama)</h5>
                 <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> Preview akan otomatis terupdate setiap kali Anda mengubah pilihan kolom atau filter.
+                    <i class="fas fa-info-circle"></i> Preview akan otomatis terupdate setiap kali Anda mengubah pilihan
+                    kolom atau filter.
                 </div>
                 <div class="preview-table" id="preview-table">
                     <div class="text-center">
@@ -314,7 +332,8 @@ $(document).ready(function() {
         });
 
         if (selectedColumns.length === 0) {
-            $('#preview-table').html('<div class="text-center"><p>Pilih minimal satu kolom untuk melihat preview data</p></div>');
+            $('#preview-table').html(
+                '<div class="text-center"><p>Pilih minimal satu kolom untuk melihat preview data</p></div>');
             return;
         }
 
@@ -339,7 +358,9 @@ $(document).ready(function() {
         formData.append('updateby', $('select[name="updateby"]').val());
 
         // Show loading indicator
-        $('#preview-table').html('<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i><p>Memuat preview data...</p></div>');
+        $('#preview-table').html(
+            '<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i><p>Memuat preview data...</p></div>'
+            );
 
         // Make AJAX call to get preview data
         $.ajax({
@@ -353,7 +374,9 @@ $(document).ready(function() {
             },
             error: function(xhr, status, error) {
                 console.error('Error fetching preview:', error);
-                $('#preview-table').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Terjadi kesalahan saat memuat preview data. Silakan coba lagi.</div>');
+                $('#preview-table').html(
+                    '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Terjadi kesalahan saat memuat preview data. Silakan coba lagi.</div>'
+                    );
             }
         });
     }
@@ -375,7 +398,7 @@ $(document).ready(function() {
     function updateSelectAllStatus() {
         const totalColumns = $('.column-checkbox').length;
         const checkedColumns = $('.column-checkbox:checked').length;
-        
+
         if (checkedColumns === 0) {
             $('#select_all_columns').prop('indeterminate', false).prop('checked', false);
         } else if (checkedColumns === totalColumns) {
@@ -396,20 +419,23 @@ $(document).ready(function() {
     $('select[name="location"]').change(function() {
         let locationId = $(this).val();
         let ruangSelect = $('select[name="location_ruang"]');
-        
+
         // Clear first
         ruangSelect.html('<option value="">-- Pilih Ruang --</option>');
 
         if (locationId) {
             $.ajax({
-                url: "<?= base_url('laporan-eksemplar/get-ruang') ?>", 
+                url: "<?= base_url('laporan-eksemplar/get-ruang') ?>",
                 type: "POST",
-                data: { location_id: locationId },
+                data: {
+                    location_id: locationId
+                },
                 dataType: "json",
                 success: function(data) {
                     if (data.length > 0) {
                         $.each(data, function(i, item) {
-                            ruangSelect.append('<option value="'+item.ID+'">'+item.Name+'</option>');
+                            ruangSelect.append('<option value="' + item.ID + '">' +
+                                item.Name + '</option>');
                         });
                     } else {
                         ruangSelect.append('<option value="">Tidak ada ruang</option>');
@@ -437,6 +463,16 @@ $(document).ready(function() {
     }
 });
 
+// Switch form action between Excel and PDF export
+function setExportAction(type) {
+    var form = document.querySelector('form[action*="laporan-eksemplar"]');
+    if (type === 'pdf') {
+        form.action = '<?= base_url('laporan-eksemplar/export_pdf') ?>';
+    } else {
+        form.action = '<?= base_url('laporan-eksemplar/export') ?>';
+    }
+}
+
 // Function to clear all filters
 function clearAllFilters() {
     if (confirm('Apakah Anda yakin ingin menghapus semua filter?')) {
@@ -444,13 +480,13 @@ function clearAllFilters() {
         $('input[type="date"], input[type="text"]').val('');
         $('select').prop('selectedIndex', 0);
         $('select[name="location_ruang"]').html('<option value="">-- Pilih Ruang --</option>');
-        
+
         // Update preview
         const selectedColumns = [];
         $('input[name="columns[]"]:checked').each(function() {
             selectedColumns.push($(this).val());
         });
-        
+
         if (selectedColumns.length > 0) {
             updatePreview();
         }

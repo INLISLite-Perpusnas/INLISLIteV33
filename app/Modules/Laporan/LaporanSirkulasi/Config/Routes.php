@@ -5,6 +5,7 @@ $routes->group('laporan-sirkulasi', ['namespace' => 'LaporanSirkulasi\Controller
 	$subroutes->add('', 'LaporanSirkulasi::index');
 	$subroutes->add('index', 'LaporanSirkulasi::index');
 	$subroutes->add('export', 'LaporanSirkulasi::export');
+	$subroutes->add('export_pdf', 'LaporanSirkulasi::exportPdf');
 	$subroutes->add('preview', 'LaporanSirkulasi::preview');
 });
 

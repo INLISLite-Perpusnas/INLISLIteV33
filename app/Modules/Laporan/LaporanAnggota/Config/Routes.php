@@ -5,6 +5,7 @@ $routes->group('laporan-anggota', ['namespace' => 'LaporanAnggota\Controllers'],
 	$subroutes->add('', 'LaporanAnggota::index');
 	$subroutes->add('index', 'LaporanAnggota::index');
 	$subroutes->add('export', 'LaporanAnggota::export');
+	$subroutes->add('export_pdf', 'LaporanAnggota::exportPdf');
 	$subroutes->add('preview', 'LaporanAnggota::preview');
 	$subroutes->add('member', 'LaporanAnggota::member');
 	$subroutes->add('member_export', 'LaporanAnggota::member_export');

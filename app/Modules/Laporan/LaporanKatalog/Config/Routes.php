@@ -5,6 +5,7 @@ $routes->group('laporan-katalog', ['namespace' => 'LaporanKatalog\Controllers'],
 	$subroutes->add('', 'LaporanKatalog::index');
 	$subroutes->add('index', 'LaporanKatalog::index');
 	$subroutes->add('export', 'LaporanKatalog::export');
+	$subroutes->add('export_pdf', 'LaporanKatalog::exportPdf');
 	$subroutes->add('preview', 'LaporanKatalog::preview');
 	$subroutes->add('visitor', 'LaporanKatalog::visitor');
 	$subroutes->add('visitor_export', 'LaporanKatalog::visitor_export');

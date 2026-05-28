@@ -250,8 +250,11 @@ $request = service('request');
 
                 <!-- Export Button -->
                 <div class="text-center mb-4">
-                    <button type="submit" class="btn btn-success btn-lg px-5" id="exportBtn">
-                        <i class="fas fa-download"></i> Export to Excel
+                    <button type="submit" class="btn btn-success btn-lg px-5" id="exportBtn" onclick="setExportAction('excel')">
+                        <i class="fas fa-file-excel"></i> Export Excel
+                    </button>
+                    <button type="submit" class="btn btn-danger btn-lg px-5 ml-2" id="exportPdfBtn" onclick="setExportAction('pdf')">
+                        <i class="fas fa-file-pdf"></i> Export PDF
                     </button>
                     <button type="button" class="btn btn-secondary btn-lg px-5 ml-2" onclick="clearAllFilters()">
                         <i class="fas fa-eraser"></i> Clear All Filters
@@ -272,7 +275,7 @@ $request = service('request');
 
             <!-- Preview Section -->
             <div class="preview-container">
-                <h5><i class="fas fa-eye"></i> Preview Data (20 Baris Pertama)</h5>
+                <h5><i class="fas fa-eye"></i> Preview Data (100 Baris Pertama)</h5>
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle"></i> Preview akan otomatis terupdate setiap kali Anda mengubah pilihan kolom atau filter.
                 </div>
@@ -392,6 +395,16 @@ $(document).ready(function() {
         };
     }
 });
+
+// Switch form action between Excel and PDF export
+function setExportAction(type) {
+    var form = document.querySelector('form[action*="laporan-katalog"]');
+    if (type === 'pdf') {
+        form.action = '<?= base_url('laporan-katalog/export_pdf') ?>';
+    } else {
+        form.action = '<?= base_url('laporan-katalog/export') ?>';
+    }
+}
 
 // Function to clear all filters
 function clearAllFilters() {

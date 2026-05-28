@@ -221,8 +221,11 @@ $date_to = $request->getGet('date_to') ?? '';
 
 
               <div class="text-center mb-4">
-                    <button type="submit" class="btn btn-success btn-lg px-5" id="exportBtn">
-                        <i class="fas fa-download"></i> Export to Excel
+                    <button type="submit" class="btn btn-success btn-lg px-5" id="exportBtn" onclick="setExportAction('excel')">
+                        <i class="fas fa-file-excel"></i> Export Excel
+                    </button>
+                    <button type="submit" class="btn btn-danger btn-lg px-5 ml-2" id="exportPdfBtn" onclick="setExportAction('pdf')">
+                        <i class="fas fa-file-pdf"></i> Export PDF
                     </button>
                     <button type="button" class="btn btn-secondary btn-lg px-5 ml-2" onclick="clearAllFilters()">
                         <i class="fas fa-eraser"></i> Clear All Filters
@@ -343,6 +346,16 @@ $(document).ready(function() {
         };
     }
 });
+
+// Switch form action between Excel and PDF export
+function setExportAction(type) {
+    var form = document.querySelector('form[action*="laporan-baca-ditempat"]');
+    if (type === 'pdf') {
+        form.action = '<?= base_url('laporan-baca-ditempat/export_pdf') ?>';
+    } else {
+        form.action = '<?= base_url('laporan-baca-ditempat/export') ?>';
+    }
+}
 
 // Function to clear all filters
 function clearAllFilters() {

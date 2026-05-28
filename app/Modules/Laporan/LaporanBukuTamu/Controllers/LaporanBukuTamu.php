@@ -8,6 +8,8 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class LaporanBukuTamu extends \Base\Controllers\BaseController
 {
@@ -250,6 +252,150 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
 
         $writer->save('php://output');
         exit;
+    }
+
+    public function exportPdf()
+    {
+        ini_set('memory_limit', '512M');
+        ini_set('max_execution_time', 300);
+
+        if (!$this->validate(['columns' => 'required'])) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $selectedColumns  = $this->request->getPost('columns');
+        $filterType       = $this->request->getPost('filter_type');
+        $startDate        = $this->request->getPost('start_date');
+        $endDate          = $this->request->getPost('end_date');
+        $month            = $this->request->getPost('month');
+        $year             = $this->request->getPost('year');
+        $genderId         = $this->request->getPost('gender_id');
+        $visitor_type     = $this->request->getPost('visitor_type');
+        $locationlibrary  = $this->request->getPost('location');
+        $room             = $this->request->getPost('room');
+        $destination      = $this->request->getPost('destination');
+
+        $query = $this->guestModel->getPengunjung($startDate, $endDate);
+
+        switch ($filterType) {
+            case 'month':
+                if ($month && $year) {
+                    $query->where('MONTH(periode)', $month)->where('YEAR(periode)', $year);
+                }
+                break;
+            case 'year':
+                if ($year) {
+                    $query->where('YEAR(periode)', $year);
+                }
+                break;
+        }
+
+        if ($genderId)         $query->like('gender', $genderId);
+        if ($visitor_type)     $query->where('ket', $visitor_type);
+        if ($locationlibrary)  $query->where('Library_id', $locationlibrary);
+        if ($room)             $query->where('lok_ruang', $room);
+        if ($destination)      $query->where('tujuan', $destination);
+
+        $totalRecords = (clone $query)->countAllResults(false);
+        $maxRecords = 5000;
+        if ($totalRecords > $maxRecords) {
+            return redirect()->back()->with('error',
+                "Jumlah data terlalu besar ({$totalRecords} records). Maksimum export PDF adalah {$maxRecords} records. " .
+                "Silakan gunakan filter yang lebih spesifik atau gunakan export Excel."
+            );
+        }
+
+        $members = $query->get()->getResult();
+
+        // Ambil logo kop
+        $db = db_connect();
+        $logokop = $db->table('settingparameters')->where('Name', 'LogoKop')->get()->getRow('Value') ?? '';
+        $namaPerpustakaan = $db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow('Value') ?? 'Perpustakaan';
+
+        $logoBase64 = '';
+        if ($logokop) {
+            $logoPath = ROOTPATH . 'public/uploads/branch/' . $logokop;
+            if (file_exists($logoPath)) {
+                $ext  = strtolower(pathinfo($logoPath, PATHINFO_EXTENSION));
+                $mime = in_array($ext, ['jpg', 'jpeg']) ? 'image/jpeg' : 'image/' . $ext;
+                $logoBase64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($logoPath));
+            }
+        }
+
+        $columnHeaders = [
+            'no_pengunjung' => 'Nomor Kunjungan',
+            'lokasi'        => 'Lokasi Perpustakaan',
+            'lok_ruang'     => 'Lokasi Ruang',
+            'tgl_kunjungan' => 'Tanggal Kunjungan',
+            'ket'           => 'Kriteria Pengunjung',
+            'nama'          => 'Nama',
+            'gender'        => 'Jenis Kelamin',
+            'pekerjaan'     => 'Pekerjaan',
+            'pendidikan'    => 'Pendidikan',
+            'tujuan'        => 'Tujuan Kunjungan',
+            'info'          => 'Informasi Dicari',
+        ];
+
+        $html = '<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <style>
+            body { font-family: Arial, sans-serif; font-size: 8px; margin: 0; }
+            .kop { display: flex; align-items: center; border-bottom: 2px solid #333; padding-bottom: 8px; margin-bottom: 10px; }
+            .kop img { max-height: 60px; max-width: 120px; margin-right: 12px; }
+            .kop-text { flex: 1; }
+            .kop-text h2 { margin: 0; font-size: 13px; }
+            .kop-text p { margin: 2px 0; font-size: 8px; color: #555; }
+            h3.report-title { text-align: center; font-size: 11px; margin: 6px 0 10px 0; }
+            table { width: 100%; border-collapse: collapse; font-size: 7px; }
+            th { background-color: #3e5c8b; color: #fff; padding: 4px 5px; text-align: left; border: 1px solid #ccc; }
+            td { padding: 3px 5px; border: 1px solid #ddd; vertical-align: top; }
+            tr:nth-child(even) td { background-color: #f5f5f5; }
+            .footer { margin-top: 8px; font-size: 7px; color: #888; text-align: right; }
+        </style></head><body>';
+
+        $html .= '<div class="kop">';
+        if ($logoBase64) {
+            $html .= '<img src="' . $logoBase64 . '" alt="Logo">';
+        }
+        $html .= '<div class="kop-text"><h2>' . esc($namaPerpustakaan) . '</h2>'
+               . '<p>Laporan Buku Tamu &mdash; Dicetak: ' . date('d-m-Y H:i') . '</p></div></div>';
+        $html .= '<h3 class="report-title">LAPORAN BUKU TAMU</h3>';
+
+        $html .= '<table><thead><tr><th>#</th>';
+        foreach ($selectedColumns as $col) {
+            $html .= '<th>' . esc($columnHeaders[$col] ?? $col) . '</th>';
+        }
+        $html .= '</tr></thead><tbody>';
+
+        $no = 1;
+        foreach ($members as $member) {
+            $html .= '<tr><td>' . $no++ . '</td>';
+            foreach ($selectedColumns as $col) {
+                $value = $member->$col ?? '';
+                if ($col === 'tgl_kunjungan' && $value) {
+                    $value = date('d-m-Y', strtotime($value));
+                }
+                $html .= '<td>' . esc($value) . '</td>';
+            }
+            $html .= '</tr>';
+        }
+
+        $html .= '</tbody></table>';
+        $html .= '<div class="footer">Total: ' . ($no - 1) . ' data</div>';
+        $html .= '</body></html>';
+
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isPhpEnabled', false);
+        $options->set('defaultFont', 'Arial');
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', count($selectedColumns) > 6 ? 'landscape' : 'portrait');
+        $dompdf->render();
+
+        $fileName = 'Laporan_Buku_Tamu_' . date('d-m-Y_His') . '.pdf';
+        $dompdf->stream($fileName, ['Attachment' => true]);
+        exit();
     }
 
 	public function preview()

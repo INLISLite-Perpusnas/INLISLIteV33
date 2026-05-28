@@ -7,6 +7,8 @@ use PhpOffice\PhpSpreadsheet\Helper\Sample;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class LaporanKatalog extends \Base\Controllers\BaseController
 {
@@ -87,7 +89,7 @@ class LaporanKatalog extends \Base\Controllers\BaseController
         $this->applyFilters($query);
 
         // Get first 20 rows
-        $katalogs = $query->limit(20)->find();
+        $katalogs = $query->limit(100)->find();
 
         if (empty($katalogs)) {
             return '<div class="alert alert-info">Tidak ada data yang ditemukan dengan filter yang dipilih</div>';
@@ -221,6 +223,114 @@ class LaporanKatalog extends \Base\Controllers\BaseController
         $spreadsheet->disconnectWorksheets();
         unset($spreadsheet);
         
+        exit();
+    }
+
+    public function exportPdf()
+    {
+        ini_set('memory_limit', '512M');
+        ini_set('max_execution_time', 300);
+
+        if (!$this->validate(['columns' => 'required'])) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $selectedColumns = $this->request->getPost('columns');
+
+        $countQuery = $this->katalogModel
+            ->join('users as creator', 'catalogs.CreateBy = creator.id', 'left')
+            ->join('users as updater', 'catalogs.UpdateBy = updater.id', 'left');
+        $this->applyFilters($countQuery);
+        $totalRecords = $countQuery->countAllResults();
+
+        $maxRecords = 5000;
+        if ($totalRecords > $maxRecords) {
+            return redirect()->back()->with('error',
+                "Jumlah data terlalu besar ({$totalRecords} records). Maksimum export PDF adalah {$maxRecords} records. " .
+                "Silakan gunakan filter yang lebih spesifik atau gunakan export Excel."
+            );
+        }
+
+        $query = $this->katalogModel->select($this->buildSelectColumns($selectedColumns))
+            ->join('users as creator', 'catalogs.CreateBy = creator.id', 'left')
+            ->join('users as updater', 'catalogs.UpdateBy = updater.id', 'left');
+        $this->applyFilters($query);
+        $katalogs = $query->find();
+
+        // Ambil logo kop dari settingparameters
+        $db = db_connect();
+        $logokop = $db->table('settingparameters')->where('Name', 'LogoKop')->get()->getRow('Value') ?? '';
+        $namaPerpustakaan = $db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow('Value') ?? 'Perpustakaan';
+
+        $logoBase64 = '';
+        if ($logokop) {
+            $logoPath = ROOTPATH . 'public/uploads/branch/' . $logokop;
+            if (file_exists($logoPath)) {
+                $ext = strtolower(pathinfo($logoPath, PATHINFO_EXTENSION));
+                $mime = in_array($ext, ['jpg', 'jpeg']) ? 'image/jpeg' : 'image/' . $ext;
+                $logoBase64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($logoPath));
+            }
+        }
+
+        // Build HTML
+        $html = '<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <style>
+            body { font-family: Arial, sans-serif; font-size: 8px; margin: 0; }
+            .kop { display: flex; align-items: center; border-bottom: 2px solid #333; padding-bottom: 8px; margin-bottom: 10px; }
+            .kop img { max-height: 60px; max-width: 120px; margin-right: 12px; }
+            .kop-text { flex: 1; }
+            .kop-text h2 { margin: 0; font-size: 13px; }
+            .kop-text p { margin: 2px 0; font-size: 8px; color: #555; }
+            h3.report-title { text-align: center; font-size: 11px; margin: 6px 0 10px 0; }
+            table { width: 100%; border-collapse: collapse; font-size: 7px; }
+            th { background-color: #3e5c8b; color: #fff; padding: 4px 5px; text-align: left; border: 1px solid #ccc; }
+            td { padding: 3px 5px; border: 1px solid #ddd; vertical-align: top; }
+            tr:nth-child(even) td { background-color: #f5f5f5; }
+            .footer { margin-top: 8px; font-size: 7px; color: #888; text-align: right; }
+        </style></head><body>';
+
+        // Header kop
+        $html .= '<div class="kop">';
+        if ($logoBase64) {
+            $html .= '<img src="' . $logoBase64 . '" alt="Logo">';
+        }
+        $html .= '<div class="kop-text"><h2>' . esc($namaPerpustakaan) . '</h2>'
+               . '<p>Laporan Katalog &mdash; Dicetak: ' . date('d-m-Y H:i') . '</p></div></div>';
+        $html .= '<h3 class="report-title">LAPORAN DATA KATALOG</h3>';
+
+        // Table
+        $html .= '<table><thead><tr>';
+        $html .= '<th>#</th>';
+        foreach ($selectedColumns as $col) {
+            $html .= '<th>' . esc($this->getColumnLabel($col)) . '</th>';
+        }
+        $html .= '</tr></thead><tbody>';
+
+        $no = 1;
+        foreach ($katalogs as $katalog) {
+            $html .= '<tr><td>' . $no++ . '</td>';
+            foreach ($selectedColumns as $col) {
+                $html .= '<td>' . esc($this->getFormattedValue($katalog, $col)) . '</td>';
+            }
+            $html .= '</tr>';
+        }
+
+        $html .= '</tbody></table>';
+        $html .= '<div class="footer">Total: ' . ($no - 1) . ' data</div>';
+        $html .= '</body></html>';
+
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isPhpEnabled', false);
+        $options->set('defaultFont', 'Arial');
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', count($selectedColumns) > 8 ? 'landscape' : 'portrait');
+        $dompdf->render();
+
+        $fileName = 'Laporan_Katalog_' . date('d-m-Y_His') . '.pdf';
+        $dompdf->stream($fileName, ['Attachment' => true]);
         exit();
     }
 

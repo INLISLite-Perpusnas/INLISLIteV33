@@ -5,6 +5,7 @@ $routes->group('laporan-eksemplar', ['namespace' => 'LaporanEksemplar\Controller
 	$subroutes->add('', 'LaporanEksemplar::index');
 	$subroutes->add('index', 'LaporanEksemplar::index');
 	$subroutes->add('export', 'LaporanEksemplar::export');
+	$subroutes->add('export_pdf', 'LaporanEksemplar::exportPdf');
 	$subroutes->add('preview', 'LaporanEksemplar::preview');
 	$subroutes->add('visitor', 'LaporanEksemplar::visitor');
 	$subroutes->add('visitor_export', 'LaporanEksemplar::visitor_export');

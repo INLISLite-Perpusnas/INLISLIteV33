@@ -7,6 +7,8 @@ use PhpOffice\PhpSpreadsheet\Helper\Sample;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class LaporanEksemplar extends \Base\Controllers\BaseController
 {
@@ -102,7 +104,7 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
         $this->applyFilters($query);
 
         // Get first 20 rows
-        $eksemplars = $query->limit(20)->find();
+        $eksemplars = $query->limit(100)->find();
         log_message('debug', 'Last Query Preview: ' . $this->eksemplarModel->getLastQuery());
 
         if (empty($eksemplars)) {
@@ -205,6 +207,120 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
         header('Cache-Control: max-age=0');
 
         $writer->save('php://output');
+        exit();
+    }
+
+    public function exportPdf()
+    {
+        ini_set('memory_limit', '512M');
+        ini_set('max_execution_time', 300);
+
+        if (!$this->validate(['columns' => 'required'])) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $selectedColumns = $this->request->getPost('columns');
+
+        $query = $this->eksemplarModel
+            ->join('(SELECT ID, Title, Author, Edition, Publisher, PublishLocation, PublishYear, Subject, ISBN, Languages, DeweyNo FROM catalogs) AS catalogs', 'catalogs.ID = collections.Catalog_ID', 'INNER')
+            ->join('(SELECT ID, Name as JenisSumber FROM collectionsources) AS sources', 'collections.Source_id = sources.ID', 'LEFT')
+            ->join('(SELECT ID, Name as BentukFisik FROM collectionmedias) AS medias', 'collections.Source_id = medias.ID', 'LEFT')
+            ->join('(SELECT ID, Name as Kategori FROM collectioncategorys) AS categories', 'collections.Category_id = categories.ID', 'LEFT')
+            ->join('(SELECT ID, Name as Ketersediaan FROM collectionstatus) AS status', 'collections.Status_id = status.ID', 'LEFT')
+            ->join('(SELECT ID, Name as Akses FROM collectionrules) AS rules', 'collections.Rule_id = rules.ID', 'LEFT')
+            ->join('(SELECT ID, Name as NamaSumber FROM partners) AS partners', 'collections.Partner_id = partners.ID', 'LEFT')
+            ->join('(SELECT ID, Name as LokasiRuang FROM locations) AS locations', 'collections.Location_id = locations.ID', 'LEFT')
+            ->join('(SELECT ID, Name as Perpustakaan FROM location_library) AS libraries', 'collections.Location_Library_id = libraries.ID', 'LEFT')
+            ->join('users as creator', 'collections.CreateBy = creator.id', 'left')
+            ->join('users as updater', 'collections.UpdateBy = updater.id', 'left')
+            ->select($this->buildSelectColumns($selectedColumns));
+
+        $this->applyFilters($query);
+        $totalRecords = (clone $query)->countAllResults(false);
+
+        $maxRecords = 5000;
+        if ($totalRecords > $maxRecords) {
+            return redirect()->back()->with('error',
+                "Jumlah data terlalu besar ({$totalRecords} records). Maksimum export PDF adalah {$maxRecords} records. " .
+                "Silakan gunakan filter yang lebih spesifik atau gunakan export Excel."
+            );
+        }
+
+        $eksemplars = $query->find();
+
+        // Ambil logo kop dari settingparameters
+        $db = db_connect();
+        $logokop = $db->table('settingparameters')->where('Name', 'LogoKop')->get()->getRow('Value') ?? '';
+        $namaPerpustakaan = $db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow('Value') ?? 'Perpustakaan';
+
+        $logoBase64 = '';
+        if ($logokop) {
+            $logoPath = ROOTPATH . 'public/uploads/branch/' . $logokop;
+            if (file_exists($logoPath)) {
+                $ext = strtolower(pathinfo($logoPath, PATHINFO_EXTENSION));
+                $mime = in_array($ext, ['jpg', 'jpeg']) ? 'image/jpeg' : 'image/' . $ext;
+                $logoBase64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($logoPath));
+            }
+        }
+
+        // Build HTML
+        $html = '<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <style>
+            body { font-family: Arial, sans-serif; font-size: 8px; margin: 0; }
+            .kop { display: flex; align-items: center; border-bottom: 2px solid #333; padding-bottom: 8px; margin-bottom: 10px; }
+            .kop img { max-height: 60px; max-width: 120px; margin-right: 12px; }
+            .kop-text { flex: 1; }
+            .kop-text h2 { margin: 0; font-size: 13px; }
+            .kop-text p { margin: 2px 0; font-size: 8px; color: #555; }
+            h3.report-title { text-align: center; font-size: 11px; margin: 6px 0 10px 0; }
+            table { width: 100%; border-collapse: collapse; font-size: 7px; }
+            th { background-color: #3e5c8b; color: #fff; padding: 4px 5px; text-align: left; border: 1px solid #ccc; }
+            td { padding: 3px 5px; border: 1px solid #ddd; vertical-align: top; }
+            tr:nth-child(even) td { background-color: #f5f5f5; }
+            .footer { margin-top: 8px; font-size: 7px; color: #888; text-align: right; }
+        </style></head><body>';
+
+        // Header kop
+        $html .= '<div class="kop">';
+        if ($logoBase64) {
+            $html .= '<img src="' . $logoBase64 . '" alt="Logo">';
+        }
+        $html .= '<div class="kop-text"><h2>' . esc($namaPerpustakaan) . '</h2>'
+               . '<p>Laporan Eksemplar &mdash; Dicetak: ' . date('d-m-Y H:i') . '</p></div></div>';
+        $html .= '<h3 class="report-title">LAPORAN DATA EKSEMPLAR</h3>';
+
+        // Table
+        $html .= '<table><thead><tr><th>#</th>';
+        foreach ($selectedColumns as $col) {
+            $html .= '<th>' . esc($this->getColumnLabel($col)) . '</th>';
+        }
+        $html .= '</tr></thead><tbody>';
+
+        $no = 1;
+        foreach ($eksemplars as $eksemplar) {
+            $html .= '<tr><td>' . $no++ . '</td>';
+            foreach ($selectedColumns as $col) {
+                $html .= '<td>' . esc($this->getFormattedValue($eksemplar, $col)) . '</td>';
+            }
+            $html .= '</tr>';
+        }
+
+        $html .= '</tbody></table>';
+        $html .= '<div class="footer">Total: ' . ($no - 1) . ' data</div>';
+        $html .= '</body></html>';
+
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isPhpEnabled', false);
+        $options->set('defaultFont', 'Arial');
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', count($selectedColumns) > 8 ? 'landscape' : 'portrait');
+        $dompdf->render();
+
+        $fileName = 'Laporan_Eksemplar_' . date('d-m-Y_His') . '.pdf';
+        $dompdf->stream($fileName, ['Attachment' => true]);
         exit();
     }
 

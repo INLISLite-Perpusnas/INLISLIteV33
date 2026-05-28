@@ -241,11 +241,17 @@ $request = service('request');
                 </div>
 
                 <!-- Export Button -->
-                <div class="text-center mb-4">
-                    <button type="button" class="btn btn-primary btn-lg px-5" id="btnPreview">
+                <div class="d-flex justify-content-center flex-nowrap mb-4 overflow-auto pb-2">
+                    <button type="button" class="btn btn-primary btn-lg px-4 mx-1" id="btnPreview">
                         <i class="fas fa-eye"></i> Preview Data (100 Baris Pertama)
                     </button>
-                    <button type="button" class="btn btn-secondary btn-lg px-5 ml-2" onclick="clearAllFilters()">
+                    <button type="button" class="btn btn-success btn-lg px-4 mx-1" id="btnExport">
+                        <i class="fas fa-file-excel"></i> Export ke Excel (Semua Data)
+                    </button>
+                    <button type="button" class="btn btn-danger btn-lg px-4 mx-1" id="btnExportPdf">
+                        <i class="fas fa-file-pdf"></i> Export ke PDF (Semua Data)
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-lg px-4 mx-1" onclick="clearAllFilters()">
                         <i class="fas fa-eraser"></i> Clear All Filters
                     </button>
                 </div>
@@ -267,11 +273,7 @@ $request = service('request');
                     </div>
                 </div>
                 
-                <div class="text-center mt-3">
-                    <button type="button" class="btn btn-success btn-lg px-5" id="btnExport">
-                        <i class="fas fa-file-excel"></i> Export ke Excel (Semua Data)
-                    </button>
-                </div>
+                
             </div>
         </div>
     </div>
@@ -435,6 +437,50 @@ $(document).ready(function() {
         // Reset button
         setTimeout(function() {
             $('#btnExport').html('<i class="fas fa-file-excel"></i> Export ke Excel (Semua Data)').prop('disabled', false);
+        }, 2000);
+    });
+
+    // Export PDF
+    $('#btnExportPdf').click(function() {
+        const selectedColumns = [];
+        $('.column-checkbox:checked').each(function() {
+            selectedColumns.push($(this).val());
+        });
+
+        if (selectedColumns.length === 0) {
+            alert('Pilih minimal satu kolom untuk diexport!');
+            return;
+        }
+
+        $(this).html('<i class="fas fa-spinner fa-spin"></i> Mengexport...').prop('disabled', true);
+
+        const form = $('<form>', {
+            'method': 'POST',
+            'action': '<?= base_url('laporan-sirkulasi/export_pdf') ?>'
+        });
+
+        form.append($('<input>', {
+            'type': 'hidden',
+            'name': '<?= csrf_token() ?>',
+            'value': '<?= csrf_hash() ?>'
+        }));
+
+        selectedColumns.forEach(function(col) {
+            form.append($('<input>', { 'type': 'hidden', 'name': 'columns[]', 'value': col }));
+        });
+
+        form.append($('<input>', { 'type': 'hidden', 'name': 'start_date',  'value': $('#start_date').val() }));
+        form.append($('<input>', { 'type': 'hidden', 'name': 'end_date',    'value': $('#end_date').val() }));
+        form.append($('<input>', { 'type': 'hidden', 'name': 'loan_status', 'value': $('#loan_status').val() }));
+        form.append($('<input>', { 'type': 'hidden', 'name': 'member_name', 'value': $('#member_name').val() }));
+        form.append($('<input>', { 'type': 'hidden', 'name': 'book_title',  'value': $('#book_title').val() }));
+
+        $('body').append(form);
+        form.submit();
+        form.remove();
+
+        setTimeout(function() {
+            $('#btnExportPdf').html('<i class="fas fa-file-pdf"></i> Export ke PDF (Semua Data)').prop('disabled', false);
         }, 2000);
     });
     
