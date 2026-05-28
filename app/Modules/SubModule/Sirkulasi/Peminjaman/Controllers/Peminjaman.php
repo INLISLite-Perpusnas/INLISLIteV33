@@ -739,6 +739,33 @@ private function getDayName($day_index)
         
         return view('Peminjaman\Views\success', $this->data);
     }
+    public function sendStruk(int $loanId): \CodeIgniter\HTTP\ResponseInterface
+    {
+        $loan = $this->db->table('collectionloans as cl')
+            ->select('cl.*, m.MemberNo, m.Fullname, m.Email, m.Phone')
+            ->join('members as m', 'm.ID = cl.Member_id')
+            ->where('cl.ID', $loanId)
+            ->get()
+            ->getRow();
+
+        if (!$loan) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Data peminjaman tidak ditemukan.']);
+        }
+
+        $loanItems = $this->db->table('collectionloanitems as cli')
+            ->select('cli.*, col.NomorBarcode, col.CallNumber, cat.Title, cat.Author')
+            ->join('collections as col', 'col.ID = cli.Collection_id')
+            ->join('catalogs as cat', 'cat.ID = col.Catalog_id')
+            ->where('cli.CollectionLoan_id', $loanId)
+            ->get()
+            ->getResult();
+
+        $emailLib = new \App\Libraries\EmailNotificationLibrary();
+        $result   = $emailLib->sendStrukEmail($loan, $loanItems);
+
+        return $this->response->setJSON($result);
+    }
+
 	public function apply_status($id)
 	{
 		$field = $this->request->getGet('field');

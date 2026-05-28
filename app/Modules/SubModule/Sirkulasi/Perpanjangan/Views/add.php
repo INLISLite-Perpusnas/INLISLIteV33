@@ -692,10 +692,17 @@ class ExtendApp {
                     icon:             'success',
                     title:            'Berhasil!',
                     html:             data.message,
-                    confirmButtonColor:'#0d8a6a',
-                    confirmButtonText:'Tutup',
-                    timer:            4000,
-                    timerProgressBar: true
+                    showCancelButton:  true,
+                    confirmButtonColor:'#1fba74',
+                    confirmButtonText: '<i class="fa fa-file-text"></i> Lihat Struk',
+                    cancelButtonColor: '#0d8a6a',
+                    cancelButtonText:  'Tutup',
+                    timer:             6000,
+                    timerProgressBar:  true
+                }).then(result => {
+                    if (result.isConfirmed && data.struk_url) {
+                        window.location.href = data.struk_url;
+                    }
                 });
 
                 this.booksData         = [];

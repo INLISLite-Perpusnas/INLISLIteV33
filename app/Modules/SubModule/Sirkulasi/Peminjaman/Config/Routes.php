@@ -12,6 +12,7 @@ $routes->group('sirkulasi-peminjaman', ['namespace' => 'Peminjaman\Controllers']
 	//custom
 	$subroutes->add('mandiri', 'Peminjaman::mandiri');
 	$subroutes->post('send-notification/(:num)',  'Peminjaman::sendNotification/$1');
+	$subroutes->post('send-struk/(:num)',         'Peminjaman::sendStruk/$1');
 	$subroutes->post('send-all-notification',     'Peminjaman::sendAllNotification');
 	$subroutes->get('overdue-summary',            'Peminjaman::overdueSummary');
 });

@@ -9,6 +9,8 @@ $routes->group('sirkulasi-perpanjangan', ['namespace' => 'Perpanjangan\Controlle
     $subroutes->post('check-book',        'Perpanjangan::checkBook');
     $subroutes->post('process-extend',    'Perpanjangan::processExtend');
     $subroutes->get('get-extend-history', 'Perpanjangan::getExtendHistory');
+    $subroutes->get('success',            'Perpanjangan::success');
+    $subroutes->post('send-struk',        'Perpanjangan::sendStruk');
 });
 
 $routes->group('api/sirkulasi-perpanjangan', ['namespace' => 'Perpanjangan\Controllers\Api'], function ($subroutes) {

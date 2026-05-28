@@ -216,15 +216,85 @@ public function processExtend()
             return $this->response->setJSON(['status' => 'error', 'message' => 'Terjadi kesalahan saat memproses database']);
         }
 
+        session()->set('struk_perpanjangan', [
+            'item_ids'       => $itemIds,
+            'extend_days'    => $extendDays,
+            'extend_date'    => $extendDate,
+        ]);
+
         return $this->response->setJSON([
-            'status'  => 'success',
-            'message' => "<b>$extendedCount buku</b> berhasil diperpanjang selama <b>$extendDays hari</b>!",
-            'data'    => ['member_id' => $memberId, 'extended_count' => $extendedCount]
+            'status'    => 'success',
+            'message'   => "<b>$extendedCount buku</b> berhasil diperpanjang selama <b>$extendDays hari</b>!",
+            'struk_url' => base_url('sirkulasi-perpanjangan/success'),
+            'data'      => ['member_id' => $memberId, 'extended_count' => $extendedCount]
         ]);
 
     } catch (\Exception $e) {
         return $this->response->setJSON(['status' => 'error', 'message' => 'System Error: ' . $e->getMessage()]);
     }
+}
+
+public function success()
+{
+    $struk = session()->get('struk_perpanjangan');
+    if (empty($struk)) {
+        return redirect()->to('sirkulasi-perpanjangan/create');
+    }
+    session()->remove('struk_perpanjangan');
+
+    $db = db_connect();
+
+    $items = $db->table('collectionloanextends as ce')
+        ->select('ce.ID, ce.DateExtend, ce.DueDateExtend, ce.Member_id, col.NomorBarcode, col.CallNumber, cat.Title, cat.Author')
+        ->join('collections as col', 'col.ID = ce.Collection_id')
+        ->join('catalogs as cat', 'cat.ID = col.Catalog_id')
+        ->whereIn('ce.CollectionLoanItem_id', $struk['item_ids'])
+        ->orderBy('ce.ID', 'DESC')
+        ->groupBy('ce.CollectionLoanItem_id')
+        ->get()->getResult();
+
+    $member = null;
+    if (!empty($items)) {
+        $member = $db->table('members')->where('ID', $items[0]->Member_id)->get()->getRow();
+    }
+
+    $this->data['title']       = 'Struk Perpanjangan';
+    $this->data['member']      = $member;
+    $this->data['items']       = $items;
+    $this->data['extend_days'] = $struk['extend_days'];
+    $this->data['extend_date'] = $struk['extend_date'];
+
+    return view('Perpanjangan\Views\success', $this->data);
+}
+
+public function sendStruk(): \CodeIgniter\HTTP\ResponseInterface
+{
+    $itemIds  = json_decode($this->request->getPost('item_ids') ?? '[]', true);
+    $memberId = (int) $this->request->getPost('member_id');
+
+    if (empty($itemIds) || !$memberId) {
+        return $this->response->setJSON(['success' => false, 'message' => 'Data tidak lengkap.']);
+    }
+
+    $db     = db_connect();
+    $member = $db->table('members')->where('ID', $memberId)->get()->getRow();
+    if (!$member) {
+        return $this->response->setJSON(['success' => false, 'message' => 'Data anggota tidak ditemukan.']);
+    }
+
+    $items = $db->table('collectionloanextends as ce')
+        ->select('ce.ID, ce.DateExtend, ce.DueDateExtend, col.NomorBarcode, col.CallNumber, cat.Title, cat.Author')
+        ->join('collections as col', 'col.ID = ce.Collection_id')
+        ->join('catalogs as cat', 'cat.ID = col.Catalog_id')
+        ->whereIn('ce.CollectionLoanItem_id', $itemIds)
+        ->orderBy('ce.ID', 'DESC')
+        ->groupBy('ce.CollectionLoanItem_id')
+        ->get()->getResult();
+
+    $emailLib = new \App\Libraries\EmailNotificationLibrary();
+    $result   = $emailLib->sendStrukPerpanjanganEmail($member, $items);
+
+    return $this->response->setJSON($result);
 }
 
 public function getExtendHistory()

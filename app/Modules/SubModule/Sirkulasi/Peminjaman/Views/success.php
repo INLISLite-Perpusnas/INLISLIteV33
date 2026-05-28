@@ -248,6 +248,11 @@ padding-top: 110px; }
         body { background: white !important; }
         .no-print { display: none !important; }
         .sp-inner-card { box-shadow: none !important; }
+        .sidebar-argon,
+        .argon-header,
+        .mobile-menu-toggle,
+        .app-page-title { display: none !important; }
+        .app-main__outer { margin-left: 0 !important; padding: 0 !important; }
     }
 </style>
 <?= $this->endSection('style'); ?>
@@ -403,6 +408,10 @@ padding-top: 110px; }
                         <button type="button" class="sp-btn sp-btn-success" onclick="window.print()">
                             <i class="fa fa-print"></i> Cetak Struk
                         </button>
+                        <button type="button" class="sp-btn sp-btn-primary" id="btn-send-email"
+                                onclick="kirimStrukEmail(<?= esc($loan->ID) ?>, '<?= esc($loan->Email) ?>')">
+                            <i class="fa fa-envelope"></i> Kirim ke Email
+                        </button>
                         <a href="<?= base_url('sirkulasi-peminjaman/create') ?>" class="sp-btn sp-btn-primary">
                             <i class="fa fa-plus"></i> Peminjaman Baru
                         </a>
@@ -457,6 +466,40 @@ padding-top: 110px; }
     window.addEventListener('beforeprint', function() {
         document.title = 'Struk Peminjaman - <?= esc($loan->ID) ?>';
     });
+
+    function kirimStrukEmail(loanId, email) {
+        const label = email ? 'ke <strong>' + email + '</strong>' : '(email tidak tersedia)';
+        if (!email) {
+            Swal.fire('Gagal', 'Email anggota tidak tersedia.', 'warning');
+            return;
+        }
+        Swal.fire({
+            title: 'Kirim Struk?',
+            html: 'Struk akan dikirim ' + label,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Kirim',
+            cancelButtonText: 'Batal',
+        }).then(result => {
+            if (!result.isConfirmed) return;
+            const btn = document.getElementById('btn-send-email');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Mengirim...';
+            fetch(`<?= base_url('sirkulasi-peminjaman/send-struk') ?>/` + loanId, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': '<?= csrf_hash() ?>' },
+            })
+            .then(r => r.json())
+            .then(data => {
+                Swal.fire(data.success ? 'Berhasil' : 'Gagal', data.message, data.success ? 'success' : 'error');
+            })
+            .catch(() => Swal.fire('Error', 'Terjadi kesalahan jaringan.', 'error'))
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa fa-envelope"></i> Kirim ke Email';
+            });
+        });
+    }
 
     // Auto-redirect 5 menit tanpa interaksi
     let countdown = 300;

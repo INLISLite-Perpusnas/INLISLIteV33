@@ -678,8 +678,14 @@ class SelfReturnApp {
             if (data.status === 'success') {
                 Swal.fire({
                     icon: 'success', title: 'Berhasil!', html: data.message,
-                    confirmButtonColor: '#1B3878', confirmButtonText: 'Tutup',
-                    timer: 4000, timerProgressBar: true
+                    showCancelButton: true,
+                    confirmButtonColor: '#1fba74', confirmButtonText: '<i class="fa fa-file-text"></i> Lihat Struk',
+                    cancelButtonColor: '#1B3878',  cancelButtonText: 'Tutup',
+                    timer: 6000, timerProgressBar: true
+                }).then(result => {
+                    if (result.isConfirmed && data.struk_url) {
+                        window.location.href = data.struk_url;
+                    }
                 });
                 this.booksToReturn     = [];
                 this.currentMemberId   = null;

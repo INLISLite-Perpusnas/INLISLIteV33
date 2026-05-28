@@ -11,6 +11,8 @@ $routes->group('sirkulasi-pengembalian', ['namespace' => 'Pengembalian\Controlle
 	$subroutes->get('get-jenis-pelanggaran', 'Pengembalian::getJenisPelanggaran');
 	$subroutes->get('get-jenis-denda', 'Pengembalian::getJenisDenda');
 	$subroutes->add('getReturnHistory', 'Pengembalian::getReturnHistory');
+	$subroutes->get('success', 'Pengembalian::success');
+	$subroutes->post('send-struk', 'Pengembalian::sendStruk');
 });
 
 $routes->group('api/sirkulasi-pengembalian', ['namespace' => 'Pengembalian\Controllers\Api'], function ($subroutes) {

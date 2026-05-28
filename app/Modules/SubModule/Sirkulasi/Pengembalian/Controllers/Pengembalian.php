@@ -182,6 +182,7 @@ class Pengembalian extends \Base\Controllers\BaseController
         $returnDate       = date('Y-m-d H:i:s');
         $returnedCount    = 0;
         $violationCount   = 0;
+        $totalDenda       = 0;
         $collectionLoanId = null;
         $memberId         = null;
 
@@ -239,6 +240,7 @@ class Pengembalian extends \Base\Controllers\BaseController
                     'CreateTerminal'        => $this->request->getIPAddress()
                 ]);
 
+                $totalDenda += $jumlahDenda;
                 $violationCount++;
             }
 
@@ -266,10 +268,19 @@ class Pengembalian extends \Base\Controllers\BaseController
             $msg .= "<br><small>&#9888; $violationCount pelanggaran keterlambatan telah dicatat.</small>";
         }
 
+        // Store minimal struk data in session for the success page
+        session()->set('struk_pengembalian', [
+            'item_ids'        => $itemIds,
+            'violation_count' => $violationCount,
+            'total_denda'     => $totalDenda,
+            'return_date'     => $returnDate,
+        ]);
+
         return $this->response->setJSON([
-            'status'  => 'success',
-            'message' => $msg,
-            'data'    => ['member_id' => $memberId, 'returned_count' => $returnedCount, 'violation_count' => $violationCount]
+            'status'    => 'success',
+            'message'   => $msg,
+            'struk_url' => base_url('sirkulasi-pengembalian/success'),
+            'data'      => ['member_id' => $memberId, 'returned_count' => $returnedCount, 'violation_count' => $violationCount]
         ]);
 
     } catch (\Exception $e) {
@@ -277,6 +288,65 @@ class Pengembalian extends \Base\Controllers\BaseController
     }
 }
 
+
+    public function sendStruk(): \CodeIgniter\HTTP\ResponseInterface
+    {
+        $itemIds  = json_decode($this->request->getPost('item_ids') ?? '[]', true);
+        $memberId = (int) $this->request->getPost('member_id');
+
+        if (empty($itemIds) || !$memberId) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Data tidak lengkap.']);
+        }
+
+        $member = $this->db->table('members')->where('ID', $memberId)->get()->getRow();
+        if (!$member) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Data anggota tidak ditemukan.']);
+        }
+
+        $items = $this->db->table('collectionloanitems as cli')
+            ->select('cli.ID, cli.DueDate, cli.ActualReturn, cli.LateDays, col.NomorBarcode, col.CallNumber, cat.Title, cat.Author')
+            ->join('collections as col', 'col.ID = cli.Collection_id')
+            ->join('catalogs as cat', 'cat.ID = col.Catalog_id')
+            ->whereIn('cli.ID', $itemIds)
+            ->get()->getResult();
+
+        $emailLib = new \App\Libraries\EmailNotificationLibrary();
+        $result   = $emailLib->sendStrukPengembalianEmail($member, $items);
+
+        return $this->response->setJSON($result);
+    }
+
+    public function success()
+    {
+        $struk = session()->get('struk_pengembalian');
+        if (empty($struk)) {
+            return redirect()->to('sirkulasi-pengembalian/create');
+        }
+        session()->remove('struk_pengembalian');
+
+        $items = $this->db->table('collectionloanitems as cli')
+            ->select('cli.ID, cli.DueDate, cli.ActualReturn, cli.LateDays, cli.CollectionLoan_id, cli.member_id, col.NomorBarcode, col.CallNumber, cat.Title, cat.Author')
+            ->join('collections as col', 'col.ID = cli.Collection_id')
+            ->join('catalogs as cat', 'cat.ID = col.Catalog_id')
+            ->whereIn('cli.ID', $struk['item_ids'])
+            ->get()->getResult();
+
+        $member = null;
+        if (!empty($items)) {
+            $member = $this->db->table('members')
+                ->where('ID', $items[0]->member_id)
+                ->get()->getRow();
+        }
+
+        $this->data['title']           = 'Struk Pengembalian';
+        $this->data['member']          = $member;
+        $this->data['items']           = $items;
+        $this->data['return_date']     = $struk['return_date'];
+        $this->data['violation_count'] = $struk['violation_count'];
+        $this->data['total_denda']     = $struk['total_denda'];
+
+        return view('Pengembalian\Views\success', $this->data);
+    }
 
 	public function getReturnHistory()
 	{

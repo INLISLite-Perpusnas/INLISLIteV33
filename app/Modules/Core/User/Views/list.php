@@ -49,6 +49,11 @@ $slug = $request->getGet('slug');
 	</div>
 
 	<ul class="body-tabs body-tabs-layout tabs-animated body-tabs-animated nav">
+		<li class="nav-item">
+			<a class="btn-header-argon <?= ($slug === 'semua') ? 'active' : '' ?>" href="<?= base_url('user/index?slug=semua') ?>">
+				<span>SEMUA</span>
+			</a>
+		</li>
 		<?php foreach (get_groups() as $group) : ?>
 			<li class="nav-item">
 				<a class="btn-header-argon <?= ($slug == $group->name) ? 'active' : '' ?>" href="<?= base_url('user/index?slug=' . $group->name) ?>">

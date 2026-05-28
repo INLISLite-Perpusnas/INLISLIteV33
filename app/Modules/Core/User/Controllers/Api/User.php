@@ -58,11 +58,13 @@ class User extends \Base\Controllers\BaseResourceController
 
 		$db = db_connect('default');
 		$builder = $db->table('users as a')
-			->select('a.id, a.id as action, a.username,a.email, concat(a.first_name, " ", a.last_name) as full_name, a.first_name, a.last_name, a.active, a.updated_at, a.id as group_id')
-			->like('a.category', $slug);
-			// dd($builder->get()->getResult());
+			->select('a.id, a.id as action, a.username,a.email, concat(a.first_name, " ", a.last_name) as full_name, a.first_name, a.last_name, a.active, a.updated_at, a.id as group_id');
 
-		if (empty($slug)) {
+		if ($slug === 'semua') {
+			// no filter — show all users
+		} elseif (!empty($slug)) {
+			$builder->like('a.category', $slug);
+		} else {
 			$builder->where('id <', 0);
 		}
 
