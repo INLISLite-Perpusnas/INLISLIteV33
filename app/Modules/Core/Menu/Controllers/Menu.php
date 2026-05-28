@@ -170,7 +170,7 @@ class Menu extends \Base\Controllers\BaseController
                     reloadPermission();
                          $this->session->setFlashdata('swal_icon', 'success');
                         $this->session->setFlashdata('swal_title', 'Berhasil');
-                        $this->session->setFlashdata('swal_text', 'Eksemplar berhasil ditambah');
+                        $this->session->setFlashdata('swal_text', 'Menu berhasil ditambah');
                     return redirect()->to('/menu?slug=' . $slug);
                 } else {
                     $this->session->setFlashdata('toastr_msg', 'Menu gagal disimpan');

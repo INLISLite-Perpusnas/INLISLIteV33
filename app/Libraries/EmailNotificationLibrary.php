@@ -494,7 +494,7 @@ class EmailNotificationLibrary
 
     private function buildStrukPerpanjanganTemplate(object $member, array $items): string
     {
-        $appName    = env('app.name', 'Perpustakaan Digital');
+        $appName    =  $this->settingModel->where('Name', 'NamaPerpustakaan')->first()->Value ?? 'Perpustakaan Mitra';
         $extendDate = date('d F Y H:i');
         $totalBooks = count($items);
 

@@ -244,14 +244,23 @@ public function success()
 
     $db = db_connect();
 
-    $items = $db->table('collectionloanextends as ce')
-        ->select('ce.ID, ce.DateExtend, ce.DueDateExtend, ce.Member_id, col.NomorBarcode, col.CallNumber, cat.Title, cat.Author')
-        ->join('collections as col', 'col.ID = ce.Collection_id')
-        ->join('catalogs as cat', 'cat.ID = col.Catalog_id')
-        ->whereIn('ce.CollectionLoanItem_id', $struk['item_ids'])
-        ->orderBy('ce.ID', 'DESC')
-        ->groupBy('ce.CollectionLoanItem_id')
-        ->get()->getResult();
+    // Get the latest extend record per item (MAX ID per CollectionLoanItem_id)
+    $maxIds = $db->table('collectionloanextends')
+        ->select('MAX(ID) as max_id')
+        ->whereIn('CollectionLoanItem_id', $struk['item_ids'])
+        ->groupBy('CollectionLoanItem_id')
+        ->get()->getResultArray();
+    $maxIdList = array_column($maxIds, 'max_id');
+
+    $items = [];
+    if (!empty($maxIdList)) {
+        $items = $db->table('collectionloanextends as ce')
+            ->select('ce.ID, ce.DateExtend, ce.DueDateExtend, ce.Member_id, col.NomorBarcode, col.CallNumber, cat.Title, cat.Author')
+            ->join('collections as col', 'col.ID = ce.Collection_id')
+            ->join('catalogs as cat', 'cat.ID = col.Catalog_id')
+            ->whereIn('ce.ID', $maxIdList)
+            ->get()->getResult();
+    }
 
     $member = null;
     if (!empty($items)) {
@@ -282,14 +291,22 @@ public function sendStruk(): \CodeIgniter\HTTP\ResponseInterface
         return $this->response->setJSON(['success' => false, 'message' => 'Data anggota tidak ditemukan.']);
     }
 
-    $items = $db->table('collectionloanextends as ce')
-        ->select('ce.ID, ce.DateExtend, ce.DueDateExtend, col.NomorBarcode, col.CallNumber, cat.Title, cat.Author')
-        ->join('collections as col', 'col.ID = ce.Collection_id')
-        ->join('catalogs as cat', 'cat.ID = col.Catalog_id')
-        ->whereIn('ce.CollectionLoanItem_id', $itemIds)
-        ->orderBy('ce.ID', 'DESC')
-        ->groupBy('ce.CollectionLoanItem_id')
-        ->get()->getResult();
+    $maxIds = $db->table('collectionloanextends')
+        ->select('MAX(ID) as max_id')
+        ->whereIn('CollectionLoanItem_id', $itemIds)
+        ->groupBy('CollectionLoanItem_id')
+        ->get()->getResultArray();
+    $maxIdList = array_column($maxIds, 'max_id');
+
+    $items = [];
+    if (!empty($maxIdList)) {
+        $items = $db->table('collectionloanextends as ce')
+            ->select('ce.ID, ce.DateExtend, ce.DueDateExtend, col.NomorBarcode, col.CallNumber, cat.Title, cat.Author')
+            ->join('collections as col', 'col.ID = ce.Collection_id')
+            ->join('catalogs as cat', 'cat.ID = col.Catalog_id')
+            ->whereIn('ce.ID', $maxIdList)
+            ->get()->getResult();
+    }
 
     $emailLib = new \App\Libraries\EmailNotificationLibrary();
     $result   = $emailLib->sendStrukPerpanjanganEmail($member, $items);
