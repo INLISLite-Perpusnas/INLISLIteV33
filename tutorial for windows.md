@@ -64,7 +64,7 @@ Pastikan perangkat Anda memenuhi spesifikasi berikut sebelum melanjutkan:
 ## Langkah 5 — Start All
 
 1. Di panel Laragon, klik tombol **Start All**
-2. Tunggu beberapa detik hingga indikator **Apache** dan **MySQL** berubah menjadi **hijau**
+2. Tunggu beberapa detik hingga indikator **Nginx** dan **MySQL** berubah menjadi **hijau**
 
 ---
 
