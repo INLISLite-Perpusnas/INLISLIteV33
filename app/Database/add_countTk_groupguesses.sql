@@ -1,0 +1,2 @@
+ALTER TABLE `groupguesses`
+ADD COLUMN `CountTk` INT NOT NULL DEFAULT 0 AFTER `CountSD`;

@@ -773,13 +773,24 @@
 
 				<div class="form-row-4">
 					<div class="form-group count-input">
-						<label for="CountSD">SD</label>
-						<input type="number" 
-							   class="form-control pendidikan-count" 
-							   name="CountSD" 
-							   id="CountSD" 
+						<label for="CountTk">TK</label>
+						<input type="number"
+							   class="form-control pendidikan-count"
+							   name="CountTk"
+							   id="CountTk"
 							   placeholder="0"
-							   value="<?= old('CountSD', 0) ?>" 
+							   value="<?= old('CountTk', 0) ?>"
+							   min="0">
+					</div>
+
+					<div class="form-group count-input">
+						<label for="CountSD">SD</label>
+						<input type="number"
+							   class="form-control pendidikan-count"
+							   name="CountSD"
+							   id="CountSD"
+							   placeholder="0"
+							   value="<?= old('CountSD', 0) ?>"
 							   min="0">
 					</div>
 

@@ -340,6 +340,14 @@ public function rombongan()
 				'greater_than_equal_to' => 'Jumlah Perempuan tidak boleh negatif',
 			],
 		],
+		'CountTk' => [
+			'label'  => 'Jumlah TK',
+			'rules'  => 'permit_empty|integer|greater_than_equal_to[0]',
+			'errors' => [
+				'integer' => 'Jumlah TK harus berupa angka',
+				'greater_than_equal_to' => 'Jumlah TK tidak boleh negatif',
+			],
+		],
 	]);
 
 	if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
@@ -373,6 +381,7 @@ public function rombongan()
 				'CountLainnya' => (int)($this->request->getPost('CountLainnya') ?: 0),
 				
 				// Education counts
+				'CountTk' => (int)($this->request->getPost('CountTk') ?: 0),
 				'CountSD' => (int)($this->request->getPost('CountSD') ?: 0),
 				'CountSMP' => (int)($this->request->getPost('CountSMP') ?: 0),
 				'CountSMA' => (int)($this->request->getPost('CountSMA') ?: 0),
@@ -418,8 +427,8 @@ public function rombongan()
 			}
 			
 			// Check education total
-			$educationTotal = $save_data['CountSD'] + $save_data['CountSMP'] + $save_data['CountSMA'] + 
-							 $save_data['CountD1'] + $save_data['CountD2'] + $save_data['CountD3'] + 
+			$educationTotal = $save_data['CountTk'] + $save_data['CountSD'] + $save_data['CountSMP'] + $save_data['CountSMA'] +
+							 $save_data['CountD1'] + $save_data['CountD2'] + $save_data['CountD3'] +
 							 $save_data['CountS1'] + $save_data['CountS2'] + $save_data['CountS3'];
 			
 			if ($educationTotal > $totalPersonel) {

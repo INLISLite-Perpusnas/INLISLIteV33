@@ -232,7 +232,7 @@
             <?php else: ?>
                 <div class="col-12 text-center py-5">
                     <i class="fa-solid fa-book-open fa-3x text-secondary opacity-50 mb-3"></i>
-                    <p class="text-secondary">Koleksi buku sedang dimuat...</p>
+                    <p class="text-secondary">Koleksi buku masih belum tersedia</p>
                 </div>
             <?php endif; ?>
         </div>
