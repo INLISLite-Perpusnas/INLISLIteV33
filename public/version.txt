@@ -1,1 +1,2 @@
 inlislite33 version 1 28052026
+inlislite33 version 1 03062026 (fix detail stockopname)
