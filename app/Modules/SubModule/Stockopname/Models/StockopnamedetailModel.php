@@ -57,7 +57,37 @@ class StockopnamedetailModel extends \Base\Models\DataModel
     /**
      * Get detail by ID with joins
      */
- 
+    public function getDetailById($id)
+    {
+        return $this->db->table('stockopnamedetail sd')
+            ->select('
+                sd.*,
+                c.NomorBarcode,
+                c.CallNumber,
+                cat.Title,
+                cat.Author,
+                cat.Publisher,
+                prevLoc.Name as PrevLocationName,
+                currLoc.Name as CurrentLocationName,
+                prevStatus.Name as PrevStatusName,
+                currStatus.Name as CurrentStatusName,
+                prevRule.Name as PrevRuleName,
+                currRule.Name as CurrentRuleName
+            ')
+            ->join('collections c', 'sd.CollectionID = c.id', 'left')
+            ->join('catalogs cat', 'c.catalog_id = cat.id', 'left')
+            ->join('locations prevLoc', 'sd.PrevLocationID = prevLoc.ID', 'left')
+            ->join('locations currLoc', 'sd.CurrentLocationID = currLoc.ID', 'left')
+            ->join('collectionstatus prevStatus', 'sd.PrevStatusID = prevStatus.ID', 'left')
+            ->join('collectionstatus currStatus', 'sd.CurrentStatusID = currStatus.ID', 'left')
+            ->join('collectionrules prevRule', 'sd.PrevCollectionRuleID = prevRule.ID', 'left')
+            ->join('collectionrules currRule', 'sd.CurrentCollectionRuleID = currRule.ID', 'left')
+            ->where('sd.ID', $id)
+            ->get()
+            ->getRowArray();
+    }
+
+
 
     /**
      * Get collections that are not yet in stockopname

@@ -532,13 +532,13 @@ class Stockopname extends \Base\Controllers\BaseController
 
             $result = $this->stockopnamedetailModel->insert($detailData);
 
-                // Get the inserted detail with joins for response
-            
-                
-                return $this->response->setJSON([
-                    'status' => 'success',
-                    'message' => 'Koleksi berhasil ditambahkan ke stockopname.',
-                ]);
+            $insertedDetail = $this->stockopnamedetailModel->getDetailById($nextId);
+
+            return $this->response->setJSON([
+                'status' => 'success',
+                'message' => 'Koleksi berhasil ditambahkan ke stockopname.',
+                'data' => $insertedDetail,
+            ]);
         } catch (\Exception $e) {
             return $this->response->setJSON([
                 'status' => 'error',

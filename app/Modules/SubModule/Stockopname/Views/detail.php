@@ -555,9 +555,15 @@
         "hideMethod": "fadeOut"
     };
 
+    const locationsData = <?= json_encode(array_map(function($loc){ return ['ID' => $loc->ID, 'Name' => $loc->Name]; }, $locations)) ?>;
+    const statusesData  = <?= json_encode(array_map(function($st){ return ['ID' => $st->ID,  'Name' => $st->Name]; }, $statuses)) ?>;
+    const rulesData     = <?= json_encode(array_map(function($r){ return ['ID' => $r->ID,   'Name' => $r->Name]; }, $rules)) ?>;
+
+    let dtTable;
+
     $(document).ready(function() {
         // Inisialisasi DataTables untuk tabel detail
-        $('#detailTable').DataTable({
+        dtTable = $('#detailTable').DataTable({
             pageLength: 25,
             scrollX: true,
             scrollCollapse: true,
@@ -677,10 +683,10 @@
             dataType: 'json',
             success: function(response) {
                 if (response.status === 'success') {
-                    Swal.fire({ icon: 'success', title: 'Berhasil', text: response.message, timer: 1500, showConfirmButton: false });
-                    addNewRowToTable(response.data);
-                    $('#barcodeInput').val('').focus();
-                    updateSummary();
+                    Swal.fire({ icon: 'success', title: 'Berhasil', text: response.message, timer: 1500, showConfirmButton: false })
+                        .then(function() {
+                            location.reload();
+                        });
                 } else {
                     Swal.fire({ icon: 'error', title: 'Gagal', text: response.message });
                     $('#barcodeInput').select();
@@ -705,53 +711,60 @@
 
     // Add new row to table
     function addNewRowToTable(data) {
-        // Remove "no data" row if exists
-        if ($('#detailTable tbody tr td[colspan="9"]').length > 0) {
-            $('#detailTable tbody').empty();
+        const buildOptions = function(items, selectedId) {
+            return items.map(function(item) {
+                return '<option value="' + item.ID + '"' + (item.ID == selectedId ? ' selected' : '') + '>' + item.Name + '</option>';
+            }).join('');
+        };
+
+        const rowCount = dtTable ? dtTable.rows().count() + 1 : ($('#detailTable tbody tr').length + 1);
+
+        const $newRow = $(`<tr id="row-${data.ID}" class="table-success">
+            <td>${rowCount}</td>
+            <td>
+                <strong>${data.NomorBarcode || ''}</strong><br>
+                <small class="text-muted">${data.CallNumber || ''}</small>
+            </td>
+            <td>
+                <strong>${data.Title || ''}</strong><br>
+                <small class="text-muted">${data.Publisher || ''}</small>
+            </td>
+            <td>${data.Author || ''}</td>
+            <td>
+                <select class="form-select form-select-sm select-lokasi"
+                        data-detail-id="${data.ID}"
+                        data-field="current_location_id">
+                    ${buildOptions(locationsData, data.CurrentLocationID)}
+                </select>
+            </td>
+            <td>
+                <select class="form-select form-select-sm select-status"
+                        data-detail-id="${data.ID}"
+                        data-field="current_status_id">
+                    ${buildOptions(statusesData, data.CurrentStatusID)}
+                </select>
+            </td>
+            <td>
+                <select class="form-select form-select-sm select-rule"
+                        data-detail-id="${data.ID}"
+                        data-field="current_collection_rule_id">
+                    ${buildOptions(rulesData, data.CurrentCollectionRuleID)}
+                </select>
+            </td>
+            <td>
+                ${new Date().toLocaleDateString('id-ID')} ${new Date().toLocaleTimeString('id-ID')}<br>
+                <small class="text-muted">oleh User ${data.CreateBy || ''}</small>
+            </td>
+        </tr>`);
+
+        if (dtTable) {
+            dtTable.row.add($newRow[0]).draw(false);
+        } else {
+            $('#detailTable tbody').prepend($newRow);
         }
 
-        const newRow = `
-                <tr id="row-${data.ID}" class="table-success">
-                    <td>${$('#detailTable tbody tr').length + 1}</td>
-                    <td>
-                        <strong>${data.NomorBarcode}</strong>
-                        <br>
-                        <small class="text-muted">${data.CallNumber || ''}</small>
-                    </td>
-                    <td>
-                        <strong>${data.Title}</strong>
-                        <br>
-                        <small class="text-muted">${data.Publisher || ''}</small>
-                    </td>
-                    <td>${data.Author || ''}</td>
-                    <td>${data.CurrentLocationName || ''}</td>
-                    <td><span class="badge bg-info status-badge">${data.CurrentStatusName || ''}</span></td>
-                    <td>${data.CurrentRuleName || ''}</td>
-                    <td>
-                        ${new Date().toLocaleDateString('id-ID')} ${new Date().toLocaleTimeString('id-ID')}
-                        <br>
-                        <small class="text-muted">oleh User ${data.CreateBy}</small>
-                    </td>
-                    <td>
-                        <button class="btn btn-update btn-sm me-1" 
-                                onclick="editDetail(${data.ID})"
-                                title="Edit">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-delete btn-sm" 
-                                onclick="deleteDetail(${data.ID})"
-                                title="Hapus">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
-
-        $('#detailTable tbody').prepend(newRow);
-
-        // Remove highlight after 3 seconds
-        setTimeout(() => {
-            $(`#row-${data.ID}`).removeClass('table-success');
+        setTimeout(function() {
+            $('#row-' + data.ID).removeClass('table-success');
         }, 3000);
     }
 
