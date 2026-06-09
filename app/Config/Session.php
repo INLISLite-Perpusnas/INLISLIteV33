@@ -99,4 +99,20 @@ class Session extends BaseConfig
      * DB Group for the database session.
      */
     public ?string $DBGroup = null;
+
+    /**
+     * Interval (in microseconds) to wait between lock acquisition retries
+     * for database and Redis session drivers.
+     *
+     * @var int
+     */
+    public int $lockRetryInterval = 100_000;
+
+    /**
+     * Maximum number of lock acquisition retries for database and Redis
+     * session drivers. Set to 0 to retry indefinitely.
+     *
+     * @var int
+     */
+    public int $lockMaxRetries = 300;
 }

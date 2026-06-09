@@ -110,4 +110,29 @@ class Routing extends BaseRouting
      * @var array [ uri_segment => namespace ]
      */
     public array $moduleRoutes = [];
+
+    /**
+     * If TRUE, the system will attempt to match the URI against
+     * Controllers by treating each segment as a namespace, class or method
+     * name based on PHP 8 Attributes (for Auto Routing Improved).
+     *
+     * @var bool
+     */
+    public bool $useControllerAttributes = true;
+
+    /**
+     * If TRUE, multiple URI segments can be passed as a single parameter
+     * to controllers (for Auto Routing Improved).
+     *
+     * @var bool
+     */
+    public bool $multipleSegmentsOneParam = false;
+
+    /**
+     * If TRUE, the system will attempt to match the URI against
+     * controllers by converting the URI segments to camelCase.
+     *
+     * @var bool
+     */
+    public bool $translateUriToCamelCase = false;
 }

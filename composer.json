@@ -26,7 +26,8 @@
     "tecnickcom/tcpdf": "^6.6",
     "scriptotek/marc": "^3.0",
     "endroid/qr-code": "^5.1",
-    "twbs/bootstrap": "5.0.2"
+    "twbs/bootstrap": "5.0.2",
+    "phpoffice/phpword": "^1.4"
   },
   "require-dev": {
     "fakerphp/faker": "^1.9",

@@ -60,6 +60,19 @@ class App extends BaseConfig
 
     /**
      * --------------------------------------------------------------------------
+     * Permitted URI Characters
+     * --------------------------------------------------------------------------
+     *
+     * This permits you to specify with a regular expression which characters
+     * are permitted within your URLs. When someone tries to submit a URL
+     * with disallowed characters they will get a warning message.
+     *
+     * @var string
+     */
+    public string $permittedURIChars = 'a-z 0-9~%.:_\-';
+
+    /**
+     * --------------------------------------------------------------------------
      * Default Locale
      * --------------------------------------------------------------------------
      *

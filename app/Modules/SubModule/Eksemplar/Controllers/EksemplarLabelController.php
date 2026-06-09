@@ -2,10 +2,14 @@
 
 namespace Eksemplar\Controllers;
 
+use PhpOffice\PhpWord\PhpWord;
+use PhpOffice\PhpWord\IOFactory;
+use PhpOffice\PhpWord\Shared\Converter;
+
 /**
  * EksemplarLabelController
  *
- * Menangani cetak label eksemplar.
+ * Menangani cetak label eksemplar (PDF dan Word DOCX).
  */
 class EksemplarLabelController extends \Base\Controllers\BaseController
 {
@@ -38,10 +42,11 @@ class EksemplarLabelController extends \Base\Controllers\BaseController
             return redirect()->back();
         }
 
-        $post      = $this->request->getPost();
-        $template  = $post['eksemplar_tpl'];
-        $paperSize = $post['paper_size'] ?? 'a4';
-        $idsArr    = array_filter(
+        $post         = $this->request->getPost();
+        $template     = $post['eksemplar_tpl'];
+        $paperSize    = $post['paper_size'] ?? 'a4';
+        $outputFormat = $post['output_format'] ?? 'pdf';
+        $idsArr       = array_filter(
             array_map('intval', explode(',', preg_replace('/[^0-9,]/', '', $post['eksemplar_ids']))),
             fn($id) => $id > 0
         );
@@ -100,8 +105,7 @@ class EksemplarLabelController extends \Base\Controllers\BaseController
                 }
             }
         }
-      
-   
+
         if (empty($eksemplarData)) {
             $this->session->setFlashdata('swal_icon',  'error');
             $this->session->setFlashdata('swal_title', 'Gagal');
@@ -132,6 +136,132 @@ class EksemplarLabelController extends \Base\Controllers\BaseController
             ];
         }
 
+        if ($outputFormat === 'word') {
+            return $this->_generateWordDoc($LabelData);
+        }
+
         return view('Eksemplar\Views\template\\' . $template, ['LabelData' => $LabelData]);
+    }
+
+    private function _generateWordDoc(array $LabelData)
+    {
+        $phpWord = new PhpWord();
+        $phpWord->setDefaultFontName('Arial');
+        $phpWord->setDefaultFontSize(10);
+
+        $section = $phpWord->addSection([
+            'marginTop'    => Converter::cmToTwip(1.5),
+            'marginBottom' => Converter::cmToTwip(1.5),
+            'marginLeft'   => Converter::cmToTwip(1.5),
+            'marginRight'  => Converter::cmToTwip(1.5),
+        ]);
+
+        // Available width ≈ 18cm → 2 kolom, masing-masing ~8.8cm
+        $cellWidth = (int) Converter::cmToTwip(8.8);
+
+        $tableStyle = [
+            'borderSize'  => 6,
+            'borderColor' => 'CCCCCC',
+            'cellMargin'  => 80,
+        ];
+        $phpWord->addTableStyle('LabelTable', $tableStyle);
+        $table = $section->addTable('LabelTable');
+
+        $tempFiles = [];
+        $chunks    = array_chunk($LabelData, 2);
+
+        foreach ($chunks as $row) {
+            $table->addRow(Converter::cmToTwip(4));
+
+            foreach ($row as $label) {
+                $cell = $table->addCell($cellWidth, [
+                    'borderSize'  => 6,
+                    'borderColor' => 'CCCCCC',
+                    'valign'      => 'center',
+                ]);
+
+                // Nama perpustakaan
+                $cell->addText(
+                    htmlspecialchars($label['NamaPerpustakaan']),
+                    ['bold' => true, 'size' => 9, 'color' => '000000'],
+                    ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 40]
+                );
+
+                // Judul
+                $cell->addText(
+                    htmlspecialchars($label['Title']),
+                    ['size' => 8, 'color' => '333333'],
+                    ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 40]
+                );
+
+                // Gambar barcode/QR
+                $tmpImg = $this->_base64ToTempFile($label['BarcodePNG']);
+                if ($tmpImg) {
+                    $tempFiles[] = $tmpImg;
+                    $cell->addImage($tmpImg, [
+                        'width'             => 140,
+                        'height'            => 35,
+                        'alignment'         => \PhpOffice\PhpWord\SimpleType\Jc::CENTER,
+                        'marginTop'         => 2,
+                        'marginBottom'      => 2,
+                        'wrappingStyle'     => 'inline',
+                    ]);
+                }
+
+                // Nomor barcode
+                $cell->addText(
+                    '*' . htmlspecialchars($label['Barcode']) . '*',
+                    ['size' => 8, 'color' => '555555'],
+                    ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 40]
+                );
+
+                // Nomor panggil
+                $cell->addText(
+                    htmlspecialchars($label['CallNumber']),
+                    ['bold' => true, 'size' => 12, 'color' => '000000'],
+                    ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER]
+                );
+            }
+
+            // Tambah sel kosong jika jumlah label ganjil
+            if (count($row) < 2) {
+                $table->addCell($cellWidth);
+            }
+        }
+
+        // Simpan ke file temp lalu stream ke browser
+        $tmpDoc = tempnam(sys_get_temp_dir(), 'label_docx_') . '.docx';
+        $writer = IOFactory::createWriter($phpWord, 'Word2007');
+        $writer->save($tmpDoc);
+
+        // Hapus file gambar sementara
+        foreach ($tempFiles as $f) {
+            @unlink($f);
+        }
+
+        $response = service('response');
+        $response->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        $response->setHeader('Content-Disposition', 'attachment; filename="label-eksemplar.docx"');
+        $response->setHeader('Cache-Control', 'max-age=0');
+        $response->setBody(file_get_contents($tmpDoc));
+
+        @unlink($tmpDoc);
+
+        return $response;
+    }
+
+    private function _base64ToTempFile(string $dataUri): ?string
+    {
+        $prefix = 'data:image/png;base64,';
+        if (strpos($dataUri, $prefix) !== 0) {
+            return null;
+        }
+        $binary = base64_decode(substr($dataUri, strlen($prefix)));
+        if ($binary === false) {
+            return null;
+        }
+        $path = tempnam(sys_get_temp_dir(), 'label_img_') . '.png';
+        file_put_contents($path, $binary);
+        return $path;
     }
 }

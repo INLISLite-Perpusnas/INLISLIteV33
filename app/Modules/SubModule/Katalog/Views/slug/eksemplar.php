@@ -184,6 +184,17 @@ $paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
                         </select>
                     </div>
 
+                    <!-- Format Output -->
+                    <div class="input-group" style="width:200px; flex-shrink:0;">
+                        <div class="input-group-prepend">
+                            <span class="btn btn-secondary">Format</span>
+                        </div>
+                        <select class="form-control" id="output_format" name="output_format">
+                            <option value="pdf">PDF</option>
+                            <option value="word">Word (DOCX)</option>
+                        </select>
+                    </div>
+
                 </div>
 
                 <!-- Info ringkas pilihan aktif -->
@@ -384,9 +395,10 @@ $(document).ready(function () {
 
     // ── Tombol Proses ─────────────────────────────────────────────────────
     $('#btnProcess2').on('click', function () {
-        var action     = $('#action').val();
-        var paperSize  = $('#paper_size').val();
-        var labelModel = $('#label_model').val();
+        var action       = $('#action').val();
+        var paperSize    = $('#paper_size').val();
+        var labelModel   = $('#label_model').val();
+        var outputFormat = $('#output_format').val() || 'pdf';
 
         // Validasi aksi
         if (!action) {
@@ -434,8 +446,9 @@ $(document).ready(function () {
         if (action === 'cetak-label') {
             // eksemplar_tpl = key template (misal: cetak-label-a4-2, cetak-label-lr3, dst.)
             // Controller akan memetakan key ini ke file view yang sesuai
-            form.append($('<input>', { type: 'hidden', name: 'eksemplar_tpl', value: labelModel  }));
-            form.append($('<input>', { type: 'hidden', name: 'paper_size',    value: paperSize   }));
+            form.append($('<input>', { type: 'hidden', name: 'eksemplar_tpl',  value: labelModel   }));
+            form.append($('<input>', { type: 'hidden', name: 'paper_size',     value: paperSize    }));
+            form.append($('<input>', { type: 'hidden', name: 'output_format',  value: outputFormat }));
         }
 
         form.appendTo('body').submit();
