@@ -164,6 +164,7 @@ class AnggotaOnlineController extends \Base\Controllers\BaseController
             $userData = [
                 'username'      => $member->MemberNo,
                 'email'         => $member->Email ?? '',
+                'category'      => 'anggota',
                 'password_hash' => $this->password->hash($member->MemberNo),
                 'anggota'       => $member->ID,
                 'activate_hash' => bin2hex(random_bytes(16)),
