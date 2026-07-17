@@ -1,3 +1,6 @@
+# System masih banyak bug lebih baik tidak di rilis dahulu
+## bug terindikasi
+- keanggotaan (tidak ada input no anggota, dan identitas tidak wajib)
 # CodeIgniter 4 Application Starter
 
 ## What is CodeIgniter?
