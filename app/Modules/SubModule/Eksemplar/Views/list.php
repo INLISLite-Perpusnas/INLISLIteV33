@@ -300,18 +300,6 @@ $(document).ready(function () {
         dom: "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
                    "<'row'<'col-md-12'tr>>" +
                    "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
-                   
-            "pagingType": "full_numbers",
-            "oLanguage": {
-                "sSearch": "<i class='fa fa-search'></i> _INPUT_",
-                "sLengthMenu": "_MENU_",
-                "oPaginate": {
-                    "sNext": "<i class='fa fa-chevron-right'></i>",
-                    "sPrevious": "<i class='fa fa-chevron-left'></i>",
-                    "sLast": "<i class='fa fa-chevron-double-right'></i>",
-                    "sFirst": "<i class='fa fa-chevron-double-left'></i>",
-                }
-            },
         pagingType : 'full_numbers',
         oLanguage  : {
             sSearch    : "<i class='fa fa-search'></i> _INPUT_",
@@ -329,15 +317,15 @@ $(document).ready(function () {
                     searchable: false, // Wajib false
                     orderable: false },
             { data: 'ID',                  className: 'text-center', orderable: false },
-            { data: 'NomorBarcode',        className: 'text-left'   },
-            { data: 'TanggalPengadaan'                               },
-            { data: 'NoInduk'                                        },
-            { data: 'Catalog_id'                                     },
+            { data: 'NomorBarcode',        className: 'text-left',   searchable: true },
+            { data: 'TanggalPengadaan',                              searchable: true },
+            { data: 'NoInduk',                                       searchable: true },
+            { data: 'Catalog_id',                                    searchable: true },
             { data: 'ISDRM',               className: 'text-center', orderable: false },
             { data: 'IsQUARANTINE',        className: 'text-center', orderable: false },
             { data: 'IsOPAC',              className: 'text-center', searchable: false, orderable: false },
-            { data: 'StatusName',          className: 'text-center'  },
-            { data: 'LocationLibraryName', className: 'text-center'  },
+            { data: 'StatusName',          className: 'text-center', searchable: true },
+            { data: 'LocationLibraryName', className: 'text-center', searchable: true },
             { data: 'action',              className: 'text-center', orderable: false }
         ],
         drawCallback: function () {

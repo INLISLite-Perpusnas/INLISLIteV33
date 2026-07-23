@@ -380,6 +380,7 @@ class Stockopname extends \Base\Controllers\BaseController
     $totalDetails = $this->stockopnamedetailModel->getDetailCount($id);
     $offsetDetails = ($pageDetails - 1) * $perPageDetails;
     $details = $this->stockopnamedetailModel->getStockopnameDetails($id, $perPageDetails, $offsetDetails);
+   
     $detailsPager = $pager->makeLinks($pageDetails, $perPageDetails, $totalDetails, 'default_full', 0, 'details');
 
     // -- Pagination for Collections Not In Stockopname --

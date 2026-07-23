@@ -100,8 +100,10 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
         ->select('a.NomorBarcode, a.TanggalPengadaan, a.NoInduk, a.Catalog_id, a.IsOPAC, a.ISDRM, a.IsQUARANTINE, a.Status_id')
         ->select('cs.Name as StatusName')
 		->select('Loc.Name as LocationLibraryName')
+		->select('cat.Title')
         ->join('collectionstatus as cs', 'a.Status_id = cs.ID', 'left')
         ->join('location_library as Loc', 'a.Location_Library_id = Loc.ID', 'left')
+		->join('catalogs as cat', 'a.Catalog_id = cat.ID', 'left')
         ->where('a.IsQUARANTINE', $IsQUARANTINE)
 		->groupBy('a.ID', 'DESC');
 
@@ -111,6 +113,20 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 
     $dataTable = DataTable::of($builder)
         ->addNumbering('no')
+        ->onGlobalSearch('Catalog_id', function ($builder, $column, $search) {
+            $builder->orGroupStart()
+                ->orLike('cat.Title', $search)
+                ->orLike('cat.Author', $search)
+                ->orLike('cat.Publisher', $search)
+                ->groupEnd();
+        })
+        ->onSearch('Catalog_id', function ($builder, $column, $search) {
+            $builder->groupStart()
+                ->like('cat.Title', $search)
+                ->orLike('cat.Author', $search)
+                ->orLike('cat.Publisher', $search)
+                ->groupEnd();
+        })
         ->edit('ID', function ($row) {
             $html = '<input type="checkbox" class="check" name="ID[]" value="' . $row->ID . '">';
             return $html;
@@ -122,7 +138,8 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
         ->edit('Catalog_id', function ($row) {
             helper('reference');
             $catalog = get_ref_single('catalogs', 'ID=' . $row->Catalog_id, 'data');
-            $html = ($catalog->Title ?? "") . '<br>';
+            $title = !empty($row->Title) ? $row->Title : ($catalog->Title ?? "");
+            $html = $title . '<br>';
             $html .= '<b class="text-primary">' . ($catalog->Publikasi ?? "") . '</b><br>';
             return $html;
         })

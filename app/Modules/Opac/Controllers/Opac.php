@@ -1687,11 +1687,13 @@ public function browse()
         return implode(' ', $terms);
     }
 
-    public function bacaDigital($catalog_id)
-    {
+    public function bacaDigital($catalog_id){
+    
         helper('reference');
 
         $file = $this->fileModel->where('Catalog_id', $catalog_id)->first();
+      
+      
         if (!$file) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException('File digital tidak ditemukan');
         }
@@ -1739,7 +1741,7 @@ public function browse()
                 }
             }
         }
-
+         
         return redirect()->to(base_url('katalog/view_decrypted/' . encData($file->ID)));
     }
 

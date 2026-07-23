@@ -56,10 +56,10 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 {
     $db = db_connect();
     $builder = $db->table('collectionloans cl')
-        ->select('cli.ID, cli.ID as action')
+        ->select('cli.ID, cli.ID as action, cli.ID as action_notif')
         ->select('cli.CollectionLoan_id, cli.LoanDate, cli.DueDate, cli.ActualReturn, cli.LateDays')
         ->select('cl.UpdateDate')
-        ->select('col.NomorBarcode')
+        ->select('col.NomorBarcode, col.ISDRM')
         ->select('a.Title, a.PublishLocation, a.Publisher, a.PublishYear')
         ->select('m.Fullname, m.MemberNo')
         ->select('loc.Name as LocationLibrary')
@@ -112,6 +112,20 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 
     $dataTable = DataTable::of($builder)
         ->addNumbering('no')
+        ->onGlobalSearch('CollectionLoan_id', function ($builder, $column, $search) {
+            $builder->orGroupStart()
+                ->orLike('m.MemberNo', $search)
+                ->orLike('m.Fullname', $search)
+                ->orLike('cl.ID', $search)
+                ->groupEnd();
+        })
+        ->onSearch('CollectionLoan_id', function ($builder, $column, $search) {
+            $builder->groupStart()
+                ->like('m.MemberNo', $search)
+                ->orLike('m.Fullname', $search)
+                ->orLike('cl.ID', $search)
+                ->groupEnd();
+        })
         ->edit('CollectionLoan_id', function ($row) {
             $html =
                 '<div class="widget-content p-0">

@@ -23,7 +23,9 @@ class KatalogFileController extends \Base\Controllers\BaseController
 
     public function view_decrypted($ID)
     {
+        
         $id = decData($ID);
+      
         session()->set('one_key', $id);
 
         $file = $this->fileModel->find($id);

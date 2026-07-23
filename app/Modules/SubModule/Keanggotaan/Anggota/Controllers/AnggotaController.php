@@ -567,34 +567,48 @@ class AnggotaController extends \Base\Controllers\BaseController
     // ----------------------------------------------------------------
 
     public function delete(int $id = 0)
-    {
-        if (!is_allowed('anggota/delete')) {
-            $this->session->setFlashdata('swal_icon', 'error');
-            $this->session->setFlashdata('swal_title', 'Error');
-            $this->session->setFlashdata('swal_text', 'Maaf, Anda tidak memiliki akses');
-            return redirect()->to('anggota');
-        }
-
-        if (!$id) {
-            $this->session->setFlashdata('swal_icon', 'error');
-            $this->session->setFlashdata('swal_title', 'Error');
-            $this->session->setFlashdata('swal_text', 'Sorry you have to provide parameter (id)');
-            return redirect()->to('/anggota');
-        }
-
-        $anggotaDelete = $this->anggotaModel->delete($id);
-        if ($anggotaDelete) {
-            $this->session->setFlashdata('swal_icon', 'success');
-            $this->session->setFlashdata('swal_title', 'Berhasil');
-            $this->session->setFlashdata('swal_text', 'Data Anggota berhasil dihapus');
-            return redirect()->to('/anggota');
-        } else {
-            $this->session->setFlashdata('swal_icon', 'warning');
-            $this->session->setFlashdata('swal_title', 'Peringatan');
-            $this->session->setFlashdata('swal_text', lang('Anggota.info.failed_deleted'));
-            return redirect()->to('/anggota/delete/' . $id);
-        }
+{
+    if (!is_allowed('anggota/delete')) {
+        $this->session->setFlashdata('swal_icon', 'error');
+        $this->session->setFlashdata('swal_title', 'Error');
+        $this->session->setFlashdata('swal_text', 'Maaf, Anda tidak memiliki akses');
+        return redirect()->to('anggota');
     }
+
+    if (!$id) {
+        $this->session->setFlashdata('swal_icon', 'error');
+        $this->session->setFlashdata('swal_title', 'Error');
+        $this->session->setFlashdata('swal_text', 'Sorry you have to provide parameter (id)');
+        return redirect()->to('/anggota');
+    }
+
+    // Cek apakah anggota masih memiliki pinjaman aktif (LoanStatus = 'Loan')
+    $db = \Config\Database::connect();
+    $masihPinjam = $db->table('collectionloanitems')
+        ->where('member_id', $id)
+        ->where('LoanStatus', 'Loan')
+        ->countAllResults();
+
+    if ($masihPinjam > 0) {
+        $this->session->setFlashdata('swal_icon', 'error');
+        $this->session->setFlashdata('swal_title', 'Gagal Dihapus');
+        $this->session->setFlashdata('swal_text', 'Anggota ini masih memiliki ' . $masihPinjam . ' buku yang belum dikembalikan. Anggota tidak dapat dihapus sebelum pinjaman diselesaikan.');
+        return redirect()->to('/anggota');
+    }
+
+    $anggotaDelete = $this->anggotaModel->delete($id);
+    if ($anggotaDelete) {
+        $this->session->setFlashdata('swal_icon', 'success');
+        $this->session->setFlashdata('swal_title', 'Berhasil');
+        $this->session->setFlashdata('swal_text', 'Data Anggota berhasil dihapus');
+        return redirect()->to('/anggota');
+    } else {
+        $this->session->setFlashdata('swal_icon', 'warning');
+        $this->session->setFlashdata('swal_title', 'Peringatan');
+        $this->session->setFlashdata('swal_text', lang('Anggota.info.failed_deleted'));
+        return redirect()->to('/anggota/delete/' . $id);
+    }
+}
 
     // ----------------------------------------------------------------
     // STATUS
@@ -672,22 +686,52 @@ class AnggotaController extends \Base\Controllers\BaseController
     }
 
     public function hapus_permanen()
-    {
-        $IDs = $this->request->getvar('ID');
+{
+    $IDs = $this->request->getVar('ID');
 
-        if (!empty($IDs)) {
-            $this->anggotaModel->delete($IDs);
-            $this->session->setFlashdata('swal_icon', 'success');
-            $this->session->setFlashdata('swal_title', 'Berhasil');
-            $this->session->setFlashdata('swal_text', 'Anggota Berhasil dihapus permanen');
-        } else {
-            $this->session->setFlashdata('swal_icon', 'warning');
-            $this->session->setFlashdata('swal_title', 'Peringatan');
-            $this->session->setFlashdata('swal_text', 'Pilih Anggota yang akan dihapus permanen terlebih dahulu');
-        }
-
+    if (empty($IDs)) {
+        $this->session->setFlashdata('swal_icon', 'warning');
+        $this->session->setFlashdata('swal_title', 'Peringatan');
+        $this->session->setFlashdata('swal_text', 'Pilih Anggota yang akan dihapus permanen terlebih dahulu');
         return redirect()->back();
     }
+
+    // Normalisasi jadi array, karena $IDs bisa string tunggal atau comma-separated
+    $memberIds = is_array($IDs) ? $IDs : explode(',', $IDs);
+    $memberIds = array_filter(array_map('trim', $memberIds));
+
+    $db = \Config\Database::connect();
+
+    // Cek anggota yang masih punya pinjaman aktif (LoanStatus = 'Loan')
+    $anggotaMasihPinjam = $db->table('collectionloanitems')
+        ->select('collectionloanitems.member_id, member.FullName')
+        ->join('member', 'member.ID = collectionloanitems.member_id', 'left') // sesuaikan nama tabel & kolom member
+        ->whereIn('collectionloanitems.member_id', $memberIds)
+        ->where('collectionloanitems.LoanStatus', 'Loan')
+        ->groupBy('collectionloanitems.member_id')
+        ->get()
+        ->getResultArray();
+
+    if (!empty($anggotaMasihPinjam)) {
+        $namaAnggota = array_column($anggotaMasihPinjam, 'FullName');
+        // Kalau join gagal / nama null, fallback ke ID saja
+        $namaAnggota = array_filter($namaAnggota) ?: array_column($anggotaMasihPinjam, 'member_id');
+
+        $this->session->setFlashdata('swal_icon', 'error');
+        $this->session->setFlashdata('swal_title', 'Gagal Dihapus');
+        $this->session->setFlashdata('swal_html', 'Anggota berikut masih memiliki pinjaman buku yang belum dikembalikan:<br><br>' . implode('<br>', $namaAnggota) . '<br><br>Anggota tidak dapat dihapus sebelum pinjaman diselesaikan.');
+        return redirect()->back();
+    }
+
+    // Kalau semua ID aman (tidak ada pinjaman aktif), lanjut hapus
+    $this->anggotaModel->delete($memberIds);
+
+    $this->session->setFlashdata('swal_icon', 'success');
+    $this->session->setFlashdata('swal_title', 'Berhasil');
+    $this->session->setFlashdata('swal_text', 'Anggota Berhasil dihapus permanen');
+
+    return redirect()->back();
+}
 
     // ----------------------------------------------------------------
     // DEFAULTS (AJAX)

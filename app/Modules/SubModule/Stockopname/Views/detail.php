@@ -584,7 +584,7 @@
             },
             order: [],
             columnDefs: [
-                { orderable: false, targets: 0 },
+                { targets: [0, 4, 5, 6], orderable: false },
             ],
         });
 

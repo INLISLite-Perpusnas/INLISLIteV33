@@ -2,7 +2,6 @@
 
 namespace Anggota\Controllers;
 
-use Base\Models\BaseModel;
 use chillerlan\QRCode\{QRCode, QROptions};
 use Dompdf\Dompdf;
 
@@ -27,17 +26,6 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
 
     public function printanggota($id = null)
     {
-        $templateModel = new BaseModel('t_template');
-        $template = $templateModel->where('active', 1)->first();
-
-        if (empty($template)) {
-            echo "Tidak ada template untuk di cetak";
-            exit;
-        }
-
-        $bg = file_get_contents(ROOTPATH . 'public/uploads/master-template/' . $template->file_image);
-        $this->data['bg_base64'] = 'data:image/png;base64,' . base64_encode($bg);
-
         $db = db_connect();
 
         $anggota = $db->table('members m')->select('m.*')->where('m.id', $id)->get()->getRow();
@@ -254,6 +242,10 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
 
     public function uploadBackground()
     {
+        if (empty(session()->get('logged_in'))) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Sesi login tidak valid.'])->setStatusCode(401);
+        }
+
         $validationRule = [
             'bgImage' => [
                 'label' => 'Background Image',
@@ -261,7 +253,7 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
                     'uploaded[bgImage]',
                     'is_image[bgImage]',
                     'mime_in[bgImage,image/jpg,image/jpeg,image/png,image/gif]',
-                    'max_size[bgImage,2048]',
+                    'max_size[bgImage,10240]',
                 ],
             ],
         ];
@@ -271,40 +263,39 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
         }
 
         $img = $this->request->getFile('bgImage');
-
-        if ($img->isValid() && !$img->hasMoved()) {
-            $newName    = $img->getRandomName();
-            $uploadPath = ROOTPATH . 'public/uploads/master-template/';
-
-            if (!is_dir($uploadPath)) {
-                mkdir($uploadPath, 0777, true);
-            }
-
-            try {
-                $img->move($uploadPath, $newName);
-
-                $db      = db_connect();
-                $setting = $db->table('settingparameters')->where('Name', 'FileKartuAnggota')->get()->getRow();
-
-                if ($setting) {
-                    if ($setting->Value && file_exists($uploadPath . $setting->Value)) {
-                        unlink($uploadPath . $setting->Value);
-                    }
-                    $db->table('settingparameters')->where('ID', $setting->ID)->update(['Value' => $newName]);
-                } else {
-                    $db->table('settingparameters')->insert(['Name' => 'FileKartuAnggota', 'Value' => $newName]);
-                }
-
-                return $this->response->setJSON([
-                    'success'  => true,
-                    'message'  => 'Background kartu berhasil diupdate.',
-                    'file_url' => base_url('uploads/master-template/' . $newName),
-                ]);
-            } catch (\Exception $e) {
-                return $this->response->setJSON(['success' => false, 'message' => $e->getMessage()]);
-            }
+        if (!$img || !$img->isValid() || $img->hasMoved()) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Gagal memproses file yang diunggah.']);
         }
 
-        return $this->response->setJSON(['success' => false, 'message' => 'Gagal memproses file yang diunggah.']);
+        $newName    = $img->getRandomName();
+        $uploadPath = rtrim(FCPATH, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'master-template' . DIRECTORY_SEPARATOR;
+
+        if (!is_dir($uploadPath)) {
+            mkdir($uploadPath, 0777, true);
+        }
+
+        try {
+            $img->move($uploadPath, $newName);
+
+            $db      = db_connect();
+            $setting = $db->table('settingparameters')->where('Name', 'FileKartuAnggota')->get()->getRow();
+
+            if ($setting) {
+                if ($setting->Value && is_file($uploadPath . $setting->Value)) {
+                    unlink($uploadPath . $setting->Value);
+                }
+                $db->table('settingparameters')->where('ID', $setting->ID)->update(['Value' => $newName]);
+            } else {
+                $db->table('settingparameters')->insert(['Name' => 'FileKartuAnggota', 'Value' => $newName]);
+            }
+
+            return $this->response->setJSON([
+                'success'  => true,
+                'message'  => 'Background kartu berhasil diupdate.',
+                'file_url' => base_url('uploads/master-template/' . $newName),
+            ]);
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 }

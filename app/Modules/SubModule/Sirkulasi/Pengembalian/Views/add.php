@@ -504,7 +504,7 @@ class SelfReturnApp {
                 <div class="${index > 0 ? 'pm-divider-top' : ''} position-relative fade-in" style="padding-right:45px;">
                     <button type="button" class="btn btn-sm btn-outline-danger position-absolute"
                             style="right:0;top:10px;border-radius:8px;width:35px;height:35px;"
-                            onclick="selfReturnApp.removeBookItem(${book.id})">
+                            onclick="selfReturnApp.removeBookItem('${book.id}')">
                         <i class="fa fa-trash"></i>
                     </button>
                     <div class="book-detail">
@@ -531,7 +531,7 @@ class SelfReturnApp {
     }
 
     removeBookItem(id) {
-        this.booksToReturn = this.booksToReturn.filter(b => b.id !== id);
+        this.booksToReturn = this.booksToReturn.filter(b => String(b.id) !== String(id));
         this.renderBookList();
     }
 

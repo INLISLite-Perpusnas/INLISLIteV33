@@ -271,24 +271,26 @@
                             </a>
                         <?php endif; ?>
 
-                        <div class="dropdown">
-                            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
-                                data-bs-toggle="dropdown">
-                                <i class="fas fa-share-alt me-2"></i>Bagikan
+                        <div class="dropdown" style="position: relative;" id="bagikanDropdownWrapper">
+                            <button class="btn btn-outline-secondary btn-sm btn-lg" type="button" id="bagikanDropdownBtn"
+                                style="display:inline-flex;align-items:center;gap:6px;">
+                                <i class="fas fa-share-alt"></i>Bagikan
+                                <i class="fas fa-caret-down" id="bagikanCaretIcon"></i>
                             </button>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu" id="bagikanDropdownMenu"
+                                style="z-index: 9999; display:none; position:absolute; left:0; top:100%; margin-top:4px;">
                                 <li>
-                                    <a class="dropdown-item" href="#" onclick="shareViaEmail()">
+                                    <a class="dropdown-item" href="#" onclick="shareViaEmail(); document.getElementById('bagikanDropdownMenu').style.display='none'; document.getElementById('bagikanCaretIcon').className='fas fa-caret-down';">
                                         <i class="fas fa-envelope me-2"></i>Email
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="#" onclick="shareViaWhatsapp()">
+                                    <a class="dropdown-item" href="#" onclick="shareViaWhatsapp(); document.getElementById('bagikanDropdownMenu').style.display='none'; document.getElementById('bagikanCaretIcon').className='fas fa-caret-down';">
                                         <i class="fab fa-whatsapp me-2"></i>WhatsApp
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="#" onclick="copyLink()">
+                                    <a class="dropdown-item" href="#" onclick="copyLink(); document.getElementById('bagikanDropdownMenu').style.display='none'; document.getElementById('bagikanCaretIcon').className='fas fa-caret-down';">
                                         <i class="fas fa-link me-2"></i>Salin Link
                                     </a>
                                 </li>
@@ -336,11 +338,14 @@
                             </ul>
 
                             <?php if (!empty($marc)): ?>
-                                <div class="dropdown ms-3">
-                                    <button class="btn btn-outline-primary dropdown-toggle btn-sm" type="button" id="downloadMarcDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fas fa-download me-1"></i>Unduh Katalog MARC
+                                <div class="dropdown ms-3" style="position: relative;" id="marcDropdownWrapper">
+                                    <button class="btn btn-outline-primary btn-sm" type="button" id="downloadMarcDropdown"
+                                        style="display:inline-flex;align-items:center;gap:6px;">
+                                        <i class="fas fa-download"></i>Unduh Katalog MARC
+                                        <i class="fas fa-caret-down" id="marcCaretIcon"></i>
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="downloadMarcDropdown">
+                                    <ul class="dropdown-menu dropdown-menu-end" id="marcDropdownMenu"
+                                        style="z-index: 9999; display:none; position:absolute; right:0; top:100%; margin-top:4px;">
                                         <li><a class="dropdown-item" href="<?= base_url("opac/downloadMarcUtf8/{$catalog['ID']}") ?>" target="_blank">Format MARC Unicode/UTF-8</a></li>
                                         <li><a class="dropdown-item" href="<?= base_url("opac/downloadMarcXml/{$catalog['ID']}") ?>" target="_blank">Format MARC XML</a></li>
                                         <li><a class="dropdown-item" href="<?= base_url("opac/downloadMarcMods/{$catalog['ID']}") ?>" target="_blank">Format MODS</a></li>
@@ -949,6 +954,67 @@ ER  -
         document.querySelectorAll('.btn, .dropdown').forEach(el => {
             el.style.display = '';
         });
+    });
+
+    // Manual Bootstrap 5 Dropdown initialization (fallback jika jQuery 4 konflik)
+    document.addEventListener('DOMContentLoaded', function () {
+        // Vanilla JS dropdown untuk #downloadMarcDropdown (bypass jQuery4 + BS5 conflict)
+        var btn  = document.getElementById('downloadMarcDropdown');
+        var menu = document.getElementById('marcDropdownMenu');
+        var caret = document.getElementById('marcCaretIcon');
+
+        if (btn && menu) {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                var isOpen = menu.style.display === 'block';
+                menu.style.display = isOpen ? 'none' : 'block';
+                if (caret) {
+                    caret.className = isOpen ? 'fas fa-caret-down' : 'fas fa-caret-up';
+                }
+            });
+
+            // Tutup jika klik di luar dropdown
+            document.addEventListener('click', function (e) {
+                var wrapper = document.getElementById('marcDropdownWrapper');
+                if (wrapper && !wrapper.contains(e.target)) {
+                    menu.style.display = 'none';
+                    if (caret) caret.className = 'fas fa-caret-down';
+                }
+            });
+
+            // Tutup setelah klik item
+            menu.querySelectorAll('.dropdown-item').forEach(function(item) {
+                item.addEventListener('click', function() {
+                    menu.style.display = 'none';
+                    if (caret) caret.className = 'fas fa-caret-down';
+                });
+            });
+        }
+
+        // Vanilla JS dropdown untuk #bagikanDropdownBtn
+        var btnBagikan  = document.getElementById('bagikanDropdownBtn');
+        var menuBagikan = document.getElementById('bagikanDropdownMenu');
+        var caretBagikan = document.getElementById('bagikanCaretIcon');
+
+        if (btnBagikan && menuBagikan) {
+            btnBagikan.addEventListener('click', function (e) {
+                e.stopPropagation();
+                var isOpen = menuBagikan.style.display === 'block';
+                menuBagikan.style.display = isOpen ? 'none' : 'block';
+                if (caretBagikan) {
+                    caretBagikan.className = isOpen ? 'fas fa-caret-down' : 'fas fa-caret-up';
+                }
+            });
+
+            // Tutup jika klik di luar dropdown
+            document.addEventListener('click', function (e) {
+                var wrapper = document.getElementById('bagikanDropdownWrapper');
+                if (wrapper && !wrapper.contains(e.target)) {
+                    menuBagikan.style.display = 'none';
+                    if (caretBagikan) caretBagikan.className = 'fas fa-caret-down';
+                }
+            });
+        }
     });
 </script>
 

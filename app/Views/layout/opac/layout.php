@@ -475,8 +475,8 @@ $email = $db->table('settingparameters')->where('Name', 'EmailPerpustakaan')->ge
         </div>
     </footer>
 
-   <script src="<?= base_url('assets/js'); ?>/bootstrap.min.js"></script>
     <script src="<?= base_url('assets/js'); ?>/jquery-4.0.0.min.js"></script>
+    <script src="<?= base_url('assets/js'); ?>/bootstrap.min.js"></script>
     <script src="<?= base_url('assets/js'); ?>/sweetalert2@8.js"></script>
 
     <?= $this->renderSection('script') ?>

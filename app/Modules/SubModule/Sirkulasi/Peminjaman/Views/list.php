@@ -225,10 +225,10 @@ $slug = $request->getGet('slug') ?? '';
                         <th class="text-center">Penerbit / Judul</th>
                         <th class="text-center" width="100">Tgl. Pinjam / Jatuh Tempo</th>
                         <th class="text-center">Hari Terlambat</th>
+                        <th class="text-center" width="100">Buku Digital</th>
                         <th class="text-center" width="120">Lokasi Perpustakaan</th>
                         <th class="text-center" width="100">Updated Date</th>
-                        <!-- Kolom action untuk tombol notifikasi (tersembunyi dari header, muncul lewat grouping) -->
-                        <th class="text-center" width="90">Aksi</th>
+                        <th class="text-center" width="120">Kirim Notifikasi</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -340,7 +340,7 @@ $slug = $request->getGet('slug') ?? '';
     // ===========================================================
     // DATATABLE SETUP
     // ===========================================================
-    var groupColumn = 7; // CollectionLoan_id ada di index 7
+    var groupColumn = 9; // CollectionLoan_id ada di index 9
     var t;
 
     $(document).ready(function() {
@@ -372,16 +372,17 @@ $slug = $request->getGet('slug') ?? '';
                 { data: 'Title' },                                                         // 2
                 { data: 'LoanDate',         className: 'text-center' },                   // 3
                 { data: 'LateDays',         className: 'text-center' },                   // 4
-                { data: 'LocationLibrary' },                                               // 5
-                { data: 'UpdateDate',       className: 'text-center' },                   // 6
-                { data: 'CollectionLoan_id', visible: false },                             // 7 (Grouping)
-                { data: 'ID',               visible: false },                              // 8
-                { data: 'Fullname',         visible: false },                              // 9
-                { data: 'DueDate',          visible: false },                              // 10
-                { data: 'Publisher',        visible: false },                              // 11
-                // ===== KOLOM AKSI NOTIFIKASI (BARU) =====
                 {
-                    data: 'action',
+                    data: 'ISDRM',
+                    className: 'text-center',
+                    render: function(data) {
+                        return data == '1' ? 'YA' : 'TIDAK';
+                    }
+                },                                                                         // 5
+                { data: 'LocationLibrary' },                                               // 6
+                { data: 'UpdateDate',       className: 'text-center' },                   // 7
+                {
+                    data: 'action_notif',
                     className: 'text-center',
                     orderable: false,
                     searchable: false,
@@ -392,7 +393,7 @@ $slug = $request->getGet('slug') ?? '';
                             // Pakai data-* attribute agar aman dari karakter kutip
                             return '<button'
                                 + ' class="btn-notify btn-notify-single btn-send-notif"'
-                                + ' data-id="'       + (row.ID || data) + '"'
+                                + ' data-id="'       + (row.ID || '') + '"'
                                 + ' data-fullname="' + String(row.Fullname || '').replace(/"/g, '&quot;') + '"'
                                 + ' data-title="'   + stripHtml(row.Title || '').replace(/"/g, '&quot;') + '"'
                                 + ' data-publisher="' + stripHtml(row.Publisher || '').replace(/"/g, '&quot;') + '"'
@@ -402,14 +403,19 @@ $slug = $request->getGet('slug') ?? '';
                         }
                         return '<span class="text-muted" style="font-size:11px;">\u2014</span>';
                     }
-                }, // 12
+                },                                                                         // 8 (Kirim Notifikasi)
+                { data: 'CollectionLoan_id', visible: false },                             // 9 (Grouping)
+                { data: 'ID',               visible: false },                              // 10
+                { data: 'Fullname',         visible: false },                              // 11
+                { data: 'DueDate',          visible: false },                              // 12
+                { data: 'Publisher',        visible: false }                              // 13
             ],
             "columnDefs": [
-                { targets: [0, 7, 8, 9, 10, 11], searchable: false },
-                { targets: [0, 2, 3, 4, 7, 12],  orderable: false  }
+                { targets: [0, 5, 10, 11, 12, 13], searchable: false },
+                { targets: [0, 2, 3, 4, 5, 8, 9],  orderable: false  }
             ],
             "order": [
-                [7, "desc"]
+                [9, "desc"]
             ],
             "drawCallback": function(settings) {
                 var api  = this.api();
@@ -421,7 +427,7 @@ $slug = $request->getGet('slug') ?? '';
                     .each(function(group, i) {
                         if (last !== group) {
                             $(rows).eq(i).before(
-                                '<tr class="group"><td colspan="9">' + group + '</td></tr>'
+                                '<tr class="group"><td colspan="10">' + group + '</td></tr>'
                             );
                             last = group;
                         }

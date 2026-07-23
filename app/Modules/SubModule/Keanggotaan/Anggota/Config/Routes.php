@@ -55,7 +55,7 @@ $routes->group('anggota', ['namespace' => 'Anggota\Controllers'], function ($sub
     $subroutes->add('printkartubelakang/(:any)', 'AnggotaPrintController::printkartubelakang/$1');
     $subroutes->add('multipleprint',          'AnggotaPrintController::multipleprint');
     $subroutes->add('bebaspustaka/(:any)',    'AnggotaPrintController::bebaspustaka/$1');
-    $subroutes->add('uploadBackground',       'AnggotaPrintController::uploadBackground');
+    $subroutes->post('uploadBackground',      'AnggotaPrintController::uploadBackground');
 });
 
 // -----------------------------------------------------------------------

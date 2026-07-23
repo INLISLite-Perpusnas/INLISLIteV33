@@ -508,22 +508,46 @@ async function handleBackgroundUpload(event) {
     const formData = new FormData();
     formData.append('bgImage', file);
 
-    // Jika Anda mengaktifkan proteksi CSRF di CI4, uncomment baris ini
-    // formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
+    // Wajib disertakan agar tidak diblokir Config\Security CI4 (status 303)
+    formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
 
     try {
         showStatus('Sedang mengupload background...', 'success');
         
-        // Gunakan URL yang sudah didaftarkan di routes.php
+        // redirect: 'manual' supaya kita bisa deteksi eksplisit kalau request di-redirect
+        // (misalnya karena CSRF gagal) alih-alih otomatis diikuti browser secara diam-diam
         const response = await fetch('<?= site_url("anggota/uploadBackground") ?>', {
             method: 'POST',
             body: formData,
+            redirect: 'manual',
         });
-        
-        const result = await response.json();
+
+        console.log('[uploadBackground] status:', response.status, '| type:', response.type);
+
+        if (response.type === 'opaqueredirect' || response.status === 0) {
+            // Request di-redirect sebelum sampai ke controller — hampir pasti CSRF ditolak
+            console.error('[uploadBackground] Request di-redirect. Kemungkinan besar CSRF token ditolak server.');
+            showStatus('Upload gagal: request di-redirect oleh server (kemungkinan CSRF). Cek console.', 'error');
+            return;
+        }
+
+        const rawText = await response.text();
+        console.log('[uploadBackground] raw response:', rawText.substring(0, 500));
+
+        let result;
+        try {
+            result = JSON.parse(rawText);
+        } catch (parseErr) {
+            showStatus('Server tidak mengembalikan JSON. Cek console untuk detail response.', 'error');
+            return;
+        }
 
         if (result.success) {
             showStatus(result.message, 'success');
+            // CI4 me-regenerate token CSRF tiap request (jika regenerate=true di Config\Security),
+            // jadi token lama pada halaman ini sudah tidak valid. Refresh agar token baru ter-load
+            // sebelum melakukan upload berikutnya.
+            setTimeout(() => window.location.reload(), 1000);
         } else {
             const errorMessage = result.errors ? Object.values(result.errors).join(', ') : result.message;
             showStatus(`Error: ${errorMessage}`, 'error');
@@ -533,11 +557,6 @@ async function handleBackgroundUpload(event) {
         console.error('Upload failed:', error);
     }
 }
-
-// Terakhir, ubah atribut onchange di tag input file Anda
-// <input type="file" id="bgImage" accept="image/*" onchange="loadBackgroundImage(event)">
-// menjadi:
-// <input type="file" id="bgImage" accept="image/*" onchange="handleBackgroundUpload(event)">
 
         // Background Color Handler
         function changeBackgroundColor(color) {
