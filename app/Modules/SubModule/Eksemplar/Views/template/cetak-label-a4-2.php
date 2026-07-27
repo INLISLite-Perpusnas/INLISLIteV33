@@ -65,7 +65,7 @@ foreach ($LabelData as $index => $data) :
                 <table cellpadding="0" cellspacing="0" style="width:255px;" nobr="true">
                     <tr style="vertical-align:center">
                     <td style="border:solid 1px #CCC; height:53px; width:212px; text-align: center; vertical-align: middle; ">' . $data['NamaPerpustakaan'] . '</td>
-                    <td style="width:17%;border-top:solid 1px #CCC;border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;text-align: center; vertical-align: middle;" rowspan="2">' . implode('<br>', array_map('htmlspecialchars', preg_split('/[\s\/]+/', trim($data['CallNumber'])))) . '</td>
+                    <td style="height:143px; width:17%;border-top:solid 1px #CCC;border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;text-align: center; vertical-align: middle;" rowspan="2">' . implode('<br>', array_map('htmlspecialchars', preg_split('/[\s\/]+/', trim($data['CallNumber'])))) . '</td>
                     </tr>
                     <tr>
                         <td style="height:90px; width:83%; text-align: center; vertical-align: middle;padding-left: 3px; padding-right: 3px;border-left:solid 1px #CCC; border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;">

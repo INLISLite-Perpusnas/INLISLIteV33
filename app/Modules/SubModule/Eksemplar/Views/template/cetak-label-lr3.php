@@ -41,9 +41,8 @@ foreach ($LabelData as $row) {
                 <img src="' . $barcodeSrc . '" style="width:38mm; height:9mm;"><br>
                 *' . htmlspecialchars($row['Barcode']) . '*
             </td>
-            <td style="width:25%; border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;
-                       text-align: center; vertical-align: middle; font-size:7pt; font-weight:bold; vertical-align:middle;">
-                ' . $callNumber . '
+            <td style="height:25mm; width:25%; border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;
+                       text-align: center; vertical-align: middle; font-size:7pt; font-weight:bold; vertical-align:middle;">' . $callNumber . '
             </td>
         </tr>
     </table>';

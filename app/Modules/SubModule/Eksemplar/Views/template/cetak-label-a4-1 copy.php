@@ -39,7 +39,7 @@ foreach ($LabelData as $LabelData) :
 							</span>
 							*' . $LabelData['Barcode'] . '*
 						</td>
-						<td style="width:25%;border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;text-align: center; vertical-align: middle;">' . implode('<br>', array_map('htmlspecialchars', preg_split('/[\s\/]+/', trim($LabelData['CallNumber'])))) . '</td>
+						<td style="height:90px; width:25%;border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;text-align: center; vertical-align: middle;">' . implode('<br>', array_map('htmlspecialchars', preg_split('/[\s\/]+/', trim($LabelData['CallNumber'])))) . '</td>
 					</tr>
 				</table>
 			</td>';

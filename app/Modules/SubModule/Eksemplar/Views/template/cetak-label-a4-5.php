@@ -38,7 +38,7 @@ foreach ($LabelData as $LabelData) :
 							<br>
                             <img src="' . $LabelData['BarcodePNG'] . '" width="150" height="30">
                             <br>                           
-                            </span>
+                            
                             *' . $LabelData['Barcode'] . '*
 						</td>						
 					</tr>
