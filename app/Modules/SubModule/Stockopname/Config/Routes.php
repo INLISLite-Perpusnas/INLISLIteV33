@@ -18,7 +18,8 @@ $routes->group('stockopname', ['namespace' => 'Stockopname\Controllers'], functi
     $subroutes->get('getCollectionInfo', 'Stockopname::getCollectionInfo');
     
     // Export functionality
-    $subroutes->get('exportStockopname/(:num)', 'Stockopname::exportStockopname/$1');
+    $subroutes->get('exportstockopname/(:num)', 'Stockopname::exportstockopname/$1');
+    $subroutes->get('exportexcel/(:num)', 'Stockopname::exportexcel/$1');
 
 });
 

@@ -256,6 +256,11 @@
                         <p class="mb-1"><strong>Tahun:</strong> <?= $stockopname->Tahun ?></p>
                         <p class="mb-1"><strong>Koordinator:</strong> <?= $stockopname->Koordinator ?></p>
                         <p class="mb-0"><strong>Tanggal Mulai:</strong> <?= date('d/m/Y', strtotime($stockopname->TglMulai)) ?></p>
+                        <div class="mt-3">
+                            <a href="<?= base_url('stockopname/exportexcel/' . $stockopname->ID) ?>" class="btn btn-success btn-sm">
+                                <i class="fas fa-file-excel"></i> Export Excel
+                            </a>
+                        </div>
                     </div>
                     <div class="col-md-6">
                         <?php

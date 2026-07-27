@@ -3,7 +3,8 @@
 namespace Stockopname\Controllers;
 
 use \CodeIgniter\Files\File;
-
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 class Stockopname extends \Base\Controllers\BaseController
 {
     public $auth;
@@ -758,7 +759,7 @@ class Stockopname extends \Base\Controllers\BaseController
         }
     }
 
-    public function exportStockopname($id = null)
+    public function exportstockopname($id = null)
     {
         if (empty($id)) {
             session()->setFlashdata('message', [
@@ -828,6 +829,114 @@ class Stockopname extends \Base\Controllers\BaseController
             $collectionUpdateData['UpdateTerminal'] = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
             
             $this->collectionModel->update($collectionId, $collectionUpdateData);
+        }
+    }
+
+    public function exportexcel($id = null)
+    {
+        if (empty($id)) {
+            session()->setFlashdata('message', [
+                'type' => 'error',
+                'text' => 'ID tidak valid.'
+            ]);
+            return redirect()->to(base_url('stockopname'));
+        }
+
+        try {
+            $stockopname = $this->stockopnameModel->find($id);
+            if (!$stockopname) {
+                return redirect()->to(base_url('stockopname'));
+            }
+
+            // Get all details for "Sudah"
+            $details = $this->stockopnamedetailModel->getStockopnameDetails($id);
+            // Get all collections for "Belum"
+            $collectionsNotInStockopname = $this->stockopnamedetailModel->getCollectionsNotInStockopname($id, 999999, 0);
+
+            $spreadsheet = new Spreadsheet();
+            
+            // First Sheet: Sudah Stockopname
+            $sheet1 = $spreadsheet->getActiveSheet();
+            $sheet1->setTitle('Sudah Stockopname');
+
+            // Header Activity
+            $sheet1->setCellValue('A1', 'Nama Kegiatan: ' . $stockopname->ProjectName);
+            $sheet1->setCellValue('A2', 'Tahun: ' . $stockopname->Tahun);
+            $sheet1->setCellValue('A3', 'Koordinator: ' . $stockopname->Koordinator);
+            
+            // Table Headers for Sheet 1
+            $sheet1->setCellValue('A5', 'No');
+            $sheet1->setCellValue('B5', 'No. Barcode');
+            $sheet1->setCellValue('C5', 'Judul');
+            $sheet1->setCellValue('D5', 'Lokasi Sebelum');
+            $sheet1->setCellValue('E5', 'Lokasi Sekarang');
+            $sheet1->setCellValue('F5', 'Status Sebelum');
+            $sheet1->setCellValue('G5', 'Status Sekarang');
+
+            // Data for Sheet 1
+            $row = 6;
+            $no = 1;
+            foreach ($details as $detail) {
+                $sheet1->setCellValue('A' . $row, $no++);
+                $sheet1->setCellValue('B' . $row, $detail['NomorBarcode']);
+                $sheet1->setCellValue('C' . $row, $detail['Title']);
+                $sheet1->setCellValue('D' . $row, $detail['PrevLocationName']);
+                $sheet1->setCellValue('E' . $row, $detail['CurrentLocationName']);
+                $sheet1->setCellValue('F' . $row, $detail['PrevStatusName']);
+                $sheet1->setCellValue('G' . $row, $detail['CurrentStatusName']);
+                $row++;
+            }
+
+            // Second Sheet: Belum Stockopname
+            $sheet2 = $spreadsheet->createSheet();
+            $sheet2->setTitle('Belum Stockopname');
+
+            // Header Activity for Sheet 2
+            $sheet2->setCellValue('A1', 'Nama Kegiatan: ' . $stockopname->ProjectName);
+            $sheet2->setCellValue('A2', 'Tahun: ' . $stockopname->Tahun);
+            $sheet2->setCellValue('A3', 'Koordinator: ' . $stockopname->Koordinator);
+            
+            // Table Headers for Sheet 2
+            $sheet2->setCellValue('A5', 'No');
+            $sheet2->setCellValue('B5', 'No. Barcode');
+            $sheet2->setCellValue('C5', 'No. Panggil');
+            $sheet2->setCellValue('D5', 'Judul');
+            $sheet2->setCellValue('E5', 'Pengarang');
+            $sheet2->setCellValue('F5', 'Lokasi Saat Ini');
+            $sheet2->setCellValue('G5', 'Status Saat Ini');
+
+            // Data for Sheet 2
+            $row2 = 6;
+            $no2 = 1;
+            foreach ($collectionsNotInStockopname as $c) {
+                $sheet2->setCellValue('A' . $row2, $no2++);
+                $sheet2->setCellValue('B' . $row2, $c['NomorBarcode']);
+                $sheet2->setCellValue('C' . $row2, $c['CallNumber']);
+                $sheet2->setCellValue('D' . $row2, $c['Title']);
+                $sheet2->setCellValue('E' . $row2, $c['Author']);
+                $sheet2->setCellValue('F' . $row2, $c['LocationName']);
+                $sheet2->setCellValue('G' . $row2, $c['StatusName']);
+                $row2++;
+            }
+
+            $spreadsheet->setActiveSheetIndex(0);
+
+            $writer = new Xlsx($spreadsheet);
+            $filename = 'Stockopname_' . preg_replace('/[^A-Za-z0-9\-]/', '_', $stockopname->ProjectName) . '_' . date('YmdHis') . '.xlsx';
+            
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment;filename="' . $filename . '"');
+            header('Cache-Control: max-age=0');
+            
+            $writer->save('php://output');
+            exit();
+
+        } catch (\Exception $e) {
+            session()->setFlashdata('message', [
+                'type' => 'error',
+                'text' => 'Gagal mengekspor data: ' . $e->getMessage()
+            ]);
+            return redirect()->back();
         }
     }
 }
