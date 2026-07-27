@@ -32,7 +32,15 @@ foreach ($LabelData as $row) {
         </tr>
     </table>';
 
-    $pdf->writeHTML($html, true, false, false, false, '');
+    if (isset($outputFormat) && $outputFormat == 'word') {
+        echo $html . '<br>';
+        continue;
+    }
+$pdf->writeHTML($html, true, false, false, false, '');
+}
+
+if (isset($outputFormat) && $outputFormat == 'word') {
+    return;
 }
 
 $pdf->Output('label-barcode-roll-br1.pdf', 'D');

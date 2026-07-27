@@ -64,11 +64,11 @@ foreach ($LabelData as $index => $data) :
             <td style="width:50%;">
                 <table cellpadding="0" cellspacing="0" style="width:255px;" nobr="true">
                     <tr style="vertical-align:center">
-                    <td style="border:solid 1px #CCC; height:53px; width:212px; text-align: center; ">' . $data['NamaPerpustakaan'] . '</td>
-                    <td style="width:17%;border-top:solid 1px #CCC;border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;text-align: center " rowspan="2">' . str_replace(' ', '<br>', $data['CallNumber']) . '</td>
+                    <td style="border:solid 1px #CCC; height:53px; width:212px; text-align: center; vertical-align: middle; ">' . $data['NamaPerpustakaan'] . '</td>
+                    <td style="width:17%;border-top:solid 1px #CCC;border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;text-align: center; vertical-align: middle;" rowspan="2">' . implode('<br>', array_map('htmlspecialchars', preg_split('/[\s\/]+/', trim($data['CallNumber'])))) . '</td>
                     </tr>
                     <tr>
-                        <td style="height:90px; width:83%; text-align: center;padding-left: 3px; padding-right: 3px;border-left:solid 1px #CCC; border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;">
+                        <td style="height:90px; width:83%; text-align: center; vertical-align: middle;padding-left: 3px; padding-right: 3px;border-left:solid 1px #CCC; border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;">
                             <span style="font-size: 12px;">
                             ' . $data['Title'] . '
                             <br>
@@ -105,6 +105,10 @@ foreach ($LabelData as $index => $data) :
     }
 endforeach;
 
+if (isset($outputFormat) && $outputFormat == 'word') {
+    echo $html;
+    return;
+}
 $pdf->writeHTML($html, true, false, false, false, '');
 $pdf->Output('example_006.pdf', 'D');
 die;

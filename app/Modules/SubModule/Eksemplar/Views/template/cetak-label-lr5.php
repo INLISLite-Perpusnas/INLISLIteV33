@@ -23,21 +23,29 @@ foreach ($LabelData as $row) {
     $html = '
     <table cellpadding="1" cellspacing="0" style="width:57mm;">
         <tr>
-            <td style="border:solid 1px #CCC; height:10mm; text-align:center;
+            <td style="border:solid 1px #CCC; height:10mm; text-align: center; vertical-align: middle;
                        font-size:7pt; font-weight:bold; padding:2mm;">
                 ' . htmlspecialchars($row['NamaPerpustakaan']) . '
             </td>
         </tr>
         <tr>
             <td style="height:25mm; border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;
-                       border-left:solid 1px #CCC; text-align:center;
+                       border-left:solid 1px #CCC; text-align: center; vertical-align: middle;
                        font-size:9pt; font-weight:bold; vertical-align:middle;">
-                ' . htmlspecialchars($row['CallNumber']). '
+                ' . implode('<br>', array_map('htmlspecialchars', preg_split('/[\s\/]+/', trim($row['CallNumber'])))) . '
             </td>
         </tr>
     </table>';
 
-    $pdf->writeHTML($html, true, false, false, false, '');
+    if (isset($outputFormat) && $outputFormat == 'word') {
+        echo $html . '<br>';
+        continue;
+    }
+$pdf->writeHTML($html, true, false, false, false, '');
+}
+
+if (isset($outputFormat) && $outputFormat == 'word') {
+    return;
 }
 
 $pdf->Output('label-roll-lr5.pdf', 'D');

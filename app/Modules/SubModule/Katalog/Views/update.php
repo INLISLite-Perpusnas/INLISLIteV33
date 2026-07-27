@@ -127,5 +127,26 @@ $actions = array(
 	//-------------------------------------------------------------------
 </script>
 
+<script>
+    const nomorInput = document.querySelector('input[name="CallNumber[]"]');
+    const ddcInput = document.querySelector('input[name="DeweyNo"]');
+    const pengarangInput = document.querySelector('input[name="judul[c]"]');
+    const judulInput = document.querySelector('input[name="judul[a]"]');
+
+    if (nomorInput && ddcInput && pengarangInput && judulInput) {
+        nomorInput.addEventListener('click', function() {
+            const ddcValue = (ddcInput.value || '').trim();
+            const pengarangValue = (pengarangInput.value || '').trim();
+            const judulValue = (judulInput.value || '').trim();
+
+            const concatenatedValue =
+                ddcValue + " " +
+                pengarangValue.substring(0, 3).toUpperCase() + " " +
+                judulValue.substring(0, 1).toLowerCase();
+
+            nomorInput.value = concatenatedValue;
+        });
+    }
+</script>
 
 <?= $this->endSection('script'); ?>

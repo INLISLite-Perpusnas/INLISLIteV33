@@ -74,6 +74,7 @@ $slug = $request->getGet('slug') ?? '';
 						<th class="text-center">Tgl. Kembali</th>
 						<th class="text-center">Hari Terlambat</th>
 						<th class="text-center" width="120">Lokasi Perpustakaan</th>
+						<th class="text-center" width="100">Buku Digital</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -86,8 +87,8 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->section('script'); ?>
 <script>
-    // Index 7 adalah CollectionLoan_id yang berisi info Member & No Transaksi
-    var groupColumn = 7; 
+    // Index 8 adalah CollectionLoan_id yang berisi info Member & No Transaksi
+    var groupColumn = 8; 
     var t;
 
     $(document).ready(function() {
@@ -122,18 +123,19 @@ $slug = $request->getGet('slug') ?? '';
                 { data: 'ActualReturn', className: 'text-center' },        // 4
                 { data: 'LateDays', className: 'text-center' },            // 5
                 { data: 'LocationLibrary' },                               // 6
-                { data: 'CollectionLoan_id', visible: false },             // 7 (Untuk Grouping)
-                { data: 'Fullname', visible: false },                      // 8
-                { data: 'DueDate', visible: false },                       // 9
-                { data: 'Publisher', visible: false },                     // 10
+                { data: 'ISDRM', className: 'text-center' },               // 7
+                { data: 'CollectionLoan_id', visible: false },             // 8 (Untuk Grouping)
+                { data: 'Fullname', visible: false },                      // 9
+                { data: 'DueDate', visible: false },                       // 10
+                { data: 'Publisher', visible: false },                     // 11
             ],
             "columnDefs": [
                 {
-                    targets: [0, 7, 8, 9, 10],
+                    targets: [0, 8, 9, 10, 11],
                     searchable: false
                 },
                 {
-                    targets: [0, 2, 3, 5, 6],
+                    targets: [0, 2, 3, 5, 6, 7],
                     orderable: false
                 }
             ],
@@ -148,7 +150,7 @@ $slug = $request->getGet('slug') ?? '';
                     .each(function(group, i) {
                         if (last !== group) {
                             $(rows).eq(i).before(
-                                '<tr class="group"><td colspan="7">' + group + '</td></tr>'
+                                '<tr class="group"><td colspan="8">' + group + '</td></tr>'
                             );
                             last = group;
                         }

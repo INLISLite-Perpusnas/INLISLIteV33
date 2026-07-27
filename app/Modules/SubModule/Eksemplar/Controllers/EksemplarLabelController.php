@@ -137,131 +137,63 @@ class EksemplarLabelController extends \Base\Controllers\BaseController
         }
 
         if ($outputFormat === 'word') {
-            return $this->_generateWordDoc($LabelData);
+            $html = view('Eksemplar\Views\template\\' . $template, [
+                'LabelData' => $LabelData,
+                'outputFormat' => $outputFormat
+            ]);
+            return $this->_generateWordDocHtml($html);
         }
 
         return view('Eksemplar\Views\template\\' . $template, ['LabelData' => $LabelData]);
     }
 
-    private function _generateWordDoc(array $LabelData)
+    private function _generateWordDocHtml(string $html)
     {
-        $phpWord = new PhpWord();
-        $phpWord->setDefaultFontName('Arial');
-        $phpWord->setDefaultFontSize(10);
-
-        $section = $phpWord->addSection([
-            'marginTop'    => Converter::cmToTwip(1.5),
-            'marginBottom' => Converter::cmToTwip(1.5),
-            'marginLeft'   => Converter::cmToTwip(1.5),
-            'marginRight'  => Converter::cmToTwip(1.5),
-        ]);
-
-        // Available width ≈ 18cm → 2 kolom, masing-masing ~8.8cm
-        $cellWidth = (int) Converter::cmToTwip(8.8);
-
-        $tableStyle = [
-            'borderSize'  => 6,
-            'borderColor' => 'CCCCCC',
-            'cellMargin'  => 80,
-        ];
-        $phpWord->addTableStyle('LabelTable', $tableStyle);
-        $table = $section->addTable('LabelTable');
-
-        $tempFiles = [];
-        $chunks    = array_chunk($LabelData, 2);
-
-        foreach ($chunks as $row) {
-            $table->addRow(Converter::cmToTwip(4));
-
-            foreach ($row as $label) {
-                $cell = $table->addCell($cellWidth, [
-                    'borderSize'  => 6,
-                    'borderColor' => 'CCCCCC',
-                    'valign'      => 'center',
-                ]);
-
-                // Nama perpustakaan
-                $cell->addText(
-                    htmlspecialchars($label['NamaPerpustakaan']),
-                    ['bold' => true, 'size' => 9, 'color' => '000000'],
-                    ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 40]
-                );
-
-                // Judul
-                $cell->addText(
-                    htmlspecialchars($label['Title']),
-                    ['size' => 8, 'color' => '333333'],
-                    ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 40]
-                );
-
-                // Gambar barcode/QR
-                $tmpImg = $this->_base64ToTempFile($label['BarcodePNG']);
-                if ($tmpImg) {
-                    $tempFiles[] = $tmpImg;
-                    $cell->addImage($tmpImg, [
-                        'width'             => 140,
-                        'height'            => 35,
-                        'alignment'         => \PhpOffice\PhpWord\SimpleType\Jc::CENTER,
-                        'marginTop'         => 2,
-                        'marginBottom'      => 2,
-                        'wrappingStyle'     => 'inline',
-                    ]);
+        // Generate MHTML so images (base64) are fully embedded and layout is preserved
+        $boundary = "----=_NextPart_000_0000_01D1B1B1.1B1B1B1B";
+        $images = [];
+        
+        $mhtmlContent = preg_replace_callback('/<img[^>]+src="([^"]+)"[^>]*>/i', function($matches) use (&$images) {
+            $src = $matches[1];
+            if (strpos($src, 'data:image') === 0) {
+                $parts = explode(',', $src);
+                if (count($parts) > 1) {
+                    $mime = explode(';', explode(':', $parts[0])[1])[0];
+                    $base64 = $parts[1];
+                    $cid = "img_" . md5($base64) . '.' . explode('/', $mime)[1];
+                    $images[$cid] = ['mime' => $mime, 'data' => $base64];
+                    return str_replace($src, $cid, $matches[0]);
                 }
-
-                // Nomor barcode
-                $cell->addText(
-                    '*' . htmlspecialchars($label['Barcode']) . '*',
-                    ['size' => 8, 'color' => '555555'],
-                    ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 40]
-                );
-
-                // Nomor panggil
-                $cell->addText(
-                    htmlspecialchars($label['CallNumber']),
-                    ['bold' => true, 'size' => 12, 'color' => '000000'],
-                    ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER]
-                );
             }
+            return $matches[0];
+        }, $html);
 
-            // Tambah sel kosong jika jumlah label ganjil
-            if (count($row) < 2) {
-                $table->addCell($cellWidth);
-            }
+        $mhtml = "MIME-Version: 1.0\r\n";
+        $mhtml .= "Content-Type: multipart/related; boundary=\"$boundary\"\r\n\r\n";
+        
+        $mhtml .= "--$boundary\r\n";
+        $mhtml .= "Content-Type: text/html; charset=\"utf-8\"\r\n";
+        $mhtml .= "Content-Transfer-Encoding: quoted-printable\r\n\r\n";
+        
+        // Ensure complete HTML structure for MS Word
+        $fullHtml = "<html><head><meta charset=\"utf-8\"><title>Export Word</title></head><body>\r\n" . $mhtmlContent . "\r\n</body></html>";
+        $mhtml .= quoted_printable_encode($fullHtml) . "\r\n\r\n";
+        
+        foreach ($images as $cid => $img) {
+            $mhtml .= "--$boundary\r\n";
+            $mhtml .= "Content-Type: " . $img['mime'] . "\r\n";
+            $mhtml .= "Content-Transfer-Encoding: base64\r\n";
+            $mhtml .= "Content-Location: $cid\r\n\r\n";
+            $mhtml .= chunk_split($img['data'], 76, "\r\n") . "\r\n";
         }
-
-        // Simpan ke file temp lalu stream ke browser
-        $tmpDoc = tempnam(sys_get_temp_dir(), 'label_docx_') . '.docx';
-        $writer = IOFactory::createWriter($phpWord, 'Word2007');
-        $writer->save($tmpDoc);
-
-        // Hapus file gambar sementara
-        foreach ($tempFiles as $f) {
-            @unlink($f);
-        }
+        $mhtml .= "--$boundary--";
 
         $response = service('response');
-        $response->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-        $response->setHeader('Content-Disposition', 'attachment; filename="label-eksemplar.docx"');
+        $response->setHeader('Content-Type', 'application/vnd.ms-word');
+        $response->setHeader('Content-Disposition', 'attachment; filename="label-eksemplar.doc"');
         $response->setHeader('Cache-Control', 'max-age=0');
-        $response->setBody(file_get_contents($tmpDoc));
-
-        @unlink($tmpDoc);
+        $response->setBody($mhtml);
 
         return $response;
-    }
-
-    private function _base64ToTempFile(string $dataUri): ?string
-    {
-        $prefix = 'data:image/png;base64,';
-        if (strpos($dataUri, $prefix) !== 0) {
-            return null;
-        }
-        $binary = base64_decode(substr($dataUri, strlen($prefix)));
-        if ($binary === false) {
-            return null;
-        }
-        $path = tempnam(sys_get_temp_dir(), 'label_img_') . '.png';
-        file_put_contents($path, $binary);
-        return $path;
     }
 }

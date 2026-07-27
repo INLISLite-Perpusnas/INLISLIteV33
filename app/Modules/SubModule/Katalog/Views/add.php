@@ -69,9 +69,9 @@ $slug = $request->getGet('slug') ?? 'katalog_add';
     const judulValue = (judulInput.value || '').trim();
 
     const concatenatedValue =
-        ddcValue.substring(0, 3).toUpperCase() + " " +
+        ddcValue + " " +
         pengarangValue.substring(0, 3).toUpperCase() + " " +
-        judulValue.substring(0, 1).toUpperCase();
+        judulValue.substring(0, 1).toLowerCase();
 
     nomorInput.value = concatenatedValue;
 });

@@ -28,10 +28,10 @@ foreach ($LabelData as $LabelData) {
             <td style="width:50%;">
                 <table cellpadding="0" cellspacing="0" style="width:255px;" nobr="true">
                     <tr style="vertical-align:center">
-                        <td style="border:solid 1px #CCC; height:47px; width:255px; text-align: center; " colspan="2">' . $LabelData['NamaPerpustakaan'] . '</td>
+                        <td style="border:solid 1px #CCC; height:47px; width:255px; text-align: center; vertical-align: middle; " colspan="2">' . $LabelData['NamaPerpustakaan'] . '</td>
                     </tr>
                     <tr>
-                        <td style="height:90px; width:75%; text-align: center;padding-left: 3px; padding-right: 3px;border-left:solid 1px #CCC; border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;">
+                        <td style="height:90px; width:75%; text-align: center; vertical-align: middle;padding-left: 3px; padding-right: 3px;border-left:solid 1px #CCC; border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;">
                             <span style="font-size: 12px;">
                             ' . $LabelData['Title'] . '
                             <br>
@@ -41,7 +41,7 @@ foreach ($LabelData as $LabelData) {
                             </span>
                             *' . $LabelData['Barcode'] . '*
                         </td>
-                        <td style="width:25%;border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;text-align: center ">' . $LabelData['CallNumber'] . '</td>
+                        <td style="width:25%;border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;text-align: center; vertical-align: middle;">' . implode('<br>', array_map('htmlspecialchars', preg_split('/[\s\/]+/', trim($LabelData['CallNumber'])))) . '</td>
                     </tr>
                 </table>
             </td>';
@@ -70,6 +70,10 @@ foreach ($LabelData as $LabelData) {
 	}
 }
 
+if (isset($outputFormat) && $outputFormat == 'word') {
+    echo $html;
+    return;
+}
 $pdf->writeHTML($html, true, false, false, false, '');
 $pdf->Output('example_006.pdf', 'D');
 die;

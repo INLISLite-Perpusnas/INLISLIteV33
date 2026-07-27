@@ -84,41 +84,51 @@ class Dashboard extends \Base\Controllers\BaseController
     }
 }
 
-	public function kirimlaporan()
+public function kirimlaporan()
 {
     // 1. Validasi Tanggal (Server Side)
-    if (date('d') > 5) {
+    if (date('d') > 30) {
         return $this->response->setJSON([
             'status' => 'error',
-            'message' => 'Pengiriman hanya bisa dilakukan tanggal 1-5.'
+            'message' => 'Pengiriman hanya bisa dilakukan tanggal 1-30.'
         ])->setStatusCode(403);
     }
 
-    // 2. Hitung Ulang Data (Agar tidak bisa dimanipulasi user dari browser)
     $payload = [
-        'nama_perpustakaan' => $this->getSettingValue('NamaPerpustakaan', 'Perpustakaan Mitra'), // Sebaiknya ambil dari Config/DB
-        'npp' => $this->getSettingValue('NPPPerpustakaan', 'NPP Perpustakaan Mitra'),
-        'alamat' => $this->getSettingValue('NamaLokasiPerpustakaan', 'Alamat Perpustakaan Mitra'),
-        'email' => $this->getSettingValue('EmailPerpustakaan', 'Email Perpustakaan Mitra'),
-        'Provinsi_kode' => $this->getSettingValue('ProvinsiID', '32'),
-        'kabkota_kode' => $this->getSettingValue('KabKotaID', '3171'),
-        'kecamatan_kode' => $this->getSettingValue('KecamatanID', '3171010'),
-        'kelurahan_kode' => $this->getSettingValue('KelurahanID', '3171010001'),
-        'periode' => date('Y-m-d'),
-        'jumlah_anggota' => $this->anggotaModel->countAllResults(),
-        'kunjungan_anggota' => $this->memberguestModel->where('NoAnggota !=', null)->countAllResults(),
-        'kunjungan_non_anggota' => $this->memberguestModel->where('NoAnggota', null)->countAllResults(),
-        'total_katalog' => $this->katalogModel->countAllResults(),
-        'total_koleksi' => $this->koleksiModel->countAllResults(),
-        'total_peminjaman' => $this->peminjamanModel->countAllResults(),
-        'total_baca_ditempat' => $this->memberguestModel->where('NoAnggota !=', null)->countAllResults()+$this->memberguestModel->where('NoAnggota', null)->countAllResults(),
+        'nama_perpustakaan'    => $this->getSettingValue('NamaPerpustakaan', 'Perpustakaan Mitra'),
+        'npp'                  => $this->getSettingValue('NPPPerpustakaan', 'NPP Perpustakaan Mitra'),
+        'alamat'               => $this->getSettingValue('NamaLokasiPerpustakaan', 'Alamat Perpustakaan Mitra'),
+        'email'                => $this->getSettingValue('EmailPerpustakaan', 'Email Perpustakaan Mitra'),
+        'Provinsi_kode'        => $this->getSettingValue('ProvinsiID', '32'),        // <-- disamakan jadi "Provinsi_kode"
+        'kabkota_kode'    => str_replace('.', '', $this->getSettingValue('KabKotaID', '31.71')),
+'kecamatan_kode'  => str_replace('.', '', $this->getSettingValue('KecamatanID', '31.71.01')),
+'kelurahan_kode'  => str_replace('.', '', $this->getSettingValue('KelurahanID', '31.71.01.1001')),
+        'periode'              => date('Y-m-d'),
+        'jumlah_anggota'       => $this->anggotaModel->countAllResults(),
+        'kunjungan_anggota'    => $this->memberguestModel->where('NoAnggota !=', null)->countAllResults(),
+        'kunjungan_non_anggota'=> $this->memberguestModel->where('NoAnggota', null)->countAllResults(),
+        'total_katalog'        => $this->katalogModel->countAllResults(),
+        'total_koleksi'        => $this->koleksiModel->countAllResults(),
+        'total_peminjaman'     => $this->peminjamanModel->countAllResults(),
+        'total_baca_ditempat'  => $this->memberguestModel->where('NoAnggota !=', null)->countAllResults()
+                                 + $this->memberguestModel->where('NoAnggota', null)->countAllResults(),
     ];
 
-    // 3. Kirim ke Flask menggunakan CURL / CI4 HTTP Client
-    $flaskUrl = env('FLASK_API_BASEURL') . '/rekap';
-    $apiKey   = env('API_KEY'); // Simpan ini di .env lebih aman
+    // 3. Kirim ke Flask menggunakan CI4 HTTP Client
+    $flaskUrl = rtrim(env('FLASK_API_BASEURL'), '/') . '/api/dashboard/rekap'; // hindari double slash
+    $apiKey   = env('API_KEY');
 
-    $client = \Config\Services::curlrequest();
+    if (empty($flaskUrl) || empty($apiKey)) {
+        return $this->response->setJSON([
+            'status'  => 'error',
+            'message' => 'FLASK_API_BASEURL atau API_KEY belum diset di .env'
+        ])->setStatusCode(500);
+    }
+
+    $client = \Config\Services::curlrequest([
+        'timeout'         => 10,
+        'connect_timeout' => 5,
+    ]);
 
     try {
         $response = $client->request('POST', $flaskUrl, [
@@ -126,33 +136,52 @@ class Dashboard extends \Base\Controllers\BaseController
                 'Content-Type' => 'application/json',
                 'X-API-KEY'    => $apiKey
             ],
-            'json' => $payload,
-            'http_errors' => false // Agar kita bisa handle error code manual
+            'json'        => $payload,
+            'http_errors' => false
         ]);
 
         $statusCode = $response->getStatusCode();
-        $body = json_decode($response->getBody());
+        $rawBody    = $response->getBody();
+        $body       = json_decode($rawBody);
+
+        // Jika body bukan JSON valid (misal Flask error 500 balikin HTML traceback)
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            log_message('error', 'Response Flask bukan JSON. Status: ' . $statusCode . ' Body: ' . $rawBody);
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Server pusat mengembalikan response tidak valid (bukan JSON). Status: ' . $statusCode
+            ])->setStatusCode(500);
+        }
 
         if ($statusCode == 201) {
             return $this->response->setJSON([
-                'status' => 'success',
+                'status'  => 'success',
                 'message' => 'Laporan berhasil dikirim ke Pusat!'
             ]);
         } elseif ($statusCode == 409) {
             return $this->response->setJSON([
-                'status' => 'warning',
+                'status'  => 'warning',
                 'message' => 'Data periode ini sudah ada di server pusat.'
             ]);
+        } elseif ($statusCode == 404) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => $body->error ?? 'NPP tidak terdaftar di server pusat.'
+            ])->setStatusCode(404);
         } else {
-             return $this->response->setJSON([
-                'status' => 'error',
-                'message' => isset($body->error) ? $body->error : 'Gagal mengirim data.'
+            // Log detail lengkap ke server, tapi jangan expose payload mentah ke user/frontend
+            log_message('error', 'Gagal kirim laporan. Status: ' . $statusCode . ' Payload: ' . json_encode($payload) . ' Body: ' . $rawBody);
+
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => $body->error ?? ('Gagal mengirim data. Status: ' . $statusCode)
             ])->setStatusCode(500);
         }
 
     } catch (\Exception $e) {
+        log_message('error', 'Koneksi ke server pusat gagal: ' . $e->getMessage());
         return $this->response->setJSON([
-            'status' => 'error',
+            'status'  => 'error',
             'message' => 'Koneksi ke server pusat gagal: ' . $e->getMessage()
         ])->setStatusCode(500);
     }

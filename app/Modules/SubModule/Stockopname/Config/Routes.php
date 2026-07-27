@@ -13,6 +13,7 @@ $routes->group('stockopname', ['namespace' => 'Stockopname\Controllers'], functi
 	  // Barcode scanning and detail management
     $subroutes->add('scanBarcode', 'Stockopname::scanBarcode');
     $subroutes->add('updateDetail', 'Stockopname::updateDetail');
+    $subroutes->add('updateCollection', 'Stockopname::updateCollection');
     $subroutes->delete('deleteDetail/(:num)', 'Stockopname::deleteDetail/$1');
     $subroutes->get('getCollectionInfo', 'Stockopname::getCollectionInfo');
     

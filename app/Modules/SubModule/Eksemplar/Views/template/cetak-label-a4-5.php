@@ -27,13 +27,13 @@ foreach ($LabelData as $LabelData) :
 			<td style="width:50%;">
 				<table cellpadding="0" cellspacing="0" style="width:255px;" nobr="true">
 					<tr>				
-						<td style="border:solid 1px #CCC; height:53px; width:212px; text-align: center; ">' . $LabelData['NamaPerpustakaan'] . '</td>						
+						<td style="border:solid 1px #CCC; height:53px; width:212px; text-align: center; vertical-align: middle; ">' . $LabelData['NamaPerpustakaan'] . '</td>						
 					</tr>
 					<tr>																
-						<td style="height:90px; border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;border-left:solid 1px #CCC; text-align: center">' . LabelCallNumber_helper($LabelData['CallNumber']) . '</td>						
+						<td style="height:90px; border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;border-left:solid 1px #CCC; text-align: center; vertical-align: middle;">' . implode('<br>', array_map('htmlspecialchars', preg_split('/[\s\/]+/', trim($LabelData['CallNumber'])))) . '</td>						
 					</tr>
 					<tr>
-						<td style="text-align: center; border-bottom:solid 1px #CCC;">																																									
+						<td style="text-align: center; vertical-align: middle; border-bottom:solid 1px #CCC;">																																									
                             <br>
 							<br>
                             <img src="' . $LabelData['BarcodePNG'] . '" width="150" height="30">
@@ -68,6 +68,10 @@ foreach ($LabelData as $LabelData) :
 	}
 // }
 endforeach;
+if (isset($outputFormat) && $outputFormat == 'word') {
+    echo $html;
+    return;
+}
 $pdf->writeHTML($html, true, false, false, false, '');
 $pdf->Output('example_006.pdf', 'D');
 die;

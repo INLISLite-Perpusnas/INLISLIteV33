@@ -41,24 +41,25 @@ foreach ($LabelData as $data) {
     );
 
     $warna      = ($data['Warna1'] !== '') ? 'background-color:' . $data['Warna1'] . ';' : '';
-    $callNumber = str_replace(' ', '<br>', htmlspecialchars($data['CallNumber']));
+    $parts = preg_split('/[\s\/]+/', trim($data['CallNumber']));
+    $callNumber = implode('<br>', array_map('htmlspecialchars', $parts));
 
     $html = '
     <table cellpadding="1" cellspacing="0" style="width:' . $labelW . 'mm;">
         <tr>
-            <td style="border:solid 1px #CCC; height:13mm; text-align:center;
+            <td style="border:solid 1px #CCC; height:13mm; text-align: center; vertical-align: middle;
                        font-size:9pt; font-weight:bold; width:75%;">
                 ' . htmlspecialchars($data['NamaPerpustakaan']) . '
             </td>
             <td rowspan="2" style="width:25%; border-top:solid 1px #CCC; border-bottom:solid 1px #CCC;
-                       border-right:solid 1px #CCC; text-align:center; font-size:8pt;
+                       border-right:solid 1px #CCC; text-align: center; vertical-align: middle; font-size:8pt;
                        font-weight:bold; vertical-align:middle; ' . $warna . '">
                 ' . $callNumber . '
             </td>
         </tr>
         <tr>
             <td style="width:75%; border-left:solid 1px #CCC; border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;
-                       text-align:center; font-size:7pt; height:50mm; padding:2mm;">
+                       text-align: center; vertical-align: middle; font-size:7pt; height:50mm; padding:2mm;">
                 ' . htmlspecialchars($data['Title']) . '<br><br>
                 <img src="' . $barcodeSrc . '" style="width:60mm; height:11mm;"><br>
                 *' . htmlspecialchars($data['Barcode']) . '*
@@ -67,11 +68,19 @@ foreach ($LabelData as $data) {
     </table>';
 
     $pdf->SetXY($x, $y);
-    $pdf->writeHTML($html, false, false, false, false, '');
+    if (isset($outputFormat) && $outputFormat == 'word') {
+        echo $html . '<br>';
+        continue;
+    }
+$pdf->writeHTML($html, false, false, false, false, '');
 
     $col++;
     if ($col >= $cols) { $col = 0; $row++; }
     if ($row >= $rows)  { $row = 0; $col = 0; $pageCount++; if ($idx < $total) $pdf->AddPage(); }
+}
+
+if (isset($outputFormat) && $outputFormat == 'word') {
+    return;
 }
 
 $pdf->Output('label-gc121-4.pdf', 'D');

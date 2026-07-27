@@ -79,19 +79,6 @@
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
 
-    #detailTable_wrapper {
-        padding: 10px;
-    }
-
-    #detailTable_wrapper .dataTables_length,
-    #detailTable_wrapper .dataTables_filter {
-        margin-bottom: 4px;
-    }
-
-    #detailTable_wrapper .dataTables_length select {
-        margin: 0 4px;
-    }
-
     #detailTable .form-select-sm {
         min-width: 120px;
         font-size: 0.8rem;
@@ -102,18 +89,8 @@
         pointer-events: none;
     }
 
-    #detailTable_wrapper .row:first-child {
-        margin-bottom: 4px !important;
-    }
-
-    #detailTable_wrapper .row:last-child {
-        margin-top: 4px !important;
-    }
-
     .table th,
-    #detailTable thead tr th,
-    #detailTable thead tr th div,
-    #detailTable thead tr th span {
+    #detailTable thead tr th {
         background-color: #667eea !important;
         color: white !important;
         font-weight: 600;
@@ -181,6 +158,24 @@
         box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
     }
 
+    /* Custom styling for CI4 pager links, since we no longer use DataTables' own pagination UI */
+    .pagination {
+        margin-bottom: 0;
+        flex-wrap: wrap;
+    }
+
+    .pagination .page-link {
+        border-radius: 8px;
+        margin: 0 3px;
+        border: none;
+        color: #667eea;
+    }
+
+    .pagination .page-item.active .page-link {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+    }
+
     @media (max-width: 768px) {
         .table-responsive {
             border-radius: 15px;
@@ -199,7 +194,8 @@
     .scanner-container,
     .not-scanned-list,
     .btn,
-    .modal {
+    .modal,
+    .pagination {
         display: none !important;
     }
 
@@ -231,7 +227,6 @@
                 </div>
             </div>
             <div class="page-title-actions">
-                
                 <nav class="ms-3" aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item">
@@ -290,9 +285,6 @@
         </div>
     </div>
 
-  
-
-
     <!-- Barcode Scanner -->
     <div class="row mb-4">
         <div class="col-12">
@@ -321,10 +313,26 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="card">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <h5 class="mb-0"><i class="fas fa-list"></i> Detail Stockopname</h5>
+                    <span class="badge bg-light text-dark"><?= number_format($totalDetails ?? count($details)) ?> total data</span>
                 </div>
                 <div class="card-body p-0">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 px-3 pt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <label for="perPageSelect" class="mb-0 small text-muted">Tampilkan</label>
+                            <select id="perPageSelect" class="form-select form-select-sm" style="width: auto;">
+                                <option value="25" <?= ($perPageDetails ?? 25) == 25 ? 'selected' : '' ?>>25</option>
+                                <option value="50" <?= ($perPageDetails ?? 25) == 50 ? 'selected' : '' ?>>50</option>
+                                <option value="100" <?= ($perPageDetails ?? 25) == 100 ? 'selected' : '' ?>>100</option>
+                            </select>
+                            <span class="small text-muted">data per halaman</span>
+                        </div>
+                        <div class="small text-muted">
+                            Menampilkan <?= ($offsetDetails ?? 0) + 1 ?>–<?= min(($offsetDetails ?? 0) + ($perPageDetails ?? 25), $totalDetails ?? count($details)) ?>
+                            dari <?= number_format($totalDetails ?? count($details)) ?> data
+                        </div>
+                    </div>
                     <div class="table-container">
                         <div class="table-responsive">
                             <table class="table table-hover mb-0" id="detailTable">
@@ -338,12 +346,13 @@
                                         <th>Status</th>
                                         <th>Aturan</th>
                                         <th>Tanggal Scan</th>
-
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php if (!empty($details)): ?>
-                                        <?php $no = 1;
+                                        <?php
+                                        // Nomor urut menyesuaikan halaman aktif, bukan selalu mulai dari 1
+                                        $no = $offsetDetails + 1;
                                         foreach ($details as $detail): ?>
                                             <tr id="row-<?= $detail['ID'] ?>">
                                                 <td><?= $no++ ?></td>
@@ -408,12 +417,11 @@
                                                     <br>
                                                     <small class="text-muted">oleh User <?= $detail['CreateBy'] ?></small>
                                                 </td>
-
                                             </tr>
                                         <?php endforeach; ?>
                                     <?php else: ?>
                                         <tr>
-                                            <td colspan="9" class="text-center py-4">
+                                            <td colspan="8" class="text-center py-4">
                                                 <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
                                                 <br>
                                                 Belum ada koleksi yang di-scan
@@ -425,11 +433,16 @@
                         </div>
                     </div>
                 </div>
+                <?php if (!empty($details)): ?>
+                    <div class="card-footer d-flex justify-content-center">
+                        <?= $detailsPager ?? '' ?>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
 
-      <!-- Location & Status Summary Table -->
+    <!-- Location & Status Summary Table -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="card">
@@ -442,7 +455,6 @@
                             <thead class="table-light">
                                 <tr>
                                     <?php
-                                    // Ambil header dari baris pertama data summary
                                     if (!empty($locationSummary)) {
                                         $statusHeaders = array_keys($locationSummary[0]);
                                         foreach ($statusHeaders as $header) {
@@ -485,43 +497,104 @@
                         <span class="badge bg-danger"><?= $totalNotInStockopname ?></span>
                     </h5>
                 </div>
-                <div class="card-body">
-                    <div class="not-scanned-list">
-                        <?php if (!empty($collectionsNotInStockopname)): ?>
-                            <?php foreach ($collectionsNotInStockopname as $collection): ?>
-                                <div class="not-scanned-item">
-                                    <div class="row align-items-center">
-                                        <div class="col-md-2">
-                                            <strong><?= $collection['NomorBarcode'] ?></strong>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <strong><?= $collection['Title'] ?></strong>
-                                            <br>
-                                            <small class="text-muted"><?= $collection['Author'] ?></small>
-                                        </div>
-
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-
-                        <?php else: ?>
-                            <div class="text-center py-4">
-                                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
-                                <br>
-                                <strong>Semua koleksi sudah di-stockopname!</strong>
-                            </div>
-                        <?php endif; ?>
+                <div class="card-body p-0">
+                    <div class="table-container">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="notInTable">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Barcode</th>
+                                        <th>Judul</th>
+                                        <th>Pengarang</th>
+                                        <th>Lokasi</th>
+                                        <th>Status</th>
+                                        <th>Aturan</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (!empty($collectionsNotInStockopname)): ?>
+                                        <?php
+                                        $no = ($offsetNotIn ?? 0) + 1;
+                                        foreach ($collectionsNotInStockopname as $collection): ?>
+                                            <tr>
+                                                <td><?= $no++ ?></td>
+                                                <td>
+                                                    <strong><?= $collection['NomorBarcode'] ?></strong>
+                                                    <br>
+                                                    <small class="text-muted"><?= $collection['CallNumber'] ?></small>
+                                                </td>
+                                                <td>
+                                                    <strong><?= $collection['Title'] ?></strong>
+                                                    <br>
+                                                    <small class="text-muted"><?= $collection['Publisher'] ?></small>
+                                                </td>
+                                                <td><?= $collection['Author'] ?></td>
+                                                <td>
+                                                    <select class="form-select form-select-sm select-lokasi-not-in"
+                                                            data-collection-id="<?= $collection['id'] ?>"
+                                                            data-field="current_location_id">
+                                                        <?php foreach ($locations as $loc): ?>
+                                                            <option value="<?= $loc->ID ?>"
+                                                                <?= $loc->ID == $collection['CurrentLocationID'] ? 'selected' : '' ?>>
+                                                                <?= esc($loc->Name) ?>
+                                                            </option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <select class="form-select form-select-sm select-status-not-in"
+                                                            data-collection-id="<?= $collection['id'] ?>"
+                                                            data-field="current_status_id">
+                                                        <?php foreach ($statuses as $st): ?>
+                                                            <option value="<?= $st->ID ?>"
+                                                                <?= $st->ID == $collection['CurrentStatusID'] ? 'selected' : '' ?>>
+                                                                <?= esc($st->Name) ?>
+                                                            </option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <select class="form-select form-select-sm select-rule-not-in"
+                                                            data-collection-id="<?= $collection['id'] ?>"
+                                                            data-field="current_collection_rule_id">
+                                                        <?php foreach ($rules as $rule): ?>
+                                                            <option value="<?= $rule->ID ?>"
+                                                                <?= $rule->ID == $collection['CurrentCollectionRuleID'] ? 'selected' : '' ?>>
+                                                                <?= esc($rule->Name) ?>
+                                                            </option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <button type="button" class="btn btn-sm btn-success" onclick="quickAdd('<?= $collection['NomorBarcode'] ?>')">
+                                                        <i class="fas fa-plus"></i> Scan
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="8" class="text-center py-4">
+                                                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                                <br>
+                                                <strong>Semua koleksi sudah di-stockopname!</strong>
+                                            </td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-                <div class="card-footer">
+                <div class="card-footer d-flex justify-content-center">
                     <?= $notInPager ?? '' ?>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-
 
 <!-- Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
@@ -555,38 +628,11 @@
         "hideMethod": "fadeOut"
     };
 
-    const locationsData = <?= json_encode(array_map(function($loc){ return ['ID' => $loc->ID, 'Name' => $loc->Name]; }, $locations)) ?>;
-    const statusesData  = <?= json_encode(array_map(function($st){ return ['ID' => $st->ID,  'Name' => $st->Name]; }, $statuses)) ?>;
-    const rulesData     = <?= json_encode(array_map(function($r){ return ['ID' => $r->ID,   'Name' => $r->Name]; }, $rules)) ?>;
-
-    let dtTable;
-
     $(document).ready(function() {
-        // Inisialisasi DataTables untuk tabel detail
-        dtTable = $('#detailTable').DataTable({
-            pageLength: 25,
-            scrollX: true,
-            scrollCollapse: true,
-            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'Semua']],
-            language: {
-                search:           'Cari:',
-                lengthMenu:       'Tampilkan _MENU_ data',
-                info:             'Menampilkan _START_ - _END_ dari _TOTAL_ data',
-                infoEmpty:        'Tidak ada data',
-                infoFiltered:     '(difilter dari _MAX_ total data)',
-                zeroRecords:      'Data tidak ditemukan',
-                paginate: {
-                    first:    'Pertama',
-                    last:     'Terakhir',
-                    next:     'Berikutnya',
-                    previous: 'Sebelumnya',
-                },
-            },
-            order: [],
-            columnDefs: [
-                { targets: [0, 4, 5, 6], orderable: false },
-            ],
-        });
+        // Catatan: DataTables tidak lagi dipakai di tabel ini.
+        // Pagination sekarang murni ditangani server-side oleh pager bawaan CI4
+        // (lihat $detailsPager di controller & view), supaya kuat untuk data
+        // puluhan ribu baris tanpa menumpuk semuanya di DOM sekaligus.
 
         // Inline select — update lokasi / status / aturan
         $(document).on('change', '.select-lokasi, .select-status, .select-rule', function() {
@@ -624,8 +670,52 @@
         });
 
         // Simpan nilai sebelumnya agar bisa di-rollback jika gagal
-        $(document).on('focus', '.select-lokasi, .select-status, .select-rule', function() {
+        $(document).on('focus', '.select-lokasi, .select-status, .select-rule, .select-lokasi-not-in, .select-status-not-in, .select-rule-not-in', function() {
             $(this).data('prev-val', $(this).val());
+        });
+
+        // Inline select — update lokasi / status / aturan for NOT IN stockopname
+        $(document).on('change', '.select-lokasi-not-in, .select-status-not-in, .select-rule-not-in', function() {
+            const $sel      = $(this);
+            const collectionId = $sel.data('collection-id');
+            const field     = $sel.data('field');
+            const value     = $sel.val();
+
+            $sel.addClass('select-saving');
+
+            const payload = { collection_id: collectionId };
+            payload[field] = value;
+
+            $.ajax({
+                url: '<?= base_url('stockopname/updateCollection') ?>',
+                method: 'POST',
+                data: payload,
+                dataType: 'json',
+                success: function(res) {
+                    if (res.status === 'success') {
+                        Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Koleksi berhasil diperbarui', timer: 1500, showConfirmButton: false });
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Gagal', text: res.message || 'Gagal memperbarui' });
+                        $sel.val($sel.data('prev-val'));
+                    }
+                },
+                error: function() {
+                    Swal.fire({ icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan jaringan' });
+                    $sel.val($sel.data('prev-val'));
+                },
+                complete: function() {
+                    $sel.removeClass('select-saving');
+                },
+            });
+        });
+
+        // Ganti jumlah data per halaman — reload dengan parameter per_page baru,
+        // reset ke halaman 1 karena jumlah baris per halaman berubah
+        $('#perPageSelect').on('change', function() {
+            const url = new URL(window.location.href);
+            url.searchParams.set('per_page', $(this).val());
+            url.searchParams.set('page_details', 1);
+            window.location.href = url.toString();
         });
 
         // Focus on barcode input
@@ -646,14 +736,14 @@
         });
 
         // Auto-focus back to barcode input after any action
-        // Kecualikan klik pada kontrol DataTables dan elemen interaktif lainnya
+        // Kecualikan klik pada elemen interaktif dan link pagination
         $(document).on('click', function(e) {
             const $target = $(e.target);
-            const isDataTablesControl = $target.closest(
-                '.dataTables_length, .dataTables_filter, .dataTables_paginate, .dataTables_info, select, input, button, a, .modal'
+            const isInteractiveControl = $target.closest(
+                'select, input, button, a, .modal, .pagination'
             ).length > 0;
 
-            if (!isDataTablesControl && !$('#editModal').hasClass('show')) {
+            if (!isInteractiveControl && !$('#editModal').hasClass('show')) {
                 setTimeout(() => $('#barcodeInput').focus(), 100);
             }
         });
@@ -668,7 +758,6 @@
             return;
         }
 
-        // Show loading
         const submitBtn = $('#scanForm button[type="submit"]');
         const originalText = submitBtn.html();
         submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Memproses...').prop('disabled', true);
@@ -685,6 +774,8 @@
                 if (response.status === 'success') {
                     Swal.fire({ icon: 'success', title: 'Berhasil', text: response.message, timer: 1500, showConfirmButton: false })
                         .then(function() {
+                            // Reload halaman penuh supaya data baru + pager tetap konsisten
+                            // dengan yang ada di server (item baru biasanya masuk ke halaman awal).
                             location.reload();
                         });
                 } else {
@@ -709,80 +800,15 @@
         scanBarcode();
     }
 
-    // Add new row to table
-    function addNewRowToTable(data) {
-        const buildOptions = function(items, selectedId) {
-            return items.map(function(item) {
-                return '<option value="' + item.ID + '"' + (item.ID == selectedId ? ' selected' : '') + '>' + item.Name + '</option>';
-            }).join('');
-        };
-
-        const rowCount = dtTable ? dtTable.rows().count() + 1 : ($('#detailTable tbody tr').length + 1);
-
-        const $newRow = $(`<tr id="row-${data.ID}" class="table-success">
-            <td>${rowCount}</td>
-            <td>
-                <strong>${data.NomorBarcode || ''}</strong><br>
-                <small class="text-muted">${data.CallNumber || ''}</small>
-            </td>
-            <td>
-                <strong>${data.Title || ''}</strong><br>
-                <small class="text-muted">${data.Publisher || ''}</small>
-            </td>
-            <td>${data.Author || ''}</td>
-            <td>
-                <select class="form-select form-select-sm select-lokasi"
-                        data-detail-id="${data.ID}"
-                        data-field="current_location_id">
-                    ${buildOptions(locationsData, data.CurrentLocationID)}
-                </select>
-            </td>
-            <td>
-                <select class="form-select form-select-sm select-status"
-                        data-detail-id="${data.ID}"
-                        data-field="current_status_id">
-                    ${buildOptions(statusesData, data.CurrentStatusID)}
-                </select>
-            </td>
-            <td>
-                <select class="form-select form-select-sm select-rule"
-                        data-detail-id="${data.ID}"
-                        data-field="current_collection_rule_id">
-                    ${buildOptions(rulesData, data.CurrentCollectionRuleID)}
-                </select>
-            </td>
-            <td>
-                ${new Date().toLocaleDateString('id-ID')} ${new Date().toLocaleTimeString('id-ID')}<br>
-                <small class="text-muted">oleh User ${data.CreateBy || ''}</small>
-            </td>
-        </tr>`);
-
-        if (dtTable) {
-            dtTable.row.add($newRow[0]).draw(false);
-        } else {
-            $('#detailTable tbody').prepend($newRow);
-        }
-
-        setTimeout(function() {
-            $('#row-' + data.ID).removeClass('table-success');
-        }, 3000);
-    }
-
     // Edit detail function
     function editDetail(detailId) {
         currentEditingDetail = detailId;
+        $('#editDetailId').val(detailId);
 
-        // Get detail data from table row
         const row = $(`#row-${detailId}`);
         const barcode = row.find('td:eq(1) strong').text();
 
-        // Set form values
-        $('#editDetailId').val(detailId);
-
-        // Load collection info
         loadCollectionInfo(barcode);
-
-        // Show modal
         $('#editModal').modal('show');
     }
 
@@ -811,7 +837,6 @@
                             </div>
                         `);
 
-                    // Set current values
                     $('#editCurrentLocation').val(collection.location_id);
                     $('#editCurrentStatus').val(collection.status_id);
                     $('#editCurrentRule').val(collection.collection_rule_id);
@@ -865,12 +890,12 @@
                     dataType: 'json',
                     success: function(response) {
                         if (response.status === 'success') {
-                            Swal.fire({ icon: 'success', title: 'Berhasil', text: response.message, timer: 1500, showConfirmButton: false });
-                            $(`#row-${detailId}`).fadeOut(500, function() {
-                                $(this).remove();
-                                updateRowNumbers();
-                                updateSummary();
-                            });
+                            Swal.fire({ icon: 'success', title: 'Berhasil', text: response.message, timer: 1500, showConfirmButton: false })
+                                .then(function() {
+                                    // Reload penuh: dengan pagination server-side,
+                                    // nomor urut & halaman perlu dihitung ulang oleh server.
+                                    location.reload();
+                                });
                         } else {
                             Swal.fire({ icon: 'error', title: 'Gagal', text: response.message });
                         }
@@ -883,19 +908,6 @@
         });
     }
 
-    // Update row numbers after deletion
-    function updateRowNumbers() {
-        $('#detailTable tbody tr').each(function(index) {
-            $(this).find('td:first').text(index + 1);
-        });
-    }
-
-    // Update summary (you might want to reload specific parts)
-    function updateSummary() {
-        // This could be implemented to update summary without full page reload
-        // For now, we'll just note that summary should be updated
-    }
-
     // Handle modal events
     $('#editModal').on('hidden.bs.modal', function() {
         currentEditingDetail = null;
@@ -904,55 +916,14 @@
 
     // Keyboard shortcuts
     $(document).on('keydown', function(e) {
-        // ESC to focus on barcode input
         if (e.key === 'Escape' && !$('#editModal').hasClass('show')) {
             $('#barcodeInput').focus().select();
         }
-
-        // F1 to show help (you can implement this)
-        if (e.key === 'F1') {
-            e.preventDefault();
-            // Show help modal or tooltip
-        }
     });
-
-    // Auto-refresh not scanned list every 30 seconds
-    setInterval(function() {
-        // You could implement auto-refresh of the not scanned list here
-        // For performance reasons, this is commented out by default
-    }, 30000);
 
     // Print function (bonus)
     function printStockopname() {
         window.print();
     }
-
-    // Show loading overlay function
-    function showLoading() {
-        $('body').append(`
-                <div id="loadingOverlay" style="
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0,0,0,0.5);
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    z-index: 9999;
-                ">
-                    <div class="spinner-border text-light" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-            `);
-    }
-
-    function hideLoading() {
-        $('#loadingOverlay').remove();
-    }
 </script>
 <?= $this->endSection('script'); ?>
-
-<!-- Print Styles -->

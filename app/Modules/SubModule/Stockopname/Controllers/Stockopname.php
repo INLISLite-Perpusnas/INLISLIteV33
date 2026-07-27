@@ -373,14 +373,18 @@ class Stockopname extends \Base\Controllers\BaseController
     $pager = \Config\Services::pager();
    $locationSummary=$this->stockopnamedetailModel->countStockopnameDetailsByLocationAndStatus($id);
     // dd($summary);
-   
+   $pageDetails = $this->request->getVar('page_details') ? (int)$this->request->getVar('page_details') : 1;
     // -- Pagination for Stockopname Details --
-    $pageDetails = $this->request->getVar('page_details') ? (int)$this->request->getVar('page_details') : 1;
-    $perPageDetails = 25; // Items per page for the details table
-    $totalDetails = $this->stockopnamedetailModel->getDetailCount($id);
+   // Ambil pilihan jumlah data per halaman, batasi hanya ke nilai yang diizinkan
+    $allowedPerPage = [25, 50, 100];
+    $perPageDetails = (int) ($this->request->getVar('per_page') ?? 25);
+    if (!in_array($perPageDetails, $allowedPerPage, true)) {
+        $perPageDetails = 25;
+    }
+    $totalDetails  = $this->stockopnamedetailModel->getDetailCount($id);
     $offsetDetails = ($pageDetails - 1) * $perPageDetails;
     $details = $this->stockopnamedetailModel->getStockopnameDetails($id, $perPageDetails, $offsetDetails);
-   
+
     $detailsPager = $pager->makeLinks($pageDetails, $perPageDetails, $totalDetails, 'default_full', 0, 'details');
 
     // -- Pagination for Collections Not In Stockopname --
@@ -406,6 +410,9 @@ class Stockopname extends \Base\Controllers\BaseController
     // --- PASS PAGINATION DATA TO VIEW ---
     $this->data['details'] = $details;
     $this->data['detailsPager'] = $detailsPager;
+    $this->data['offsetDetails'] = $offsetDetails;   // <-- tambahkan ini
+    $this->data['totalDetails']    = $totalDetails;
+    $this->data['perPageDetails']  = $perPageDetails;   // <-- tambahan baru
 
     $this->data['collectionsNotInStockopname'] = $collectionsNotInStockopname;
     $this->data['notInPager'] = $notInPager;
@@ -593,6 +600,9 @@ class Stockopname extends \Base\Controllers\BaseController
             $result = $this->stockopnamedetailModel->update($detailId, $updateData);
 
             if ($result) {
+                // Update corresponding collections table records
+                $this->updateCollectionFromStockopname($detail->CollectionID, $updateData);
+
                 return $this->response->setJSON([
                     'status' => 'success',
                     'message' => 'Detail stockopname berhasil diperbarui.'
@@ -604,6 +614,67 @@ class Stockopname extends \Base\Controllers\BaseController
                 ]);
             }
 
+        } catch (\Throwable $e) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    public function updateCollection()
+    {
+        $collectionId = $this->request->getPost('collection_id');
+        $currentLocationId = $this->request->getPost('current_location_id');
+        $currentStatusId = $this->request->getPost('current_status_id');
+        $currentCollectionRuleId = $this->request->getPost('current_collection_rule_id');
+
+        if (empty($collectionId)) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'ID koleksi tidak valid.'
+            ]);
+        }
+
+        try {
+            $updateData = [];
+
+            if (!empty($currentLocationId)) {
+                $updateData['Location_id'] = $currentLocationId;
+            }
+            
+            if (!empty($currentStatusId)) {
+                $updateData['Status_id'] = $currentStatusId;
+            }
+            
+            if (!empty($currentCollectionRuleId)) {
+                $updateData['Rule_id'] = $currentCollectionRuleId;
+            }
+
+            if (!empty($updateData)) {
+                $updateData['UpdateDate'] = date('Y-m-d H:i:s');
+                $updateData['UpdateBy'] = session()->get('user_id') ?? 1;
+                $updateData['UpdateTerminal'] = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
+
+                $result = $this->collectionModel->update($collectionId, $updateData);
+
+                if ($result) {
+                    return $this->response->setJSON([
+                        'status' => 'success',
+                        'message' => 'Koleksi berhasil diperbarui.'
+                    ]);
+                } else {
+                    return $this->response->setJSON([
+                        'status' => 'error',
+                        'message' => 'Gagal memperbarui koleksi.'
+                    ]);
+                }
+            } else {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'Tidak ada data yang diperbarui.'
+                ]);
+            }
         } catch (\Throwable $e) {
             return $this->response->setJSON([
                 'status' => 'error',
@@ -740,20 +811,21 @@ class Stockopname extends \Base\Controllers\BaseController
         $collectionUpdateData = [];
         
         if (isset($updateData['CurrentLocationID'])) {
-            $collectionUpdateData['location_id'] = $updateData['CurrentLocationID'];
+            $collectionUpdateData['Location_id'] = $updateData['CurrentLocationID'];
         }
         
         if (isset($updateData['CurrentStatusID'])) {
-            $collectionUpdateData['status_id'] = $updateData['CurrentStatusID'];
+            $collectionUpdateData['Status_id'] = $updateData['CurrentStatusID'];
         }
         
         if (isset($updateData['CurrentCollectionRuleID'])) {
-            $collectionUpdateData['collection_rule_id'] = $updateData['CurrentCollectionRuleID'];
+            $collectionUpdateData['Rule_id'] = $updateData['CurrentCollectionRuleID'];
         }
 
         if (!empty($collectionUpdateData)) {
-            $collectionUpdateData['updated_at'] = date('Y-m-d H:i:s');
-            $collectionUpdateData['updated_by'] = session()->get('user_id') ?? 1;
+            $collectionUpdateData['UpdateDate'] = date('Y-m-d H:i:s');
+            $collectionUpdateData['UpdateBy'] = session()->get('user_id') ?? 1;
+            $collectionUpdateData['UpdateTerminal'] = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
             
             $this->collectionModel->update($collectionId, $collectionUpdateData);
         }

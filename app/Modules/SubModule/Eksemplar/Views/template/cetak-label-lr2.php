@@ -22,23 +22,24 @@ foreach ($LabelData as $row) {
         $generator->getBarcode($row['Barcode'], $generator::TYPE_CODE_128, 1, 30)
     );
 
-    $callNumber = str_replace(' ', '<br>', htmlspecialchars($row['CallNumber']));
+    $parts = preg_split('/[\s\/]+/', trim($row['CallNumber']));
+    $callNumber = implode('<br>', array_map('htmlspecialchars', $parts));
 
     $html = '
     <table cellpadding="1" cellspacing="0" style="width:57mm;">
         <tr>
-            <td style="border:solid 1px #CCC; height:10mm; text-align:center; font-size:7pt; font-weight:bold; width:75%;">
+            <td style="border:solid 1px #CCC; height:10mm; text-align: center; vertical-align: middle; font-size:7pt; font-weight:bold; width:75%;">
                 ' . htmlspecialchars($row['NamaPerpustakaan']) . '
             </td>
             <td rowspan="2" style="width:25%; border-top:solid 1px #CCC; border-bottom:solid 1px #CCC;
-                       border-right:solid 1px #CCC; text-align:center; font-size:7pt;
+                       border-right:solid 1px #CCC; text-align: center; vertical-align: middle; font-size:7pt;
                        font-weight:bold; vertical-align:middle;">
                 ' . $callNumber . '
             </td>
         </tr>
         <tr>
             <td style="width:75%; border-left:solid 1px #CCC; border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;
-                       text-align:center; font-size:6pt; height:25mm; padding:1mm;">
+                       text-align: center; vertical-align: middle; font-size:6pt; height:25mm; padding:1mm;">
                 ' . htmlspecialchars($row['Title']) . '<br><br>
                 <img src="' . $barcodeSrc . '" style="width:38mm; height:9mm;"><br>
                 *' . htmlspecialchars($row['Barcode']) . '*
@@ -46,7 +47,15 @@ foreach ($LabelData as $row) {
         </tr>
     </table>';
 
-    $pdf->writeHTML($html, true, false, false, false, '');
+    if (isset($outputFormat) && $outputFormat == 'word') {
+        echo $html . '<br>';
+        continue;
+    }
+$pdf->writeHTML($html, true, false, false, false, '');
+}
+
+if (isset($outputFormat) && $outputFormat == 'word') {
+    return;
 }
 
 $pdf->Output('label-roll-lr2.pdf', 'D');

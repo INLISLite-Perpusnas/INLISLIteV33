@@ -102,9 +102,12 @@ class StockopnamedetailModel extends \Base\Models\DataModel
                 cat.Title,
                 cat.Author,
                 cat.Publisher,
-                loc.Name,
-                cs.Name,
-                cr.Name
+                loc.Name as LocationName,
+                cs.Name as StatusName,
+                cr.Name as RuleName,
+                c.Location_id as CurrentLocationID,
+                c.Status_id as CurrentStatusID,
+                c.Rule_id as CurrentCollectionRuleID
             ')
             ->join('catalogs cat', 'c.catalog_id = cat.id', 'left')
             ->join('locations loc', 'c.location_id = loc.ID', 'left')

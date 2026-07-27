@@ -31,14 +31,14 @@ foreach ($LabelData as $LabelData) :
 			<td style="width:50%;">
 				<table cellpadding="0" cellspacing="0" style="width:184px;" nobr="true">
 					<tr>
-						<td style="text-align: center; width:60px; height: 212px" rowspan="2">
+						<td style="text-align: center; vertical-align: middle; width:60px; height: 212px" rowspan="2">
 							
 							<tcpdf method="ImageSVG" params="' . $paramsSvgString . '" />
 						</td>
-						<td style="border:solid 1px #CCC; height:62px; text-align: center; width:212px; padding: 5px; font-size: 12px ">' . $LabelData['NamaPerpustakaan'] . '</td>				
+						<td style="border:solid 1px #CCC; height:62px; text-align: center; vertical-align: middle; width:212px; padding: 5px; font-size: 12px ">' . $LabelData['NamaPerpustakaan'] . '</td>				
 					</tr>
 					<tr>
-						<td style="height:150px; border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;border-left:solid 1px #CCC; font-weight: normal; font-size: 16px; text-align: center">' . LabelCallNumber_helper($LabelData['CallNumber']) . '</td>
+						<td style="height:150px; border-bottom:solid 1px #CCC; border-right:solid 1px #CCC;border-left:solid 1px #CCC; font-weight: normal; font-size: 16px; text-align: center; vertical-align: middle;">' . implode('<br>', array_map('htmlspecialchars', preg_split('/[\s\/]+/', trim($LabelData['CallNumber'])))) . '</td>
 					</tr>					
 				</table>
 			</td>';
@@ -64,6 +64,10 @@ foreach ($LabelData as $LabelData) :
 endforeach;
 // $xhtml = '		
 // <tcpdf method="ImageSVG" params="' . $paramsSvgString . '" />';
+if (isset($outputFormat) && $outputFormat == 'word') {
+    echo $html;
+    return;
+}
 $pdf->writeHTML($html, true, false, false, false, '');
 $pdf->Output('example_006.pdf', 'D');
 die;

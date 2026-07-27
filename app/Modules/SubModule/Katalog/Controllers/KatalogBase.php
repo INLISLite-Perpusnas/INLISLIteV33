@@ -26,7 +26,7 @@ trait KatalogBase
     public $eksemplarModel;
     public $edisiSerialModel;
 
-    protected function initKatalogBase(): void
+    protected function initKatalogBase()
     {
         $this->fileModel               = new \Katalog\Models\FileModel();
         $this->katalogModel            = new \Katalog\Models\KatalogModel();

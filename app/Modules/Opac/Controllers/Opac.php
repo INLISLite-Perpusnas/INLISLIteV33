@@ -1746,49 +1746,61 @@ public function browse()
     }
 
     private function _autoReturnDigitalLoan($loanItem, int $collection_id)
-    {
-        $now = date('Y-m-d H:i:s');
-        $ip  = $this->request->getIPAddress();
+{
+    // Hanya proses auto-return untuk koleksi digital (ISDRM = 1)
+    $collection = $this->db->table('collections')
+        ->select('ID, ISDRM, Status_id')
+        ->where('ID', $collection_id)
+        ->get()
+        ->getRow();
 
-        $this->db->transBegin();
-
-        $this->db->table('collectionloanitems')
-            ->where('ID', $loanItem->ID)
-            ->update([
-                'LoanStatus'     => 'Return',
-                'UpdateDate'     => $now,
-                'UpdateTerminal' => $ip,
-            ]);
-
-        $loan = $this->db->table('collectionloans')
-            ->where('ID', $loanItem->CollectionLoan_id)
-            ->get()
-            ->getRow();
-
-        if ($loan) {
-            $this->db->table('collectionloans')
-                ->where('ID', $loanItem->CollectionLoan_id)
-                ->update([
-                    'ReturnCount'    => (int) ($loan->ReturnCount ?? 0) + 1,
-                    'UpdateDate'     => $now,
-                    'UpdateTerminal' => $ip,
-                ]);
-        }
-
-        $this->db->table('collections')
-            ->where('ID', $collection_id)
-            ->update([
-                'Status_id'      => 1,
-                'UpdateDate'     => $now,
-                'UpdateTerminal' => $ip,
-            ]);
-
-        if ($this->db->transStatus() === false) {
-            $this->db->transRollback();
-        } else {
-            $this->db->transCommit();
-        }
+    if (!$collection || (int) $collection->ISDRM !== 1) {
+        return; // bukan koleksi digital, tidak perlu auto-return
     }
+
+    $now = date('Y-m-d H:i:s');
+    $ip  = $this->request->getIPAddress();
+
+    $this->db->transBegin();
+
+    $this->db->table('collectionloanitems')
+        ->where('ID', $loanItem->ID)
+        ->update([
+            'LoanStatus'     => 'Return',
+            'ActualReturn'   => $now,
+            'UpdateDate'     => $now,
+            'UpdateTerminal' => $ip,
+        ]);
+
+    $loan = $this->db->table('collectionloans')
+        ->where('ID', $loanItem->CollectionLoan_id)
+        ->get()
+        ->getRow();
+
+    if ($loan) {
+        $this->db->table('collectionloans')
+            ->where('ID', $loanItem->CollectionLoan_id)
+            ->update([
+                'ReturnCount'    => (int) ($loan->ReturnCount ?? 0) + 1,
+                'UpdateDate'     => $now,
+                'UpdateTerminal' => $ip,
+            ]);
+    }
+
+    $this->db->table('collections')
+        ->where('ID', $collection_id)
+        ->update([
+            'Status_id'      => 1,
+            'UpdateDate'     => $now,
+            'UpdateTerminal' => $ip,
+        ]);
+
+    if ($this->db->transStatus() === false) {
+        $this->db->transRollback();
+    } else {
+        $this->db->transCommit();
+    }
+}
 
     private function _recordDigitalLoan(int $catalog_id, int $member_id)
     {

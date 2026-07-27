@@ -52,7 +52,7 @@ class Pengembalian extends \Base\Controllers\BaseResourceController
 			->select('
             cli.ID, cli.ID as action, cli.CollectionLoan_id, cli.LoanDate, 
             cli.DueDate, cli.ActualReturn, cli.LateDays, cl.UpdateDate, 
-            col.NomorBarcode, a.Title, a.PublishLocation, a.Publisher, 
+            col.NomorBarcode, col.ISDRM, a.Title, a.PublishLocation, a.Publisher, 
             a.PublishYear, m.Fullname, m.MemberNo, loc.Name as LocationLibrary
         ')
 			->join('collectionloanitems cli', 'cli.CollectionLoan_id = cl.ID')
@@ -154,6 +154,9 @@ class Pengembalian extends \Base\Controllers\BaseResourceController
 			})
 			->edit('UpdateDate', function ($row) {
 				return '<span class="badge badge-info badge-pill">' . esc($row->UpdateDate) . '</span>';
+			})
+			->edit('ISDRM', function ($row) {
+				return $row->ISDRM == 1 ? 'Ya' : 'Tidak';
 			})
 			->toJson();
 
