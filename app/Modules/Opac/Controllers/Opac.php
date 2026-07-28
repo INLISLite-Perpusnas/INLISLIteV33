@@ -103,7 +103,7 @@ private function loadRegularCatalogs()
     $perPage     = 12;
     $currentPage = $this->request->getVar('page') ?? 1;
 
-    $builder = $this->katalogModel->select('catalogs.*')->orderBy("ID", "DESC");
+    $builder = $this->katalogModel->select('catalogs.*')->where('IsOPAC', 1)->orderBy("ID", "DESC");
 
     $search = sanitizeSearch($this->request->getVar('search'));
 

@@ -310,12 +310,12 @@ class Katalog extends \Base\Controllers\BaseResourceController
 		if ($update_data_id) {
 			$response = [
 				'error' => false,
-				'message' => 'Field Katalog berhasil disimpan',
+				'message' => 'Status Opac Berhasil diubah',
 			];
 		} else {
 			$response = [
 				'error' => true,
-				'message' => 'Field Katalog gagal disimpan. Silakan coba lagi',
+				'message' => 'Status Opac Gagal diubah. Silakan coba lagi',
 			];
 		}
 		return $this->simpleResponse($response);
