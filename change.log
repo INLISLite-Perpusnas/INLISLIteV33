@@ -33,5 +33,6 @@ change.log 28 July 2026
 14. Menambahkan inputan kolom tanggal di sirkulasi peminjaman agar bisa input data peminjaman di waktu Sebelumnya
 15. Menambahkan fitur kolom tanggal di sirkulasi pengembalian
 16. Memperbaiki logic cetak struk pengembalian dan kirim email bukti pengembalian
+17. Memperbaiki modul upload backgound kartu anggota yang sebelumnya tidak tersimpan di database
 
 
