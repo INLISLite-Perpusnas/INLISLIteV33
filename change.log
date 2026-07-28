@@ -1,4 +1,4 @@
-change.log 3 May 2026
+change.log 1 May 2026
 Update versi CodeIgniter 4.7
 Menambahkan konfigurasi untuk memaksa penggunaan HTTPS pada app/Config/App.php
 Memperbaiki Insecure Access-Control-Allow-Origin pada app/Filters/Cors.php, 
@@ -15,3 +15,23 @@ Memperbaiki urutan tag form MARC agar ascending berdasarkan nomor tag
 Menammbahkan fitur perpanjangan peminjaman pada modul peminjaman.
 Memperbaiki bug pada modul edit anggota
 Memperbaiki bug pada modul browse di halaman frontend
+
+change.log 28 July 2026
+1. Menambahkan fitur export excel pada modul stockopname (Plugin ID: 98425)
+2. Memperbaiki logic rekap stock opname pada modul stockopname (Plugin ID: 98425)
+3. Memperbaiki fitur ubah lokasi,status dan aturan di detail stockopname, sekaang ketika dibah data juga mengubah data di tabel collections
+4. Memperbaiki fitur data table pada daftar katalog yang sudah distockopname di modul detail stockopname. Sebelumnya hanya tampil 25 rows saja
+5. Memperbaiki tampilan dan fitur modul daftar katalog yang belum distockopname di modul detail stockopname
+6. Menambahkan fitur export label punggung buku dengan pilihan export sebagai docs word
+7. Memperbaiki logic auto fill kolom nomor panggil di modul tambah katalog
+8. Menambahkan fitur auto fill kolom nomor panggil di modul edit katalog
+9. Menambahkan fitur penambahan record ke peminjaman ketika buku digital dibaca atau dipinjam secara digital
+10. Penyempurnaan logic fitur drm di konten digital
+11. Memperbaiki fitur kirim laporan di modul dashboard
+12. Perbaikan fitur laporan sirkulasi bagian filter peminjaman
+13. Perbaiki fitur perpanjangan anggota yang awalnya data list anggotanya tidak muncul
+14. Menambahkan inputan kolom tanggal di sirkulasi peminjaman agar bisa input data peminjaman di waktu Sebelumnya
+15. Menambahkan fitur kolom tanggal di sirkulasi pengembalian
+16. Memperbaiki logic cetak struk pengembalian dan kirim email bukti pengembalian
+
+

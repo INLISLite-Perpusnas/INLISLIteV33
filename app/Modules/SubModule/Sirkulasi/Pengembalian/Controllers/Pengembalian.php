@@ -96,7 +96,8 @@ class Pengembalian extends \Base\Controllers\BaseController
             ->where('cli.ActualReturn IS NULL')
             ->get()->getResult();
 
-        $today = new \DateTime();
+        $inputReturnDate = $this->request->getPost('returnDate');
+        $today = $inputReturnDate ? new \DateTime($inputReturnDate) : new \DateTime();
         $formattedItems = [];
 
         foreach ($allItems as $item) {
@@ -152,6 +153,7 @@ class Pengembalian extends \Base\Controllers\BaseController
         $itemIdsJson   = $this->request->getPost('item_ids');
         $processVio    = $this->request->getPost('process_violation'); // '1' atau '0'
         $vioDataJson   = $this->request->getPost('violation_data');    // JSON object
+        $inputReturnDate = $this->request->getPost('returnDate');
 
         if (empty($itemIdsJson)) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Tidak ada buku yang dipilih untuk dikembalikan']);
@@ -179,7 +181,7 @@ class Pengembalian extends \Base\Controllers\BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Buku sudah dikembalikan atau tidak ditemukan']);
         }
 
-        $returnDate       = date('Y-m-d H:i:s');
+        $returnDate       = $inputReturnDate ? date('Y-m-d', strtotime($inputReturnDate)) . ' ' . date('H:i:s') : date('Y-m-d H:i:s');
         $returnedCount    = 0;
         $violationCount   = 0;
         $totalDenda       = 0;
@@ -263,6 +265,14 @@ class Pengembalian extends \Base\Controllers\BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Terjadi kesalahan saat memproses database']);
         }
 
+        $memberEmail = '';
+        if ($memberId) {
+            $memberObj = $this->db->table('members')->where('ID', $memberId)->get()->getRow();
+            if ($memberObj) {
+                $memberEmail = $memberObj->Email;
+            }
+        }
+
         $msg = "<b>$returnedCount buku</b> berhasil dikembalikan!";
         if ($violationCount > 0) {
             $msg .= "<br><small>&#9888; $violationCount pelanggaran keterlambatan telah dicatat.</small>";
@@ -280,7 +290,13 @@ class Pengembalian extends \Base\Controllers\BaseController
             'status'    => 'success',
             'message'   => $msg,
             'struk_url' => base_url('sirkulasi-pengembalian/success'),
-            'data'      => ['member_id' => $memberId, 'returned_count' => $returnedCount, 'violation_count' => $violationCount]
+            'data'      => [
+                'member_id' => $memberId, 
+                'member_email' => $memberEmail,
+                'returned_count' => $returnedCount, 
+                'violation_count' => $violationCount,
+                'item_ids' => $itemIds
+            ]
         ]);
 
     } catch (\Exception $e) {
@@ -322,7 +338,7 @@ class Pengembalian extends \Base\Controllers\BaseController
         if (empty($struk)) {
             return redirect()->to('sirkulasi-pengembalian/create');
         }
-        session()->remove('struk_pengembalian');
+        // session()->remove('struk_pengembalian'); // Commented out so it can be printed multiple times
 
         $items = $this->db->table('collectionloanitems as cli')
             ->select('cli.ID, cli.DueDate, cli.ActualReturn, cli.LateDays, cli.CollectionLoan_id, cli.member_id, col.NomorBarcode, col.CallNumber, cat.Title, cat.Author')

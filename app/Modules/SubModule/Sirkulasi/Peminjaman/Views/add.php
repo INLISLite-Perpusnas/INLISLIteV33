@@ -490,10 +490,17 @@ $request = service('request'); ?>
                             <h6>Siap memproses peminjaman</h6>
                             <p><?= count($selectedBooks) ?> buku atas nama <?= esc($memberData['fullname']) ?></p>
                         </div>
-                        <form action="<?= base_url('sirkulasi-peminjaman/process-loan') ?>" method="POST"
-                              onsubmit="return confirm('Yakin ingin memproses peminjaman ini?')">
+                        <form id="form-peminjaman" action="<?= base_url('sirkulasi-peminjaman/process-loan') ?>" method="POST">
                             <input type="hidden" name="MemberNo" value="<?= esc($memberData['member_no']) ?>">
-                            <button type="submit" class="pm-btn pm-btn-success">
+                            
+                            <div style="width: 100%; margin-bottom: 15px; text-align: left;">
+                                <label for="LoanDate" style="font-size: 13px; font-weight: 700; color: var(--blue-900); margin-bottom: 5px; display: block;">Tanggal Peminjaman</label>
+                                <input type="date" class="pm-input" name="LoanDate" id="LoanDate" 
+                                       style="padding: 10px 18px; font-size: 15px; font-family: inherit; letter-spacing: 1px;" 
+                                       value="<?= date('Y-m-d') ?>" required>
+                            </div>
+
+                            <button type="submit" class="pm-btn pm-btn-success" style="width: 100%; justify-content: center;">
                                 <i class="fa fa-check"></i> Proses Peminjaman
                             </button>
                         </form>
@@ -566,6 +573,7 @@ $request = service('request'); ?>
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const af = document.querySelector('input[autofocus]');
@@ -579,12 +587,39 @@ document.addEventListener('input', function(e) {
 });
 
 document.addEventListener('submit', function(e) {
-    const btn = e.target.querySelector('button[type="submit"]');
-    if (btn) {
-        const orig = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Memproses...';
-        setTimeout(() => { btn.disabled = false; btn.innerHTML = orig; }, 5000);
+    if (e.target.id === 'form-peminjaman') {
+        e.preventDefault(); // Stop normal submission
+        const form = e.target;
+        const btn = form.querySelector('button[type="submit"]');
+        
+        Swal.fire({
+            title: 'Konfirmasi Peminjaman',
+            text: 'Yakin ingin memproses peminjaman ini?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#2d65d4',
+            cancelButtonColor: '#e8394d',
+            confirmButtonText: '<i class="fa fa-check"></i> Ya, Proses',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                if (btn) {
+                    const orig = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Memproses...';
+                    setTimeout(() => { btn.disabled = false; btn.innerHTML = orig; }, 5000);
+                }
+                form.submit();
+            }
+        });
+    } else {
+        const btn = e.target.querySelector('button[type="submit"]');
+        if (btn) {
+            const orig = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Memproses...';
+            setTimeout(() => { btn.disabled = false; btn.innerHTML = orig; }, 5000);
+        }
     }
 });
 

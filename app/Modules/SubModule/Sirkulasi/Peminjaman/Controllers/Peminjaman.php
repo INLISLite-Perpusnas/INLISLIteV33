@@ -558,6 +558,7 @@ private function getDayName($day_index)
     public function processLoan()
     {
         $memberNo = $this->request->getPost('MemberNo');
+        $inputLoanDate = $this->request->getPost('LoanDate');
         
         if (!$memberNo) {
             return redirect()->to('/sirkulasi-peminjaman/create')->with('error', 'Data tidak valid');
@@ -613,8 +614,8 @@ private function getDayName($day_index)
             $increment = $lastNumber + 1;
 
             $collection_loan_id = get_pad_number($increment, date('ymd'), 5);
-            $loanDate = date('Y-m-d H:i:s');
-            $dueDate = date('Y-m-d H:i:s', strtotime("+{$loanDays} days"));
+            $loanDate = $inputLoanDate ? date('Y-m-d', strtotime($inputLoanDate)) . ' ' . date('H:i:s') : date('Y-m-d H:i:s');
+            $dueDate = date('Y-m-d H:i:s', strtotime($loanDate . " +{$loanDays} days"));
             
             // Create collection loan record
             $loanData = [

@@ -11,7 +11,7 @@ $builder = $db->table('members')
     ->join('jenis_anggota', 'jenis_anggota.id = members.JenisAnggota_id', 'left')
     ->join('master_fakultas', 'master_fakultas.id = members.Fakultas_id', 'left')
     ->join('master_jurusan', 'master_jurusan.id = members.Jurusan_id', 'left');
-$anggotas = $builder->where('members.Branch_id', branch_id())->get()->getResult();
+$anggotas = $builder->get()->getResult();
 
 $fakultas = get_ref_table('master_fakultas', 'id,Nama', null, 'data');
 ?>

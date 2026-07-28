@@ -220,7 +220,7 @@ $request = service('request');
                         <label>Status Peminjaman</label>
                         <select name="loan_status" id="loan_status" class="form-control">
                             <option value="">-- Semua Status --</option>
-                            <option value="">Dipinjam</option>
+                            <option value="Loan">Dipinjam</option>
                             <option value="Return">Dikembalikan</option>
                         </select>
                     </div>

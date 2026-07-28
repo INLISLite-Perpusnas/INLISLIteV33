@@ -215,7 +215,7 @@
                         <li class="breadcrumb-item">
                             <a href="<?= base_url('sirkulasi-pengembalian/create') ?>"><i class="fa fa-home"></i> Home</a>
                         </li>
-                        <li class="active breadcrumb-item" aria-current="page">Pengembalian Mandiri</li>
+                        <li class="breadcrumb-item" aria-current="page">Pengembalian Mandiri</li>
                     </ol>
                 </nav>
             </div>
@@ -245,6 +245,13 @@
                                placeholder="Masukkan atau scan barcode buku..."
                                autocomplete="off" autofocus>
                     </div>
+                     
+                    <div class="pm-input-wrap" style="margin-bottom: 22px;">
+                        <h6>Tanggal Pengembalian</h6>
+                        <i class="fa fa-calendar input-icon"></i>
+                        <input type="date" id="returnDateInput" class="pm-input"
+                               value="<?= date('Y-m-d') ?>" title="Tanggal Pengembalian">
+                    </div>
 
                     <div class="text-center" style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap">
                         <button type="button" id="checkBookBtn" class="pm-btn pm-btn-ghost">
@@ -271,6 +278,8 @@
                             <div id="bookDetails"></div>
                         </div>
                     </div>
+
+
 
                 </div>
             </div>
@@ -537,6 +546,7 @@ class SelfReturnApp {
 
     async checkBook() {
         const barcode = document.getElementById('barcodeInput').value.trim();
+        const returnDate = document.getElementById('returnDateInput').value;
         if (!barcode) {
             Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Silakan masukkan barcode buku', confirmButtonColor: '#1B3878' });
             this.focusInput(); return;
@@ -546,7 +556,7 @@ class SelfReturnApp {
             const res  = await fetch('/sirkulasi-pengembalian/check-book', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `nomorBarcode=${encodeURIComponent(barcode)}`
+                body: `nomorBarcode=${encodeURIComponent(barcode)}&returnDate=${encodeURIComponent(returnDate)}`
             });
             const data = await res.json();
             if (data.status === 'success') {
@@ -658,11 +668,13 @@ class SelfReturnApp {
         this.showLoading();
 
         const itemIds = this.booksToReturn.map(b => b.id);
+        const returnDate = document.getElementById('returnDateInput').value;
 
         const body = [
             `item_ids=${encodeURIComponent(JSON.stringify(itemIds))}`,
             `process_violation=${processViolation ? '1' : '0'}`,
-            `violation_data=${encodeURIComponent(JSON.stringify(violationData || {}))}`
+            `violation_data=${encodeURIComponent(JSON.stringify(violationData || {}))}`,
+            `returnDate=${encodeURIComponent(returnDate)}`
         ].join('&');
 
         try {
@@ -676,23 +688,7 @@ class SelfReturnApp {
             this.hideLoading();
 
             if (data.status === 'success') {
-                Swal.fire({
-                    icon: 'success', title: 'Berhasil!', html: data.message,
-                    showCancelButton: true,
-                    confirmButtonColor: '#1fba74', confirmButtonText: '<i class="fa fa-file-text"></i> Lihat Struk',
-                    cancelButtonColor: '#1B3878',  cancelButtonText: 'Tutup',
-                    timer: 6000, timerProgressBar: true
-                }).then(result => {
-                    if (result.isConfirmed && data.struk_url) {
-                        window.location.href = data.struk_url;
-                    }
-                });
-                this.booksToReturn     = [];
-                this.currentMemberId   = null;
-                this.currentMemberName = null;
-                this.hideBookInfo();
-                this.loadHistory();
-                this.focusInput();
+                window.location.href = data.struk_url;
             } else {
                 Swal.fire({ icon: 'error', title: 'Gagal', text: data.message, confirmButtonColor: '#e8394d' });
             }
