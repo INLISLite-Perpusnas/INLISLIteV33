@@ -16,8 +16,10 @@
                         <div class="col-md-12">
                             <div class="position-relative form-group">
                                 <label for="file_pendukung" class="">File Foto <span id="upload_title_span2"></span>*</label>
-                                <div id="file_pendukung" class="dropzone"></div>
-                                <div id="file_pendukung_listed"></div>
+                                <input type="file" name="file_pendukung" id="file_pendukung_input" class="form-control" accept="image/png, image/jpeg, image/jpg">
+                                <div class="mt-3 text-center">
+                                    <img id="file_preview" src="" alt="Preview" style="max-width: 100%; max-height: 250px; display: none; margin: 0 auto; border: 1px solid #ddd; padding: 5px; border-radius: 5px;">
+                                </div>
                                 <div>
                                     <small class="info help-block"><span id="upload_data_format_title">Format (JPG|PNG). Max 1 Files @ 2MB</span></small>
                                 </div>
@@ -45,9 +47,8 @@
 	$(document).ready(function() {
 		$('#form_upload').submit(function(e) {
 			e.preventDefault()
-			var data_post = $(this).serializeArray();
-			var id = $('#upload_id').val();
-			var parent_id = $('#upload_parent_id').val();
+			var data_post = new FormData(this);
+			data_post.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
 
 			$('.loading').show()
 
@@ -56,6 +57,8 @@
 					type: 'POST',
 					dataType: 'json',
 					data: data_post,
+					processData: false,
+					contentType: false,
 				})
 				.done(function(res) {
 					console.log(res)
@@ -88,11 +91,24 @@
 		// Event handler removed - modal initialization is now handled in list.php
 		// This prevents duplicate initialization and event conflicts
 
-		$(document).on('hidden.bs.modal','#modal_upload', function (e) {
-			if (Dropzone.instances.length > 0) 
-				Dropzone.instances.forEach(dz => dz.destroy())
+		// Preview image when file is selected
+		$('#file_pendukung_input').change(function() {
+			var file = this.files[0];
+			if (file) {
+				var reader = new FileReader();
+				reader.onload = function(e) {
+					$('#file_preview').attr('src', e.target.result).show();
+				}
+				reader.readAsDataURL(file);
+			} else {
+				$('#file_preview').hide().attr('src', '');
+			}
+		});
 
+		$(document).on('hidden.bs.modal','#modal_upload', function (e) {
 			$('#form_upload_message').html('');
+			$('#file_pendukung_input').val('');
+			$('#file_preview').hide().attr('src', '');
 		});
 	});
 </script>

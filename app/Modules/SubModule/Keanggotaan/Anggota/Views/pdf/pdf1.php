@@ -518,7 +518,11 @@ async function handleBackgroundUpload(event) {
         // (misalnya karena CSRF gagal) alih-alih otomatis diikuti browser secara diam-diam
         const response = await fetch('<?= site_url("anggota/uploadBackground") ?>', {
             method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             body: formData,
+            credentials: 'same-origin',
             redirect: 'manual',
         });
 

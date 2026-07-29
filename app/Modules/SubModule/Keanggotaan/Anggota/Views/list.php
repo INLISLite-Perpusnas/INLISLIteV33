@@ -520,11 +520,7 @@ $request = service('request');
         $('#upload_title_span').html(title);
         $('#upload_data_format_title').html(formatTitle || 'Format (JPG|PNG). Max 1 Files @ 2MB');
         
-        // Initialize dropzone
-        if (Dropzone.instances.length > 0) {
-            Dropzone.instances.forEach(dz => dz.destroy());
-        }
-        setDropzone('file_pendukung', 'anggota', '.png,.jpg,.jpeg', 1, 10);
+        // Dropzone has been replaced by a standard file input in modal_upload.php
         
         $('#modal_upload').modal('show');
     });
@@ -537,13 +533,7 @@ $request = service('request');
         $('#modal_camera').modal('show');
     });
 
-    // Handle modal upload hidden
-    $(document).on('hidden.bs.modal','#modal_upload', function (e) {
-        if (Dropzone.instances.length > 0) {
-            Dropzone.instances.forEach(dz => dz.destroy());
-        }
-        $('#form_upload_message').html('');
-    });
+    // Modal upload hidden handler is in modal_upload.php
 
     // Handle modal camera shown
     $(document).on('shown.bs.modal','#modal_camera', function (e) {

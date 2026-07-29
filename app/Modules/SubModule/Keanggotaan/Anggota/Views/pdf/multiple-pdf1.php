@@ -565,12 +565,17 @@
 
             const formData = new FormData();
             formData.append('bgImage', file);
+            formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
 
             try {
                 showStatus('Mengupload background...', 'success');
                 const response = await fetch('<?= site_url("anggota/uploadBackground") ?>', {
                     method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
                     body: formData,
+                    credentials: 'same-origin',
                 });
                 const result = await response.json();
                 if (result.success) {

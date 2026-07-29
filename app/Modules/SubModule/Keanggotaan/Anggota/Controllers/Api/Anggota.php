@@ -332,18 +332,24 @@ class Anggota extends \Base\Controllers\BaseResourceController
 		$upload_title = $this->request->getPost('upload_title');
 
 		$update_data = [];
-		$files = (array) $this->request->getPost('file_pendukung');
-		if (count($files)) {
-			$listed_file = array();
-			foreach ($files as $uuid => $name) {
-				if (file_exists($this->uploadPath . $name)) {
-					$file = new File($this->uploadPath . $name);
-					$newFileName = $file->getRandomName();
-					$file->move($this->modulePath, $newFileName);
-					$listed_file[] = $newFileName;
-				}
-			}
-			$update_data['PhotoUrl'] = implode(',', $listed_file);
+		$file = $this->request->getFile('file_pendukung');
+		
+		if ($file && $file->isValid() && !$file->hasMoved()) {
+			$newFileName = $file->getRandomName();
+			$file->move($this->modulePath, $newFileName);
+			
+			$field = !empty($upload_field) ? $upload_field : 'PhotoUrl';
+			$update_data[$field] = $newFileName;
+		}
+
+		if (empty($update_data)) {
+			return $this->fail([
+				'status' => 400,
+				'error' => 'Tidak ada file yang diupload atau file gagal diproses.',
+				'messages' => [
+					'error' => 'Pilih file terlebih dahulu sebelum menyimpan.'
+				]
+			]);
 		}
 
 		$anggota = $this->anggotaModel->find($upload_id);
