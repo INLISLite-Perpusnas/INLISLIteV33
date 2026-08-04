@@ -80,7 +80,6 @@ class Filters extends BaseConfig
                 'logout*',
                 'oai*',
                 'login*',
-                'dashboard*',
                 'peminjaman-mandiri*',
                 'pengembalian-mandiri*',
                 'api-lokasi-ruang/check*',
@@ -97,7 +96,6 @@ class Filters extends BaseConfig
                 'api/master-template/*',
                 'master-template/*',
                 'api/member/*',
-                'bukutamu/*',
                 
                 // --- PENGECUALIAN UNTUK CONTROLLER OPAC ---
                 'opac',
@@ -109,10 +107,7 @@ class Filters extends BaseConfig
                 'opac/statistics',
                 'opac/statistics_anggota',
                 'opac/downloadMarc*',
-                
-                // --- PENGECUALIAN UNTUK PDF VIEWER DECRYPT ---
-                'katalog/view_decrypted*',
-                'katalog/get_decrypted_content*'
+               
             ]],
         ],
         'after' => [

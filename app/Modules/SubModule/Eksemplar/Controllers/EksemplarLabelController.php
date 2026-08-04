@@ -175,8 +175,18 @@ class EksemplarLabelController extends \Base\Controllers\BaseController
         $mhtml .= "Content-Type: text/html; charset=\"utf-8\"\r\n";
         $mhtml .= "Content-Transfer-Encoding: quoted-printable\r\n\r\n";
         
-        // Ensure complete HTML structure for MS Word
-        $fullHtml = "<html><head><meta charset=\"utf-8\"><title>Export Word</title></head><body>\r\n" . $mhtmlContent . "\r\n</body></html>";
+        // Clean up transparent borders which show as gridlines in MS Word
+        $mhtmlContent = str_replace('1px solid transparent', 'none', $mhtmlContent);
+        // Ensure page breaks are respected for label roll formats (which use <br> between labels)
+        $mhtmlContent = str_replace('</table><br>', '</table><br clear="all" style="page-break-before:always" />', $mhtmlContent);
+
+        // Ensure complete HTML structure for MS Word, with necessary CSS to collapse borders
+        $fullHtml = "<html><head><meta charset=\"utf-8\"><title>Export Word</title>
+<style>
+    table { border-collapse: collapse; }
+    td { mso-cellspacing: 0px; mso-padding-alt: 0px 0px 0px 0px; }
+</style>
+</head><body>\r\n" . $mhtmlContent . "\r\n</body></html>";
         $mhtml .= quoted_printable_encode($fullHtml) . "\r\n\r\n";
         
         foreach ($images as $cid => $img) {
