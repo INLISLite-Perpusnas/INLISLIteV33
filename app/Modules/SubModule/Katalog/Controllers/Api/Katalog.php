@@ -44,7 +44,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 
 		$builder = $db->table('catalogs as a')
 			->select('a.ID, a.ID as action')
-			->select('a.ControlNumber, a.BIBID,a.CallNumber, a.Title, a.Author, a.Edition, a.Publisher, a.PublishLocation, a.PublishYear, a.Publikasi, a.Subject, a.PhysicalDescription, a.ISBN, a.CallNumber, a.Note, a.Languages, a.DeweyNo, a.ApproveDateOPAC, a.IsOPAC, a.IsBNI, a.IsKIN, a.IsRDA, a.CoverURL, a.Worksheet_id, a.CreateBy, a.CreateDate, a.CreateTerminal, a.UpdateBy, a.UpdateDate, a.UpdateTerminal, a.MARC_LOC, a.PRESERVASI_ID, a.QUARANTINEDBY, a.QUARANTINEDDATE, a.QUARANTINEDTERMINAL, a.Member_id, a.KIILastUploadDate')
+			->select('a.ControlNumber, a.BIBID,a.CallNumber, a.Title, a.Author, a.Edition, a.Publisher, a.PublishLocation, a.PublishYear, a.Publikasi, a.Subject, a.PhysicalDescription, a.ISBN, a.CallNumber, a.Note, a.Languages, a.DeweyNo, a.ApproveDateOPAC, a.IsOPAC, a.ISPopuler, a.IsBNI, a.IsKIN, a.IsRDA, a.CoverURL, a.Worksheet_id, a.CreateBy, a.CreateDate, a.CreateTerminal, a.UpdateBy, a.UpdateDate, a.UpdateTerminal, a.MARC_LOC, a.PRESERVASI_ID, a.QUARANTINEDBY, a.QUARANTINEDDATE, a.QUARANTINEDTERMINAL, a.Member_id, a.KIILastUploadDate')
 			->select('0 as Eksemplar')
 			->where('a.IsQUARANTINE', $IsQUARANTINE)
 			->orderBy('a.ID', 'DESC');
@@ -74,6 +74,10 @@ class Katalog extends \Base\Controllers\BaseResourceController
 				$checked = $row->IsOPAC == 1 ? 'checked' : '';
 				return '<input type="checkbox" class="apply-status" data-href="' . base_url('api/katalog/switch/' . $row->ID) . '" data-checked="' . $checked . '" data-field="IsOPAC" ' . $checked . ' data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="mini">';
 			})
+			->edit('ISPopuler', function ($row) {
+				$checked = $row->ISPopuler == 1 ? 'checked' : '';
+				return '<input type="checkbox" class="apply-status" data-href="' . base_url('api/katalog/switch/' . $row->ID) . '" data-checked="' . $checked . '" data-field="ISPopuler" ' . $checked . ' data-toggle="toggle" data-onstyle="warning" data-on="Ya" data-off="Tdk" data-size="mini">';
+			})
 			->edit('action', function ($row) use ($IsQUARANTINE) {
 				if ($row->IsRDA == 0) {
 					$edit = '<a href="' . base_url('katalog/edit/' . $row->ID . '?rda=0') . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
@@ -96,7 +100,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 
 		$builder = $db->table('catalogs as a')
 			->select('a.ID, a.ID as action')
-			->select('a.ControlNumber, a.BIBID, a.Title, a.Author, a.Edition, a.Publisher, a.PublishLocation, a.PublishYear, a.Publikasi, a.Subject, a.PhysicalDescription, a.ISBN, a.CallNumber, a.Note, a.Languages, a.DeweyNo, a.ApproveDateOPAC, a.IsOPAC, a.IsBNI, a.IsKIN, a.IsRDA, a.CoverURL, a.Worksheet_id, a.CreateBy, a.CreateDate, a.CreateTerminal, a.UpdateBy, a.UpdateDate, a.UpdateTerminal, a.MARC_LOC, a.PRESERVASI_ID, a.QUARANTINEDBY, a.QUARANTINEDDATE, a.QUARANTINEDTERMINAL, a.Member_id, a.KIILastUploadDate')
+			->select('a.ControlNumber, a.BIBID, a.Title, a.Author, a.Edition, a.Publisher, a.PublishLocation, a.PublishYear, a.Publikasi, a.Subject, a.PhysicalDescription, a.ISBN, a.CallNumber, a.Note, a.Languages, a.DeweyNo, a.ApproveDateOPAC, a.IsOPAC, a.ISPopuler, a.IsBNI, a.IsKIN, a.IsRDA, a.CoverURL, a.Worksheet_id, a.CreateBy, a.CreateDate, a.CreateTerminal, a.UpdateBy, a.UpdateDate, a.UpdateTerminal, a.MARC_LOC, a.PRESERVASI_ID, a.QUARANTINEDBY, a.QUARANTINEDDATE, a.QUARANTINEDTERMINAL, a.Member_id, a.KIILastUploadDate')
 			->select('a.Branch_id, a.Location_id')
 			->select('0 as Eksemplar')
 			->where('a.IsQUARANTINE', $IsQUARANTINE)
@@ -136,6 +140,11 @@ class Katalog extends \Base\Controllers\BaseResourceController
 			->edit('IsOPAC', function ($row) {
 				$checked = $row->IsOPAC == 1 ? 'checked' : '';
 				$html = '<input type="checkbox" class="apply-status" data-href="' . base_url('api/katalog/switch/' . $row->ID) . '" data-checked="' . $checked . '" data-field="IsOPAC" ' . $checked . ' data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="mini">';
+				return $html;
+			})
+			->edit('ISPopuler', function ($row) {
+				$checked = $row->ISPopuler == 1 ? 'checked' : '';
+				$html = '<input type="checkbox" class="apply-status" data-href="' . base_url('api/katalog/switch/' . $row->ID) . '" data-checked="' . $checked . '" data-field="ISPopuler" ' . $checked . ' data-toggle="toggle" data-onstyle="warning" data-on="Ya" data-off="Tdk" data-size="mini">';
 				return $html;
 			})
 			->edit('action', function ($row) {
@@ -305,17 +314,35 @@ class Katalog extends \Base\Controllers\BaseResourceController
 		$field = $this->request->getPost('field') ?? $this->request->getGet('field');
 		$value = $this->request->getPost('value') ?? $this->request->getGet('value');
 
+		// Whitelist kolom yang boleh diubah lewat endpoint toggle ini
+		$allowed_fields = [
+			'IsOPAC'    => 'Status OPAC',
+			'ISPopuler' => 'Status Populer',
+		];
+
+		if (!array_key_exists($field, $allowed_fields)) {
+			$response = [
+				'error' => true,
+				'message' => 'Field tidak diizinkan untuk diubah.',
+			];
+			return $this->simpleResponse($response);
+		}
+
+		$label = $allowed_fields[$field];
+
 		$update_data_id = $this->katalogModel->update($id, array($field => ($value == 'true' || $value === true || $value === 1) ? 1 : 0));
 
 		if ($update_data_id) {
 			$response = [
 				'error' => false,
-				'message' => 'Status Opac Berhasil diubah',
+				'status' => 200,
+				'icon' => 'success',
+				'message' => $label . ' Berhasil diubah',
 			];
 		} else {
 			$response = [
 				'error' => true,
-				'message' => 'Status Opac Gagal diubah. Silakan coba lagi',
+				'message' => $label . ' Gagal diubah. Silakan coba lagi',
 			];
 		}
 		return $this->simpleResponse($response);

@@ -31,9 +31,7 @@ $routes->group('anggota', ['namespace' => 'Anggota\Controllers'], function ($sub
     $subroutes->add('keranjang',              'AnggotaController::keranjang');
     $subroutes->add('detail/(:any)',          'AnggotaController::detail/$1');
     $subroutes->add('create',                 'AnggotaController::create');
-    $subroutes->add('edit',                   'AnggotaController::edit');
-    $subroutes->add('edit/(:any)',            'AnggotaController::edit/$1');
-    $subroutes->add('edit/(:any)/(:any)',     'AnggotaController::edit/$1/$2');
+    $subroutes->put('edit',                   'AnggotaController::edit');
     $subroutes->add('delete/(:any)',          'AnggotaController::delete/$1');
     $subroutes->add('apply_status/(:any)',    'AnggotaController::apply_status/$1');
     $subroutes->add('get_defaults/(:num)',    'AnggotaController::getDefaults/$1');

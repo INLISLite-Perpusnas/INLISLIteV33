@@ -86,6 +86,95 @@
     .section-title {
         color: #1b3878 !important;
     }
+
+    /* Koleksi Populer Slider */
+    .popular-slider-wrapper {
+        position: relative;
+        padding: 0 40px;
+    }
+
+    .popular-slider {
+        --items-per-view: 5;
+        --slider-gap: 1.25rem;
+        display: flex;
+        gap: var(--slider-gap);
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        scroll-snap-type: x mandatory;
+        padding: 4px 0 16px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .popular-slider::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Lebar kartu dihitung persis agar pas N kartu per baris, tidak ada yang terpotong */
+    .popular-slider .popular-card-item {
+        flex: 0 0 auto;
+        width: calc((100% - (var(--items-per-view) - 1) * var(--slider-gap)) / var(--items-per-view));
+        scroll-snap-align: start;
+    }
+
+    @media (max-width: 1199px) {
+        .popular-slider {
+            --items-per-view: 4;
+        }
+    }
+
+    @media (max-width: 991px) {
+        .popular-slider {
+            --items-per-view: 3;
+        }
+    }
+
+    @media (max-width: 575px) {
+        .popular-slider {
+            --items-per-view: 2;
+        }
+    }
+
+    .popular-slider-nav {
+        position: absolute;
+        top: 40%;
+        transform: translateY(-50%);
+        z-index: 5;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        border: none;
+        background: #ffffff;
+        color: var(--brand-500);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .popular-slider-nav:hover {
+        background: var(--brand-500);
+        color: #ffffff;
+    }
+
+    .popular-slider-nav.prev {
+        left: 0;
+    }
+
+    .popular-slider-nav.next {
+        right: 0;
+    }
+
+    @media (max-width: 767px) {
+        .popular-slider-wrapper {
+            padding: 0;
+        }
+
+        .popular-slider-nav {
+            display: none;
+        }
+    }
 </style>
 <?= $this->endSection() ?>
 
@@ -192,7 +281,58 @@
     </div>
 </section>
 
+<?php if (!empty($popular_books)): ?>
+    <section class="py-5" id="koleksi-populer">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-end mb-4">
+                <div>
+                    <h3 class="fw-bold mb-1 section-title"><i class="fa-solid fa-fire text-danger me-2"></i>Koleksi Populer</h3>
+                    <p class="text-secondary mb-0">Buku-buku yang paling banyak diminati pemustaka.</p>
+                </div>
+            </div>
 
+            <div class="popular-slider-wrapper">
+                <button type="button" class="popular-slider-nav prev" id="popularSliderPrev" aria-label="Sebelumnya">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+
+                <div class="popular-slider" id="popularSlider">
+                    <?php foreach ($popular_books as $i => $book): ?>
+                        <?php
+                        $defaultCover = base_url('assets/img/default-cover.webp');
+                        $thumbUrl     = get_catalog_thumb_url($book->CoverURL ?: '', 200, 340);
+                        ?>
+                        <div class="popular-card-item">
+                            <div class="card h-100 border-0 shadow-sm hover-card rounded-xl overflow-hidden bg-white position-relative">
+                                <span class="badge bg-danger position-absolute" style="top: 10px; left: 10px; z-index: 2;">
+                                    <i class="fa-solid fa-fire me-1"></i>Populer
+                                </span>
+                                <img src="<?= $thumbUrl ?>"
+                                     class="card-img-top book-cover"
+                                     alt="<?= esc($book->Title) ?>"
+                                     width="200"
+                                     height="340"
+                                     loading="lazy"
+                                     onerror="this.onerror=null; this.src='<?= $defaultCover ?>';">
+                                <div class="card-body d-flex flex-column p-3">
+                                    <h6 class="card-title fw-bold fs-6 mb-1 line-clamp-2" title="<?= esc($book->Title) ?>"><?= esc($book->Title) ?></h6>
+                                    <p class="card-text text-secondary small mb-3 text-truncate" title="<?= esc($book->Author) ?>">
+                                        <?= esc($book->Author ?: 'Anonim') ?>
+                                    </p>
+                                    <a href="<?= base_url('opac/detail/' . $book->ID) ?>" class="btn btn-outline-primary btn-sm mt-auto fw-semibold w-100 rounded-lg">Lihat Detail</a>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+
+                <button type="button" class="popular-slider-nav next" id="popularSliderNext" aria-label="Berikutnya">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+<?php endif; ?>
 
 <section class="py-5 bg-light" id="koleksi">
     <div class="container">
@@ -310,6 +450,38 @@
 <?= $this->section('script') ?>
 <script>
     $(document).ready(function() {
+
+        // Slider Koleksi Populer
+        const popularSlider = document.getElementById('popularSlider');
+        const popularPrev = document.getElementById('popularSliderPrev');
+        const popularNext = document.getElementById('popularSliderNext');
+
+        if (popularSlider && popularPrev && popularNext) {
+            const scrollStep = () => (popularSlider.querySelector('.popular-card-item')?.offsetWidth || 200) * 2;
+
+            popularPrev.addEventListener('click', function() {
+                popularSlider.scrollBy({
+                    left: -scrollStep(),
+                    behavior: 'smooth'
+                });
+            });
+
+            popularNext.addEventListener('click', function() {
+                popularSlider.scrollBy({
+                    left: scrollStep(),
+                    behavior: 'smooth'
+                });
+            });
+
+            const toggleNavButtons = () => {
+                const isScrollable = popularSlider.scrollWidth > popularSlider.clientWidth + 5;
+                popularPrev.style.display = isScrollable ? 'flex' : 'none';
+                popularNext.style.display = isScrollable ? 'flex' : 'none';
+            };
+
+            toggleNavButtons();
+            window.addEventListener('resize', toggleNavButtons);
+        }
 
         // Counter Animation for Statistics
         function animateCounters() {

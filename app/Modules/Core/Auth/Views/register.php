@@ -27,16 +27,16 @@
 
                                                 <div class="form-row">
                                                       <div class="col-md-12">
-                                                            <div class="position-relative form-group">
-                                                                  <input name="email" placeholder="<?=lang('Auth.email')?>" type="email" class="form-control <?php if(session('errors.email')) : ?>is-invalid<?php endif ?>" value="<?= old('email') ?>">
-                                                                  <small class="form-text text-muted"><?=lang('Auth.weNeverShare')?></small>
-                                                            </div>
-                                                      </div>
-                                                      <div class="col-md-12">
-                                                            <div class="position-relative form-group">
-                                                                  <input name="username" placeholder="<?=lang('Auth.username')?>" type="text" class="form-control <?php if(session('errors.username')) : ?>is-invalid<?php endif ?>" value="<?= old('username') ?>">
-                                                            </div>
-                                                      </div>
+      <div class="position-relative form-group">
+            <input name="email" placeholder="<?=lang('Auth.email')?>" type="email" class="form-control <?php if(session('errors.email')) : ?>is-invalid<?php endif ?>" value="<?= esc(old('email')) ?>">
+            <small class="form-text text-muted"><?=lang('Auth.weNeverShare')?></small>
+      </div>
+</div>
+<div class="col-md-12">
+      <div class="position-relative form-group">
+            <input name="username" placeholder="<?=lang('Auth.username')?>" type="text" class="form-control <?php if(session('errors.username')) : ?>is-invalid<?php endif ?>" value="<?= esc(old('username')) ?>">
+      </div>
+</div>
                                                       <div class="col-md-12">
                                                             <div class="position-relative form-group">
                                                                   <input name="password" placeholder="<?=lang('Auth.password')?>" type="password" class="form-control <?php if(session('errors.password')) : ?>is-invalid<?php endif ?>"  autocomplete="off">

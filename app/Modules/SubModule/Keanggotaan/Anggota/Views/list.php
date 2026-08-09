@@ -608,6 +608,27 @@ $request = service('request');
             video.srcObject.getTracks().forEach(track => track.stop());
         }
     });
+
+    $(document).on('click', '.btn-edit-anggota', function(e) {
+    e.preventDefault();
+    var encId = $(this).attr('data-id');
+
+    var form = $('<form></form>');
+    form.attr('method', 'post');
+    form.attr('action', '<?= base_url('anggota/edit') ?>');
+
+    // HTTP Method Spoofing: dikirim POST, diperlakukan CI4 sebagai PUT
+    form.append('<input type="hidden" name="_method" value="PUT">');
+
+    <?php if (csrf_token()): ?>
+        form.append('<input type="hidden" name="<?= csrf_token() ?>" value="<?= csrf_hash() ?>">');
+    <?php endif; ?>
+
+    form.append('<input type="hidden" name="ID" value="' + encId + '">');
+
+    $('body').append(form);
+    form.submit();
+});
 </script>
 
 <?= $this->endSection('script'); ?>

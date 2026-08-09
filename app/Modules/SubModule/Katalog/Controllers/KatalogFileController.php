@@ -25,10 +25,10 @@ class KatalogFileController extends \Base\Controllers\BaseController
     {
         
         $id = decData($ID);
-      
         session()->set('one_key', $id);
 
         $file = $this->fileModel->find($id);
+      
         if (!$file || !file_exists($this->modulePath . $file->FileURL)) {
             return $this->response->setStatusCode(404)->setBody('File not found');
         }

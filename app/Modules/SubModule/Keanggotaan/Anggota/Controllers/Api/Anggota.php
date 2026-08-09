@@ -164,14 +164,15 @@ class Anggota extends \Base\Controllers\BaseResourceController
 			})
 		
 			->edit('action', function ($row) {
-				$edit = '<a href="' . base_url('anggota/edit/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Ubah " class="btn btn-primary"><i class="pe-7s-note font-weight-bold"> </i></a>';
-				$delete = '<a href="javascript:void(0);" data-href="' . base_url('anggota/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
-				if ($row->IsKeranjang == 1) {
-					$edit = '<a href="' . base_url('anggota/pulihkan_keranjang?ID[]=' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Pulihkan " class="btn btn-warning"><i class="fa fa-undo font-weight-bold"> </i></a>';
-				}
-				return $edit . ' ' . $delete;
-			})
-			->toJson();
+			$encId = encData((string) $row->ID);
+			$edit = '<button type="button" data-id="' . $encId . '" data-toggle="tooltip" data-placement="top" title="Ubah " class="btn btn-primary btn-edit-anggota"><i class="pe-7s-note font-weight-bold"> </i></button>';
+			$delete = '<a href="javascript:void(0);" data-href="' . base_url('anggota/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+			if ($row->IsKeranjang == 1) {
+				$edit = '<a href="' . base_url('anggota/pulihkan_keranjang?ID[]=' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Pulihkan " class="btn btn-warning"><i class="fa fa-undo font-weight-bold"> </i></a>';
+			}
+			return $edit . ' ' . $delete;
+		})
+					->toJson();
 
 		return $dataTable;
 }

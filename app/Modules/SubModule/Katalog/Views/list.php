@@ -78,6 +78,7 @@ $request = service('request');
                                 <th class="text-center">No. Panggil</th>
                                 <th class="text-center">Eksemplar</th>
                                 <th class="text-center">OPAC</th>
+                                <th class="text-center">Populer</th>
                                 <th class="text-center">Pedoman Katalog</th>
                                 <th class="text-center" >Aksi</th>
                             </tr>
@@ -97,12 +98,11 @@ $request = service('request');
     $(document).ready(function() {
         <?php if (session()->getFlashdata('swal_icon')) : ?>
             Swal.fire({
-                type: '<?= session()->getFlashdata('swal_icon') ?>', // gunakan 'icon' jika SweetAlert2 versi terbaru
+                icon: '<?= session()->getFlashdata('swal_icon') ?>',
                 title: '<?= session()->getFlashdata('swal_title') ?>',
                 html: '<?= session()->getFlashdata('swal_html') ?? session()->getFlashdata('swal_text') ?>',
                 showConfirmButton: false,
                 timer: 3000,
-                icon:'success'
             });
         <?php endif; ?>
     });
@@ -183,6 +183,12 @@ $request = service('request');
                     orderable: false
                 },
                 {
+                    data: 'ISPopuler',
+                    className: 'text-center',
+                    searchable: false, // Wajib false
+                    orderable: false
+                },
+                {
                     data: 'IsRDA',
                     className: 'text-center',
                     searchable: false // Wajib false
@@ -221,7 +227,7 @@ $request = service('request');
                                 Swal.fire({
                                     title: 'Berhasil',
                                     html: res.message,
-                                    type: 'success',
+                                    icon: 'success',
                                     showConfirmButton: false,
                                     timer: 5000,
                                 }).then(() => {});
@@ -229,7 +235,7 @@ $request = service('request');
                                 Swal.fire({
                                     title: 'Gagal',
                                     text: res.message,
-                                    type: 'error',
+                                    icon: 'error',
                                     showConfirmButton: false,
                                     timer: 5000
                                 }).then(() => {});
@@ -241,7 +247,7 @@ $request = service('request');
                             Swal.fire({
                                 title: 'Oups',
                                 text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
-                                type: 'error',
+                                icon: 'error',
                                 showConfirmButton: false,
                                 timer: 5000
                             }).then(() => {});

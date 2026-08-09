@@ -44,6 +44,7 @@ class Home extends \Base\Controllers\BaseController
         } else {
             $pageData = [
                 'featured_books' => $this->getFeaturedBooks(),
+                'popular_books'  => $this->getPopularBooks(),
                 'statistics'     => $this->getLibraryStatistics(),
                 'news'           => $this->getNews(),
                 'banners'        => $this->getBannersData(),
@@ -71,6 +72,35 @@ class Home extends \Base\Controllers\BaseController
                 ->limit(8)
                 ->get()
                 ->getResult();
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    /**
+     * Get popular books from catalog (fitur toggle lewat .env is_populer)
+     */
+    private function getPopularBooks()
+    {
+        if ((int) env('is_populer', 0) !== 1) {
+            return [];
+        }
+
+        try {
+            $popularBooks = $this->db->table('catalogs')
+                ->where('IsOPAC', 1)
+                ->where('ISPopuler', 1)
+                ->orderBy('ID', 'DESC')
+                ->get()
+                ->getResult();
+              
+
+            // Section hanya ditampilkan jika koleksi populer aktif minimal 5
+            if (count($popularBooks) < 5) {
+                return [];
+            }
+
+            return $popularBooks;
         } catch (\Exception $e) {
             return [];
         }

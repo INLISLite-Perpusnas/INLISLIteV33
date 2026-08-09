@@ -1694,6 +1694,7 @@ public function browse()
         $file = $this->fileModel->where('Catalog_id', $catalog_id)->first();
       
       
+      
         if (!$file) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException('File digital tidak ditemukan');
         }

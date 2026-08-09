@@ -2,18 +2,329 @@
 
 <?= $this->section('style') ?>
 <style>
+    :root {
+        --op-primary: #1e3a8a;
+        --op-primary-light: #3b5bdb;
+        --op-primary-soft: #eef2ff;
+        --op-ink: #111827;
+        --op-muted: #6b7280;
+        --op-border: #e5e7eb;
+        --op-bg: #f6f7fb;
+        --op-radius-lg: 20px;
+        --op-radius-md: 14px;
+        --op-radius-sm: 10px;
+        --op-shadow-sm: 0 1px 3px rgba(17, 24, 39, 0.06), 0 1px 2px rgba(17, 24, 39, 0.04);
+        --op-shadow-md: 0 10px 30px -12px rgba(30, 58, 138, 0.18);
+        --op-shadow-lg: 0 20px 45px -18px rgba(30, 58, 138, 0.28);
+    }
+
+    body { background: var(--op-bg); }
+
+    .op-container { max-width: 1600px; margin-left: auto; margin-right: auto; }
+    @media (min-width: 1400px) {
+        .op-container { padding-left: 2.5rem; padding-right: 2.5rem; }
+    }
+
+    /* Breadcrumb */
+    .op-breadcrumb .breadcrumb {
+        background: #fff;
+        padding: .6rem 1rem;
+        border-radius: 999px;
+        box-shadow: var(--op-shadow-sm);
+        display: inline-flex;
+        margin-bottom: 0;
+        font-size: .875rem;
+    }
+    .op-breadcrumb .breadcrumb-item a { color: var(--op-primary-light); text-decoration: none; font-weight: 500; }
+    .op-breadcrumb .breadcrumb-item.active { color: var(--op-muted); }
+
+    /* Main card */
+    .op-card {
+        background: #fff;
+        border: 1px solid var(--op-border);
+        border-radius: var(--op-radius-lg);
+        box-shadow: var(--op-shadow-sm);
+        overflow: hidden;
+    }
+
+    .op-hero-header {
+        background: linear-gradient(135deg, var(--op-primary) 0%, var(--op-primary-light) 100%);
+        padding: 1.5rem 1.75rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .op-hero-header::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 85% -20%, rgba(255,255,255,.18), transparent 55%);
+        pointer-events: none;
+    }
+    .op-hero-header h4 { font-weight: 700; letter-spacing: -.01em; }
+    .op-id-badge {
+        background: rgba(255,255,255,.18);
+        backdrop-filter: blur(4px);
+        color: #fff;
+        font-weight: 500;
+        border: 1px solid rgba(255,255,255,.28);
+        padding: .35rem .75rem;
+        border-radius: 999px;
+        font-size: .8rem;
+    }
+
+    .op-body { padding: 2rem; }
+
+    /* Cover */
+    .op-cover-wrap {
+        border-radius: var(--op-radius-md);
+        overflow: hidden;
+        box-shadow: var(--op-shadow-md);
+        position: relative;
+    }
+    .book-cover-large {
+        width: 100%;
+        display: block;
+        max-height: 420px;
+        object-fit: cover;
+        transition: transform .35s ease;
+        cursor: zoom-in;
+    }
+    .op-cover-wrap:hover .book-cover-large { transform: scale(1.035); }
+    .op-cover-overlay-btn {
+        position: absolute;
+        bottom: .75rem;
+        right: .75rem;
+        border: none;
+        background: rgba(17,24,39,.65);
+        color: #fff;
+        backdrop-filter: blur(4px);
+        border-radius: 999px;
+        padding: .4rem .85rem;
+        font-size: .8rem;
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        opacity: 0;
+        transform: translateY(6px);
+        transition: all .25s ease;
+    }
+    .op-cover-wrap:hover .op-cover-overlay-btn { opacity: 1; transform: translateY(0); }
+
+    .no-cover-large {
+        border-radius: var(--op-radius-md) !important;
+        border: 2px dashed #d1d5db !important;
+        background: linear-gradient(180deg, #fafbff, #f1f3fb) !important;
+        box-shadow: none !important;
+    }
+
+    /* Title */
+    .op-title { font-weight: 800; letter-spacing: -.02em; color: var(--op-ink); line-height: 1.25; }
+    .op-edition-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        background: var(--op-primary-soft);
+        color: var(--op-primary);
+        border-radius: 999px;
+        padding: .3rem .75rem;
+        font-size: .82rem;
+        font-weight: 600;
+    }
+
+    /* Info grid */
+    .op-info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .85rem 1.25rem;
+    }
+    @media (max-width: 767px) { .op-info-grid { grid-template-columns: 1fr; } }
+
+    .op-info-item {
+        display: flex;
+        gap: .75rem;
+        padding: .85rem;
+        background: #fafbfd;
+        border: 1px solid var(--op-border);
+        border-radius: var(--op-radius-sm);
+        transition: border-color .2s ease, background .2s ease;
+    }
+    .op-info-item:hover { border-color: #c7d2fe; background: #f7f8ff; }
+    .op-info-icon {
+        flex: 0 0 auto;
+        width: 36px; height: 36px;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 10px;
+        background: var(--op-primary-soft);
+        color: var(--op-primary);
+        font-size: .9rem;
+    }
+    .op-info-label { font-size: .74rem; text-transform: uppercase; letter-spacing: .04em; color: var(--op-muted); font-weight: 600; margin-bottom: .1rem; }
+    .op-info-value { font-size: .93rem; color: var(--op-ink); font-weight: 500; word-break: break-word; }
+    .op-info-value.mono { font-family: 'JetBrains Mono', Consolas, monospace; }
+
+    /* Section titles */
+    .op-section-title {
+        font-weight: 700;
+        color: var(--op-ink);
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        margin-bottom: .9rem;
+    }
+    .op-section-title .op-info-icon { width: 30px; height: 30px; font-size: .8rem; }
+
+    /* Subject chips */
+    .op-subject-panel {
+        background: #fafbfd;
+        border: 1px solid var(--op-border);
+        border-radius: var(--op-radius-md);
+        padding: 1rem 1.1rem;
+        display: flex; flex-wrap: wrap; gap: .5rem;
+    }
+    .op-chip {
+        background: #fff;
+        border: 1px solid #dbe2ff;
+        color: var(--op-primary);
+        font-weight: 600;
+        font-size: .8rem;
+        padding: .4rem .8rem;
+        border-radius: 999px;
+        display: inline-flex; align-items: center; gap: .35rem;
+        transition: all .2s ease;
+    }
+    .op-chip:hover { background: var(--op-primary); color: #fff; border-color: var(--op-primary); }
+
+    /* Status badges */
+    .op-status-badge {
+        border-radius: 999px;
+        padding: .5rem 1rem;
+        font-weight: 600;
+        font-size: .82rem;
+        display: inline-flex; align-items: center; gap: .4rem;
+        border: 1px solid transparent;
+    }
+    .op-status-success { background: #ecfdf3; color: #027a48; border-color: #abefc6; }
+    .op-status-info     { background: #eff8ff; color: #175cd3; border-color: #b2ddff; }
+    .op-status-warning  { background: #fffaeb; color: #b54708; border-color: #fedf89; }
+    .op-status-secondary{ background: #f4f4f5; color: #3f3f46; border-color: #e4e4e7; }
+
+    /* Note panel */
+    .op-note-panel {
+        background: #fffdf5;
+        border: 1px solid #fde68a;
+        border-left: 4px solid #f59e0b;
+        border-radius: var(--op-radius-sm);
+        padding: 1rem 1.1rem;
+        color: #78350f;
+        font-size: .92rem;
+    }
+
+    /* Action buttons */
+    .op-actions .btn {
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: .875rem;
+        padding: .55rem 1.1rem;
+    }
+    .btn-op-primary {
+        background: linear-gradient(135deg, var(--op-primary), var(--op-primary-light));
+        border: none; color: #fff;
+        box-shadow: 0 6px 16px -6px rgba(30,58,138,.5);
+    }
+    .btn-op-primary:hover { color: #fff; filter: brightness(1.05); }
+    .btn-op-soft { background: #fff; border: 1px solid var(--op-border); color: var(--op-ink); }
+    .btn-op-soft:hover { border-color: var(--op-primary-light); color: var(--op-primary); }
+
+    .op-dropdown-menu {
+        border-radius: var(--op-radius-sm);
+        border: 1px solid var(--op-border);
+        box-shadow: var(--op-shadow-md);
+        padding: .4rem;
+        min-width: 190px;
+    }
+    .op-dropdown-menu .dropdown-item { border-radius: 8px; padding: .5rem .65rem; font-size: .88rem; }
+    .op-dropdown-menu .dropdown-item:hover { background: var(--op-primary-soft); color: var(--op-primary); }
+
+    /* Secondary card (eksemplar/marc) */
+    .op-tabs .nav-tabs { border: none; gap: .4rem; }
     #bookTab .nav-link {
-        color: #000;
+        color: var(--op-muted);
+        font-weight: 600;
+        font-size: .875rem;
+        border: 1px solid var(--op-border);
+        border-radius: 999px;
+        padding: .5rem 1.1rem;
+        background: #fff;
+        transition: all .2s ease;
+    }
+    #bookTab .nav-link:hover { color: var(--op-primary); border-color: #c7d2fe; }
+    #bookTab .nav-link.active {
+        background: var(--op-primary);
+        color: #fff;
+        border-color: var(--op-primary);
+        box-shadow: 0 6px 14px -6px rgba(30,58,138,.45);
+    }
+
+    .op-table-wrap {
+        border: 1px solid var(--op-border);
+        border-radius: var(--op-radius-md);
+        overflow: hidden;
+    }
+    .op-table-wrap table { margin-bottom: 0; }
+    .op-table-wrap thead th {
+        background: #f8f9fc !important;
+        color: var(--op-ink) !important;
+        font-size: .76rem;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        font-weight: 700;
+        border: none !important;
+        padding: .8rem 1rem;
+    }
+    .op-table-wrap tbody td { padding: .75rem 1rem; vertical-align: middle; font-size: .875rem; border-color: #f0f1f5; }
+    .op-table-wrap tbody tr:hover { background: #fafbff; }
+
+    .op-marc-legend {
+        background: #fafbfd;
+        border: 1px solid var(--op-border);
+        border-radius: var(--op-radius-md);
+    }
+
+    /* Sidebar */
+    .op-side-card {
+        border: 1px solid var(--op-border);
+        border-radius: var(--op-radius-md);
+        box-shadow: var(--op-shadow-sm);
+        overflow: hidden;
+    }
+    .op-side-card .card-header {
+        background: #fff;
+        border-bottom: 1px solid var(--op-border);
+        font-weight: 700;
+        font-size: .92rem;
+        color: var(--op-ink);
+        padding: .95rem 1.1rem;
+    }
+    .op-side-card .card-body { padding: 1.1rem; }
+    .op-side-card .btn { border-radius: var(--op-radius-sm); text-align: left; font-weight: 600; font-size: .875rem; padding: .6rem .9rem; }
+
+    .op-meta-line { font-size: .85rem; color: var(--op-muted); display: flex; gap: .55rem; align-items: flex-start; margin-bottom: .5rem; }
+    .op-meta-line i { color: var(--op-primary-light); margin-top: .15rem; }
+
+    .op-sticky { position: sticky; top: 1.25rem; }
+
+    @media print {
+        .op-actions, .op-side-card, .op-dropdown-menu, nav[aria-label="breadcrumb"] { display: none !important; }
     }
 </style>
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
 
-<div class="container py-5">
+<div class="container-fluid op-container py-5">
     <div class="row">
-        <!-- Breadcrumb -->
-        <div class="col-12 mb-4">
+        <div class="col-12 mb-4 op-breadcrumb">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item">
@@ -27,26 +338,20 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row g-4">
         <!-- Main Content -->
         <div class="col-lg-8">
-            <!-- Detail Katalog Card -->
-            <div class="card shadow-lg border-0 mb-4">
-                <div class="card-header bg-primary text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">
-                            <i class="fas fa-book-open me-2"></i>
-                            Detail Katalog
-                        </h4>
-                        <span class="badge bg-light text-dark">
-                            ID: <?= esc($catalog['ID']) ?>
-                        </span>
-                    </div>
+            <div class="op-card mb-4">
+                <div class="op-hero-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0 text-white">
+                        <i class="fas fa-book-open me-2"></i>Detail Katalog
+                    </h4>
+                    <span class="op-id-badge">ID: <?= esc($catalog['ID']) ?></span>
                 </div>
 
-                <div class="card-body">
-                    <!-- Book Cover and Basic Info -->
-                    <div class="row mb-4">
+                <div class="op-body">
+                    <!-- Cover + Basic Info -->
+                    <div class="row mb-4 g-4">
                         <div class="col-md-4">
                             <?php
                             $coverUrl = '';
@@ -59,105 +364,100 @@
                             }
                             ?>
 
-                            <div class="book-cover-detail text-center">
-                                <?php if ($coverUrl): ?>
+                            <?php if ($coverUrl): ?>
+                                <div class="op-cover-wrap" onclick="showCoverModal('<?= $coverUrl ?>', '<?= esc($catalog['Title']) ?>')">
                                     <img src="<?= $coverUrl ?>"
                                         alt="Cover <?= esc($catalog['Title']) ?>"
-                                        class="img-fluid rounded shadow book-cover-large"
-                                        style="max-height: 400px; cursor: pointer;"
-                                        onclick="showCoverModal('<?= $coverUrl ?>', '<?= esc($catalog['Title']) ?>')"
+                                        class="book-cover-large"
                                         onerror="handleImageError(this)">
-                                    <div class="mt-2">
-                                        <button class="btn btn-outline-primary btn-sm"
-                                            onclick="showCoverModal('<?= $coverUrl ?>', '<?= esc($catalog['Title']) ?>')">
-                                            <i class="fas fa-search-plus me-1"></i>Lihat Cover
-                                        </button>
+                                    <button type="button" class="op-cover-overlay-btn">
+                                        <i class="fas fa-search-plus"></i> Perbesar
+                                    </button>
+                                </div>
+                            <?php else: ?>
+                                <div class="no-cover-large d-flex align-items-center justify-content-center"
+                                    style="height: 380px;">
+                                    <div class="text-center text-muted">
+                                        <i class="fas fa-book fa-3x mb-3" style="color:#c7cbe0;"></i>
+                                        <h6 class="fw-semibold">Cover Tidak Tersedia</h6>
+                                        <p class="mb-0 small">Gambar cover belum diupload</p>
                                     </div>
-                                <?php else: ?>
-                                    <div class="no-cover-large d-flex align-items-center justify-content-center bg-light rounded shadow"
-                                        style="height: 400px; border: 3px dashed #dee2e6;">
-                                        <div class="text-center text-muted">
-                                            <i class="fas fa-book fa-4x mb-3"></i>
-                                            <h5>Cover Tidak Tersedia</h5>
-                                            <p class="mb-0">Gambar cover belum diupload</p>
-                                        </div>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
+                                </div>
+                            <?php endif; ?>
                         </div>
 
                         <div class="col-md-8">
-                            <!-- Title -->
-                            <div class="mb-4">
-                                <h2 class="text-primary mb-3">
-                                    <?= esc($catalog['Title']) ?>
-                                </h2>
-
+                            <div class="mb-3">
+                                <h2 class="op-title fs-3 mb-2"><?= esc($catalog['Title']) ?></h2>
                                 <?php if (!empty($catalog['Edition'])): ?>
-                                    <p class="text-muted mb-0">
-                                        <i class="fas fa-bookmark me-2"></i>
-                                        <strong>Edisi:</strong> <?= esc($catalog['Edition']) ?>
-                                    </p>
+                                    <span class="op-edition-chip">
+                                        <i class="fas fa-bookmark"></i> Edisi: <?= esc($catalog['Edition']) ?>
+                                    </span>
                                 <?php endif; ?>
                             </div>
 
-                            <!-- Author & Basic Info -->
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="info-item mb-3">
-                                        <i class="fas fa-user text-primary me-2"></i>
-                                        <strong>Pengarang:</strong><br>
-                                        <span class="ms-4"><?= esc($catalog['Author'] ?? 'Tidak tersedia') ?></span>
+                            <div class="op-info-grid">
+                                <div class="op-info-item">
+                                    <div class="op-info-icon"><i class="fas fa-user"></i></div>
+                                    <div>
+                                        <div class="op-info-label">Pengarang</div>
+                                        <div class="op-info-value"><?= esc($catalog['Author'] ?? 'Tidak tersedia') ?></div>
                                     </div>
-
-                                    <div class="info-item mb-3">
-                                        <i class="fas fa-building text-primary me-2"></i>
-                                        <strong>Penerbit:</strong><br>
-                                        <span class="ms-4"><?= esc($catalog['Publisher'] ?? 'Tidak tersedia') ?></span>
-                                    </div>
-
-                                    <?php if (!empty($catalog['PublishLocation'])): ?>
-                                        <div class="info-item mb-3">
-                                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
-                                            <strong>Tempat Terbit:</strong><br>
-                                            <span class="ms-4"><?= esc($catalog['PublishLocation']) ?></span>
-                                        </div>
-                                    <?php endif; ?>
-
-                                    <div class="info-item mb-3">
-                                        <i class="fas fa-calendar text-primary me-2"></i>
-                                        <strong>Tahun Terbit:</strong><br>
-                                        <span class="ms-4"><?= esc($catalog['PublishYear'] ?? 'Tidak tersedia') ?></span>
-                                    </div>
-
-                                    <?php if (!empty($catalog['Languages'])): ?>
-                                        <div class="info-item mb-3">
-                                            <i class="fas fa-globe text-primary me-2"></i>
-                                            <strong>Bahasa:</strong><br>
-                                            <span class="ms-4"><?= esc($catalog['Languages']) ?></span>
-                                        </div>
-                                    <?php endif; ?>
                                 </div>
+
+                                <div class="op-info-item">
+                                    <div class="op-info-icon"><i class="fas fa-building"></i></div>
+                                    <div>
+                                        <div class="op-info-label">Penerbit</div>
+                                        <div class="op-info-value"><?= esc($catalog['Publisher'] ?? 'Tidak tersedia') ?></div>
+                                    </div>
+                                </div>
+
+                                <?php if (!empty($catalog['PublishLocation'])): ?>
+                                    <div class="op-info-item">
+                                        <div class="op-info-icon"><i class="fas fa-map-marker-alt"></i></div>
+                                        <div>
+                                            <div class="op-info-label">Tempat Terbit</div>
+                                            <div class="op-info-value"><?= esc($catalog['PublishLocation']) ?></div>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+
+                                <div class="op-info-item">
+                                    <div class="op-info-icon"><i class="fas fa-calendar"></i></div>
+                                    <div>
+                                        <div class="op-info-label">Tahun Terbit</div>
+                                        <div class="op-info-value"><?= esc($catalog['PublishYear'] ?? 'Tidak tersedia') ?></div>
+                                    </div>
+                                </div>
+
+                                <?php if (!empty($catalog['Languages'])): ?>
+                                    <div class="op-info-item">
+                                        <div class="op-info-icon"><i class="fas fa-globe"></i></div>
+                                        <div>
+                                            <div class="op-info-label">Bahasa</div>
+                                            <div class="op-info-value"><?= esc($catalog['Languages']) ?></div>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Subject & Classification -->
+                    <!-- Subject -->
                     <?php if (!empty($catalog['Subject'])): ?>
                         <div class="mb-4">
-                            <h5 class="text-primary mb-3">
-                                <i class="fas fa-tags me-2"></i>Subjek
-                            </h5>
-                            <div class="bg-light p-3 rounded">
+                            <div class="op-section-title">
+                                <span class="op-info-icon"><i class="fas fa-tags"></i></span>Subjek
+                            </div>
+                            <div class="op-subject-panel">
                                 <?php
                                 $subjects = explode(';', $catalog['Subject']);
                                 foreach ($subjects as $subject):
                                     $subject = trim($subject);
                                     if ($subject):
                                 ?>
-                                        <span class="badge bg-primary me-2 mb-2">
-                                            <i class="fas fa-tag me-1"></i><?= esc($subject) ?>
-                                        </span>
+                                        <span class="op-chip"><i class="fas fa-tag"></i><?= esc($subject) ?></span>
                                 <?php endif;
                                 endforeach; ?>
                             </div>
@@ -165,120 +465,121 @@
                     <?php endif; ?>
 
                     <!-- Technical Details -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
+                    <div class="mb-4">
+                        <div class="op-section-title">
+                            <span class="op-info-icon"><i class="fas fa-microchip"></i></span>Detail Teknis
+                        </div>
+                        <div class="op-info-grid">
                             <?php if (!empty($catalog['PhysicalDescription'])): ?>
-                                <div class="info-item mb-3">
-                                    <i class="fas fa-file-alt text-primary me-2"></i>
-                                    <strong>Deskripsi Fisik:</strong><br>
-                                    <span class="ms-4"><?= esc($catalog['PhysicalDescription']) ?></span>
+                                <div class="op-info-item">
+                                    <div class="op-info-icon"><i class="fas fa-file-alt"></i></div>
+                                    <div>
+                                        <div class="op-info-label">Deskripsi Fisik</div>
+                                        <div class="op-info-value"><?= esc($catalog['PhysicalDescription']) ?></div>
+                                    </div>
                                 </div>
                             <?php endif; ?>
 
                             <?php if (!empty($catalog['ISBN'])): ?>
-                                <div class="info-item mb-3">
-                                    <i class="fas fa-barcode text-primary me-2"></i>
-                                    <strong>ISBN:</strong><br>
-                                    <span class="ms-4 font-monospace"><?= esc($catalog['ISBN']) ?></span>
+                                <div class="op-info-item">
+                                    <div class="op-info-icon"><i class="fas fa-barcode"></i></div>
+                                    <div>
+                                        <div class="op-info-label">ISBN</div>
+                                        <div class="op-info-value mono"><?= esc($catalog['ISBN']) ?></div>
+                                    </div>
                                 </div>
                             <?php endif; ?>
 
                             <?php if (!empty($catalog['CallNumber'])): ?>
-                                <div class="info-item mb-3">
-                                    <i class="fas fa-hashtag text-primary me-2"></i>
-                                    <strong>Nomor Panggil:</strong><br>
-                                    <span class="ms-4 font-monospace"><?= esc($catalog['CallNumber']) ?></span>
+                                <div class="op-info-item">
+                                    <div class="op-info-icon"><i class="fas fa-hashtag"></i></div>
+                                    <div>
+                                        <div class="op-info-label">Nomor Panggil</div>
+                                        <div class="op-info-value mono"><?= esc($catalog['CallNumber']) ?></div>
+                                    </div>
                                 </div>
                             <?php endif; ?>
-                        </div>
 
-                        <div class="col-md-6">
                             <?php if (!empty($catalog['ControlNumber'])): ?>
-                                <div class="info-item mb-3">
-                                    <i class="fas fa-id-card text-primary me-2"></i>
-                                    <strong>Control Number:</strong><br>
-                                    <span class="ms-4 font-monospace"><?= esc($catalog['ControlNumber']) ?></span>
+                                <div class="op-info-item">
+                                    <div class="op-info-icon"><i class="fas fa-id-card"></i></div>
+                                    <div>
+                                        <div class="op-info-label">Control Number</div>
+                                        <div class="op-info-value mono"><?= esc($catalog['ControlNumber']) ?></div>
+                                    </div>
                                 </div>
                             <?php endif; ?>
 
                             <?php if (!empty($catalog['BIBID'])): ?>
-                                <div class="info-item mb-3">
-                                    <i class="fas fa-database text-primary me-2"></i>
-                                    <strong>BIB ID:</strong><br>
-                                    <span class="ms-4 font-monospace"><?= esc($catalog['BIBID']) ?></span>
+                                <div class="op-info-item">
+                                    <div class="op-info-icon"><i class="fas fa-database"></i></div>
+                                    <div>
+                                        <div class="op-info-label">BIB ID</div>
+                                        <div class="op-info-value mono"><?= esc($catalog['BIBID']) ?></div>
+                                    </div>
                                 </div>
                             <?php endif; ?>
                         </div>
                     </div>
 
-                    <!-- Additional Info -->
+                    <!-- Note -->
                     <?php if (!empty($catalog['Note'])): ?>
                         <div class="mb-4">
-                            <h5 class="text-primary mb-3">
-                                <i class="fas fa-sticky-note me-2"></i>Catatan
-                            </h5>
-                            <div class="bg-light p-3 rounded">
-                                <?= nl2br(esc($catalog['Note'])) ?>
+                            <div class="op-section-title">
+                                <span class="op-info-icon"><i class="fas fa-sticky-note"></i></span>Catatan
                             </div>
+                            <div class="op-note-panel"><?= nl2br(esc($catalog['Note'])) ?></div>
                         </div>
                     <?php endif; ?>
 
-                    <!-- Status Badges -->
+                    <!-- Status -->
                     <div class="mb-4">
-                        <h5 class="text-primary mb-3">
-                            <i class="fas fa-info-circle me-2"></i>Status
-                        </h5>
+                        <div class="op-section-title">
+                            <span class="op-info-icon"><i class="fas fa-info-circle"></i></span>Status
+                        </div>
                         <div class="d-flex flex-wrap gap-2">
                             <?php if ($catalog['IsOPAC'] ?? false): ?>
-                                <span class="badge bg-success fs-6">
-                                    <i class="fas fa-check me-1"></i>Tersedia di OPAC
-                                </span>
+                                <span class="op-status-badge op-status-success"><i class="fas fa-check"></i>Tersedia di OPAC</span>
                             <?php endif; ?>
 
                             <?php if ($catalog['IsBNI'] ?? false): ?>
-                                <span class="badge bg-info fs-6">
-                                    <i class="fas fa-flag me-1"></i>Bibliografi Nasional Indonesia
-                                </span>
+                                <span class="op-status-badge op-status-info"><i class="fas fa-flag"></i>Bibliografi Nasional Indonesia</span>
                             <?php endif; ?>
 
                             <?php if ($catalog['IsKIN'] ?? false): ?>
-                                <span class="badge bg-warning fs-6">
-                                    <i class="fas fa-star me-1"></i>Karya Tulis Ilmiah Nasional
-                                </span>
+                                <span class="op-status-badge op-status-warning"><i class="fas fa-star"></i>Karya Tulis Ilmiah Nasional</span>
                             <?php endif; ?>
 
                             <?php if ($catalog['IsRDA'] ?? false): ?>
-                                <span class="badge bg-secondary fs-6">
-                                    <i class="fas fa-bookmark me-1"></i>RDA Cataloging
-                                </span>
+                                <span class="op-status-badge op-status-secondary"><i class="fas fa-bookmark"></i>RDA Cataloging</span>
                             <?php endif; ?>
                         </div>
                     </div>
 
-                    <!-- Action Buttons -->
-                    <div class="d-flex gap-2 flex-wrap">
-                        <button class="btn btn-primary" onclick="window.print()">
+                    <!-- Actions -->
+                    <div class="d-flex gap-2 flex-wrap op-actions">
+                        <button class="btn btn-op-primary" onclick="window.print()">
                             <i class="fas fa-print me-2"></i>Cetak
                         </button>
 
-                        <button class="btn btn-success" onclick="copyToClipboard()">
+                        <button class="btn btn-op-soft" onclick="copyToClipboard()">
                             <i class="fas fa-copy me-2"></i>Salin Detail
                         </button>
 
                         <?php if (!empty($catalog['CoverURL'])): ?>
-                            <a href="<?= $coverUrl ?>" target="_blank" class="btn btn-info">
+                            <a href="<?= $coverUrl ?>" target="_blank" class="btn btn-op-soft">
                                 <i class="fas fa-external-link-alt me-2"></i>Lihat Cover Original
                             </a>
                         <?php endif; ?>
 
                         <div class="dropdown" style="position: relative;" id="bagikanDropdownWrapper">
-                            <button class="btn btn-outline-secondary btn-sm btn-lg" type="button" id="bagikanDropdownBtn"
+                            <button class="btn btn-op-soft" type="button" id="bagikanDropdownBtn"
                                 style="display:inline-flex;align-items:center;gap:6px;">
                                 <i class="fas fa-share-alt"></i>Bagikan
                                 <i class="fas fa-caret-down" id="bagikanCaretIcon"></i>
                             </button>
-                            <ul class="dropdown-menu" id="bagikanDropdownMenu"
-                                style="z-index: 9999; display:none; position:absolute; left:0; top:100%; margin-top:4px;">
+                            <ul class="dropdown-menu op-dropdown-menu" id="bagikanDropdownMenu"
+                                style="z-index: 9999; display:none; position:absolute; left:0; top:100%; margin-top:6px;">
                                 <li>
                                     <a class="dropdown-item" href="#" onclick="shareViaEmail(); document.getElementById('bagikanDropdownMenu').style.display='none'; document.getElementById('bagikanCaretIcon').className='fas fa-caret-down';">
                                         <i class="fas fa-envelope me-2"></i>Email
@@ -301,16 +602,14 @@
             </div>
 
             <?php if (!empty($roweksemplar) || !empty($roweksemplar_drm) || !empty($marc)): ?>
-                <div class="card shadow-lg border-0 mb-4">
-                    <div class="card-header bg-success text-white">
-                        <h5 class="mb-0">
-                            <i class="fas fa-book me-2"></i>Informasi Eksemplar & Metadata
-                        </h5>
+                <div class="op-card mb-4">
+                    <div class="op-hero-header">
+                        <h5 class="mb-0 text-white"><i class="fas fa-book me-2"></i>Informasi Eksemplar & Metadata</h5>
                     </div>
-                    <div class="card-body">
+                    <div class="op-body">
 
                         <!-- Tab Navigation + Download Button -->
-                        <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 op-tabs">
                             <ul class="nav nav-tabs" id="bookTab" role="tablist">
                                 <?php if (!empty($roweksemplar)): ?>
                                     <li class="nav-item" role="presentation">
@@ -338,14 +637,14 @@
                             </ul>
 
                             <?php if (!empty($marc)): ?>
-                                <div class="dropdown ms-3" style="position: relative;" id="marcDropdownWrapper">
-                                    <button class="btn btn-outline-primary btn-sm" type="button" id="downloadMarcDropdown"
-                                        style="display:inline-flex;align-items:center;gap:6px;">
+                                <div class="dropdown" style="position: relative;" id="marcDropdownWrapper">
+                                    <button class="btn btn-op-soft btn-sm" type="button" id="downloadMarcDropdown"
+                                        style="border-radius:999px;display:inline-flex;align-items:center;gap:6px;">
                                         <i class="fas fa-download"></i>Unduh Katalog MARC
                                         <i class="fas fa-caret-down" id="marcCaretIcon"></i>
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end" id="marcDropdownMenu"
-                                        style="z-index: 9999; display:none; position:absolute; right:0; top:100%; margin-top:4px;">
+                                    <ul class="dropdown-menu dropdown-menu-end op-dropdown-menu" id="marcDropdownMenu"
+                                        style="z-index: 9999; display:none; position:absolute; right:0; top:100%; margin-top:6px;">
                                         <li><a class="dropdown-item" href="<?= base_url("opac/downloadMarcUtf8/{$catalog['ID']}") ?>" target="_blank">Format MARC Unicode/UTF-8</a></li>
                                         <li><a class="dropdown-item" href="<?= base_url("opac/downloadMarcXml/{$catalog['ID']}") ?>" target="_blank">Format MARC XML</a></li>
                                         <li><a class="dropdown-item" href="<?= base_url("opac/downloadMarcMods/{$catalog['ID']}") ?>" target="_blank">Format MODS</a></li>
@@ -362,29 +661,31 @@
                             <!-- Buku Fisik -->
                             <?php if (!empty($roweksemplar)): ?>
                                 <div class="tab-pane fade show active" id="fisik" role="tabpanel" aria-labelledby="fisik-tab">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover table-striped table-bordered mb-0" id="tbl_eksemplars_fisik">
-                                            <thead class="table-dark">
-                                                <tr>
-                                                    <th>Nomor Barcode</th>
-                                                    <th>Nomor Panggil</th>
-                                                    <th>Akses</th>
-                                                    <th>Lokasi</th>
-                                                    <th>Ketersediaan</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php foreach ($roweksemplar as $eksemplar): ?>
+                                    <div class="op-table-wrap">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover mb-0" id="tbl_eksemplars_fisik">
+                                                <thead>
                                                     <tr>
-                                                        <td><code><?= esc($eksemplar->NomorBarcode) ?></code></td>
-                                                        <td><code><?= esc($eksemplar->CallNumber) ?></code></td>
-                                                        <td><span class="badge bg-primary"><?= esc($eksemplar->RuleName) ?></span></td>
-                                                        <td><i class="fas fa-building me-1"></i><?= esc($eksemplar->LocationName) ?></td>
-                                                        <td><span class="badge bg-success"><?= esc($eksemplar->StatusName) ?></span></td>
+                                                        <th>Nomor Barcode</th>
+                                                        <th>Nomor Panggil</th>
+                                                        <th>Akses</th>
+                                                        <th>Lokasi</th>
+                                                        <th>Ketersediaan</th>
                                                     </tr>
-                                                <?php endforeach; ?>
-                                            </tbody>
-                                        </table>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($roweksemplar as $eksemplar): ?>
+                                                        <tr>
+                                                            <td><code><?= esc($eksemplar->NomorBarcode) ?></code></td>
+                                                            <td><code><?= esc($eksemplar->CallNumber) ?></code></td>
+                                                            <td><span class="op-status-badge op-status-info"><?= esc($eksemplar->RuleName) ?></span></td>
+                                                            <td><i class="fas fa-building me-1 text-muted"></i><?= esc($eksemplar->LocationName) ?></td>
+                                                            <td><span class="op-status-badge op-status-success"><?= esc($eksemplar->StatusName) ?></span></td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             <?php endif; ?>
@@ -392,48 +693,44 @@
                             <!-- Buku Digital -->
                             <?php if (!empty($roweksemplar_drm)): ?>
                                 <div class="tab-pane fade <?= empty($roweksemplar) ? 'show active' : '' ?>" id="digital" role="tabpanel" aria-labelledby="digital-tab">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover table-striped table-bordered mb-0" id="tbl_eksemplars_digital">
-                                            <thead class="table-dark">
-                                                <tr>
-                                                    <th>Nomor Barcode</th>
-                                                    <th>Nomor Panggil</th>
-                                                    <th>Akses</th>
-                                                    <th>Lokasi</th>
-                                                    <th>Ketersediaan</th>
-                                                    <th>Aksi</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php foreach ($roweksemplar_drm as $eksemplar_drm): ?>
+                                    <div class="op-table-wrap">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover mb-0" id="tbl_eksemplars_digital">
+                                                <thead>
                                                     <tr>
-                                                        <td><code><?= esc($eksemplar_drm->NomorBarcode) ?></code></td>
-                                                        <td><code><?= esc($eksemplar_drm->CallNumber) ?></code></td>
-                                                        <td><span class="badge bg-primary"><?= esc($eksemplar_drm->RuleName) ?></span></td>
-                                                        <td><i class="fas fa-cloud me-1"></i><?= esc($eksemplar_drm->LocationName) ?></td>
-                                                        <td><span class="badge bg-success"><?= esc($eksemplar_drm->StatusName) ?></span></td>
-                                                        <td>
-                                                            <?php
-                                                            $canRead = $eksemplar_drm->Status_id == 1
-                                                                || in_array($eksemplar_drm->CollectionID, $member_active_loan_collections ?? []);
-                                                            ?>
-                                                            <?php if ($canRead): ?>
-                                                                <a href="<?= base_url('opac/baca-digital/' . $catalog['ID']) ?>"
-                                                                    target="_blank"
-                                                                    class="btn btn-primary btn-sm">
-                                                                    <i class="fas fa-file-pdf me-1"></i>Baca PDF
-                                                                </a>
-                                                            <?php else: ?>
-                                                                <button class="btn btn-warning btn-sm"
-                                                                    onclick="Swal.fire({icon:'info',title:'Sedang Dipinjam',text:'Koleksi digital ini sedang dipinjam oleh anggota lain. Silakan coba lagi nanti.',confirmButtonText:'Oke'})">
-                                                                    <i class="fas fa-book-reader me-1"></i>Sedang Dipinjam
-                                                                </button>
-                                                            <?php endif; ?>
-                                                        </td>
+                                                        <th>Nomor Barcode</th>
+                                                        <th>Nomor Panggil</th>
+                                                        <th>Akses</th>
+                                                        <th>Lokasi</th>
+                                                        <th>Ketersediaan</th>
+                                                        <th>Aksi</th>
                                                     </tr>
-                                                <?php endforeach; ?>
-                                            </tbody>
-                                        </table>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($roweksemplar_drm as $eksemplar_drm): ?>
+                                                        <tr>
+                                                            <td><code><?= esc($eksemplar_drm->NomorBarcode) ?></code></td>
+                                                            <td><code><?= esc($eksemplar_drm->CallNumber) ?></code></td>
+                                                            <td><span class="op-status-badge op-status-info"><?= esc($eksemplar_drm->RuleName) ?></span></td>
+                                                            <td><i class="fas fa-cloud me-1 text-muted"></i><?= esc($eksemplar_drm->LocationName) ?></td>
+                                                            <td><span class="op-status-badge op-status-success"><?= esc($eksemplar_drm->StatusName) ?></span></td>
+                                                            <td>
+                                                                <?php
+                                                                $canRead = $eksemplar_drm->Status_id == 1;
+                                                                ?>
+                                                                <?php if ($canRead): ?>
+                                                                    <a href="<?= base_url('opac/baca-digital/' . $catalog['ID']) ?>"
+                                                                        target="_blank"
+                                                                        class="btn btn-op-primary btn-sm" style="border-radius:999px;">
+                                                                        <i class="fas fa-file-pdf me-1"></i>Baca PDF
+                                                                    </a>
+                                                                <?php endif; ?>
+                                                            </td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             <?php endif; ?>
@@ -447,52 +744,54 @@
                                             Format MARC21 - Total <?= count($marc) ?> field
                                         </small>
                                     </div>
-                                    <div class="table-responsive">
-                                        <table class="table table-sm table-hover" id="marcTable">
-                                            <thead class="table-dark">
-                                                <tr>
-                                                    <th width="10%">Tag</th>
-                                                    <th width="8%">Ind1</th>
-                                                    <th width="8%">Ind2</th>
-                                                    <th width="64%">Nilai</th>
-                                                    <th width="10%" class="text-center">Urutan</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php foreach ($marc as $field): ?>
-                                                    <tr class="marc-row">
-                                                        <td><span class="badge bg-primary"><?= esc($field->Tag) ?></span></td>
-                                                        <td><code><?= esc($field->Indicator1 ?: '_') ?></code></td>
-                                                        <td><code><?= esc($field->Indicator2 ?: '_') ?></code></td>
-                                                        <td><span><?= esc($field->Value) ?></span></td>
-                                                        <td class="text-center"><span class="badge bg-secondary"><?= esc($field->Sequence) ?></span></td>
+                                    <div class="op-table-wrap mb-3">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-hover mb-0" id="marcTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th width="10%">Tag</th>
+                                                        <th width="8%">Ind1</th>
+                                                        <th width="8%">Ind2</th>
+                                                        <th width="64%">Nilai</th>
+                                                        <th width="10%" class="text-center">Urutan</th>
                                                     </tr>
-                                                <?php endforeach; ?>
-                                            </tbody>
-                                        </table>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($marc as $field): ?>
+                                                        <tr class="marc-row">
+                                                            <td><span class="op-status-badge op-status-info"><?= esc($field->Tag) ?></span></td>
+                                                            <td><code><?= esc($field->Indicator1 ?: '_') ?></code></td>
+                                                            <td><code><?= esc($field->Indicator2 ?: '_') ?></code></td>
+                                                            <td><span><?= esc($field->Value) ?></span></td>
+                                                            <td class="text-center"><span class="op-status-badge op-status-secondary"><?= esc($field->Sequence) ?></span></td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
 
-                                    <div class="mt-3 p-3 bg-light rounded">
-                                        <h6 class="fw-bold text-primary mb-2">
+                                    <div class="op-marc-legend p-3">
+                                        <h6 class="fw-bold mb-2" style="color: var(--op-primary);">
                                             <i class="fas fa-lightbulb me-1"></i>Penjelasan Field MARC21:
                                         </h6>
                                         <div class="row">
                                             <div class="col-md-6">
-                                                <ul class="list-unstyled small">
-                                                    <li><strong>001:</strong> Control Number</li>
-                                                    <li><strong>005:</strong> Date and Time of Latest Transaction</li>
-                                                    <li><strong>020:</strong> ISBN</li>
-                                                    <li><strong>100:</strong> Main Entry - Personal Name</li>
-                                                    <li><strong>245:</strong> Title Statement</li>
+                                                <ul class="list-unstyled small mb-0">
+                                                    <li class="mb-1"><strong>001:</strong> Control Number</li>
+                                                    <li class="mb-1"><strong>005:</strong> Date and Time of Latest Transaction</li>
+                                                    <li class="mb-1"><strong>020:</strong> ISBN</li>
+                                                    <li class="mb-1"><strong>100:</strong> Main Entry - Personal Name</li>
+                                                    <li class="mb-0"><strong>245:</strong> Title Statement</li>
                                                 </ul>
                                             </div>
                                             <div class="col-md-6">
-                                                <ul class="list-unstyled small">
-                                                    <li><strong>250:</strong> Edition Statement</li>
-                                                    <li><strong>260:</strong> Publication Information</li>
-                                                    <li><strong>300:</strong> Physical Description</li>
-                                                    <li><strong>650:</strong> Subject</li>
-                                                    <li><strong>700:</strong> Added Entry - Personal Name</li>
+                                                <ul class="list-unstyled small mb-0">
+                                                    <li class="mb-1"><strong>250:</strong> Edition Statement</li>
+                                                    <li class="mb-1"><strong>260:</strong> Publication Information</li>
+                                                    <li class="mb-1"><strong>300:</strong> Physical Description</li>
+                                                    <li class="mb-1"><strong>650:</strong> Subject</li>
+                                                    <li class="mb-0"><strong>700:</strong> Added Entry - Personal Name</li>
                                                 </ul>
                                             </div>
                                         </div>
@@ -504,123 +803,127 @@
                 </div>
             <?php endif; ?>
 
-
         </div>
 
         <!-- Sidebar -->
         <div class="col-lg-4">
-            <!-- Quick Actions -->
-            <div class="card mb-4 border-0 shadow">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <i class="fas fa-tools me-2"></i>Aksi Cepat
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="<?= base_url('opac') ?>" class="btn btn-outline-primary">
-                            <i class="fas fa-search me-2"></i>Cari Lagi
-                        </a>
-                        <a href="<?= base_url('opac/browse') ?>" class="btn btn-outline-info">
-                            <i class="fas fa-list me-2"></i>Browse Katalog
-                        </a>
+            <div class="op-sticky">
+                <!-- Quick Actions -->
+                <div class="op-side-card mb-4">
+                    <div class="card-header"><i class="fas fa-tools me-2 text-primary"></i>Aksi Cepat</div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="<?= base_url('opac') ?>" class="btn btn-op-soft">
+                                <i class="fas fa-search me-2"></i>Cari Lagi
+                            </a>
+                            <a href="<?= base_url('opac/browse') ?>" class="btn btn-op-soft">
+                                <i class="fas fa-list me-2"></i>Browse Katalog
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Catalog Information -->
-            <div class="card mb-4 border-0 shadow">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <i class="fas fa-info-circle me-2"></i>Informasi Katalog
-                    </h5>
-                </div>
-                <div class="card-body">
-
-
-                    <hr>
-
-                    <div class="small text-muted">
-                        <i class="fas fa-calendar-plus me-2"></i>
-                        <strong>Ditambahkan:</strong> <?= date('d M Y', strtotime($catalog['CreateDate'] ?? 'now')) ?><br>
+                <!-- Catalog Information -->
+                <div class="op-side-card mb-4">
+                    <div class="card-header"><i class="fas fa-info-circle me-2 text-primary"></i>Informasi Katalog</div>
+                    <div class="card-body">
+                        <div class="op-meta-line">
+                            <i class="fas fa-calendar-plus"></i>
+                            <div><strong>Ditambahkan:</strong><br><?= date('d M Y', strtotime($catalog['CreateDate'] ?? 'now')) ?></div>
+                        </div>
 
                         <?php if (!empty($catalog['ApproveDateOPAC'])): ?>
-                            <i class="fas fa-check-circle me-2"></i>
-                            <strong>Disetujui OPAC:</strong> <?= date('d M Y', strtotime($catalog['ApproveDateOPAC'])) ?>
+                            <div class="op-meta-line mb-0">
+                                <i class="fas fa-check-circle"></i>
+                                <div><strong>Disetujui OPAC:</strong><br><?= date('d M Y', strtotime($catalog['ApproveDateOPAC'])) ?></div>
+                            </div>
                         <?php endif; ?>
                     </div>
                 </div>
-            </div>
 
-            <!-- Related Search -->
-            <div class="card mb-4 border-0 shadow">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <i class="fas fa-search me-2"></i>Pencarian Terkait
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <?php if (!empty($catalog['Author'])): ?>
-                            <a href="<?= base_url('opac?search=' . urlencode($catalog['Author']) . '&search_by=Author') ?>"
-                                class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-user me-1"></i>
-                                Karya <?= esc(explode(',', $catalog['Author'])[0]) ?>
-                            </a>
-                        <?php endif; ?>
-
-                        <?php if (!empty($catalog['Publisher'])): ?>
-                            <a href="<?= base_url('opac?search=' . urlencode($catalog['Publisher']) . '&search_by=Publisher') ?>"
-                                class="btn btn-outline-success btn-sm">
-                                <i class="fas fa-building me-1"></i>
-                                Dari <?= esc($catalog['Publisher']) ?>
-                            </a>
-                        <?php endif; ?>
-
-                        <?php if (!empty($catalog['Subject'])): ?>
-                            <?php
-                            $firstSubject = trim(explode(';', $catalog['Subject'])[0]);
-                            if ($firstSubject):
-                            ?>
-                                <a href="<?= base_url('opac?search=' . urlencode($firstSubject) . '&search_by=Subject') ?>"
-                                    class="btn btn-outline-info btn-sm">
-                                    <i class="fas fa-tag me-1"></i>
-                                    Subjek: <?= esc(substr($firstSubject, 0, 20)) ?>...
+                <!-- Related Search -->
+                <div class="op-side-card mb-4">
+                    <div class="card-header"><i class="fas fa-search me-2 text-primary"></i>Pencarian Terkait</div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <?php if (!empty($catalog['Author'])): ?>
+                                <a href="<?= base_url('opac?search=' . urlencode($catalog['Author']) . '&search_by=Author') ?>"
+                                    class="btn btn-op-soft btn-sm">
+                                    <i class="fas fa-user me-1 text-primary"></i>
+                                    Karya <?= esc(explode(',', $catalog['Author'])[0]) ?>
                                 </a>
                             <?php endif; ?>
-                        <?php endif; ?>
 
-                        <?php if (!empty($catalog['PublishYear'])): ?>
-                            <a href="<?= base_url('opac?PublishYear=' . $catalog['PublishYear'] . '&search_by=') ?>"
-                                class="btn btn-outline-warning btn-sm">
-                                <i class="fas fa-calendar me-1"></i>
-                                Tahun <?= esc($catalog['PublishYear']) ?>
-                            </a>
-                        <?php endif; ?>
+                            <?php if (!empty($catalog['Publisher'])): ?>
+                                <a href="<?= base_url('opac?search=' . urlencode($catalog['Publisher']) . '&search_by=Publisher') ?>"
+                                    class="btn btn-op-soft btn-sm">
+                                    <i class="fas fa-building me-1 text-success"></i>
+                                    Dari <?= esc($catalog['Publisher']) ?>
+                                </a>
+                            <?php endif; ?>
+
+                            <?php if (!empty($catalog['Subject'])): ?>
+                                <?php
+                                $firstSubject = trim(explode(';', $catalog['Subject'])[0]);
+                                if ($firstSubject):
+                                ?>
+                                    <a href="<?= base_url('opac?search=' . urlencode($firstSubject) . '&search_by=Subject') ?>"
+                                        class="btn btn-op-soft btn-sm">
+                                        <i class="fas fa-tag me-1 text-info"></i>
+                                        Subjek: <?= esc(substr($firstSubject, 0, 20)) ?>...
+                                    </a>
+                                <?php endif; ?>
+                            <?php endif; ?>
+
+                            <?php if (!empty($catalog['PublishYear'])): ?>
+                                <a href="<?= base_url('opac?PublishYear=' . $catalog['PublishYear'] . '&search_by=') ?>"
+                                    class="btn btn-op-soft btn-sm">
+                                    <i class="fas fa-calendar me-1 text-warning"></i>
+                                    Tahun <?= esc($catalog['PublishYear']) ?>
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export Options -->
+                <div class="op-side-card">
+                    <div class="card-header"><i class="fas fa-download me-2 text-primary"></i>Export</div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-op-soft btn-sm" onclick="exportBibTeX()">
+                                <i class="fas fa-file-code me-2 text-success"></i>BibTeX
+                            </button>
+                            <button class="btn btn-op-soft btn-sm" onclick="exportRIS()">
+                                <i class="fas fa-file-alt me-2 text-info"></i>RIS Format
+                            </button>
+                            <button class="btn btn-op-soft btn-sm" onclick="exportCSV()">
+                                <i class="fas fa-file-csv me-2 text-warning"></i>CSV
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
 
-            <!-- Export Options -->
-            <div class="card border-0 shadow">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <i class="fas fa-download me-2"></i>Export
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-outline-success btn-sm" onclick="exportBibTeX()">
-                            <i class="fas fa-file-code me-2"></i>BibTeX
-                        </button>
-                        <button class="btn btn-outline-info btn-sm" onclick="exportRIS()">
-                            <i class="fas fa-file-alt me-2"></i>RIS Format
-                        </button>
-                        <button class="btn btn-outline-warning btn-sm" onclick="exportCSV()">
-                            <i class="fas fa-file-csv me-2"></i>CSV
-                        </button>
-                    </div>
-                </div>
+<!-- Cover Modal -->
+<div class="modal fade" id="coverModal" tabindex="-1" aria-labelledby="coverModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="border-radius: var(--op-radius-md); overflow:hidden; border:none;">
+            <div class="modal-header" style="background: linear-gradient(135deg, var(--op-primary), var(--op-primary-light)); border:none;">
+                <h5 class="modal-title text-white" id="coverModalLabel">Cover</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-0" style="background:#111827;">
+                <img id="modalCoverImage" src="" alt="Cover" class="img-fluid" style="max-height: 70vh;">
+            </div>
+            <div class="modal-footer" style="border:none;">
+                <a id="downloadCoverBtn" href="#" class="btn btn-op-primary btn-sm" download>
+                    <i class="fas fa-download me-1"></i>Unduh
+                </a>
+                <button type="button" class="btn btn-op-soft btn-sm" data-bs-dismiss="modal">Tutup</button>
             </div>
         </div>
     </div>
@@ -630,34 +933,27 @@
 <?php if (!empty($roweksemplar_drm)): ?>
     <div class="modal fade" id="pdfModal<?= $catalog['ID'] ?>" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
+            <div class="modal-content" style="border-radius: var(--op-radius-md); overflow:hidden; border:none;">
+                <div class="modal-header" style="background: linear-gradient(135deg, var(--op-primary), var(--op-primary-light)); border:none;">
+                    <h5 class="modal-title text-white">
                         <i class="fas fa-file-pdf me-2"></i>Baca Buku Digital: <?= esc($catalog['Title']) ?>
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-0">
-
                     <div class="text-center">
-                        <i class="fas fa-file-pdf fa-4x text-primary mb-3"></i>
-                        <h5>PDF Viewer</h5>
                         <iframe
                             src="<?= base_url('opac/baca-digital/' . $catalog['ID']) ?>"
-                            width="100%" height="500px" style="border: none;"></iframe>
+                            width="100%" height="600px" style="border: none;"></iframe>
                     </div>
-
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-
+                <div class="modal-footer" style="border:none;">
+                    <button type="button" class="btn btn-op-soft btn-sm" data-bs-dismiss="modal">Tutup</button>
                 </div>
             </div>
         </div>
     </div>
 <?php endif; ?>
-
-
 
 <script>
     <?php if (session()->getFlashdata('digital_error')): ?>
@@ -910,13 +1206,12 @@ ER  -
     }
 
     function showToast(message, type = 'info') {
-        // Remove existing toasts
         const existingToasts = document.querySelectorAll('.custom-toast');
         existingToasts.forEach(toast => toast.remove());
 
         const toast = document.createElement('div');
         toast.className = `alert alert-${type} alert-dismissible fade show position-fixed custom-toast`;
-        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 350px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 350px; border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.25); border:none;';
 
         const iconClass = type === 'success' ? 'check-circle' :
             type === 'danger' ? 'exclamation-circle' :
@@ -930,7 +1225,6 @@ ER  -
 
         document.body.appendChild(toast);
 
-        // Auto remove after 4 seconds
         setTimeout(() => {
             if (toast.parentNode) {
                 toast.classList.remove('show');
@@ -943,7 +1237,6 @@ ER  -
         }, 4000);
     }
 
-    // Print styles
     window.addEventListener('beforeprint', function() {
         document.querySelectorAll('.btn, .dropdown').forEach(el => {
             el.style.display = 'none';
@@ -958,7 +1251,6 @@ ER  -
 
     // Manual Bootstrap 5 Dropdown initialization (fallback jika jQuery 4 konflik)
     document.addEventListener('DOMContentLoaded', function () {
-        // Vanilla JS dropdown untuk #downloadMarcDropdown (bypass jQuery4 + BS5 conflict)
         var btn  = document.getElementById('downloadMarcDropdown');
         var menu = document.getElementById('marcDropdownMenu');
         var caret = document.getElementById('marcCaretIcon');
@@ -973,7 +1265,6 @@ ER  -
                 }
             });
 
-            // Tutup jika klik di luar dropdown
             document.addEventListener('click', function (e) {
                 var wrapper = document.getElementById('marcDropdownWrapper');
                 if (wrapper && !wrapper.contains(e.target)) {
@@ -982,7 +1273,6 @@ ER  -
                 }
             });
 
-            // Tutup setelah klik item
             menu.querySelectorAll('.dropdown-item').forEach(function(item) {
                 item.addEventListener('click', function() {
                     menu.style.display = 'none';
@@ -991,7 +1281,6 @@ ER  -
             });
         }
 
-        // Vanilla JS dropdown untuk #bagikanDropdownBtn
         var btnBagikan  = document.getElementById('bagikanDropdownBtn');
         var menuBagikan = document.getElementById('bagikanDropdownMenu');
         var caretBagikan = document.getElementById('bagikanCaretIcon');
@@ -1006,7 +1295,6 @@ ER  -
                 }
             });
 
-            // Tutup jika klik di luar dropdown
             document.addEventListener('click', function (e) {
                 var wrapper = document.getElementById('bagikanDropdownWrapper');
                 if (wrapper && !wrapper.contains(e.target)) {

@@ -300,20 +300,29 @@ class AnggotaController extends \Base\Controllers\BaseController
 
     public function edit(int $ID = null, $is_anggota = false)
     {
-        if (!is_allowed('anggota/edit')) {
-            if ($this->request->isAJAX()) {
-                return $this->response->setJSON([
-                    'success' => false,
-                    'message' => 'Maaf, Anda tidak memiliki akses',
-                ]);
-            }
-            set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
-            set_message('toastr_type', 'error');
-            return redirect()->to('anggota');
+    if (!is_allowed('anggota/edit')) {
+        if ($this->request->isAJAX()) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Maaf, Anda tidak memiliki akses',
+            ]);
+        }
+        set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
+        set_message('toastr_type', 'error');
+        return redirect()->to('anggota');
+    }
+
+        if (empty($ID)) {
+            $encId = $this->request->getVar('ID');
+            $ID = $encId ? (int) decData($encId) : null;
         }
 
-        $db = db_connect();
-        $jenisperpustakaan = $db->table('settingparameters')->where('Name', 'JenisPerpustakaan')->get()->getRow()->Value ?: "UMUM";
+        if (empty($ID)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+         $db = db_connect();
+        $this->data['db'] = $db;
+         $jenisperpustakaan = $db->table('settingparameters')->where('Name', 'JenisPerpustakaan')->get()->getRow()->Value ?: "UMUM";
 
         if ($jenisperpustakaan == "UMUM") {
             $this->data['jenis_perpustakaan_id'] = 1;
@@ -324,7 +333,6 @@ class AnggotaController extends \Base\Controllers\BaseController
         } else {
             $this->data['jenis_perpustakaan_id'] = 4;
         }
-
         $member_id = $ID;
         $MemberNo = $this->request->getPost('IdentityNo');
 
@@ -532,7 +540,7 @@ class AnggotaController extends \Base\Controllers\BaseController
                     $this->session->setFlashdata('swal_title', 'Gagal');
                     $this->session->setFlashdata('swal_text', 'Anggota gagal disimpan');
 
-                    return $is_anggota ? redirect()->back() : redirect()->to('/anggota/edit/' . $ID);
+                    return $is_anggota ? redirect()->back() : redirect()->back();
                 }
             } else {
                 if ($this->request->isAJAX()) {
