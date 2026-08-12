@@ -330,6 +330,7 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->section('script'); ?>
 <!-- SweetAlert2 CDN -->
+<!-- sengaja TANPA integrity: "@11" hanya pin major version, isinya berubah tiap ada rilis patch -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     // ===========================================================

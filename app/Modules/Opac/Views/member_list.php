@@ -5,8 +5,8 @@ $request = service('request'); ?>
 $layout = (!empty($core->layout_backend)) ? $core->layout_backend : 'hamkamannan\adminigniter\Views\layout\backend\main'; ?>
 <?= $this->extend($layout); ?>
 <?= $this->section('style'); ?>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.5.6/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" integrity="sha384-1UXhfqyOyO+W+XsGhiIFwwD3hsaHRz2XDGMle3b8bXPH5+cMsXVShDoHA3AH/y/p" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.5.6/css/buttons.dataTables.min.css" integrity="sha384-Sd4LHmDVkSY5vg4uBLwDN7QUzhQm3TmmNC5jmiL4dRVgmICcpqmGvnwEU4acz6wk" crossorigin="anonymous">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -68,13 +68,13 @@ $layout = (!empty($core->layout_backend)) ? $core->layout_backend : 'hamkamannan
 
 <?= $this->section('script'); ?>
 
-<script src="https://cdn.datatables.net/buttons/1.5.6/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.flash.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-<script src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.5.6/js/dataTables.buttons.min.js" integrity="sha384-iuMWo+ZoS1VepZMhnsiTt4GMFUcBlrIofXPssxpFBjzASinAB+mK4Kc/ePpzM4TX" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.flash.min.js" integrity="sha384-wSYm3f5KwqkbUyg1t+MTmmR9bfnkC0/8c5jXFDqjkOl9nAg5H0eS2Tx2Ca7dB8hk" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js" integrity="sha384-v9EFJbsxLXyYar8TvBV8zu5USBoaOC+ZB57GzCmQiWfgDIjS+wANZMP5gjwMLwGv" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js" integrity="sha384-HUHsYVOhSyHyZRTWv8zkbKVk7Xmg12CCNfKEUJ7cSuW/22Lz3BITd3Om6QeiXICb" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js" integrity="sha384-UAA3vlTPq9dwxB61awBFhR7Y5uBFOKQWuZueu4C6uI48gjIoqI/OTmYWEYWZXbGR" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.html5.min.js" integrity="sha384-Pl8RVCqSvsApnng2TEtrl1lHWlEozdPYTpk35W5LeFsrUsPk64XprIZXQOUq4hGj" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.print.min.js" integrity="sha384-XB54OBl3rOOjrhqlr+qwWqLv0GRnzVGFYKHPwdJnah4TyB7vQuYckQSsxQxGOA8d" crossorigin="anonymous"></script>
 
 <script>
     var t;

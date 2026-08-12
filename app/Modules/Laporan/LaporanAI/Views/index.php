@@ -295,6 +295,7 @@
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
+<!-- sengaja TANPA integrity: URL tanpa nomor versi selalu resolve ke rilis terbaru, isinya berubah kapan saja -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>

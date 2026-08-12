@@ -22,7 +22,9 @@
 <script src="<?= base_url('assets/vendors'); ?>/datatables/js/dataTables.responsive.min.js"></script>
 <script src="<?= base_url('assets/vendors'); ?>/datatables/js/responsive.bootstrap.min.js"></script>
 
+<!-- axios sengaja TANPA integrity: URL tanpa nomor versi selalu resolve ke rilis terbaru, isinya berubah kapan saja -->
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<!-- tinymce cloud sengaja TANPA integrity: loader ini dihosting TinyMCE sendiri dan diupdate sisi server tanpa mengubah URL (mirip hCaptcha), TinyMCE resmi tidak merekomendasikan SRI di sini -->
 <script src="https://cdn.tiny.cloud/1/32x284pjuqkz6bpk6b6dnfpxfestvjmqesa33sgixmunt7sh/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
 
 <!--INIT -->

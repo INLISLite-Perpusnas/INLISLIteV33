@@ -27,7 +27,7 @@ $slug = $request->getGet('slug') ?? '';
         /* Adjust the desired height */
     }
 </style>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.1/dist/sweetalert2.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.1/dist/sweetalert2.min.css" integrity="sha384-csqwGqQMzMfYK0Eo+IqUNGrlZujHH42RqILi8CiEaDRZHOW1upfFarO+ffrQhnFd" crossorigin="anonymous">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -108,8 +108,8 @@ $slug = $request->getGet('slug') ?? '';
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.1/dist/sweetalert2.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.1/dist/sweetalert2.min.js" integrity="sha384-cova8l3suyxv07mYN97ndzFjqOOOFnihka1QgMonm/XXG0qjFcFQHt/6Ax4x+Zru" crossorigin="anonymous"></script>
 
 <script>
     $(document).ready(function () {

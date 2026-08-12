@@ -10,7 +10,7 @@ $item = 0;
 $rec = 0;
 $jumlahData = count($LabelData);
 
-foreach ($LabelData as $LabelData) :
+foreach ($LabelData as $data) :
 	$rec++;
 
 	if ($item == 0) {
@@ -22,17 +22,27 @@ foreach ($LabelData as $LabelData) :
 		$html .= '<tr>';
 	}
 
+	// 3 pita warna, masing-masing mewakili 1 digit pertama DeweyNo item ini
+	// (mis. "201" -> digit 2, 0, 1), saling menempel tanpa jarak/border.
+	$warnaBands = '';
+	for ($w = 1; $w <= 3; $w++) {
+		$kode  = $data['KodeWarna' . $w] ?? '';
+		$warna = empty($data['Warna' . $w]) ? '' : ';background-color:' . $data['Warna' . $w];
+		$warnaBands .= '<tr><td style="height:46px; text-align:center; vertical-align:middle' . $warna . '">' . htmlspecialchars((string) $kode) . '</td></tr>';
+	}
+
 	$html .= '
 			<td style="width:50%;padding-bottom: 25px; padding-right: 55px; text-align: left;">
-				<table style="width:212px;" cellpadding="0" cellspacing="0" nobr="true">
+				<table style="width:283px; border:solid 1px #CCC;" cellpadding="0" cellspacing="0" nobr="true">
 					<tr>
-						<td style="text-align: center; vertical-align: middle; width:60px; height: 212px" rowspan="2">
-							<img src="' . $LabelData['BarcodePNGVertical'] . '" width="39" height="190">
-						</td>
-						<td style="border-top:solid 1px #CCC; border-right:solid 1px #CCC; border-left:solid 1px #CCC; border-bottom:solid 1px #CCC; height:62px; text-align: center; vertical-align: middle; width:212px; padding: 5px; font-size: 12px ">' . $LabelData['NamaPerpustakaan'] . '</td>
+						<td style="height:70px; text-align: center; vertical-align: middle; width:283px; padding: 5px; font-size: 12px;">' . $data['NamaPerpustakaan'] . '</td>
+					</tr>
+					' . $warnaBands . '
+					<tr>
+						<td style="height:110px;">&nbsp;</td>
 					</tr>
 					<tr>
-						<td style="height:150px; border-bottom:solid 1px #CCC; border-right:solid 1px #CCC; border-left:solid 1px #CCC; font-weight: normal; font-size: 16px; text-align: center; vertical-align: middle;">' . implode('<br>', array_map('htmlspecialchars', preg_split('/[\s\/]+/', trim($LabelData['CallNumber'])))) . '</td>
+						<td style="height: 40px; font-size: 14px; border-top:solid 1px #CCC; text-align: center; vertical-align: middle;">' . htmlspecialchars((string) $data['CallNumber']) . '</td>
 					</tr>
 				</table>
 			</td>';
@@ -48,7 +58,7 @@ foreach ($LabelData as $LabelData) :
 		$no++;
 	}
 
-	if ($item == 7 || $rec == $jumlahData) {
+	if ($item == 5 || $rec == $jumlahData) {
 		if ($no > 0) {
 			$html .= '</tr>';
 			$no = 0;
@@ -66,5 +76,5 @@ if (isset($outputFormat) && $outputFormat == 'word') {
     return;
 }
 $pdf->writeHTML($html, true, false, false, false, '');
-$pdf->Output('example_006.pdf', 'D');
+$pdf->Output('example_011.pdf', 'D');
 die;

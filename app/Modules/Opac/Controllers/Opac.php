@@ -7,6 +7,8 @@ use PhpOffice\PhpSpreadsheet\Helper\Sample;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 
 class Opac extends \Base\Controllers\BaseController
 {
@@ -296,6 +298,7 @@ private function loadRegularCatalogscache()
         $this->data['roweksemplar']     = $roweksemplar;
         $this->data['roweksemplar_drm'] = $roweksemplar_drm;
         $this->data['member_active_loan_collections'] = $member_active_loan_collections;
+        $this->data['hcaptcha_site_key'] = getenv('HCAPTCHA_SITE_KEY');
 
         return view('Opac\Views\detail', $this->data);
     }
@@ -1744,6 +1747,194 @@ public function browse()
         }
          
         return redirect()->to(base_url('katalog/view_decrypted/' . encData($file->ID)));
+    }
+
+    /**
+     * Login khusus anggota via modal di halaman detail OPAC (AJAX).
+     * Dipakai supaya anggota tidak perlu diarahkan ke /login saat membaca buku digital.
+     */
+    public function memberLogin()
+    {
+        $username         = trim((string) $this->request->getPost('username'));
+        $password         = (string) $this->request->getPost('password');
+        $hcaptchaResponse = $this->request->getPost('h-captcha-response');
+
+        if (empty($username) || empty($password)) {
+            return $this->response->setJSON([
+                'error'   => true,
+                'message' => 'Nomor anggota dan password wajib diisi.',
+            ]);
+        }
+
+        if (!$this->verifyHcaptcha($hcaptchaResponse)) {
+            return $this->response->setJSON([
+                'error'   => true,
+                'message' => 'Verifikasi hCaptcha gagal. Silakan coba lagi.',
+            ]);
+        }
+
+        if (!service('authentication')->attempt(['username' => $username, 'password' => $password])) {
+            return $this->response->setJSON([
+                'error'   => true,
+                'message' => 'Maaf, nomor anggota atau password anda salah.',
+            ]);
+        }
+
+        $db   = db_connect();
+        $user = $db->table('users')->where('username', $username)->get()->getRowObject();
+
+        if (is_null($user)) {
+            return $this->response->setJSON([
+                'error'   => true,
+                'message' => 'Maaf, nomor anggota atau password anda salah.',
+            ]);
+        }
+
+        // Modal ini khusus anggota perpustakaan, bukan untuk akun staf/admin
+        $member = $this->memberModel->where('MemberNo', $username)->first();
+        if (!$member) {
+            service('authentication')->logout();
+
+            return $this->response->setJSON([
+                'error'   => true,
+                'message' => 'Login ini khusus untuk anggota perpustakaan. Silakan gunakan halaman login staf.',
+            ]);
+        }
+
+        session()->remove('error');
+
+        // Ambil permission data seperti pada login utama
+        $auth_permissions            = $db->table('auth_permissions')->get()->getResultObject();
+        $result_auth_permissions     = [];
+        $auth_user_permissions       = $db->table('auth_users_permissions')->where('user_id', $user->id)->get()->getResultObject();
+        $result_auth_user_permissions = [];
+        foreach ($auth_user_permissions as $row) {
+            $result_auth_user_permissions[$row->permission_id] = $row->user_id;
+        }
+
+        if (!empty($result_auth_user_permissions)) {
+            foreach ($auth_permissions as $row) {
+                if (isset($result_auth_user_permissions[$row->id])) {
+                    $result_auth_permissions[$row->name] = [$user->id];
+                }
+            }
+        } else {
+            $auth_groups_users        = $db->table('auth_groups_users')->get()->getResultObject();
+            $result_auth_groups_users = [];
+            foreach ($auth_groups_users as $row) {
+                $result_auth_groups_users[$row->group_id][] = $row->user_id;
+            }
+
+            $auth_groups        = $db->table('auth_groups')->get()->getResultObject();
+            $result_auth_groups = [];
+            foreach ($auth_groups as $row) {
+                $result_auth_groups[$row->id] = $row;
+            }
+
+            $auth_groups_permissions        = $db->table('auth_groups_permissions')->get()->getResultObject();
+            $result_auth_groups_permissions = [];
+            foreach ($auth_groups_permissions as $row) {
+                $result_auth_groups_permissions[$row->permission_id][] = $row->group_id;
+            }
+
+            foreach ($auth_permissions as $row) {
+                if (isset($result_auth_groups_permissions[$row->id])) {
+                    $groups_permissions = $result_auth_groups_permissions[$row->id];
+                    $user_id            = [];
+                    foreach ($groups_permissions as $list_group_id) {
+                        if (isset($result_auth_groups_users[$list_group_id])) {
+                            $user_id = array_merge($user_id, $result_auth_groups_users[$list_group_id]);
+                        }
+                    }
+                    $result_auth_permissions[$row->name] = $user_id;
+                }
+            }
+        }
+
+        $exp   = time() + getenv('security.TOKEN_EXP');
+        $token = JWT::encode([
+            'iat'  => getenv('security.TOKEN_IAT'),
+            'exp'  => $exp,
+            'user' => $user->id,
+        ], getenv('security.TOKEN_SECRET'), getenv('security.TOKEN_ALG'));
+
+        session()->set('username', $username);
+        session()->set('password', $password);
+        session()->set('token', $token);
+        session()->set('logged_in', $user->id);
+        session()->set('branch_id', $user->branch_id ?? 0);
+        session()->set('member_id', $user->member_id ?? 0);
+        session()->set('auth_permissions', $result_auth_permissions);
+
+        $userData                    = new \stdClass();
+        $userData->id                = $user->id;
+        $userData->username          = $user->username;
+        $userData->first_name        = $user->first_name ?? 'Anggota';
+        $userData->last_name         = $user->last_name ?? '';
+        $userData->email             = $user->email ?? '';
+        $userData->phone             = $user->phone ?? '';
+        $userData->address           = $user->address ?? '';
+        $userData->avatar            = $user->avatar ?? '1683480754_669684b97dfb4cf28593.png';
+        $userData->category          = $user->category ?? 'member';
+        $userData->branch_id         = $user->branch_id ?? 0;
+        $userData->npp_provinsi_id   = $user->npp_provinsi_id ?? 0;
+        $userData->npp_kabkota_id    = $user->npp_kabkota_id ?? 0;
+        $userData->npp_kecamatan_id  = $user->npp_kecamatan_id ?? 0;
+        $userData->npp_kelurahan_id  = $user->npp_kelurahan_id ?? 0;
+        $userData->member_id         = $user->member_id ?? 0;
+
+        session()->set('user', $userData);
+
+        $payload = JWT::decode($token, new Key(getenv('security.TOKEN_SECRET'), getenv('security.TOKEN_ALG')));
+        session()->set('payload', $payload);
+
+        return $this->response->setJSON([
+            'error'   => false,
+            'message' => 'Login berhasil.',
+        ]);
+    }
+
+    /**
+     * Verify hCaptcha response token.
+     */
+    private function verifyHcaptcha($hcaptchaResponse)
+    {
+        $secretKey = getenv('HCAPTCHA_SECRET_KEY');
+
+        if (empty($secretKey)) {
+            // hCaptcha belum dikonfigurasi di server, lewati verifikasi
+            return true;
+        }
+
+        if (empty($hcaptchaResponse)) {
+            return false;
+        }
+
+        $url  = 'https://hcaptcha.com/siteverify';
+        $data = [
+            'secret'   => $secretKey,
+            'response' => $hcaptchaResponse,
+            'remoteip' => $this->request->getIPAddress(),
+        ];
+
+        $options = [
+            'http' => [
+                'method'  => 'POST',
+                'header'  => 'Content-Type: application/x-www-form-urlencoded',
+                'content' => http_build_query($data),
+            ],
+        ];
+
+        $context = stream_context_create($options);
+        $result  = file_get_contents($url, false, $context);
+
+        if ($result === false) {
+            return false;
+        }
+
+        $response = json_decode($result, true);
+
+        return isset($response['success']) && $response['success'] === true;
     }
 
     private function _autoReturnDigitalLoan($loanItem, int $collection_id)

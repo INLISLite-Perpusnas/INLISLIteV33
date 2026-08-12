@@ -717,13 +717,22 @@
                                                             <td>
                                                                 <?php
                                                                 $canRead = $eksemplar_drm->Status_id == 1;
+                                                                $bacaDigitalUrl = base_url('opac/baca-digital/' . $catalog['ID']);
                                                                 ?>
                                                                 <?php if ($canRead): ?>
-                                                                    <a href="<?= base_url('opac/baca-digital/' . $catalog['ID']) ?>"
-                                                                        target="_blank"
-                                                                        class="btn btn-op-primary btn-sm" style="border-radius:999px;">
-                                                                        <i class="fas fa-file-pdf me-1"></i>Baca PDF
-                                                                    </a>
+                                                                    <?php if (logged_in()): ?>
+                                                                        <a href="<?= $bacaDigitalUrl ?>"
+                                                                            target="_blank"
+                                                                            class="btn btn-op-primary btn-sm" style="border-radius:999px;">
+                                                                            <i class="fas fa-file-pdf me-1"></i>Baca PDF
+                                                                        </a>
+                                                                    <?php else: ?>
+                                                                        <button type="button"
+                                                                            onclick="showMemberLoginModal('<?= $bacaDigitalUrl ?>')"
+                                                                            class="btn btn-op-primary btn-sm" style="border-radius:999px;">
+                                                                            <i class="fas fa-file-pdf me-1"></i>Baca PDF
+                                                                        </button>
+                                                                    <?php endif; ?>
                                                                 <?php endif; ?>
                                                             </td>
                                                         </tr>
@@ -953,6 +962,60 @@
             </div>
         </div>
     </div>
+<?php endif; ?>
+
+<!-- Member Login Modal for Digital Books -->
+<?php if (!empty($roweksemplar_drm) && !logged_in()): ?>
+    <div class="modal fade" id="memberLoginModal" tabindex="-1" aria-labelledby="memberLoginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: var(--op-radius-md); overflow:hidden; border:none;">
+                <div class="modal-header" style="background: linear-gradient(135deg, var(--op-primary), var(--op-primary-light)); border:none;">
+                    <h5 class="modal-title text-white" id="memberLoginModalLabel">
+                        <i class="fas fa-lock me-2"></i>Login Anggota
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="memberLoginForm">
+                    <div class="modal-body">
+                        <p class="text-muted small mb-3">Silakan login sebagai anggota perpustakaan untuk membaca buku digital ini.</p>
+
+                        <div id="memberLoginAlert" class="alert alert-danger d-none" role="alert"></div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold" for="memberLoginUsername">Nomor Anggota</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                <input type="text" class="form-control" id="memberLoginUsername" name="username" required autocomplete="username" placeholder="Masukkan nomor anggota">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold" for="memberLoginPassword">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" class="form-control" id="memberLoginPassword" name="password" required autocomplete="current-password" placeholder="Masukkan password">
+                            </div>
+                        </div>
+
+                        <?php if (!empty($hcaptcha_site_key)): ?>
+                            <div class="d-flex justify-content-center my-3">
+                                <div class="h-captcha" data-sitekey="<?= esc($hcaptcha_site_key) ?>"></div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="modal-footer" style="border:none;">
+                        <button type="button" class="btn btn-op-soft btn-sm" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-op-primary btn-sm" id="memberLoginSubmitBtn">
+                            <i class="fas fa-sign-in-alt me-1"></i>Masuk &amp; Baca
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <?php if (!empty($hcaptcha_site_key)): ?>
+        <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+    <?php endif; ?>
 <?php endif; ?>
 
 <script>
@@ -1304,6 +1367,100 @@ ER  -
             });
         }
     });
+
+    // ===== Member Login Modal (Baca Buku Digital) =====
+    let pendingBacaDigitalUrl = null;
+
+    function showMemberLoginModal(url) {
+        pendingBacaDigitalUrl = url;
+        const alertBox = document.getElementById('memberLoginAlert');
+        if (alertBox) {
+            alertBox.classList.add('d-none');
+            alertBox.textContent = '';
+        }
+        const form = document.getElementById('memberLoginForm');
+        if (form) form.reset();
+        if (typeof hcaptcha !== 'undefined') {
+            try { hcaptcha.reset(); } catch (e) {}
+        }
+        const modalEl = document.getElementById('memberLoginModal');
+        if (modalEl) {
+            new bootstrap.Modal(modalEl).show();
+        }
+    }
+
+    (function () {
+        const memberLoginForm = document.getElementById('memberLoginForm');
+        if (!memberLoginForm) return;
+
+        memberLoginForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const alertBox = document.getElementById('memberLoginAlert');
+            const submitBtn = document.getElementById('memberLoginSubmitBtn');
+            const originalBtnHtml = submitBtn.innerHTML;
+
+            // Buka tab kosong sekarang (dalam gesture klik user) supaya tidak diblokir popup blocker,
+            // lalu arahkan setelah login berhasil.
+            const pdfTab = pendingBacaDigitalUrl ? window.open('about:blank', '_blank') : null;
+
+            const formData = new FormData();
+            formData.append('username', document.getElementById('memberLoginUsername').value.trim());
+            formData.append('password', document.getElementById('memberLoginPassword').value);
+            if (typeof hcaptcha !== 'undefined') {
+                formData.append('h-captcha-response', hcaptcha.getResponse());
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Memproses...';
+            alertBox.classList.add('d-none');
+
+            fetch('<?= base_url('opac/member-login') ?>', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        if (pdfTab) pdfTab.close();
+                        alertBox.textContent = data.message || 'Login gagal. Silakan coba lagi.';
+                        alertBox.classList.remove('d-none');
+                        if (typeof hcaptcha !== 'undefined') {
+                            try { hcaptcha.reset(); } catch (e) {}
+                        }
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnHtml;
+                        return;
+                    }
+
+                    const modalEl = document.getElementById('memberLoginModal');
+                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                    if (modalInstance) modalInstance.hide();
+
+                    showToast('Login berhasil!', 'success');
+
+                    if (pdfTab && pendingBacaDigitalUrl) {
+                        pdfTab.location.href = pendingBacaDigitalUrl;
+                    } else if (pendingBacaDigitalUrl) {
+                        window.open(pendingBacaDigitalUrl, '_blank');
+                    }
+
+                    // Muat ulang halaman agar tombol "Baca PDF" langsung tampil sebagai link
+                    setTimeout(() => window.location.reload(), 600);
+                })
+                .catch(() => {
+                    if (pdfTab) pdfTab.close();
+                    alertBox.textContent = 'Terjadi kesalahan. Silakan coba lagi.';
+                    alertBox.classList.remove('d-none');
+                    if (typeof hcaptcha !== 'undefined') {
+                        try { hcaptcha.reset(); } catch (e) {}
+                    }
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHtml;
+                });
+        });
+    })();
 </script>
 
 <?= $this->endsection() ?>

@@ -13,7 +13,7 @@
     <meta name="msapplication-tap-highlight" content="no">
     <link rel="icon" href="<?= base_url(get_parameter('favicon')) ?>">
     <link rel="stylesheet" href="<?= base_url('themes/uigniter'); ?>/css/base.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" integrity="sha384-QyBj6h6db75/JDTyCPXOPf/LKz7SKinEvgKVewS45N04pLBCHyZTXcmPccj9b65R" crossorigin="anonymous" />
     <?= $this->renderSection('style'); ?>
 </head>
 

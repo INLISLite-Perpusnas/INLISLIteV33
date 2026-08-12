@@ -38,6 +38,13 @@ $paper_size_config = [
             'cetak-label-a4-3'       => 'Model A4-3 (No. Panggil + Barcode + 1 Warna)',
             'cetak-label-a4-4'       => 'Model A4-4 (No. Panggil + Barcode + 1 Warna)',
             'cetak-label-a4-5'       => 'Model A4-5 (No. Panggil + Barcode)',
+            'cetak-label-a4-6'       => 'Model A4-6 (No. Panggil + Barcode)',
+            'cetak-label-a4-7'       => 'Model A4-7 (No. Panggil + Barcode + 1 Warna)',
+            'cetak-label-a4-8'       => 'Model A4-8 (No. Panggil + Barcode + 1 Warna)',
+            'cetak-label-a4-9'       => 'Model A4-9 (No. Panggil + Barcode + 5 Warna Kelas)',
+            'cetak-label-a4-10'      => 'Model A4-10 (No. Panggil + 2x Barcode + Cabang)',
+            'cetak-label-a4-11'      => 'Model A4-11 (No. Panggil + 3 Digit Warna Kelas, Tanpa Barcode)',
+            'cetak-label-a4-12'      => 'Model A4-12 (Judul + Barcode, 24 Label/Halaman)',
             // QR Code – fitur baru yang dipertahankan
             'cetak-label-a4-4-qrcode' => 'Model A4-QR (QR Code + No. Panggil)',
         ],

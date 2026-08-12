@@ -104,6 +104,8 @@ if (!function_exists('get_peminjaman')) {
             ->select("
                 collectionloanitems.*,
                 collections.NomorBarcode AS barcode_no,
+                collections.ISDRM AS is_digital,
+                collections.Catalog_id AS catalog_id,
                 catalogs.Title AS title,
                 catalogs.Publisher AS publisher
             ")

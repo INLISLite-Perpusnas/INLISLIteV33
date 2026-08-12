@@ -22,6 +22,8 @@ foreach ($LabelData as $LabelData) :
 		$html .= '<tr>';
 	}
 
+	$warna = $LabelData['Warna1'] == '' ? '' : ';background-color:' . $LabelData['Warna1'];
+
 	$html .= '
 			<td style="width:50%;padding-bottom: 25px; padding-right: 55px; text-align: left;">
 				<table style="width:212px;" cellpadding="0" cellspacing="0" nobr="true">
@@ -29,7 +31,7 @@ foreach ($LabelData as $LabelData) :
 						<td style="text-align: center; vertical-align: middle; width:60px; height: 212px" rowspan="2">
 							<img src="' . $LabelData['BarcodePNGVertical'] . '" width="39" height="190">
 						</td>
-						<td style="border-top:solid 1px #CCC; border-right:solid 1px #CCC; border-left:solid 1px #CCC; border-bottom:solid 1px #CCC; height:62px; text-align: center; vertical-align: middle; width:212px; padding: 5px; font-size: 12px ">' . $LabelData['NamaPerpustakaan'] . '</td>
+						<td style="border:solid 1px #CCC; height:62px; text-align: center; vertical-align: middle; width:212px; font-size: 12px' . $warna . '">' . $LabelData['NamaPerpustakaan'] . '</td>
 					</tr>
 					<tr>
 						<td style="height:150px; border-bottom:solid 1px #CCC; border-right:solid 1px #CCC; border-left:solid 1px #CCC; font-weight: normal; font-size: 16px; text-align: center; vertical-align: middle;">' . implode('<br>', array_map('htmlspecialchars', preg_split('/[\s\/]+/', trim($LabelData['CallNumber'])))) . '</td>
@@ -66,5 +68,5 @@ if (isset($outputFormat) && $outputFormat == 'word') {
     return;
 }
 $pdf->writeHTML($html, true, false, false, false, '');
-$pdf->Output('example_006.pdf', 'D');
+$pdf->Output('example_008.pdf', 'D');
 die;

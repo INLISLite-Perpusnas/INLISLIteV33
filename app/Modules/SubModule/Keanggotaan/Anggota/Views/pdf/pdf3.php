@@ -61,7 +61,7 @@ $options = new QROptions([
     </div><br><br><br><br><br><br><br>
     <img src="<?php echo (new QRCode($options))->render($anggota->MemberNo); ?>" alt="QR Code" />
     <?= $this->section('script'); ?>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous">
     </script>
     <script>
         const qrcode = new QRCode("qrcode",

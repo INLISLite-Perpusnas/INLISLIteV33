@@ -60,7 +60,7 @@ class EksemplarLabelController extends \Base\Controllers\BaseController
 
         $allowedTemplates = [
             'cetak-label-a4-1', 'cetak-label-a4-2', 'cetak-label-a4-3',
-            'cetak-label-a4-4', 'cetak-label-a4-5', 'cetak-label-a4-4-qrcode',
+            'cetak-label-a4-4', 'cetak-label-a4-5', 'cetak-label-a4-6', 'cetak-label-a4-7','cetak-label-a4-8', 'cetak-label-a4-9', 'cetak-label-a4-10', 'cetak-label-a4-11', 'cetak-label-a4-12', 'cetak-label-a4-4-qrcode',
             'cetak-label-lr1',  'cetak-label-lr2',  'cetak-label-lr3',
             'cetak-label-lr4',  'cetak-label-lr5',  'cetak-label-lr6',
             'cetak-label-br1',  'cetak-label-br2',
@@ -106,6 +106,32 @@ class EksemplarLabelController extends \Base\Controllers\BaseController
             }
         }
 
+        // Model A4-9 menampilkan legenda 5 kode kelas besar per label, dengan kode
+        // yang cocok dengan kelas item disorot menggunakan warnanya.
+        $legendTemplates = ['cetak-label-a4-9'];
+        $legendKelas = [];
+        if (in_array($template, $legendTemplates, true)) {
+            $legendKelas = $db->query(
+                "SELECT KdKelas, Warna FROM master_kelas_besar WHERE active = 1 ORDER BY KdKelas ASC LIMIT 5"
+            )->getResultArray();
+        }
+
+        // Model A4-11 mewarnai tiap digit (1-3 digit pertama) dari DeweyNo item
+        // menurut warna kelas besar-nya masing-masing (mis. "201" -> digit 2, 0, 1
+        // masing-masing diwarnai sesuai kelasnya sendiri), bukan legenda tetap.
+        $digitColorMap = [];
+        if ($template === 'cetak-label-a4-11') {
+            $allKelasRows = $db->query(
+                "SELECT KdKelas, Warna FROM master_kelas_besar WHERE active = 1 ORDER BY KdKelas ASC"
+            )->getResultArray();
+            foreach ($allKelasRows as $kelas) {
+                $key = strtoupper(substr((string) $kelas['KdKelas'], 0, 1));
+                if (!isset($digitColorMap[$key])) {
+                    $digitColorMap[$key] = $kelas['Warna'];
+                }
+            }
+        }
+
         if (empty($eksemplarData)) {
             $this->session->setFlashdata('swal_icon',  'error');
             $this->session->setFlashdata('swal_title', 'Gagal');
@@ -119,21 +145,60 @@ class EksemplarLabelController extends \Base\Controllers\BaseController
             ->getRow()
             ->Value ?? 'Perpustakaan Mitra';
 
+        // Model A4-10 menampilkan nama cabang/lokasi operator yang sedang mencetak
+        // (mis. nama perpustakaan cabang) di atas nama perpustakaan induk.
+        $namaCabang = $namaPerpustakaan;
+        if ($template === 'cetak-label-a4-10') {
+            $branchRow = $db->table('branchs')->where('ID', branch_id())->get()->getRow();
+            $namaCabang = $branchRow->Name ?? $namaPerpustakaan;
+        }
+
         $useQrCode = str_contains($template, 'qrcode') || str_contains($paperSize, 'qrcode');
+        $useVerticalBarcode = in_array($template, ['cetak-label-a4-6', 'cetak-label-a4-9'], true);
+        $usesColorLegend = in_array($template, $legendTemplates, true);
 
         $LabelData = [];
         foreach ($eksemplarData as $row) {
             $firstChar = strtoupper(substr((string) ($row->DeweyNo ?? ''), 0, 1));
-            $LabelData[] = [
-                'Title'            => character_limiter($row->Title, 50),
-                'Barcode'          => $row->NomorBarcode,
-                'CallNumber'       => $row->CallNumber,
-                'NamaPerpustakaan' => $namaPerpustakaan,
-                'Warna1'           => $warnaMap[$firstChar] ?? '#FFFF66',
-                'BarcodePNG'       => $useQrCode
+
+            $entry = [
+                'Title'              => character_limiter($row->Title, 50),
+                'Barcode'            => $row->NomorBarcode,
+                'CallNumber'         => $row->CallNumber,
+                'NamaPerpustakaan'   => $namaPerpustakaan,
+                'NamaCabang'         => $namaCabang,
+                'Warna1'             => $warnaMap[$firstChar] ?? '#FFFF66',
+                'BarcodePNG'         => $useQrCode
                                         ? get_qrcode_png($row->NomorBarcode)
                                         : get_barcode_png($row->NomorBarcode),
+                'BarcodePNGVertical' => $useVerticalBarcode
+                                        ? get_barcode_png_vertical($row->NomorBarcode)
+                                        : null,
             ];
+
+            if ($usesColorLegend) {
+                // Kode kelas legenda selalu ditampilkan (sampai 5 kelas); hanya baris
+                // yang cocok dengan kelas item ini diberi warna latar.
+                for ($i = 1; $i <= 5; $i++) {
+                    $kelas = $legendKelas[$i - 1] ?? null;
+                    $entry['KodeWarna' . $i] = $kelas['KdKelas'] ?? '';
+                    $entry['Warna' . $i]     = ($kelas && strtoupper(substr((string) $kelas['KdKelas'], 0, 1)) === $firstChar)
+                        ? $kelas['Warna']
+                        : '';
+                }
+            }
+
+            if ($template === 'cetak-label-a4-11') {
+                // 3 digit pertama DeweyNo, masing-masing diwarnai sesuai kelasnya sendiri.
+                $dewey = (string) ($row->DeweyNo ?? '');
+                for ($i = 1; $i <= 3; $i++) {
+                    $digit = strtoupper($dewey[$i - 1] ?? '');
+                    $entry['KodeWarna' . $i] = $digit;
+                    $entry['Warna' . $i]     = $digitColorMap[$digit] ?? '';
+                }
+            }
+
+            $LabelData[] = $entry;
         }
 
         if ($outputFormat === 'word') {

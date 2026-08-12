@@ -18,6 +18,7 @@
 						<th>Penerbitan</th>
 						<th>Tanggal Peminjaman</th>
 						<th>Jatuh Tempo</th>
+						<th>Buku Digital</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -34,6 +35,19 @@
 							<td><?= _spec($row->publisher); ?></td>
 							<td width="100"><?= _spec($row->LoanDate); ?></td>
 							<td width="100"><?= _spec($row->DueDate); ?></td>
+							<td width="120">
+								<?php if (!empty($row->is_digital)) : ?>
+									<span class="badge bg-success mb-1">Ya</span>
+									<?php if ($row->LoanStatus == 'Loan' && !empty($row->catalog_id)) : ?>
+										<br>
+										<a href="<?= base_url('opac/baca-digital/' . $row->catalog_id) ?>" target="_blank" class="btn btn-primary btn-sm mt-1">
+											<i class="fa fa-file-pdf"></i> Baca PDF
+										</a>
+									<?php endif; ?>
+								<?php else : ?>
+									<span class="badge bg-secondary">Tidak</span>
+								<?php endif; ?>
+							</td>
 						</tr>
 					<?php endforeach; ?>
 				</tbody>

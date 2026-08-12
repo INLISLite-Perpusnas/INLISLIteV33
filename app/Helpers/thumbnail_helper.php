@@ -72,6 +72,63 @@ if (!function_exists('get_barcode_png')) {
 	}
 }
 
+if (!function_exists('get_barcode_png_vertical')) {
+	/**
+	 * Generates a vertical (rotated) CODE 128 barcode with the *code* text beneath the
+	 * bars, rendered as a single base64 PNG data URI. Used for label templates where the
+	 * barcode is mounted along the side of the label (e.g. cetak-label-a4-6).
+	 *
+	 * The bars + text are composited on a white canvas first, then rotated as one bitmap
+	 * so the result is a plain <img>, safe to use both in TCPDF's writeHTML() and in the
+	 * Word/MHTML export (no reliance on renderer-specific CSS transform/rotate support).
+	 *
+	 * @param string $barcodeData
+	 * @param int    $angle Rotation angle in degrees, counter-clockwise (default 90).
+	 * @return string data:image/png;base64,... URI
+	 */
+	function get_barcode_png_vertical($barcodeData, $angle = 90)
+	{
+		$barcodeGenerator = new \Picqer\Barcode\BarcodeGeneratorPNG();
+		$barcodePng       = $barcodeGenerator->getBarcode($barcodeData, $barcodeGenerator::TYPE_CODE_128, 1.5, 32);
+
+		$barcodeImg = @imagecreatefromstring($barcodePng);
+		if (!$barcodeImg) {
+			return get_barcode_png($barcodeData);
+		}
+
+		$barW = imagesx($barcodeImg);
+		$barH = imagesy($barcodeImg);
+
+		$text  = '*' . $barcodeData . '*';
+		$font  = 3; // built-in GD font, no external .ttf needed
+		$textW = imagefontwidth($font) * strlen($text);
+		$textH = imagefontheight($font);
+
+		$canvasW = max($barW, $textW);
+		$canvasH = $barH + $textH + 4;
+
+		$canvas = imagecreatetruecolor($canvasW, $canvasH);
+		$white  = imagecolorallocate($canvas, 255, 255, 255);
+		$black  = imagecolorallocate($canvas, 0, 0, 0);
+		imagefill($canvas, 0, 0, $white);
+
+		imagecopy($canvas, $barcodeImg, (int) (($canvasW - $barW) / 2), 0, 0, 0, $barW, $barH);
+		imagestring($canvas, $font, (int) (($canvasW - $textW) / 2), $barH + 2, $text, $black);
+
+		$rotated = imagerotate($canvas, $angle, $white);
+
+		ob_start();
+		imagepng($rotated);
+		$data = ob_get_clean();
+
+		imagedestroy($barcodeImg);
+		imagedestroy($canvas);
+		imagedestroy($rotated);
+
+		return 'data:image/png;base64,' . base64_encode($data);
+	}
+}
+
 if (!function_exists('get_qrcode_png')) {
     /**
      * Generates a QR code image as a base64 PNG string.

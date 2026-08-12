@@ -72,6 +72,7 @@ class Filters extends BaseConfig
                 'opac/statistics',          // method: statistics
                 'opac/statistics_anggota',  // method: statistics_anggota
                 'opac/downloadMarc*',       // method: semua downloadMarc (Utf8, Xml, Mods, dll)
+                'opac/member-login',        // method: memberLogin (login anggota via modal)
                 // 'opac/bacaDigital/*' TIDAK DIMASUKKAN agar terkena filter session (wajib login)
             ]],
             'cors',
@@ -107,7 +108,8 @@ class Filters extends BaseConfig
                 'opac/statistics',
                 'opac/statistics_anggota',
                 'opac/downloadMarc*',
-               
+                'opac/member-login',
+
             ]],
         ],
         'after' => [

@@ -2,7 +2,7 @@
 
 ?>
 <?= $this->section('style') ?>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous">
 <link rel="stylesheet" href="<?= base_url('assets'); ?>/css/dashboard.css">
 <?= $this->endSection('style') ?>
 
