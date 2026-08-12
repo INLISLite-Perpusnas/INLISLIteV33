@@ -29,7 +29,7 @@
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Role
             <div class="btn-actions-pane-right actions-icon-btn">
                 <?php if (is_member('admin')) : ?>
-                    <a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah Role"><i class="fa fa-plus"></i> Tambah Role</a>
+                    <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah Role"><i class="fa fa-plus"></i> Tambah Role</a>
                 <?php endif; ?>
             </div>
         </div>

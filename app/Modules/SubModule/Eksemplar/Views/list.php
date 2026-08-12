@@ -248,6 +248,41 @@ $paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
 
         <!-- ── Card Body: Tabel DataTable ─────────────────────────────── -->
         <div class="card-body">
+
+            <!-- ── Filter: Lokasi Perpustakaan & Lokasi Ruang ── -->
+            <div class="d-flex align-items-center flex-wrap mb-3" style="gap:6px;">
+                <div class="input-group" style="width:280px; flex-shrink:0;">
+                    <div class="input-group-prepend">
+                        <span class="btn btn-secondary"><i class="fa fa-map-marker-alt"></i> Lokasi Perpustakaan</span>
+                    </div>
+                    <select class="form-control" id="filter_location_library">
+                        <option value="">-- Semua Lokasi Perpustakaan --</option>
+                    </select>
+                </div>
+
+                <div class="input-group" style="width:280px; flex-shrink:0;">
+                    <div class="input-group-prepend">
+                        <span class="btn btn-secondary"><i class="fa fa-door-open"></i> Lokasi Ruang</span>
+                    </div>
+                    <select class="form-control" id="filter_location_id" disabled>
+                        <option value="">-- Pilih Lokasi Perpustakaan Dahulu --</option>
+                    </select>
+                </div>
+
+                <div class="input-group" style="width:280px; flex-shrink:0;">
+                    <div class="input-group-prepend">
+                        <span class="btn btn-secondary"><i class="fa fa-cube"></i> Bentuk Fisik</span>
+                    </div>
+                    <select class="form-control" id="filter_media_id">
+                        <option value="">-- Semua Bentuk Fisik --</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-outline-secondary" id="btnResetFilter" type="button" style="height:38px; flex-shrink:0;">
+                    <i class="fa fa-undo"></i> Reset Filter
+                </button>
+            </div>
+
             <form name="form_items" id="form_items">
                 <table style="width:100%;" id="tbl_data"
                        class="table table-hover table-striped table-bordered">
@@ -303,7 +338,14 @@ $(document).ready(function () {
         serverSide : true,
         scrollX    : true,
         scrollCollapse: true,
-        ajax       : { url: '<?= site_url('api/eksemplar/datatable') ?>' },
+        ajax       : {
+            url : '<?= site_url('api/eksemplar/datatable') ?>',
+            data: function (d) {
+                d.location_library_id = $('#filter_location_library').val();
+                d.location_id         = $('#filter_location_id').val();
+                d.media_id            = $('#filter_media_id').val();
+            }
+        },
         dom: "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
                    "<'row'<'col-md-12'tr>>" +
                    "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
@@ -363,6 +405,71 @@ $(document).ready(function () {
                     });
             });
         }
+    });
+
+    // ── Filter: Lokasi Perpustakaan & Lokasi Ruang ─────────────────────────
+    // Isi dropdown Lokasi Perpustakaan
+    $.getJSON('<?= site_url('api/eksemplar/locationlibrary') ?>', function (res) {
+        var data = res.data || res;
+        var $sel = $('#filter_location_library');
+        $.each(data, function (i, item) {
+            $sel.append($('<option>', { value: item.code, text: item.name }));
+        });
+    });
+
+    // Isi dropdown Lokasi Ruang saat Lokasi Perpustakaan berubah
+    $('#filter_location_library').on('change', function () {
+        var libraryId = $(this).val();
+        var $roomSel  = $('#filter_location_id');
+
+        $roomSel.html('<option value="">-- Semua Lokasi Ruang --</option>');
+
+        if (!libraryId) {
+            $roomSel.prop('disabled', true)
+                .html('<option value="">-- Pilih Lokasi Perpustakaan Dahulu --</option>');
+            t.ajax.reload();
+            return;
+        }
+
+        $roomSel.prop('disabled', false);
+
+        $.getJSON('<?= site_url('api/eksemplar/locations') ?>/' + libraryId, function (res) {
+            var data = res.data || res;
+            $.each(data, function (i, item) {
+                $roomSel.append($('<option>', { value: item.code, text: item.name }));
+            });
+        });
+
+        t.ajax.reload();
+    });
+
+    // Muat ulang tabel saat Lokasi Ruang berubah
+    $('#filter_location_id').on('change', function () {
+        t.ajax.reload();
+    });
+
+    // Isi dropdown Bentuk Fisik
+    $.getJSON('<?= site_url('api/eksemplar/collectionmedias') ?>', function (res) {
+        var data = res.data || res;
+        var $sel = $('#filter_media_id');
+        $.each(data, function (i, item) {
+            $sel.append($('<option>', { value: item.code, text: item.name }));
+        });
+    });
+
+    // Muat ulang tabel saat Bentuk Fisik berubah
+    $('#filter_media_id').on('change', function () {
+        t.ajax.reload();
+    });
+
+    // Reset filter
+    $('#btnResetFilter').on('click', function () {
+        $('#filter_location_library').val('');
+        $('#filter_location_id')
+            .html('<option value="">-- Pilih Lokasi Perpustakaan Dahulu --</option>')
+            .prop('disabled', true);
+        $('#filter_media_id').val('');
+        t.ajax.reload();
     });
 
     // ── Tampil/Sembunyikan panel cetak ────────────────────────────────────

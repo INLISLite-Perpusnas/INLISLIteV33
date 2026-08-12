@@ -111,6 +111,21 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
         $builder->where('a.Catalog_id', $catalog_id);
     }
 
+    $location_library_id = $this->request->getGet('location_library_id');
+    if (!empty($location_library_id)) {
+        $builder->where('a.Location_Library_id', $location_library_id);
+    }
+
+    $location_id = $this->request->getGet('location_id');
+    if (!empty($location_id)) {
+        $builder->where('a.Location_id', $location_id);
+    }
+
+    $media_id = $this->request->getGet('media_id');
+    if (!empty($media_id)) {
+        $builder->where('a.Media_id', $media_id);
+    }
+
     $dataTable = DataTable::of($builder)
         ->addNumbering('no')
         ->onGlobalSearch('Catalog_id', function ($builder, $column, $search) {
