@@ -446,7 +446,7 @@ $email = $db->table('settingparameters')->where('Name', 'EmailPerpustakaan')->ge
                 <div class="col-lg-2 col-md-6 mb-4 mb-lg-0 offset-lg-1">
                     <h5 class="footer-title">Layanan</h5>
                     <ul class="footer-links">
-                        <?php if (env('Is_keanggotaan_online') == 1): ?><li><a href="<?= base_url('home/pendaftaran_online') ?>">Keanggotaan Online</a></li><?php endif; ?>
+                        <?php if (env('Is_keanggotaan_online') == 1): ?><li><a href="<?= base_url('home/pendaftaran-online') ?>">Keanggotaan Online</a></li><?php endif; ?>
                         <li><a href="<?= base_url('peminjaman-mandiri') ?>">Peminjaman Mandiri</a></li>
                         <li><a href="<?= base_url('pengembalian-mandiri') ?>">Pengembalian Mandiri</a></li>
                         <li><a href="<?= base_url('opac') ?>">OPAC</a></li>
