@@ -208,6 +208,15 @@ $slug = $request->getGet('slug') ?? '';
                     <span class="ml-1 d-none d-md-inline">Notifikasi Semua Terlambat</span>
                 </button>
 
+                <!-- ===== TOMBOL KEMBALIKAN BUKU DIGITAL (BARU) ===== -->
+                <button id="btn-auto-return-digital"
+                    class="btn btn-success btn-sm"
+                    title="Scan &amp; kembalikan otomatis semua peminjaman buku digital yang sudah jatuh tempo"
+                    onclick="confirmAutoReturnDigital()">
+                    <i class="fa fa-undo"></i>
+                    <span class="ml-1 d-none d-md-inline">Kembalikan Buku Digital</span>
+                </button>
+
                 <?php if (is_allowed('sirkulasi-peminjaman/create')) : ?>
                     <a href="<?= base_url('sirkulasi-peminjaman/create') ?>" class="btn btn-success btn-sm" title="Tambah">
                         <i class="fa fa-plus"></i> Peminjaman
@@ -730,6 +739,114 @@ $slug = $request->getGet('slug') ?? '';
             complete: function() {
                 $btn.prop('disabled', false).html('<i class="fa fa-paper-plane mr-1"></i>Kirim Notifikasi ke Semua');
                 $btn.hide();
+            }
+        });
+    }
+
+
+    // ===========================================================
+    // KEMBALIKAN BUKU DIGITAL (AUTO-RETURN)
+    // ===========================================================
+    function confirmAutoReturnDigital() {
+        Swal.fire({
+            title: '<span style="font-size:16px;">Kembalikan Buku Digital yang Jatuh Tempo?</span>',
+            html: '<div style="text-align:left;font-size:13px;color:#6b7280;">'
+                + 'Sistem akan memindai semua peminjaman <strong>buku digital</strong> yang sudah '
+                + 'melewati jatuh tempo dan langsung mengembalikannya secara otomatis.'
+                + '<div style="margin-top:10px;background:#fef2f2;border-radius:6px;padding:8px 12px;font-size:12px;color:#b91c1c;">'
+                + '<i class="fa fa-exclamation-triangle mr-1"></i>Tindakan ini tidak bisa dibatalkan.'
+                + '</div></div>',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#22c55e',
+            cancelButtonColor: '#94a3b8',
+            confirmButtonText: '<i class="fa fa-undo mr-1"></i> Ya, Scan &amp; Kembalikan',
+            cancelButtonText: 'Batal',
+            reverseButtons: true,
+            width: '440px'
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                doAutoReturnDigital();
+            }
+        });
+    }
+
+    function doAutoReturnDigital() {
+        var $btn = $('#btn-auto-return-digital');
+        $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> <span class="ml-1 d-none d-md-inline">Memindai...</span>');
+
+        Swal.fire({
+            title: 'Memindai Buku Digital...',
+            html: '<span style="font-size:13px;color:#6b7280;">Harap tunggu sebentar.</span>',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: function() { Swal.showLoading(); }
+        });
+
+        $.ajax({
+            url: API_BASE + '/auto-return-digital',
+            type: 'POST',
+            dataType: 'json',
+            success: function(res) {
+                var detail = res.detail || { total_item: 0, berhasil: 0, gagal: 0, items: [], errors: [] };
+
+                var itemsHtml = '';
+                if (detail.items && detail.items.length > 0) {
+                    itemsHtml = '<div style="max-height:220px;overflow-y:auto;text-align:left;margin-top:10px;">'
+                        + detail.items.map(function(it) {
+                            return '<div style="padding:6px 10px;border-bottom:1px dashed #f1f5f9;font-size:12px;">'
+                                + '<strong>' + escapeHtml(it.title || '-') + '</strong>'
+                                + ' <span style="color:#9ca3af;">(' + escapeHtml(it.barcode || '-') + ')</span><br>'
+                                + '<span style="color:#6b7280;">' + escapeHtml(it.member || '-') + '</span>'
+                                + '</div>';
+                        }).join('')
+                        + '</div>';
+                }
+
+                var errorsHtml = '';
+                if (detail.errors && detail.errors.length > 0) {
+                    errorsHtml = '<div style="margin-top:10px;text-align:left;background:#fef2f2;border-radius:6px;padding:8px 12px;">'
+                        + '<p style="font-size:12px;font-weight:600;color:#dc2626;margin:0 0 4px;">Gagal diproses:</p>'
+                        + '<ul style="font-size:12px;color:#7f1d1d;margin:0;padding-left:16px;">'
+                        + detail.errors.map(function(e) { return '<li>' + escapeHtml(e) + '</li>'; }).join('')
+                        + '</ul></div>';
+                }
+
+                var swalHtml = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px;">'
+                    + '<div style="background:#f8fafc;border-radius:8px;padding:10px;text-align:center;">'
+                    + '<div style="font-size:24px;font-weight:800;color:#64748b;">' + detail.total_item + '</div>'
+                    + '<div style="font-size:11px;color:#6b7280;">Jatuh Tempo</div></div>'
+                    + '<div style="background:#f0fdf4;border-radius:8px;padding:10px;text-align:center;">'
+                    + '<div style="font-size:24px;font-weight:800;color:#16a34a;">' + detail.berhasil + '</div>'
+                    + '<div style="font-size:11px;color:#6b7280;">Berhasil</div></div>'
+                    + '<div style="background:#fef2f2;border-radius:8px;padding:10px;text-align:center;">'
+                    + '<div style="font-size:24px;font-weight:800;color:#dc2626;">' + detail.gagal + '</div>'
+                    + '<div style="font-size:11px;color:#6b7280;">Gagal</div></div>'
+                    + '</div>' + itemsHtml + errorsHtml;
+
+                Swal.fire({
+                    icon: detail.total_item === 0 ? 'info' : (detail.gagal > 0 ? 'warning' : 'success'),
+                    title: detail.total_item === 0 ? 'Tidak Ada yang Jatuh Tempo' : 'Proses Selesai',
+                    html: '<p style="font-size:14px;margin-bottom:8px;">' + escapeHtml(res.message) + '</p>' + swalHtml,
+                    confirmButtonColor: '#2563eb',
+                    confirmButtonText: 'OK',
+                    width: '480px'
+                });
+
+                if (detail.berhasil > 0) {
+                    t.ajax.reload(null, false);
+                }
+            },
+            error: function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error Server',
+                    text: 'Gagal memproses pengembalian otomatis. Terjadi kesalahan pada server.',
+                    confirmButtonColor: '#dc2626'
+                });
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html('<i class="fa fa-undo"></i> <span class="ml-1 d-none d-md-inline">Kembalikan Buku Digital</span>');
             }
         });
     }

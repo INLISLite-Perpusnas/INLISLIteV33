@@ -491,7 +491,7 @@
                     confirmButtonText: 'Ya, Hapus',
                     cancelButtonText: 'Batal',
                 }).then(function(result) {
-                    if (result.isConfirmed) {
+                    if (result.value) {
                         window.location.href = href;
                     }
                 });
@@ -514,7 +514,7 @@
                     confirmButtonText: 'Ya, Proses',
                     cancelButtonText: 'Batal',
                 }).then(function(result) {
-                    if (result.isConfirmed) {
+                    if (result.value) {
                         form.submit();
                     }
                 });

@@ -15,6 +15,7 @@ $routes->group('sirkulasi-peminjaman', ['namespace' => 'Peminjaman\Controllers']
 	$subroutes->post('send-struk/(:num)',         'Peminjaman::sendStruk/$1');
 	$subroutes->post('send-all-notification',     'Peminjaman::sendAllNotification');
 	$subroutes->get('overdue-summary',            'Peminjaman::overdueSummary');
+	$subroutes->post('auto-return-digital',       'Peminjaman::autoReturnDigital');
 });
 
 $routes->group('api/sirkulasi-peminjaman', ['namespace' => 'Peminjaman\Controllers\Api'], function ($subroutes) {

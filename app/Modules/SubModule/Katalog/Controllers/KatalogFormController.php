@@ -24,10 +24,8 @@ class KatalogFormController extends \Base\Controllers\BaseController
     public function create()
     {
         $data['title'] = 'Tambah Katalog Form Sederhana';
-        $branch_id = user()->branch_id ?? $this->request->getGet('branch_id');
-        
-        // Status RDA untuk handle redirect (Default 0 jika belum dipost)
-         $is_rda = $this->request->getPost('IsRDA') ?? 0;
+       
+        $is_rda = (int) ($this->request->getPost('IsRDA') ?? 0);
        
         // $rda_param = ($is_rda == 1) ? '1' : '0';
        
@@ -54,8 +52,11 @@ class KatalogFormController extends \Base\Controllers\BaseController
                 $this->session->setFlashdata('swal_title', 'Validasi Gagal');
                 $this->session->setFlashdata('swal_html', $error_msg);
 
-                // Kembalikan input agar form tidak kosong
-                return redirect()->back()->withInput();
+                // Kembalikan input agar form tidak kosong. Pakai redirect eksplisit
+                // dengan ?rda=$is_rda (BUKAN redirect()->back()) supaya pilihan
+                // pedoman katalog (RDA/AACR) tidak hilang saat validasi gagal —
+                // redirect()->back() tidak menjamin query string rda ikut terbawa.
+                return redirect()->to('katalog/create?rda=' . $is_rda)->withInput();
             }
 
             $post = $this->request->getPost();
@@ -107,7 +108,7 @@ class KatalogFormController extends \Base\Controllers\BaseController
                 $save_data['Languages']           = !empty($post['Languages']['lang']) ? implode_data($post['Languages']['lang'], ' ') : null;
                
                 $catalog_id = $this->katalogModel->insert($save_data);
-                
+
                 // 2. Simpan Ruas
                 $post_merged = array_merge($post, [
                     'ControlNumber' => $ControlNumber,
@@ -158,10 +159,8 @@ class KatalogFormController extends \Base\Controllers\BaseController
             $this->session->setFlashdata('swal_text', 'Katalog tidak ditemukan');
             return redirect()->to('katalog');
         }
-
-        $branch_id = user()->branch_id ?? $this->request->getGet('branch_id');
-       
-        $is_rda = $this->request->getPost('IsRDA') ?? $catalog->IsRDA ?? 0;
+        // Cast ke int - lihat catatan di method create() soal kolom bit(1)
+        $is_rda = (int) ($this->request->getPost('IsRDA') ?? $catalog->IsRDA ?? 0);
 
      
      

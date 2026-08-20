@@ -274,10 +274,6 @@ $email = $db->table('settingparameters')->where('Name', 'EmailPerpustakaan')->ge
         }
 
         /* ─── SweetAlert2 Fix ─── */
-        .swal2-icon {
-            display: flex !important;
-        }
-
         .swal2-icon.swal2-warning {
             border-color: #f8bb86 !important;
             color: #f8bb86 !important;

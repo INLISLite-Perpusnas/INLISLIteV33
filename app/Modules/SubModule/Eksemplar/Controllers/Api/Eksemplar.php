@@ -29,6 +29,22 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 		helper('eksemplar');
 	}
 
+	/**
+	 * Ambil daftar ID Lokasi Perpustakaan yang boleh diakses user yang login,
+	 * berdasarkan kolom users.location_ids (string ID dipisah koma).
+	 * Return null jika user tidak dibatasi (location_ids kosong) -> akses semua lokasi.
+	 */
+	private function getAllowedLocationLibraryIds()
+	{
+		$locationIds = user()->location_ids ?? '';
+		if (empty($locationIds)) {
+			return null;
+		}
+
+		$ids = array_filter(array_map('trim', explode(',', $locationIds)), fn($id) => $id !== '');
+		return !empty($ids) ? array_map('intval', $ids) : null;
+	}
+
 	public function katalog($IsQUARANTINE = 0)
 	{
 		$db = db_connect();
@@ -114,6 +130,13 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
     $location_library_id = $this->request->getGet('location_library_id');
     if (!empty($location_library_id)) {
         $builder->where('a.Location_Library_id', $location_library_id);
+    }
+
+    // Batasi otomatis ke Lokasi Perpustakaan yang diizinkan untuk user yang login
+    // (users.location_ids), terlepas dari filter manual di atas.
+    $allowedLocationIds = $this->getAllowedLocationLibraryIds();
+    if ($allowedLocationIds !== null) {
+        $builder->whereIn('a.Location_Library_id', $allowedLocationIds);
     }
 
     $location_id = $this->request->getGet('location_id');
@@ -499,7 +522,17 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 	public function get_locationlibrary()
 	{
 		$db = db_connect();
-		$query = $db->table('location_library')->select('ID as code, Name as name')->orderBy('Name')->get();
+		$builder = $db->table('location_library')->select('ID as code, Name as name')->orderBy('Name');
+
+		// Batasi ke Lokasi Perpustakaan yang diizinkan untuk user yang login
+		// (users.location_ids). Dipakai baik oleh filter di list eksemplar
+		// maupun dropdown "Lokasi Perpustakaan" di form tambah/edit eksemplar.
+		$allowedLocationIds = $this->getAllowedLocationLibraryIds();
+		if ($allowedLocationIds !== null) {
+			$builder->whereIn('ID', $allowedLocationIds);
+		}
+
+		$query = $builder->get();
 		return $this->simpleResponse($query->getResult());
 	}
 

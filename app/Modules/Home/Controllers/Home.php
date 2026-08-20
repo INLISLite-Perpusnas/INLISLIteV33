@@ -43,12 +43,14 @@ class Home extends \Base\Controllers\BaseController
             $this->data = array_merge($this->data, $cached);
         } else {
             $pageData = [
-                'featured_books' => $this->getFeaturedBooks(),
-                'popular_books'  => $this->getPopularBooks(),
-                'statistics'     => $this->getLibraryStatistics(),
-                'news'           => $this->getNews(),
-                'banners'        => $this->getBannersData(),
-                'modules'        => $this->getLibraryModules(),
+                'featured_books'       => $this->getFeaturedBooks(),
+                'popular_books'        => $this->getPopularBooks(),
+                'sering_dipinjam_books' => $this->getSeringDipinjamBooks(),
+                'sering_dibaca_books'   => $this->getSeringDibacaBooks(),
+                'statistics'           => $this->getLibraryStatistics(),
+                'news'                 => $this->getNews(),
+                'banners'              => $this->getBannersData(),
+                'modules'              => $this->getLibraryModules(),
             ];
 
             if ($useCache) {
@@ -101,6 +103,66 @@ class Home extends \Base\Controllers\BaseController
             }
 
             return $popularBooks;
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    /**
+     * Get 6 buku yang paling sering DIPINJAM, dihitung dari riwayat peminjaman
+     * (collectionloanitems -> collections -> catalogs), bukan dari flag manual.
+     * Fitur toggle lewat .env is_sering_dipinjam (default 0 / nonaktif).
+     * Lihat juga: Peminjaman\Controllers\Peminjaman untuk struktur tabel yang sama.
+     */
+    private function getSeringDipinjamBooks($limit = 6)
+    {
+        if ((int) env('is_sering_dipinjam', 0) !== 1) {
+            return [];
+        }
+
+        try {
+            return $this->db->table('collectionloanitems cli')
+                ->select('cat.ID, cat.Title, cat.Author, cat.CoverURL, COUNT(cli.ID) as LoanCount')
+                ->join('collections col', 'col.ID = cli.Collection_id')
+                ->join('catalogs cat', 'cat.ID = col.Catalog_id')
+                ->where('cat.IsOPAC', 1)
+                ->groupBy('cat.ID, cat.Title, cat.Author, cat.CoverURL')
+                ->orderBy('LoanCount', 'DESC')
+                ->limit($limit)
+                ->get()
+                ->getResult();
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    /**
+     * Get 6 buku yang paling sering DIBACA DI TEMPAT, dihitung dari tabel
+     * bacaditempat (BacaDitempat\Models\BacaDitempatModel) -> collections -> catalogs.
+     * Fitur toggle lewat .env is_sering_dibaca (default 0 / nonaktif).
+     */
+    private function getSeringDibacaBooks($limit = 6)
+    {
+        if ((int) env('is_sering_dibaca', 0) !== 1) {
+            return [];
+        }
+
+        try {
+            if (!$this->db->tableExists('bacaditempat')) {
+                return [];
+            }
+
+            return $this->db->table('bacaditempat bt')
+                ->select('cat.ID, cat.Title, cat.Author, cat.CoverURL, COUNT(bt.ID) as ReadCount')
+                ->join('collections col', 'col.ID = bt.collection_id')
+                ->join('catalogs cat', 'cat.ID = col.Catalog_id')
+                ->where('cat.IsOPAC', 1)
+                ->where('bt.collection_id IS NOT NULL')
+                ->groupBy('cat.ID, cat.Title, cat.Author, cat.CoverURL')
+                ->orderBy('ReadCount', 'DESC')
+                ->limit($limit)
+                ->get()
+                ->getResult();
         } catch (\Exception $e) {
             return [];
         }

@@ -8,7 +8,7 @@
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         padding-top: 90px;
     }
-    
+
     .main-container {
         min-height: 50vh;
         display: flex;
@@ -16,7 +16,7 @@
         justify-content: center;
         padding: 20px;
     }
-    
+
     .return-card {
         background: rgba(255, 255, 255, 0.95);
         border-radius: 20px;
@@ -27,7 +27,7 @@
         width: 100%;
         overflow: hidden;
     }
-    
+
     .card-header {
         /* Menggunakan warna #1B3878 dengan gradasi sedikit lebih terang */
         background: linear-gradient(135deg, #1B3878, #264b9a);
@@ -36,32 +36,32 @@
         text-align: center;
         border: none;
     }
-    
+
     .card-header h2 {
         margin: 0;
         font-weight: 600;
         font-size: 2rem;
     }
-    
+
     .card-header p {
         margin: 10px 0 0 0;
         opacity: 0.9;
     }
-    
+
     .card-body {
         padding: 40px;
     }
-    
+
     .scanner-section {
         text-align: center;
         margin-bottom: 40px;
     }
-    
+
     .barcode-input {
         position: relative;
         margin-bottom: 20px;
     }
-    
+
     .barcode-input input {
         border: 2px solid #e0e0e0;
         border-radius: 15px;
@@ -70,12 +70,12 @@
         width: 100%;
         transition: all 0.3s ease;
     }
-    
+
     .barcode-input input:focus {
         border-color: #1B3878;
         box-shadow: 0 0 0 0.2rem rgba(27, 56, 120, 0.25);
     }
-    
+
     .barcode-input .scan-icon {
         position: absolute;
         right: 15px;
@@ -84,7 +84,7 @@
         color: #1B3878; /* Ikon mengikuti warna tema */
         font-size: 1.5rem;
     }
-    
+
     .btn-primary {
         background: linear-gradient(135deg, #1B3878, #264b9a);
         border: none;
@@ -94,13 +94,13 @@
         font-weight: 600;
         transition: all 0.3s ease;
     }
-    
+
     .btn-primary:hover {
         background: linear-gradient(135deg, #264b9a, #1B3878);
         transform: translateY(-2px);
         box-shadow: 0 5px 15px rgba(27, 56, 120, 0.4);
     }
-    
+
     .btn-secondary {
         border-radius: 15px;
         padding: 12px 30px;
@@ -114,7 +114,7 @@
         background: #1B3878;
         color: white;
     }
-    
+
     .book-info {
         background: #f8f9fa;
         border-radius: 15px;
@@ -122,51 +122,70 @@
         margin: 20px 0;
         border-left: 5px solid #1B3878; /* Border samping mengikuti tema */
     }
-    
+
     .book-info h5 {
         color: #1B3878;
         margin-bottom: 15px;
     }
-    
+
     .book-detail {
         display: flex;
         justify-content: space-between;
+        align-items: center;
         margin-bottom: 10px;
         padding: 5px 0;
     }
-    
+
     .book-detail strong {
         color: #34495e;
     }
-    
+
+    .book-item-block {
+        position: relative;
+        padding-right: 45px;
+    }
+
+    .book-item-block + .book-item-block {
+        border-top: 1px dashed #dee2e6;
+        margin-top: 15px;
+        padding-top: 15px;
+    }
+
+    .btn-hapus-item {
+        position: absolute;
+        right: 0;
+        top: 5px;
+        border-radius: 10px;
+    }
+
     .status-badge {
         padding: 8px 16px;
         border-radius: 20px;
         font-size: 0.9rem;
         font-weight: 600;
     }
-    
+
     .status-success {
         background: #d1e7ff; /* Biru muda untuk sukses agar match */
         color: #1B3878;
     }
-    
+
     .status-warning {
         background: #fff3cd;
         color: #856404;
     }
-    
+
     .status-danger {
         background: #f8d7da;
         color: #721c24;
     }
-    
+
     .history-section {
         margin-top: 40px;
         padding-top: 30px;
         border-top: 1px solid #e0e0e0;
     }
-    
+
     .history-item {
         background: white;
         border-radius: 10px;
@@ -175,23 +194,23 @@
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         border-left: 4px solid #1B3878;
     }
-    
+
     .loading {
         text-align: center;
         padding: 20px;
     }
-    
+
     .loading i {
         font-size: 2rem;
         color: #1B3878;
         animation: spin 1s linear infinite;
     }
-    
+
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
-    
+
     .btn-outline-primary {
         color: #1B3878;
         border-color: #1B3878;
@@ -208,27 +227,36 @@
         color: #ffffff;
         border: none;
     }
+
+    .fade-in {
+        animation: fadeIn .3s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: none; }
+    }
 </style>
 
 <div class="main-container">
         <div class="return-card">
             <div class="card-header">
-                <h2><i class="fas fa-book-open"></i> Self Return</h2>
+                <h2><i class="fas fa-book-open"></i> Pengembalian Buku Mandiri</h2>
                 <p>Sistem Pengembalian Buku Mandiri</p>
             </div>
-            
+
             <div class="card-body">
                 <!-- Scanner Section -->
                 <div class="scanner-section">
                     <h4 class="mb-4">Scan atau Masukkan Barcode Buku</h4>
-                    
+
                     <div class="barcode-input">
-                        <input type="text" id="barcodeInput" class="form-control" 
-                               placeholder="Masukkan atau scan barcode buku..." 
+                        <input type="text" id="barcodeInput" class="form-control"
+                               placeholder="Masukkan atau scan barcode buku..."
                                autocomplete="off" autofocus>
                         <i class="fas fa-barcode scan-icon"></i>
                     </div>
-                    
+
                     <div class="d-flex gap-3 justify-content-center">
                         <button type="button" id="checkBookBtn" class="btn btn-secondary">
                             <i class="fas fa-search"></i> Cek Buku
@@ -238,24 +266,24 @@
                         </button>
                     </div>
                 </div>
-                
+
                 <!-- Loading Section -->
                 <div id="loadingSection" class="loading d-none">
                     <i class="fas fa-spinner"></i>
                     <p class="mt-2">Memproses...</p>
                 </div>
-                
+
                 <!-- Message Section -->
                 <div id="messageSection"></div>
-                
-                <!-- Book Info Section -->
+
+                <!-- Book Info Section: buku dalam satu transaksi peminjaman yang siap dikembalikan -->
                 <div id="bookInfoSection" class="d-none">
-                    <div class="book-info">
+                    <div class="book-info fade-in">
                         <h5><i class="fas fa-book"></i> Informasi Buku</h5>
                         <div id="bookDetails"></div>
                     </div>
                 </div>
-                
+
                 <!-- Return History Section -->
                 <div class="history-section">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -280,34 +308,36 @@
   <script>
         class SelfReturnApp {
             constructor() {
+                this.currentMemberId = null;
+                this.currentMemberName = null;
+                this.booksToReturn = [];
+                window.selfReturnApp = this;
                 this.init();
             }
-            
+
             init() {
                 this.bindEvents();
                 this.focusInput();
-                
-                // Auto-check book when barcode is entered (for scanner)
                 this.setupAutoScan();
             }
-            
+
             bindEvents() {
                 document.getElementById('checkBookBtn').addEventListener('click', () => this.checkBook());
                 document.getElementById('returnBookBtn').addEventListener('click', () => this.returnBook());
                 document.getElementById('refreshHistoryBtn').addEventListener('click', () => this.loadHistory());
-                
-                // Enter key handling
+
+                // Enter key handling — scan barcode lalu tampilkan info transaksinya
                 document.getElementById('barcodeInput').addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
                         this.checkBook();
                     }
                 });
             }
-            
+
             setupAutoScan() {
                 let scanTimeout;
                 const input = document.getElementById('barcodeInput');
-                
+
                 input.addEventListener('input', () => {
                     clearTimeout(scanTimeout);
                     scanTimeout = setTimeout(() => {
@@ -317,32 +347,31 @@
                     }, 500);
                 });
             }
-            
+
             focusInput() {
                 document.getElementById('barcodeInput').focus();
             }
-            
+
             showLoading() {
                 document.getElementById('loadingSection').classList.remove('d-none');
                 this.hideMessage();
-                this.hideBookInfo();
             }
-            
+
             hideLoading() {
                 document.getElementById('loadingSection').classList.add('d-none');
             }
-            
+
             showMessage(message, type = 'success') {
                 const messageSection = document.getElementById('messageSection');
                 const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
                 const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
-                
+
                 messageSection.innerHTML = `
                     <div class="alert ${alertClass} fade-in">
                         <i class="${icon}"></i> ${message}
                     </div>
                 `;
-                
+
                 // Auto hide success messages
                 if (type === 'success') {
                     setTimeout(() => {
@@ -350,76 +379,88 @@
                     }, 5000);
                 }
             }
-            
+
             hideMessage() {
                 document.getElementById('messageSection').innerHTML = '';
             }
-            
-            showBookInfo(bookData) {
-                const bookInfoSection = document.getElementById('bookInfoSection');
-                const bookDetails = document.getElementById('bookDetails');
-                
-                let statusBadge = '';
-                let statusClass = '';
-                
-                if (bookData.is_on_loan) {
-                    if (bookData.is_overdue) {
-                        statusBadge = `<span class="status-badge status-danger">Terlambat ${bookData.days_overdue} hari</span>`;
-                    } else {
-                        statusBadge = '<span class="status-badge status-warning">Sedang Dipinjam</span>';
-                    }
-                } else {
-                    statusBadge = '<span class="status-badge status-success">Tersedia</span>';
-                }
-                
-                bookDetails.innerHTML = `
-                    <div class="book-detail">
-                        <span><strong>Judul:</strong></span>
-                        <span>${bookData.title || 'Tidak tersedia'}</span>
-                    </div>
-                    <div class="book-detail">
-                        <span><strong>Pengarang:</strong></span>
-                        <span>${bookData.author || 'Tidak tersedia'}</span>
-                    </div>
-                    <div class="book-detail">
-                        <span><strong>Barcode:</strong></span>
-                        <span>${bookData.barcode}</span>
-                    </div>
-                    <div class="book-detail">
-                        <span><strong>Status:</strong></span>
-                        <span>${statusBadge}</span>
-                    </div>
-                    ${bookData.is_on_loan ? `
-                        <div class="book-detail">
-                            <span><strong>Tanggal Pinjam:</strong></span>
-                            <span>${this.formatDate(bookData.loan_date)}</span>
-                        </div>
-                        <div class="book-detail">
-                            <span><strong>Tanggal Kembali:</strong></span>
-                            <span>${this.formatDate(bookData.due_date)}</span>
-                        </div>
-                    ` : ''}
-                `;
-                
-                bookInfoSection.classList.remove('d-none');
-                bookInfoSection.classList.add('fade-in');
-            }
-            
+
             hideBookInfo() {
                 document.getElementById('bookInfoSection').classList.add('d-none');
             }
-            
+
+            // Render seluruh buku dalam transaksi peminjaman yang sedang discan,
+            // masing-masing dengan tombol hapus sebelum dikonfirmasi.
+            renderBookList() {
+                const section = document.getElementById('bookInfoSection');
+                const details = document.getElementById('bookDetails');
+                const titleSection = section.querySelector('h5');
+
+                if (this.booksToReturn.length === 0) {
+                    this.hideBookInfo();
+                    return;
+                }
+
+                titleSection.innerHTML = `
+                    <i class="fas fa-user"></i> ${this.currentMemberName || '-'}
+                    <small class="text-muted d-block mt-1">
+                        <i class="fas fa-book"></i> ${this.booksToReturn.length} buku siap dikembalikan
+                    </small>
+                `;
+
+                details.innerHTML = this.booksToReturn.map(book => {
+                    const statusBadge = book.is_overdue
+                        ? `<span class="status-badge status-danger">Terlambat ${book.days_overdue} hari</span>`
+                        : `<span class="status-badge status-warning">Sedang Dipinjam</span>`;
+
+                    return `
+                        <div class="book-item-block fade-in">
+                            <button type="button" class="btn btn-outline-danger btn-sm btn-hapus-item"
+                                    onclick="selfReturnApp.removeBookItem('${book.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <div class="book-detail">
+                                <span><strong>Judul:</strong></span>
+                                <span>${book.title || 'Tidak tersedia'}</span>
+                            </div>
+                            <div class="book-detail">
+                                <span><strong>Pengarang:</strong></span>
+                                <span>${book.author || 'Tidak tersedia'}</span>
+                            </div>
+                            <div class="book-detail">
+                                <span><strong>Barcode:</strong></span>
+                                <span>${book.barcode}</span>
+                            </div>
+                            <div class="book-detail">
+                                <span><strong>Jatuh Tempo:</strong></span>
+                                <span>${this.formatDate(book.due_date)}</span>
+                            </div>
+                            <div class="book-detail">
+                                <span><strong>Status:</strong></span>
+                                <span>${statusBadge}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                section.classList.remove('d-none');
+            }
+
+            removeBookItem(id) {
+                this.booksToReturn = this.booksToReturn.filter(b => String(b.id) !== String(id));
+                this.renderBookList();
+            }
+
             async checkBook() {
                 const barcode = document.getElementById('barcodeInput').value.trim();
-                
+
                 if (!barcode) {
                     this.showMessage('Silakan masukkan barcode buku', 'error');
                     this.focusInput();
                     return;
                 }
-                
+
                 this.showLoading();
-                
+
                 try {
                     const response = await fetch('/pengembalian-mandiri/check-book', {
                         method: 'POST',
@@ -428,12 +469,16 @@
                         },
                         body: `nomorBarcode=${encodeURIComponent(barcode)}`
                     });
-                    
+
                     const data = await response.json();
-                    
+
                     if (data.status === 'success') {
-                        this.showBookInfo(data.data);
+                        this.currentMemberId = data.data.member_id;
+                        this.currentMemberName = data.data.member_name;
+                        this.booksToReturn = data.data.items;
+                        this.renderBookList();
                         this.hideMessage();
+                        this.clearInput();
                     } else {
                         this.showMessage(data.message, 'error');
                         this.hideBookInfo();
@@ -445,54 +490,63 @@
                     this.hideLoading();
                 }
             }
-            
-            async returnBook() {
-                const barcode = document.getElementById('barcodeInput').value.trim();
-                
-                if (!barcode) {
-                    this.showMessage('Silakan masukkan barcode buku', 'error');
+
+            returnBook() {
+                if (this.booksToReturn.length === 0) {
+                    this.showMessage('Tidak ada buku yang dipilih. Silakan scan buku terlebih dahulu.', 'error');
                     this.focusInput();
                     return;
                 }
-                
+
+                Swal.fire({
+                    title: 'Proses Pengembalian?',
+                    text: `${this.booksToReturn.length} buku akan dikembalikan.`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Ya, Proses',
+                    cancelButtonText: 'Batal',
+                }).then((result) => {
+                    if (result.value) {
+                        this.submitReturn();
+                    }
+                });
+            }
+
+            async submitReturn() {
                 this.showLoading();
-                
+
+                const itemIds = this.booksToReturn.map(b => b.id);
+
                 try {
                     const response = await fetch('/pengembalian-mandiri/process-return', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
                         },
-                        body: `nomorBarcode=${encodeURIComponent(barcode)}`
+                        body: `item_ids=${encodeURIComponent(JSON.stringify(itemIds))}`
                     });
-                    
+
                     const data = await response.json();
-                    
+
                     if (data.status === 'success') {
-                        let message = `Buku "${data.data.title}" berhasil dikembalikan!`;
-                        if (data.data.is_late) {
-                            message += ` (Terlambat ${data.data.late_days} hari)`;
-                        }
-                        
-                        this.showMessage(message, 'success');
-                        this.hideBookInfo();
-                        this.clearInput();
-                        this.loadHistory(); // Refresh history
+                        window.location.href = data.struk_url;
                     } else {
                         this.showMessage(data.message, 'error');
+                        this.hideLoading();
                     }
                 } catch (error) {
                     this.showMessage('Terjadi kesalahan saat memproses pengembalian', 'error');
-                } finally {
                     this.hideLoading();
                 }
             }
-            
+
             async loadHistory() {
                 try {
                     const response = await fetch('/pengembalian-mandiri/history?limit=5');
                     const data = await response.json();
-                    
+
                     if (data.status === 'success') {
                         this.displayHistory(data.data);
                     }
@@ -500,10 +554,10 @@
                     console.error('Error loading history:', error);
                 }
             }
-            
+
             displayHistory(historyData) {
                 const historyList = document.getElementById('historyList');
-                
+
                 if (historyData.length === 0) {
                     historyList.innerHTML = `
                         <div class="text-center text-muted">
@@ -513,7 +567,7 @@
                     `;
                     return;
                 }
-                
+
                 historyList.innerHTML = historyData.map(item => `
                     <div class="history-item fade-in">
                         <div class="d-flex justify-content-between align-items-start">
@@ -530,10 +584,10 @@
                     </div>
                 `).join('');
             }
-            
+
             formatDate(dateString) {
                 if (!dateString) return '-';
-                
+
                 const date = new Date(dateString);
                 return date.toLocaleDateString('id-ID', {
                     year: 'numeric',
@@ -543,13 +597,13 @@
                     minute: '2-digit'
                 });
             }
-            
+
             clearInput() {
                 document.getElementById('barcodeInput').value = '';
                 this.focusInput();
             }
         }
-        
+
         // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
             new SelfReturnApp();

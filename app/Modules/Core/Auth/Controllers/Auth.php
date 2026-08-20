@@ -43,24 +43,33 @@ public function login()
 			'response' => $hcaptchaResponse,
 			'remoteip' => $this->request->getIPAddress()
 		];
-		
-		$options = [
-			'http' => [
-				'method'  => 'POST',
-				'header'  => 'Content-Type: application/x-www-form-urlencoded',
-				'content' => http_build_query($data)
-			]
-		];
-		
-		$context = stream_context_create($options);
-		$result = file_get_contents($url, false, $context);
-		
+
+		// Gunakan cURL (bukan file_get_contents) karena verifikasi SSL-nya
+		// mengikuti setting curl.cainfo di php.ini, yang di environment ini
+		// sudah dikonfigurasi dengan benar (berbeda dari openssl.cafile yang
+		// dipakai stream wrapper file_get_contents dan sering belum diset).
+		$ch = curl_init($url);
+		curl_setopt_array($ch, [
+			CURLOPT_POST           => true,
+			CURLOPT_POSTFIELDS     => http_build_query($data),
+			CURLOPT_HTTPHEADER     => ['Content-Type: application/x-www-form-urlencoded'],
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_SSL_VERIFYPEER => true,
+			CURLOPT_SSL_VERIFYHOST => 2,
+			CURLOPT_TIMEOUT        => 15,
+		]);
+
+		$result = curl_exec($ch);
+		$curlError = curl_error($ch);
+		curl_close($ch);
+
 		if ($result === false) {
+			log_message('error', 'hCaptcha verify request failed: ' . $curlError);
 			return false;
 		}
-		
+
 		$response = json_decode($result, true);
-		
+
 		return isset($response['success']) && $response['success'] === true;
 	}
 
@@ -180,7 +189,8 @@ public function login()
 			$userData->npp_kecamatan_id = $user->npp_kecamatan_id ?? 0;
 			$userData->npp_kelurahan_id = $user->npp_kelurahan_id ?? 0;
 			$userData->member_id = $user->member_id ?? 0;
-			
+			$userData->location_ids = $user->location_ids ?? '';
+
 			// Set user data ke session sebagai objek
 			session()->set('user', $userData);
 			

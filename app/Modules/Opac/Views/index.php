@@ -297,6 +297,16 @@
                             <div class="col-md-3">
                                 <input type="text" class="form-control custom-input form-control-sm" name="PublishYear" placeholder="Filter Tahun..." value="<?= esc(request()->getVar('PublishYear')) ?>">
                             </div>
+                            <div class="col-md-3">
+                                <select class="form-select custom-input form-select-sm" name="Worksheet_id">
+                                    <option value="">Semua Jenis Bahan</option>
+                                    <?php foreach (($worksheets ?? []) as $ws) : ?>
+                                        <option value="<?= esc($ws->ID) ?>" <?= (string) ($worksheet_id ?? '') === (string) $ws->ID ? 'selected' : '' ?>>
+                                            <?= esc($ws->Name) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                         </div>
                     </form>
                 </div>

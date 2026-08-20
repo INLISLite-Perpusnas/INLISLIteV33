@@ -89,16 +89,6 @@
         color: rgba(255,255,255,0.8);
     }
     
-    .sql-editor {
-        height: 200px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-family: 'Courier New', monospace;
-        font-size: 14px;
-        padding: 10px;
-        resize: vertical;
-    }
-    
     .data-table-container {
         overflow: auto;
         max-height: 400px;
@@ -212,9 +202,6 @@
                     <li class="nav-item">
                         <a class="nav-link" data-bs-toggle="tab" href="#structure-tab">Structure</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="tab" href="#query-tab">SQL Query</a>
-                    </li>
                 </ul>
             </div>
             
@@ -260,30 +247,6 @@
                             <div class="text-center text-muted py-5">
                                 <i class="fas fa-sitemap fa-3x mb-3"></i>
                                 <p>Select a table to view its structure</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Query Tab -->
-                    <div class="tab-pane fade" id="query-tab">
-                        <div class="mb-3">
-                            <label class="form-label">SQL Query:</label>
-                            <textarea class="sql-editor" id="sql-editor" placeholder="SELECT * FROM table_name LIMIT 10;"></textarea>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <button class="btn btn-primary" onclick="executeQuery()">
-                                ▶️ Execute Query
-                            </button>
-                            <button class="btn btn-outline-secondary" onclick="clearQuery()">
-                                🗑️ Clear
-                            </button>
-                        </div>
-                        
-                        <div id="query-result">
-                            <div class="text-center text-muted py-5">
-                                <i class="fas fa-code fa-3x mb-3"></i>
-                                <p>Write your SQL query above and click Execute</p>
                             </div>
                         </div>
                     </div>
@@ -679,19 +642,11 @@ function convertToSQL() {
         success: function(response) {
             console.log('Natural to SQL response:', response);
             if (response.status === 'success') {
-                $('#sql-editor').val(response.sql);
                 currentSQL = response.sql;
-                
-                // Switch to query tab
-                $('.nav-link[href="#query-tab"]').tab('show');
-                
-                // Show success message
-                showSuccess('Query generated successfully! You can now execute it.');
-                
-                // Auto-execute if user wants
-                if (confirm('Would you like to execute this query automatically?')) {
-                    executeQuery();
-                }
+
+                // Tampilkan hasilnya langsung di tab Data, tanpa menampilkan SQL-nya ke user
+                $('.nav-link[href="#data-tab"]').tab('show');
+                executeQuery(response.sql);
             } else {
                 showError('Failed to generate SQL: ' + response.message);
             }
@@ -706,24 +661,25 @@ function convertToSQL() {
     });
 }
 
-// Execute SQL query
-function executeQuery() {
-    const sql = $('#sql-editor').val().trim();
-    
+// Execute SQL query (dipanggil internal setelah AI menghasilkan SQL dari natural-to-sql,
+// SQL-nya sendiri tidak pernah ditampilkan ke user)
+function executeQuery(sql) {
     if (!sql) {
-        showError('Please enter a SQL query');
+        showError('Query tidak valid');
         return;
     }
-    
+
     currentSQL = sql;
-    
-    $('#query-result').html(`
-        <div class="loading" style="display: block;">
-            <div class="spinner-border" role="status"></div>
-            <div class="mt-2">Executing query...</div>
-        </div>
-    `);
-    
+
+    // Bukan lagi memilih tabel dari sidebar, jadi bersihkan status "active"-nya
+    $('.table-item').removeClass('active');
+    currentTable = '';
+
+    $('#data-info').text('Menjalankan query...');
+    $('#data-pagination').hide();
+    $('#data-loading').show();
+    $('#data-content').hide();
+
     $.ajax({
         url: '<?= base_url('api/laporan-ai/execute-query') ?>',
         method: 'POST',
@@ -735,7 +691,8 @@ function executeQuery() {
                 renderQueryResult(response.data, response.affected_rows);
                 $('#export-btn').prop('disabled', false);
             } else {
-                $('#query-result').html(`
+                $('#data-info').text('Query gagal dijalankan');
+                $('#data-content').html(`
                     <div class="alert alert-danger">
                         <strong>Query Error:</strong> ${response.message}
                     </div>
@@ -744,53 +701,60 @@ function executeQuery() {
         },
         error: function(xhr, status, error) {
             console.log('Error executing query:', xhr.responseText);
-            $('#query-result').html(`
+            $('#data-info').text('Query gagal dijalankan');
+            $('#data-content').html(`
                 <div class="alert alert-danger">
                     <strong>Error:</strong> Failed to execute query - ${error}
                 </div>
             `);
+        },
+        complete: function() {
+            $('#data-loading').hide();
+            $('#data-content').show();
         }
     });
 }
 
-// Render query result
+// Render query result (hasil dari natural-language query) ke tab Data
 function renderQueryResult(data, affectedRows) {
     console.log('Rendering query result:', data);
-    const container = $('#query-result');
-    
+    const container = $('#data-content');
+
     if (!data || data.length === 0) {
+        $('#data-info').text(`${affectedRows || 0} rows affected`);
         container.html(`
             <div class="alert alert-info">
-                <strong>Query executed successfully!</strong> ${affectedRows || 0} rows affected. No data to display.
+                <strong>Query berhasil dijalankan.</strong> ${affectedRows || 0} rows affected. Tidak ada data untuk ditampilkan.
             </div>
         `);
         return;
     }
-    
+
+    $('#data-info').text(`${affectedRows || data.length} rows returned`);
+
     // Create table
     const headers = Object.keys(data[0]);
     let tableHTML = `
         <div class="mb-3">
             <div class="alert alert-success">
-                <strong>Query executed successfully!</strong> ${affectedRows || data.length} rows returned.
+                <strong>Query berhasil dijalankan!</strong> ${affectedRows || data.length} rows returned.
             </div>
         </div>
-        <div class="data-table-container">
-            <table class="table table-bordered table-hover data-table">
-                <thead>
-                    <tr>
+        <table class="table table-bordered table-hover data-table">
+            <thead>
+                <tr>
     `;
-    
+
     headers.forEach(header => {
         tableHTML += `<th>${header}</th>`;
     });
-    
+
     tableHTML += `
-                    </tr>
-                </thead>
-                <tbody>
+                </tr>
+            </thead>
+            <tbody>
     `;
-    
+
     data.forEach(row => {
         tableHTML += '<tr>';
         headers.forEach(header => {
@@ -806,26 +770,13 @@ function renderQueryResult(data, affectedRows) {
         });
         tableHTML += '</tr>';
     });
-    
-    tableHTML += `
-                </tbody>
-            </table>
-        </div>
-    `;
-    
-    container.html(tableHTML);
-}
 
-// Clear query
-function clearQuery() {
-    $('#sql-editor').val('');
-    $('#query-result').html(`
-        <div class="text-center text-muted py-5">
-            <i class="fas fa-code fa-3x mb-3"></i>
-            <p>Write your SQL query above and click Execute</p>
-        </div>
-    `);
-    currentSQL = '';
+    tableHTML += `
+            </tbody>
+        </table>
+    `;
+
+    container.html(tableHTML);
 }
 
 // Export to Excel
@@ -862,6 +813,33 @@ function exportToExcel() {
 }
 
 // Utility functions
+function showSuccess(message) {
+    console.log('Showing success:', message);
+    const toast = `
+        <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+
+    if (!$('.toast-container').length) {
+        $('body').append('<div class="toast-container position-fixed top-0 end-0 p-3"></div>');
+    }
+
+    const $toast = $(toast);
+    $('.toast-container').append($toast);
+    const bsToast = new bootstrap.Toast($toast[0]);
+    bsToast.show();
+
+    $toast.on('hidden.bs.toast', function() {
+        $(this).remove();
+    });
+}
+
 function showError(message) {
     console.log('Showing error:', message);
     const toast = `
@@ -917,11 +895,9 @@ function initializeSampleQueries() {
 
 // Keyboard shortcuts
 $(document).keydown(function(e) {
-    // Ctrl + Enter to execute query
+    // Ctrl + Enter to ask AI
     if ((e.ctrlKey || e.metaKey) && e.which === 13) {
-        if ($('#query-tab').hasClass('active')) {
-            executeQuery();
-        } else if ($('#natural-query').is(':focus')) {
+        if ($('#natural-query').is(':focus')) {
             convertToSQL();
         }
         e.preventDefault();

@@ -5,16 +5,34 @@ $select2 = select_two();
 $rda = $request->getGet('rda') ?? 1;
 ?>
 <div class="card-header" style="min-height:100px">
-    <div class="form-group col-md-6">
-        <div class="select-wrapper input-group mt-2 mb-2">
-            <select class="form-control" name="Worksheet_id" id="worksheet_id">
-                <?php foreach ($worksheets as $row) : ?>
-                    <option value="<?= $row->ID ?>" <?= set_select('Worksheet_id', $row->ID, ($worksheet_id == $row->ID)); ?>><?= $row->Name ?></option>
-                <?php endforeach; ?>
-            </select>
-            <div class="input-group-append">
-                <button class="btn btn bg-primary text-white worksheet-btn-load" type="button"><i class="fa fa-check"></i> Pilih Jenis Bahan</button>
+    <div class="row w-100">
+        <div class="form-group col-md-6">
+            <div class="select-wrapper input-group mt-2 mb-2">
+                <select class="form-control" name="Worksheet_id" id="worksheet_id">
+                    <?php foreach ($worksheets as $row) : ?>
+                        <option value="<?= $row->ID ?>" <?= set_select('Worksheet_id', $row->ID, ($worksheet_id == $row->ID)); ?>><?= $row->Name ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <div class="input-group-append">
+                    <button class="btn btn bg-primary text-white worksheet-btn-load" type="button"><i class="fa fa-check"></i> Pilih Jenis Bahan</button>
+                </div>
             </div>
+        </div>
+        <div class="form-group col-md-6">
+            <label for="catalog_type_add" class="form-label mb-1">
+                <i class="fa fa-check text-primary"></i> Pedoman Katalog
+            </label>
+            <!--
+                Select ini SENGAJA tidak diberi name="IsRDA" agar tidak bentrok
+                dengan hidden input name="IsRDA" di bawah (sumber nilai yang
+                benar-benar dikirim saat submit). Ganti pilihan di sini akan
+                me-reload halaman ke ?rda=0/1 sehingga field khusus RDA/AACR
+                (blok if ($rda == 1)) ikut menyesuaikan.
+            -->
+            <select class="form-control mt-2 mb-2" id="catalog_type_add" onchange="switchPedomanKatalog(this.value)">
+                <option value="0" <?= $rda == 0 ? 'selected' : '' ?>>Katalog AACR</option>
+                <option value="1" <?= $rda == 1 ? 'selected' : '' ?>>Katalog RDA</option>
+            </select>
         </div>
     </div>
 </div>

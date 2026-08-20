@@ -6,6 +6,7 @@ $routes->group('pengembalian-mandiri', ['namespace' => 'SelfReturn\Controllers']
 	$subroutes->add('/', 'SelfReturn::index');
     $subroutes->add('check-book', 'SelfReturn::checkBook');
     $subroutes->add('process-return', 'SelfReturn::processReturn');
+    $subroutes->add('success', 'SelfReturn::success');
     $subroutes->add('history', 'SelfReturn::getReturnHistory');
 });
 

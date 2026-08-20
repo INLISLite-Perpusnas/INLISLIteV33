@@ -207,11 +207,11 @@ $catalog = get_catalog($catalog_id);
                                     </select>
                                     <div class="input-group-append">
                                         <button type="button" class="btn btn-primary"
-                                            data-toggle="modal" data-target="#modalAddPartner">
+                                            data-bs-toggle="modal" data-bs-target="#modalAddPartner" data-toggle="modal" data-target="#modalAddPartner">
                                             <i class="fa fa-plus"></i>
                                         </button>
                                         <button type="button" id="btnEditPartner" class="btn btn-warning"
-                                            data-toggle="modal" data-target="#modalEditPartner" disabled>
+                                            data-bs-toggle="modal" data-bs-target="#modalEditPartner" data-toggle="modal" data-target="#modalEditPartner" disabled>
                                             <i class="fa fa-edit"></i>
                                         </button>
                                     </div>
@@ -406,7 +406,7 @@ $catalog = get_catalog($catalog_id);
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalAddPartnerLabel">Tambah Nama Sumber</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -431,7 +431,7 @@ $catalog = get_catalog($catalog_id);
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-dismiss="modal">Batal</button>
                 <button type="button" class="btn btn-primary" id="btnSavePartner">Simpan</button>
             </div>
         </div>
@@ -444,7 +444,7 @@ $catalog = get_catalog($catalog_id);
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalEditPartnerLabel">Edit Nama Sumber</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -470,7 +470,7 @@ $catalog = get_catalog($catalog_id);
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-dismiss="modal">Batal</button>
                 <button type="button" class="btn btn-primary" id="btnUpdatePartner">Simpan</button>
             </div>
         </div>
@@ -617,7 +617,7 @@ $catalog = get_catalog($catalog_id);
                 dataType: 'json',
                 success: function(response) {
                     if (response.success) {
-                        toastr.success('Data berhasil disimpan');
+                        Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data berhasil disimpan', showConfirmButton: false, timer: 2000 });
                         $('#modalAddPartner').modal('hide');
                         $('#formAddPartner')[0].reset();
                         getData(`<?= base_url('api/eksemplar/collectionpartners') ?>`, `#Partner_id`, false, `-Pilih-`);
@@ -625,11 +625,11 @@ $catalog = get_catalog($catalog_id);
                             $('#Partner_id').val(response.data.ID).trigger('change');
                         }, 500);
                     } else {
-                        toastr.error(response.message || 'Terjadi kesalahan saat menyimpan data');
+                        Swal.fire({ icon: 'error', title: 'Gagal', text: response.message || 'Terjadi kesalahan saat menyimpan data' });
                     }
                 },
                 error: function(xhr, status, error) {
-                    toastr.error('Terjadi kesalahan: ' + error);
+                    Swal.fire({ icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan: ' + error });
                 }
             });
         });
@@ -653,12 +653,12 @@ $catalog = get_catalog($catalog_id);
                         $('#editPartnerPhone').val(p.Phone);
                         $('#editPartnerFax').val(p.Fax);
                     } else {
-                        toastr.error('Gagal mengambil data partner');
+                        Swal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal mengambil data partner' });
                         $('#modalEditPartner').modal('hide');
                     }
                 },
                 error: function(xhr, status, error) {
-                    toastr.error('Terjadi kesalahan: ' + error);
+                    Swal.fire({ icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan: ' + error });
                     $('#modalEditPartner').modal('hide');
                 }
             });
@@ -676,18 +676,18 @@ $catalog = get_catalog($catalog_id);
                 dataType: 'json',
                 success: function(response) {
                     if (response.success) {
-                        toastr.success('Data berhasil diperbarui');
+                        Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data berhasil diperbarui', showConfirmButton: false, timer: 2000 });
                         $('#modalEditPartner').modal('hide');
                         getData(`<?= base_url('api/eksemplar/collectionpartners') ?>`, `#Partner_id`, false, `-Pilih-`);
                         setTimeout(function() {
                             $('#Partner_id').val(partnerId).trigger('change');
                         }, 500);
                     } else {
-                        toastr.error(response.message || 'Terjadi kesalahan saat memperbarui data');
+                        Swal.fire({ icon: 'error', title: 'Gagal', text: response.message || 'Terjadi kesalahan saat memperbarui data' });
                     }
                 },
                 error: function(xhr, status, error) {
-                    toastr.error('Terjadi kesalahan: ' + error);
+                    Swal.fire({ icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan: ' + error });
                 }
             });
         });

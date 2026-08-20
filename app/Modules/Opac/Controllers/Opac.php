@@ -86,6 +86,8 @@ class Opac extends \Base\Controllers\BaseController
     }
 
     $this->data['opac_banners'] = $this->getOpacBanners();
+    $this->data['worksheets']   = $this->getWorksheets();
+    $this->data['worksheet_id'] = $this->request->getVar('Worksheet_id') ?? '';
     $endTime = microtime(true);
     $this->data['execution_time'] = $endTime - $startTime;
     return view('Opac\Views\index', $this->data);
@@ -95,6 +97,16 @@ private function getOpacBanners()
 {
     try {
         return $this->bannerModel->where('active', 1)->where('category', 'Opac')->orderBy('sort', 'ASC')->findAll();
+    } catch (\Exception $e) {
+        return [];
+    }
+}
+
+// Daftar Jenis Bahan untuk filter OPAC, diambil dari tabel worksheets
+private function getWorksheets()
+{
+    try {
+        return $this->db->table('worksheets')->select('ID, Name')->orderBy('NoUrut', 'ASC')->get()->getResult();
     } catch (\Exception $e) {
         return [];
     }
@@ -128,6 +140,12 @@ private function loadRegularCatalogs()
                 $builder->like($filter, sanitizeSearch($value));
             }
         }
+    }
+
+    // Filter Jenis Bahan (Worksheet_id) - exact match ke tabel worksheets, bukan LIKE
+    $worksheetId = $this->request->getVar('Worksheet_id');
+    if (!empty($worksheetId)) {
+        $builder->where('Worksheet_id', (int) $worksheetId);
     }
 
     $catalogs = $builder->paginate($perPage, 'default', $currentPage);
@@ -194,6 +212,12 @@ private function loadRegularCatalogscache()
                     $builder->like($filter, sanitizeSearch($value));
                 }
             }
+        }
+
+        // Filter Jenis Bahan (Worksheet_id) - exact match ke tabel worksheets, bukan LIKE
+        $worksheetId = $this->request->getVar('Worksheet_id');
+        if (!empty($worksheetId)) {
+            $builder->where('Worksheet_id', (int) $worksheetId);
         }
 
         $catalogs     = $builder->paginate($perPage, 'default', $currentPage);
@@ -1917,18 +1941,27 @@ public function browse()
             'remoteip' => $this->request->getIPAddress(),
         ];
 
-        $options = [
-            'http' => [
-                'method'  => 'POST',
-                'header'  => 'Content-Type: application/x-www-form-urlencoded',
-                'content' => http_build_query($data),
-            ],
-        ];
+        // Gunakan cURL (bukan file_get_contents) karena verifikasi SSL-nya
+        // mengikuti setting curl.cainfo di php.ini, yang di environment ini
+        // sudah dikonfigurasi dengan benar (berbeda dari openssl.cafile yang
+        // dipakai stream wrapper file_get_contents dan sering belum diset).
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => http_build_query($data),
+            CURLOPT_HTTPHEADER     => ['Content-Type: application/x-www-form-urlencoded'],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
+            CURLOPT_TIMEOUT        => 15,
+        ]);
 
-        $context = stream_context_create($options);
-        $result  = file_get_contents($url, false, $context);
+        $result    = curl_exec($ch);
+        $curlError = curl_error($ch);
+        curl_close($ch);
 
         if ($result === false) {
+            log_message('error', 'hCaptcha verify request failed: ' . $curlError);
             return false;
         }
 

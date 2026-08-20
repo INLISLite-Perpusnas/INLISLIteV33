@@ -1,4 +1,38 @@
 <script>
+    
+    // inline event handler (onchange="...") yang berjalan di global scope.
+    function switchPedomanKatalog(value) {
+        var doSwitch = function() {
+            var url = new URL(window.location.href);
+            url.searchParams.set('rda', value);
+            window.location.href = url.toString();
+        };
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Ganti Pedoman Katalog?',
+                text: 'Halaman akan dimuat ulang dan isian form yang belum disimpan akan hilang.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Ganti',
+                cancelButtonText: 'Batal'
+            }).then(function(result) {
+                if (result.value) {
+                    doSwitch();
+                } else {
+                    // Batal: kembalikan pilihan select ke nilai rda saat ini
+                    var select = document.getElementById('catalog_type_add');
+                    if (select) {
+                        var urlParams = new URLSearchParams(window.location.search);
+                        select.value = urlParams.get('rda') == '0' ? '0' : '1';
+                    }
+                }
+            });
+        } else if (window.confirm('Halaman akan dimuat ulang dan isian form yang belum disimpan akan hilang. Lanjutkan?')) {
+            doSwitch();
+        }
+    }
+
     $(document).ready(function() {
 
         // ========== PENGARANG UTAMA ==========

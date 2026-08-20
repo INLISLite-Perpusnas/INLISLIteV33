@@ -36,7 +36,7 @@ change.log 28 July 2026
 17. Memperbaiki modul upload backgound kartu anggota yang sebelumnya tidak tersimpan di database
 18. Memperbaiki tampilan opac yang tampil dan tidak tampil ketika dipiliha tidak tampil di list katalog
 
-change.log 12 Agustus 2026
+change.log 19 Agustus 2026
 1. Memperbaiki bug pada modul edit anggota yang sebelumnya tidak bisa menyimpan data foto anggota
 2. Melakukan hidden id anggota pada modul edit anggota agar tidak bisa diubah secara paksa dari url
 3. Menambahkan pilihan variasi cetak label mode a-4 yang sebelumnya hanya sampai a-6
@@ -44,5 +44,9 @@ change.log 12 Agustus 2026
 5. Menambahkan fitur pilih buku yang populer untuk ditampilkan di halaman opac
 6. Memperbaiki tampilan UI halaman detail opac agar lebih user friendly
 7. Memperbaiki tampilan UI halaman statistik agar lebih user friendly
-6. Menambahkan fitur filter berdasarkan lokaasi peprustakaan,lokasi ruang dan jenis fisik buku di modul eksemplar
-
+8. Menambahkan fitur filter berdasarkan lokaasi perpustakaan,lokasi ruang dan jenis fisik buku di modul eksemplar
+9. Menambahkan fitur buku populer,sering dibaca dan sering dipinjam di halaman opac
+10. Memperbaiki bug pada modul tambah nama sumber ketika menambahkan dan edit eksemplar
+11. Menambahkan fitur filter berdasarkan jenis bahan di opac
+12. Menambahkan filter eksemplar yang tampil berdasarkan lokasi perpustakaan yang diizinkan oleh user.
+13. Perbaikan bug di peminjaman mandiri dan pengembalian mandiri

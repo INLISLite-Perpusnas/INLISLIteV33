@@ -433,7 +433,6 @@ class SelfLoan extends \App\Controllers\BaseController
         // Get the most restrictive worksheet rule
         $worksheet = $this->db->table('worksheets')
             ->whereIn('ID', array_unique($worksheet_ids))
-            ->where('active', 1)
             ->where('MaxPinjamKoleksi >', 0) // Only consider worksheets with limits
             ->orderBy('MaxPinjamKoleksi', 'ASC') // Most restrictive first
             ->get()

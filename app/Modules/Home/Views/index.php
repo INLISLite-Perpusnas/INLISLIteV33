@@ -175,6 +175,48 @@
             display: none;
         }
     }
+
+    /* Koleksi Populer - highlight + list, mengikuti gaya section Berita */
+    .popular-highlight-card {
+        height: 380px;
+    }
+
+    .popular-highlight-bg {
+        position: absolute;
+        inset: 0;
+        background-size: cover;
+        background-position: center;
+        filter: blur(20px) brightness(0.65) saturate(1.2);
+        transform: scale(1.15);
+    }
+
+    .popular-highlight-cover {
+        position: relative;
+        z-index: 1;
+        max-height: 86%;
+        max-width: 58%;
+        object-fit: contain;
+        border-radius: 0.5rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .popular-list-cover {
+        height: 120px;
+        width: 90px;
+        object-fit: contain;
+        background-color: #e2e8f0;
+        border-radius: 0.5rem;
+    }
+
+    /* Variasi warna latar antar-section: putih & abu-abu tipis berselang-seling,
+       supaya tiap section sedikit berbeda dari section di atas/bawahnya. */
+    .section-tone-1 {
+        background-color: #ffffff;
+    }
+
+    .section-tone-2 {
+        background-color: var(--slate-100);
+    }
 </style>
 <?= $this->endSection() ?>
 
@@ -233,7 +275,7 @@
     </div>
 </div>
 
-<section class="py-5 mt-3">
+<section class="py-5 mt-3 section-tone-1">
     <div class="container">
         <div class="row text-center g-4 justify-content-center">
 
@@ -282,30 +324,87 @@
 </section>
 
 <?php if (!empty($popular_books)): ?>
-    <section class="py-5" id="koleksi-populer">
+    <section class="py-5 section-tone-2" id="koleksi-populer">
+        <div class="container my-4">
+            <h3 class="fw-bold mb-4 d-flex align-items-center section-title">
+                <div class="bg-brand rounded-pill me-3" style="width: 5px; height: 30px;"></div>
+                Koleksi Populer
+            </h3>
+
+            <?php
+            $defaultCover  = base_url('assets/img/default-cover.webp');
+            $highlightBook = $popular_books[0];
+            $highlightThumb = get_catalog_thumb_url($highlightBook->CoverURL ?: '', 400, 600);
+            ?>
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <a href="<?= base_url('opac/detail/' . $highlightBook->ID) ?>" class="card border-0 rounded-2xl overflow-hidden text-decoration-none shadow-sm hover-card position-relative text-white h-100 popular-highlight-card">
+                        <div class="popular-highlight-bg" style="background-image: url('<?= $highlightThumb ?>');"></div>
+                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
+                            <img src="<?= $highlightThumb ?>"
+                                 class="popular-highlight-cover"
+                                 alt="<?= esc($highlightBook->Title) ?>"
+                                 onerror="this.onerror=null; this.src='<?= $defaultCover ?>';">
+                        </div>
+                        <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(to top, rgba(15,23,42,0.9) 0%, rgba(15,23,42,0.15) 55%, rgba(15,23,42,0.35) 100%); z-index: 1;"></div>
+
+                        <div class="position-absolute bottom-0 start-0 p-4 w-100" style="z-index: 2;">
+                            <span class="badge bg-danger mb-2 py-1 px-3 rounded-pill"><i class="fa-solid fa-fire me-1"></i>Paling Populer</span>
+                            <h4 class="fw-bold mb-2 line-clamp-2"><?= esc($highlightBook->Title) ?></h4>
+                            <p class="small text-light text-opacity-75 mb-0 line-clamp-2"><?= esc($highlightBook->Author ?: 'Anonim') ?></p>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="d-flex flex-column h-100 justify-content-between">
+                        <?php for ($i = 1; $i < count($popular_books) && $i <= 3; $i++):
+                            $book     = $popular_books[$i];
+                            $thumbUrl = get_catalog_thumb_url($book->CoverURL ?: '', 200, 340);
+                        ?>
+                            <a href="<?= base_url('opac/detail/' . $book->ID) ?>" class="d-flex gap-3 text-decoration-none text-dark hover-card p-3 rounded-xl border border-light mb-3 bg-white shadow-sm h-100 align-items-center">
+                                <div class="flex-shrink-0">
+                                    <img src="<?= $thumbUrl ?>" onerror="this.onerror=null; this.src='<?= $defaultCover ?>';" class="popular-list-cover">
+                                </div>
+                                <div>
+                                    <span class="badge bg-danger-subtle text-danger fw-semibold small mb-1"><i class="fa-solid fa-fire me-1"></i>Populer</span>
+                                    <h6 class="fw-bold mb-1 line-clamp-2 text-dark" style="line-height: 1.4;"><?= esc($book->Title) ?></h6>
+                                    <span class="text-secondary small d-block"><?= esc($book->Author ?: 'Anonim') ?></span>
+                                </div>
+                            </a>
+                        <?php endfor; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+<?php endif; ?>
+
+<?php if (!empty($sering_dipinjam_books)): ?>
+    <section class="py-5 section-tone-1" id="koleksi-sering-dipinjam">
         <div class="container">
             <div class="d-flex justify-content-between align-items-end mb-4">
                 <div>
-                    <h3 class="fw-bold mb-1 section-title"><i class="fa-solid fa-fire text-danger me-2"></i>Koleksi Populer</h3>
-                    <p class="text-secondary mb-0">Buku-buku yang paling banyak diminati pemustaka.</p>
+                    <h3 class="fw-bold mb-1 section-title"><i class="fa-solid fa-hand-holding-heart text-primary me-2"></i>Sering Dipinjam</h3>
+                    <p class="text-secondary mb-0">Buku dengan jumlah peminjaman terbanyak.</p>
                 </div>
             </div>
 
             <div class="popular-slider-wrapper">
-                <button type="button" class="popular-slider-nav prev" id="popularSliderPrev" aria-label="Sebelumnya">
+                <button type="button" class="popular-slider-nav prev" id="seringDipinjamSliderPrev" aria-label="Sebelumnya">
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
 
-                <div class="popular-slider" id="popularSlider">
-                    <?php foreach ($popular_books as $i => $book): ?>
+                <div class="popular-slider" id="seringDipinjamSlider">
+                    <?php foreach ($sering_dipinjam_books as $i => $book): ?>
                         <?php
                         $defaultCover = base_url('assets/img/default-cover.webp');
                         $thumbUrl     = get_catalog_thumb_url($book->CoverURL ?: '', 200, 340);
                         ?>
                         <div class="popular-card-item">
                             <div class="card h-100 border-0 shadow-sm hover-card rounded-xl overflow-hidden bg-white position-relative">
-                                <span class="badge bg-danger position-absolute" style="top: 10px; left: 10px; z-index: 2;">
-                                    <i class="fa-solid fa-fire me-1"></i>Populer
+                                <span class="badge bg-primary position-absolute" style="top: 10px; left: 10px; z-index: 2;">
+                                    <i class="fa-solid fa-hand-holding-heart me-1"></i>Sering Dipinjam
                                 </span>
                                 <img src="<?= $thumbUrl ?>"
                                      class="card-img-top book-cover"
@@ -326,7 +425,7 @@
                     <?php endforeach; ?>
                 </div>
 
-                <button type="button" class="popular-slider-nav next" id="popularSliderNext" aria-label="Berikutnya">
+                <button type="button" class="popular-slider-nav next" id="seringDipinjamSliderNext" aria-label="Berikutnya">
                     <i class="fa-solid fa-chevron-right"></i>
                 </button>
             </div>
@@ -334,7 +433,60 @@
     </section>
 <?php endif; ?>
 
-<section class="py-5 bg-light" id="koleksi">
+<?php if (!empty($sering_dibaca_books)): ?>
+    <section class="py-5 section-tone-2" id="koleksi-sering-dibaca">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-end mb-4">
+                <div>
+                    <h3 class="fw-bold mb-1 section-title"><i class="fa-solid fa-chair text-info me-2"></i>Sering Dibaca di Tempat</h3>
+                    <p class="text-secondary mb-0">Buku yang paling banyak dibaca langsung di perpustakaan.</p>
+                </div>
+            </div>
+
+            <div class="popular-slider-wrapper">
+                <button type="button" class="popular-slider-nav prev" id="seringDibacaSliderPrev" aria-label="Sebelumnya">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+
+                <div class="popular-slider" id="seringDibacaSlider">
+                    <?php foreach ($sering_dibaca_books as $i => $book): ?>
+                        <?php
+                        $defaultCover = base_url('assets/img/default-cover.webp');
+                        $thumbUrl     = get_catalog_thumb_url($book->CoverURL ?: '', 200, 340);
+                        ?>
+                        <div class="popular-card-item">
+                            <div class="card h-100 border-0 shadow-sm hover-card rounded-xl overflow-hidden bg-white position-relative">
+                                <span class="badge bg-info position-absolute" style="top: 10px; left: 10px; z-index: 2;">
+                                    <i class="fa-solid fa-chair me-1"></i>Sering Dibaca
+                                </span>
+                                <img src="<?= $thumbUrl ?>"
+                                     class="card-img-top book-cover"
+                                     alt="<?= esc($book->Title) ?>"
+                                     width="200"
+                                     height="340"
+                                     loading="lazy"
+                                     onerror="this.onerror=null; this.src='<?= $defaultCover ?>';">
+                                <div class="card-body d-flex flex-column p-3">
+                                    <h6 class="card-title fw-bold fs-6 mb-1 line-clamp-2" title="<?= esc($book->Title) ?>"><?= esc($book->Title) ?></h6>
+                                    <p class="card-text text-secondary small mb-3 text-truncate" title="<?= esc($book->Author) ?>">
+                                        <?= esc($book->Author ?: 'Anonim') ?>
+                                    </p>
+                                    <a href="<?= base_url('opac/detail/' . $book->ID) ?>" class="btn btn-outline-primary btn-sm mt-auto fw-semibold w-100 rounded-lg">Lihat Detail</a>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+
+                <button type="button" class="popular-slider-nav next" id="seringDibacaSliderNext" aria-label="Berikutnya">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+<?php endif; ?>
+
+<section class="py-5 section-tone-1" id="koleksi">
     <div class="container">
         <div class="d-flex justify-content-between align-items-end mb-4">
             <div>
@@ -385,7 +537,7 @@
     </div>
 </section>
 
-<section class="py-5" id="berita">
+<section class="py-5 section-tone-2" id="berita">
     <div class="container my-4">
         <h3 class="fw-bold mb-4 d-flex align-items-center section-title">
             <div class="bg-brand rounded-pill me-3" style="width: 5px; height: 30px;"></div>
@@ -451,37 +603,47 @@
 <script>
     $(document).ready(function() {
 
-        // Slider Koleksi Populer
-        const popularSlider = document.getElementById('popularSlider');
-        const popularPrev = document.getElementById('popularSliderPrev');
-        const popularNext = document.getElementById('popularSliderNext');
+        // Setup generik untuk slider kartu buku (dipakai oleh Sering Dipinjam
+        // dan Sering Dibaca di Tempat). Koleksi Populer kini pakai layout
+        // highlight + list statis seperti section Berita, tanpa slider.
+        function initCardSlider(sliderId, prevId, nextId) {
+            const slider = document.getElementById(sliderId);
+            const prev = document.getElementById(prevId);
+            const next = document.getElementById(nextId);
 
-        if (popularSlider && popularPrev && popularNext) {
-            const scrollStep = () => (popularSlider.querySelector('.popular-card-item')?.offsetWidth || 200) * 2;
+            if (!slider || !prev || !next) return;
 
-            popularPrev.addEventListener('click', function() {
-                popularSlider.scrollBy({
+            const scrollStep = () => (slider.querySelector('.popular-card-item')?.offsetWidth || 200) * 2;
+
+            prev.addEventListener('click', function() {
+                slider.scrollBy({
                     left: -scrollStep(),
                     behavior: 'smooth'
                 });
             });
 
-            popularNext.addEventListener('click', function() {
-                popularSlider.scrollBy({
+            next.addEventListener('click', function() {
+                slider.scrollBy({
                     left: scrollStep(),
                     behavior: 'smooth'
                 });
             });
 
             const toggleNavButtons = () => {
-                const isScrollable = popularSlider.scrollWidth > popularSlider.clientWidth + 5;
-                popularPrev.style.display = isScrollable ? 'flex' : 'none';
-                popularNext.style.display = isScrollable ? 'flex' : 'none';
+                const isScrollable = slider.scrollWidth > slider.clientWidth + 5;
+                prev.style.display = isScrollable ? 'flex' : 'none';
+                next.style.display = isScrollable ? 'flex' : 'none';
             };
 
             toggleNavButtons();
             window.addEventListener('resize', toggleNavButtons);
         }
+
+        // Slider Sering Dipinjam
+        initCardSlider('seringDipinjamSlider', 'seringDipinjamSliderPrev', 'seringDipinjamSliderNext');
+
+        // Slider Sering Dibaca di Tempat
+        initCardSlider('seringDibacaSlider', 'seringDibacaSliderPrev', 'seringDibacaSliderNext');
 
         // Counter Animation for Statistics
         function animateCounters() {

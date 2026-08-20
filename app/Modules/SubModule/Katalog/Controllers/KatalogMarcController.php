@@ -44,7 +44,7 @@ class KatalogMarcController extends \Base\Controllers\BaseController
                     'Branch_id'     => user()->branch_id,
                 ];
 
-                if (!empty($this->request->getPost('IsRDA'))) {
+                if ($this->request->getPost('IsRDA') !== null) {
                     $save_data['IsRDA'] = $this->request->getPost('IsRDA') ? 1 : 0;
                 }
 

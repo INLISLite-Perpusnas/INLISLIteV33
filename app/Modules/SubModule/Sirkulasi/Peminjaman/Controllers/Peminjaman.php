@@ -1054,4 +1054,140 @@ public function overdueSummary(): \CodeIgniter\HTTP\ResponseInterface
 }
 
 
+// ---------- METHOD 4: Auto-return manual untuk peminjaman buku digital -----
+
+/**
+ * Scan semua pinjaman buku digital (ISDRM = 1) yang masih berstatus 'Loan'
+ * dan sudah melewati DueDate, lalu langsung kembalikan otomatis.
+ * Versi web (dipicu tombol) dari command CLI `loans:auto-return-digital`,
+ * lihat app/Commands/AutoReturnDigitalLoans.php untuk logika aslinya.
+ * Endpoint: POST /sirkulasi-peminjaman/auto-return-digital
+ */
+public function autoReturnDigital(): \CodeIgniter\HTTP\ResponseInterface
+{
+    $db  = db_connect();
+    $now = date('Y-m-d H:i:s');
+
+    $loanItems = $db->table('collectionloanitems cli')
+        ->select([
+            'cli.ID',
+            'cli.CollectionLoan_id',
+            'cli.Collection_id',
+            'cli.DueDate',
+            'col.NomorBarcode',
+            'a.Title',
+            'm.Fullname',
+            'm.MemberNo',
+        ])
+        ->join('collections col', 'col.ID = cli.Collection_id')
+        ->join('catalogs a',      'a.ID = col.Catalog_id', 'left')
+        ->join('members m',      'm.ID = cli.member_id',   'left')
+        ->where('cli.LoanStatus', 'Loan')
+        ->where('col.ISDRM', 1)
+        ->where('cli.DueDate <=', $now)
+        ->get()
+        ->getResult();
+
+    if (empty($loanItems)) {
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Tidak ada peminjaman buku digital yang sudah jatuh tempo saat ini.',
+            'detail'  => [
+                'total_item' => 0,
+                'berhasil'   => 0,
+                'gagal'      => 0,
+                'items'      => [],
+                'errors'     => [],
+            ],
+        ]);
+    }
+
+    $items   = [];
+    $errors  = [];
+    $success = 0;
+    $failed  = 0;
+
+    foreach ($loanItems as $loanItem) {
+        try {
+            $this->_autoReturnDigitalLoanItem($db, $loanItem);
+            $success++;
+            $items[] = [
+                'barcode'  => $loanItem->NomorBarcode,
+                'title'    => $loanItem->Title,
+                'member'   => $loanItem->Fullname,
+                'due_date' => $loanItem->DueDate,
+                'status'   => 'berhasil',
+            ];
+        } catch (\Throwable $e) {
+            $failed++;
+            $errors[] = "{$loanItem->NomorBarcode} - {$loanItem->Title}: " . $e->getMessage();
+            log_message('error', 'autoReturnDigital: ' . $e->getMessage());
+        }
+    }
+
+    return $this->response->setJSON([
+        'success' => true,
+        'message' => "Proses selesai. Berhasil dikembalikan: {$success} item, Gagal: {$failed} item.",
+        'detail'  => [
+            'total_item' => count($loanItems),
+            'berhasil'   => $success,
+            'gagal'      => $failed,
+            'items'      => $items,
+            'errors'     => $errors,
+        ],
+    ]);
+}
+
+/**
+ * Kembalikan satu item pinjaman buku digital (dipakai oleh autoReturnDigital()).
+ * Sama persis dengan logic di AutoReturnDigitalLoans::autoReturn().
+ */
+private function _autoReturnDigitalLoanItem($db, $loanItem): void
+{
+    $now = date('Y-m-d H:i:s');
+    $ip  = $this->request->getIPAddress();
+
+    $db->transBegin();
+
+    $db->table('collectionloanitems')
+        ->where('ID', $loanItem->ID)
+        ->update([
+            'LoanStatus'     => 'Return',
+            'ActualReturn'   => $now,
+            'UpdateDate'     => $now,
+            'UpdateTerminal' => $ip,
+        ]);
+
+    $loan = $db->table('collectionloans')
+        ->where('ID', $loanItem->CollectionLoan_id)
+        ->get()
+        ->getRow();
+
+    if ($loan) {
+        $db->table('collectionloans')
+            ->where('ID', $loanItem->CollectionLoan_id)
+            ->update([
+                'ReturnCount'    => (int) ($loan->ReturnCount ?? 0) + 1,
+                'UpdateDate'     => $now,
+                'UpdateTerminal' => $ip,
+            ]);
+    }
+
+    $db->table('collections')
+        ->where('ID', $loanItem->Collection_id)
+        ->update([
+            'Status_id'      => 1,
+            'UpdateDate'     => $now,
+            'UpdateTerminal' => $ip,
+        ]);
+
+    if ($db->transStatus() === false) {
+        $db->transRollback();
+        throw new \RuntimeException('Transaksi gagal untuk LoanItem ID ' . $loanItem->ID);
+    }
+
+    $db->transCommit();
+}
+
+
 }
