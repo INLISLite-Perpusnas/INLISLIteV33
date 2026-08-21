@@ -71,7 +71,6 @@ class KatalogFormController extends \Base\Controllers\BaseController
                 $save_data = [
                     'ControlNumber' => $ControlNumber,
                     'BIBID'         => $BIBID,
-                    'Branch_id'     => $branch_id,
                     'CoverURL'      => '',
                     'CreateBy'      => user_id(),
                     'CreateDate'    => date("Y-m-d H:i:s"),
