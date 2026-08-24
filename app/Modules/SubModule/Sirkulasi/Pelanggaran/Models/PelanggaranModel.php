@@ -4,7 +4,7 @@ namespace Pelanggaran\Models;
 
 class PelanggaranModel extends \Base\Models\DataModel
 {
-	protected $DBGroup              = 'data';
+	protected $DBGroup              = 'default';
     protected $table      			= 'pelanggaran';
     protected $primaryKey 			= 'ID';
     protected $returnType     		= 'object';
