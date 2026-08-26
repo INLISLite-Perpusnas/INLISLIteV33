@@ -271,7 +271,7 @@ private function loadRegularCatalogscache()
 
         // Get physical books (non-DRM)
         $roweksemplar = $EksemplarModel
-            ->select('collections.NomorBarcode, collections.CallNumber, collectionrules.Name as RuleName, locations.Name as LocationName, collectionstatus.Name as StatusName')
+            ->select('collections.NomorBarcode, collections.CallNumber, collectionrules.Name as RuleName, locations.Name as LocationName, collectionstatus.Name as StatusName, collections.EDISISERIAL, collections.TANGGAL_TERBIT_EDISI_SERIAL')
             ->join('collectionrules', 'collectionrules.id = collections.Rule_id', 'left')
             ->join('locations', 'locations.id = collections.Location_id', 'left')
             ->join('collectionstatus', 'collectionstatus.id = collections.Status_id', 'left')

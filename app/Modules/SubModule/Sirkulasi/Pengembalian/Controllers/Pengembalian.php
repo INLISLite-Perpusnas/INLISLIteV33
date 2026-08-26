@@ -164,6 +164,12 @@ class Pengembalian extends \Base\Controllers\BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Format data tidak valid']);
         }
 
+        // Tanggal pengembalian hanya boleh hari ini atau backdate (mundur),
+        // tidak boleh tanggal yang akan datang.
+        if ($inputReturnDate && date('Y-m-d', strtotime($inputReturnDate)) > date('Y-m-d')) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Tanggal pengembalian tidak boleh tanggal yang akan datang.']);
+        }
+
         $violationData = [];
         if ($processVio === '1' && !empty($vioDataJson)) {
             $violationData = json_decode($vioDataJson, true);
@@ -334,18 +340,55 @@ class Pengembalian extends \Base\Controllers\BaseController
 
     public function success()
     {
-        $struk = session()->get('struk_pengembalian');
-        if (empty($struk)) {
+        $struk  = session()->get('struk_pengembalian');
+        $loanId = $this->request->getGet('loan_id');
+
+        if (empty($struk) && empty($loanId)) {
             return redirect()->to('sirkulasi-pengembalian/create');
         }
-        // session()->remove('struk_pengembalian'); // Commented out so it can be printed multiple times
 
-        $items = $this->db->table('collectionloanitems as cli')
-            ->select('cli.ID, cli.DueDate, cli.ActualReturn, cli.LateDays, cli.CollectionLoan_id, cli.member_id, col.NomorBarcode, col.CallNumber, cat.Title, cat.Author')
-            ->join('collections as col', 'col.ID = cli.Collection_id')
-            ->join('catalogs as cat', 'cat.ID = col.Catalog_id')
-            ->whereIn('cli.ID', $struk['item_ids'])
-            ->get()->getResult();
+        if (!empty($struk)) {
+            // Jalur normal: baru saja selesai memproses pengembalian.
+            // session()->remove('struk_pengembalian'); // Commented out so it can be printed multiple times
+
+            $items = $this->db->table('collectionloanitems as cli')
+                ->select('cli.ID, cli.DueDate, cli.ActualReturn, cli.LateDays, cli.CollectionLoan_id, cli.member_id, col.NomorBarcode, col.CallNumber, cat.Title, cat.Author')
+                ->join('collections as col', 'col.ID = cli.Collection_id')
+                ->join('catalogs as cat', 'cat.ID = col.Catalog_id')
+                ->whereIn('cli.ID', $struk['item_ids'])
+                ->get()->getResult();
+
+            $returnDate     = $struk['return_date'];
+            $violationCount = $struk['violation_count'];
+            $totalDenda     = $struk['total_denda'];
+        } else {
+            // Cetak ulang struk transaksi lama lewat ?loan_id= (data session sudah
+            // tidak ada lagi, mis. lupa dicetak saat itu juga / beda perangkat).
+            // Jumlah denda & pelanggaran dihitung ulang dari tabel `pelanggaran`
+            // yang memang dicatat permanen saat pengembalian diproses — bukan
+            // dari session — jadi hasilnya tetap akurat meski dicetak belakangan.
+            $items = $this->db->table('collectionloanitems as cli')
+                ->select('cli.ID, cli.DueDate, cli.ActualReturn, cli.LateDays, cli.CollectionLoan_id, cli.member_id, col.NomorBarcode, col.CallNumber, cat.Title, cat.Author')
+                ->join('collections as col', 'col.ID = cli.Collection_id')
+                ->join('catalogs as cat', 'cat.ID = col.Catalog_id')
+                ->where('cli.CollectionLoan_id', $loanId)
+                ->where('cli.LoanStatus', 'Return')
+                ->get()->getResult();
+
+            if (empty($items)) {
+                set_message('message', '<div class="alert alert-warning">Data pengembalian untuk transaksi tersebut tidak ditemukan.</div>');
+                return redirect()->to('sirkulasi-pengembalian');
+            }
+
+            $itemIds     = array_column($items, 'ID');
+            $pelanggaran = $this->db->table('pelanggaran')
+                ->whereIn('CollectionLoanItem_id', $itemIds)
+                ->get()->getResult();
+
+            $returnDate     = $items[0]->ActualReturn;
+            $violationCount = count($pelanggaran);
+            $totalDenda     = array_sum(array_column($pelanggaran, 'JumlahDenda'));
+        }
 
         $member = null;
         if (!empty($items)) {
@@ -357,9 +400,9 @@ class Pengembalian extends \Base\Controllers\BaseController
         $this->data['title']           = 'Struk Pengembalian';
         $this->data['member']          = $member;
         $this->data['items']           = $items;
-        $this->data['return_date']     = $struk['return_date'];
-        $this->data['violation_count'] = $struk['violation_count'];
-        $this->data['total_denda']     = $struk['total_denda'];
+        $this->data['return_date']     = $returnDate;
+        $this->data['violation_count'] = $violationCount;
+        $this->data['total_denda']     = $totalDenda;
 
         return view('Pengembalian\Views\success', $this->data);
     }

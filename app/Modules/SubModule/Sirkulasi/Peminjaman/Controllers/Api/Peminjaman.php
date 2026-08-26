@@ -127,20 +127,31 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
                 ->groupEnd();
         })
         ->edit('CollectionLoan_id', function ($row) {
+            // Tombol "Cetak Struk" pakai ulang halaman struk yang sudah ada
+            // (Peminjaman::success) — halaman itu memang mengambil data loan
+            // dari DB berdasarkan ?loan_id=, bukan dari session, jadi bisa
+            // dipakai untuk mencetak ulang struk transaksi lama kapan saja.
+            $strukUrl = base_url('sirkulasi-peminjaman/success?loan_id=' . $row->CollectionLoan_id);
+
             $html =
                 '<div class="widget-content p-0">
-                <div class="widget-content-wrapper">
-                    <div class="widget-content-left mr-3">
-                        <i class="far fa-id-card fa-3x text-secondary"></i>
+                <div class="widget-content-wrapper d-flex justify-content-between align-items-center flex-wrap">
+                    <div class="d-flex align-items-center">
+                        <div class="widget-content-left mr-3">
+                            <i class="far fa-id-card fa-3x text-secondary"></i>
+                        </div>
+                        <div class="widget-content-left text-secondary">
+                            <dl class="dl-horizontal mb-0">
+                                <dt class="font-weight-bold mb-0"><i class="fa fa-user text-secondary"></i> No. Anggota</dt>
+                                <dd class="font-weight-bold mb-0 mr-1">&nbsp;: <a href="#">' . $row->MemberNo . '  <span class="text-secondary">(' . $row->Fullname . ')</span></a></dd>
+                                <dt class="font-weight-bold mb-0"><i class="fa fa-hashtag text-secondary"></i> No. Transaksi</dt>
+                                <dd class="font-weight-bold mb-0 mr-1">&nbsp;: <a href="#">' . $row->CollectionLoan_id . '</a></dd>
+                            </dl>
+                        </div>
                     </div>
-                    <div class="widget-content-left text-secondary">
-                        <dl class="dl-horizontal mb-0">
-                            <dt class="font-weight-bold mb-0"><i class="fa fa-user text-secondary"></i> No. Anggota</dt>
-                            <dd class="font-weight-bold mb-0 mr-1">&nbsp;: <a href="#">' . $row->MemberNo . '  <span class="text-secondary">(' . $row->Fullname . ')</span></a></dd>
-                            <dt class="font-weight-bold mb-0"><i class="fa fa-hashtag text-secondary"></i> No. Transaksi</dt>
-                            <dd class="font-weight-bold mb-0 mr-1">&nbsp;: <a href="#">' . $row->CollectionLoan_id . '</a></dd>
-                        </dl>
-                    </div>
+                    <a href="' . $strukUrl . '" target="_blank" class="btn btn-outline-primary btn-sm" onclick="event.stopPropagation();" title="Cetak ulang struk bukti peminjaman untuk transaksi ini">
+                        <i class="fa fa-print"></i> Cetak Struk
+                    </a>
                 </div>
             </div>';
             return $html;

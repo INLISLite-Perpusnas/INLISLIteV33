@@ -340,6 +340,12 @@ $email = $db->table('settingparameters')->where('Name', 'EmailPerpustakaan')->ge
                         </a>
                     </li>
 
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?= base_url('artikel') ?>">
+                            <i class="fa-solid fa-newspaper me-1"></i>Artikel
+                        </a>
+                    </li>
+
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#"
                             id="navbarDropdownLayanan" role="button"

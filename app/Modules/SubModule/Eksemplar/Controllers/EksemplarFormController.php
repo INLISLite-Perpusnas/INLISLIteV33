@@ -107,6 +107,10 @@ class EksemplarFormController extends \Base\Controllers\BaseController
                     if (!empty($post['Price']))            $save['Price']             = $post['Price'];
                     if (!empty($post['PriceType']))        $save['PriceType']         = $post['PriceType'];
 
+                    // Khusus terbitan berkala (Worksheet_id == 4)
+                    if (!empty($post['EDISISERIAL']))                   $save['EDISISERIAL']                   = $post['EDISISERIAL'];
+                    if (!empty($post['TANGGAL_TERBIT_EDISI_SERIAL']))   $save['TANGGAL_TERBIT_EDISI_SERIAL']   = $post['TANGGAL_TERBIT_EDISI_SERIAL'];
+
                     $save['ISOPAC'] = !empty($post['ISOPAC']) ? 1 : 0;
 
                     array_push($collections, $save);
@@ -240,6 +244,10 @@ class EksemplarFormController extends \Base\Controllers\BaseController
                 if (!empty($post['Partner_id']))       $update['Partner_id']        = $post['Partner_id'];
                 if (!empty($post['Price']))            $update['Price']             = $post['Price'];
                 if (!empty($post['PriceType']))        $update['PriceType']         = $post['PriceType'];
+
+                // Khusus terbitan berkala (Worksheet_id == 4)
+                if (!empty($post['EDISISERIAL']))                 $update['EDISISERIAL']                 = $post['EDISISERIAL'];
+                if (!empty($post['TANGGAL_TERBIT_EDISI_SERIAL'])) $update['TANGGAL_TERBIT_EDISI_SERIAL'] = $post['TANGGAL_TERBIT_EDISI_SERIAL'];
 
                 try {
                     $this->eksemplarModel->update($id, $update);

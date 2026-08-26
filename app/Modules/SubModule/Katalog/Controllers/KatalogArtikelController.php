@@ -54,11 +54,11 @@ class KatalogArtikelController extends \Base\Controllers\BaseController
         $save_data_id = $this->artikelModel->insert($save_data);
 
         if ($save_data_id) {
-            set_message('toastr_msg', 'Artikel berhasil disimpan');
-            set_message('toastr_type', 'success');
+            // Pakai flashdata 'success'/'error' (ditangkap sebagai SweetAlert di
+            // artikel.php), bukan toastr_msg, supaya notifikasi tidak dobel.
+            set_message('success', 'Artikel berhasil disimpan');
         } else {
-            set_message('toastr_msg', 'Artikel gagal disimpan');
-            set_message('toastr_type', 'warning');
+            set_message('error', 'Artikel gagal disimpan');
         }
 
         return redirect()->to(base_url('katalog/edit/' . $catalog_id . '?slug=artikel'));

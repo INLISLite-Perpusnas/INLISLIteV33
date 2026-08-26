@@ -288,7 +288,9 @@ class KatalogFormController extends \Base\Controllers\BaseController
 
         $data['files']           = $this->fileModel->where('Catalog_id', $catalog_id)->orderBy('UpdateDate', 'desc')->findAll();
         $data['article_files']   = $this->serialArticleFilesModel->getWithArticle($catalog_id);
-        $data['serial_articles'] = $this->articleModel->findAll();
+        // Dibatasi ke artikel milik katalog ini saja (sebelumnya menampilkan
+        // artikel dari SEMUA katalog di dropdown upload konten digital artikel).
+        $data['serial_articles'] = $this->articleModel->where('Catalog_id', $catalog_id)->findAll();
         $data['validation']      = $this->validator ?? \Config\Services::validation();
 
         echo view('Katalog\Views\update', $data);

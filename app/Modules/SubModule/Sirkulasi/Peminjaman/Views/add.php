@@ -495,9 +495,10 @@ $request = service('request'); ?>
                             
                             <div style="width: 100%; margin-bottom: 15px; text-align: left;">
                                 <label for="LoanDate" style="font-size: 13px; font-weight: 700; color: var(--blue-900); margin-bottom: 5px; display: block;">Tanggal Peminjaman</label>
-                                <input type="date" class="pm-input" name="LoanDate" id="LoanDate" 
-                                       style="padding: 10px 18px; font-size: 15px; font-family: inherit; letter-spacing: 1px;" 
-                                       value="<?= date('Y-m-d') ?>" required>
+                                <input type="date" class="pm-input" name="LoanDate" id="LoanDate"
+                                       style="padding: 10px 18px; font-size: 15px; font-family: inherit; letter-spacing: 1px;"
+                                       value="<?= date('Y-m-d') ?>" max="<?= date('Y-m-d') ?>" required>
+                                <small class="text-muted" style="display:block; margin-top:4px;">Hanya bisa hari ini atau tanggal mundur (backdate), tidak bisa tanggal yang akan datang.</small>
                             </div>
 
                             <button type="submit" class="pm-btn pm-btn-success" style="width: 100%; justify-content: center;">

@@ -66,21 +66,33 @@ class Pengembalian extends \Base\Controllers\BaseResourceController
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
 			->edit('CollectionLoan_id', function ($row) {
+				// Tombol "Cetak Struk" pakai ulang halaman struk yang sudah ada
+				// (Pengembalian::success) — method itu sekarang bisa mengambil
+				// data pengembalian dari DB berdasarkan ?loan_id= sebagai fallback
+				// saat session strukPengembalian sudah tidak ada lagi, jadi bisa
+				// dipakai untuk mencetak ulang struk transaksi lama kapan saja.
+				$strukUrl = base_url('sirkulasi-pengembalian/success?loan_id=' . $row->CollectionLoan_id);
+
 				// 2. Menggunakan esc() untuk keamanan XSS
 				return '
                 <div class="widget-content p-0">
-                    <div class="widget-content-wrapper">
-                        <div class="widget-content-left mr-3">
-                            <i class="far fa-id-card fa-3x text-secondary"></i>
+                    <div class="widget-content-wrapper d-flex justify-content-between align-items-center flex-wrap">
+                        <div class="d-flex align-items-center">
+                            <div class="widget-content-left mr-3">
+                                <i class="far fa-id-card fa-3x text-secondary"></i>
+                            </div>
+                            <div class="widget-content-left text-secondary">
+                                <dl class="dl-horizontal mb-0">
+                                    <dt class="font-weight-bold mb-0"><i class="fa fa-user text-secondary"></i> No. Anggota</dt>
+                                    <dd class="font-weight-bold mb-0 mr-1">&nbsp;: <a href="#">' . esc($row->MemberNo) . ' <span class="text-secondary">(' . esc($row->Fullname) . ')</span></a></dd>
+                                    <dt class="font-weight-bold mb-0"><i class="fa fa-hashtag text-secondary"></i> No. Transaksi</dt>
+                                    <dd class="font-weight-bold mb-0 mr-1">&nbsp;: <a href="#">' . esc($row->CollectionLoan_id) . '</a></dd>
+                                </dl>
+                            </div>
                         </div>
-                        <div class="widget-content-left text-secondary">
-                            <dl class="dl-horizontal mb-0">
-                                <dt class="font-weight-bold mb-0"><i class="fa fa-user text-secondary"></i> No. Anggota</dt>
-                                <dd class="font-weight-bold mb-0 mr-1">&nbsp;: <a href="#">' . esc($row->MemberNo) . ' <span class="text-secondary">(' . esc($row->Fullname) . ')</span></a></dd>
-                                <dt class="font-weight-bold mb-0"><i class="fa fa-hashtag text-secondary"></i> No. Transaksi</dt>
-                                <dd class="font-weight-bold mb-0 mr-1">&nbsp;: <a href="#">' . esc($row->CollectionLoan_id) . '</a></dd>
-                            </dl>
-                        </div>
+                        <a href="' . esc($strukUrl, 'attr') . '" target="_blank" class="btn btn-outline-primary btn-sm" onclick="event.stopPropagation();" title="Cetak ulang struk bukti pengembalian untuk transaksi ini">
+                            <i class="fa fa-print"></i> Cetak Struk
+                        </a>
                     </div>
                 </div>';
 			})

@@ -51,7 +51,7 @@ $rda = $request->getGet('rda') ?? 1;
 		<div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
 			<strong>Terjadi Kesalahan!</strong>
 			<?= session()->getFlashdata('validation_errors') ?>
-			<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			<button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
 				<span aria-hidden="true">&times;</span>
 			</button>
 		</div>

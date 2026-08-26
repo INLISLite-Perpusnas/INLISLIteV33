@@ -50,3 +50,9 @@ change.log 19 Agustus 2026
 11. Menambahkan fitur filter berdasarkan jenis bahan di opac
 12. Menambahkan filter eksemplar yang tampil berdasarkan lokasi perpustakaan yang diizinkan oleh user.
 13. Perbaikan bug di peminjaman mandiri dan pengembalian mandiri
+14. Membuat list tabel di eksemplar menjadi descending
+15. Memperbaiki bug di modul terbitan berkala dan memperbaiki tampilan konten digital artikel
+16. Menambahkan fitur Modul Artikel di halaman frontend
+17. Menyesuaikan fitur di list ekesmplar yag ada di slug katalog dengan eksemplar yang ada di daftra eksemplar utama
+18. Memperbaiki bug inputan tanggal peminjaman dan pengembalian yang bisa di hari setelah tanggal hari ini
+

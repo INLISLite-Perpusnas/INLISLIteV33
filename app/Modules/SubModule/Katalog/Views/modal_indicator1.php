@@ -8,7 +8,7 @@ $request = service('request');
 				<h5 class="modal-title" id="title_indicator1">
 					Indicator 1 - ${Tag} ${Name}
 				</h5>
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span>
 				</button>
 			</div>

@@ -490,9 +490,11 @@ private function getWorksheetLimits($carts)
     }
     
     // Get the most restrictive worksheet rule
+    // Catatan: tabel `worksheets` tidak punya kolom 'active' (beda dari
+    // peraturan_peminjaman_hari/tanggal yang memang punya), jadi filter itu
+    // dihapus — sebelumnya menyebabkan error SQL "Unknown column 'active'".
     $worksheet = $this->db->table('worksheets')
         ->whereIn('ID', array_unique($worksheet_ids))
-        ->where('active', 1)
         ->where('MaxPinjamKoleksi >', 0) // Only consider worksheets with limits
         ->orderBy('MaxPinjamKoleksi', 'ASC') // Most restrictive first
         ->get()
@@ -563,7 +565,14 @@ private function getDayName($day_index)
         if (!$memberNo) {
             return redirect()->to('/sirkulasi-peminjaman/create')->with('error', 'Data tidak valid');
         }
-        
+
+        // Tanggal peminjaman hanya boleh hari ini atau backdate (mundur),
+        // tidak boleh tanggal yang akan datang.
+        if ($inputLoanDate && date('Y-m-d', strtotime($inputLoanDate)) > date('Y-m-d')) {
+            return redirect()->to('/sirkulasi-peminjaman/create?MemberNo=' . urlencode($memberNo))
+                   ->with('error', 'Tanggal peminjaman tidak boleh tanggal yang akan datang.');
+        }
+
         // Validate member
         $memberResult = $this->validateMember($memberNo);
         if (!$memberResult['success']) {

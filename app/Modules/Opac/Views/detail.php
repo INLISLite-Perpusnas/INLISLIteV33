@@ -285,6 +285,34 @@
     .op-table-wrap tbody td { padding: .75rem 1rem; vertical-align: middle; font-size: .875rem; border-color: #f0f1f5; }
     .op-table-wrap tbody tr:hover { background: #fafbff; }
 
+    /* Pengelompokan eksemplar per Edisi Serial (khusus terbitan berkala) */
+    .op-group-row { cursor: pointer; background: #fff; }
+    .op-group-row:hover { background: #fafbff; }
+    .op-group-toggle {
+        width: 26px; height: 26px;
+        border-radius: 8px;
+        background: var(--op-ink);
+        color: #fff;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: .7rem;
+        transition: transform .2s ease;
+    }
+    .op-group-row[aria-expanded="false"] .op-group-toggle { transform: rotate(-90deg); }
+    .op-subtable-cell { padding: 0 !important; background: #f6faf7; }
+    .op-subtable { margin-bottom: 0 !important; }
+    .op-subtable thead th {
+        background: #eaf6ee !important;
+        color: var(--op-ink) !important;
+        font-size: .72rem;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        font-weight: 700;
+        border: none !important;
+        padding: .6rem 1rem;
+    }
+    .op-subtable tbody td { padding: .6rem 1rem; font-size: .84rem; vertical-align: middle; border-color: #e2efe4; }
+    .op-subtable tbody tr:hover { background: #eef8f0; }
+
     .op-marc-legend {
         background: #fafbfd;
         border: 1px solid var(--op-border);
@@ -661,32 +689,111 @@
                             <!-- Buku Fisik -->
                             <?php if (!empty($roweksemplar)): ?>
                                 <div class="tab-pane fade show active" id="fisik" role="tabpanel" aria-labelledby="fisik-tab">
-                                    <div class="op-table-wrap">
-                                        <div class="table-responsive">
-                                            <table class="table table-hover mb-0" id="tbl_eksemplars_fisik">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Nomor Barcode</th>
-                                                        <th>Nomor Panggil</th>
-                                                        <th>Akses</th>
-                                                        <th>Lokasi</th>
-                                                        <th>Ketersediaan</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <?php foreach ($roweksemplar as $eksemplar): ?>
+                                    <?php if ((int) ($catalog['Worksheet_id'] ?? 0) === 4): ?>
+                                        <?php
+                                        // Terbitan berkala: kelompokkan eksemplar per Edisi Serial,
+                                        // bukan ditampilkan sebagai satu tabel datar.
+                                        $eksemplarPerEdisi = [];
+                                        foreach ($roweksemplar as $eksemplar) {
+                                            $edisiKey = (!empty($eksemplar->EDISISERIAL)) ? $eksemplar->EDISISERIAL : '-';
+                                            if (!isset($eksemplarPerEdisi[$edisiKey])) {
+                                                $eksemplarPerEdisi[$edisiKey] = [
+                                                    'tanggal' => $eksemplar->TANGGAL_TERBIT_EDISI_SERIAL ?? null,
+                                                    'items'   => [],
+                                                ];
+                                            }
+                                            $eksemplarPerEdisi[$edisiKey]['items'][] = $eksemplar;
+                                        }
+                                        ?>
+                                        <p class="text-muted small mb-3">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Menampilkan <strong><?= count($eksemplarPerEdisi) ?></strong> edisi serial,
+                                            <strong><?= count($roweksemplar) ?></strong> eksemplar.
+                                        </p>
+                                        <div class="op-table-wrap">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover mb-0" id="tbl_eksemplars_fisik">
+                                                    <thead>
                                                         <tr>
-                                                            <td><code><?= esc($eksemplar->NomorBarcode) ?></code></td>
-                                                            <td><code><?= esc($eksemplar->CallNumber) ?></code></td>
-                                                            <td><span class="op-status-badge op-status-info"><?= esc($eksemplar->RuleName) ?></span></td>
-                                                            <td><i class="fas fa-building me-1 text-muted"></i><?= esc($eksemplar->LocationName) ?></td>
-                                                            <td><span class="op-status-badge op-status-success"><?= esc($eksemplar->StatusName) ?></span></td>
+                                                            <th style="width:44px;"></th>
+                                                            <th style="width:44px;">#</th>
+                                                            <th>Edisi Serial</th>
+                                                            <th>Tanggal Terbit Edisi Serial</th>
+                                                            <th>Eksemplar</th>
                                                         </tr>
-                                                    <?php endforeach; ?>
-                                                </tbody>
-                                            </table>
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php $groupNo = 1; foreach ($eksemplarPerEdisi as $edisi => $group): $groupId = 'edisiSerialGroup' . $groupNo; ?>
+                                                            <tr class="op-group-row" data-bs-toggle="collapse" data-bs-target="#<?= $groupId ?>" aria-expanded="true" aria-controls="<?= $groupId ?>">
+                                                                <td class="text-center"><span class="op-group-toggle"><i class="fas fa-caret-down"></i></span></td>
+                                                                <td class="text-center"><?= $groupNo ?></td>
+                                                                <td><strong><?= esc($edisi) ?></strong></td>
+                                                                <td><?= !empty($group['tanggal']) ? date('Y-m-d', strtotime($group['tanggal'])) : '-' ?></td>
+                                                                <td><?= count($group['items']) ?></td>
+                                                            </tr>
+                                                            <tr class="collapse show" id="<?= $groupId ?>">
+                                                                <td colspan="5" class="op-subtable-cell">
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-hover op-subtable">
+                                                                            <thead>
+                                                                                <tr>
+                                                                                    <th style="width:44px;">#</th>
+                                                                                    <th>Nomor Barcode</th>
+                                                                                    <th>Call Number</th>
+                                                                                    <th>Akses</th>
+                                                                                    <th>Lokasi</th>
+                                                                                    <th>Ketersediaan</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                <?php foreach ($group['items'] as $itemNo => $eksemplarItem): ?>
+                                                                                    <tr>
+                                                                                        <td><?= $itemNo + 1 ?></td>
+                                                                                        <td><code><?= esc($eksemplarItem->NomorBarcode) ?></code></td>
+                                                                                        <td><code><?= esc($eksemplarItem->CallNumber) ?></code></td>
+                                                                                        <td><span class="op-status-badge op-status-info"><?= esc($eksemplarItem->RuleName) ?></span></td>
+                                                                                        <td><i class="fas fa-building me-1 text-muted"></i><?= esc($eksemplarItem->LocationName) ?></td>
+                                                                                        <td><span class="op-status-badge op-status-success"><?= esc($eksemplarItem->StatusName) ?></span></td>
+                                                                                    </tr>
+                                                                                <?php endforeach; ?>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        <?php $groupNo++; endforeach; ?>
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </div>
-                                    </div>
+                                    <?php else: ?>
+                                        <div class="op-table-wrap">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover mb-0" id="tbl_eksemplars_fisik">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Nomor Barcode</th>
+                                                            <th>Nomor Panggil</th>
+                                                            <th>Akses</th>
+                                                            <th>Lokasi</th>
+                                                            <th>Ketersediaan</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php foreach ($roweksemplar as $eksemplar): ?>
+                                                            <tr>
+                                                                <td><code><?= esc($eksemplar->NomorBarcode) ?></code></td>
+                                                                <td><code><?= esc($eksemplar->CallNumber) ?></code></td>
+                                                                <td><span class="op-status-badge op-status-info"><?= esc($eksemplar->RuleName) ?></span></td>
+                                                                <td><i class="fas fa-building me-1 text-muted"></i><?= esc($eksemplar->LocationName) ?></td>
+                                                                <td><span class="op-status-badge op-status-success"><?= esc($eksemplar->StatusName) ?></span></td>
+                                                            </tr>
+                                                        <?php endforeach; ?>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
                             <?php endif; ?>
 

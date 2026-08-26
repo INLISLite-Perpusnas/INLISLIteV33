@@ -5,7 +5,7 @@
 		<div class="d-flex align-items-center flex-wrap">
 			<?php if (is_allowed('katalog/create_artikel')) : ?>
 				<?php if (get_setting_parameter('FormEntriKatalog', is_profiling()) == 'Simple') : ?>
-					<button type="button" class="btn btn-success btn-sm mr-2" data-toggle="modal" data-target="#modalTambahArtikel">
+					<button type="button" class="btn btn-success btn-sm mr-2" data-bs-toggle="modal" data-bs-target="#modalTambahArtikel" data-target="#modalTambahArtikel">
 						<i class="fa fa-plus"></i> Tambah Artikel
 					</button>
 				<?php endif; ?>
@@ -32,7 +32,7 @@
 							<th class="text-center">Edisi Serial</th>
 							<th class="text-center">Tanggal Terbit Edisi Serial</th>
 							<th class="text-center">Tampilkan di OPAC</th>
-							<th class="text-center" width="80">Aksi</th>
+							<th class="text-center" style="min-width: 150px;" width="80">Aksi</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -50,7 +50,7 @@
 			<form id="formTambahArtikel" method="post" action="<?= base_url('katalog/create_artikel') ?>">
 				<div class="modal-header">
 					<h5 class="modal-title" id="modalTambahArtikelLabel">Tambah Artikel</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
 						<span aria-hidden="true">&times;</span>
 					</button>
 				</div>
@@ -128,7 +128,7 @@
 				</div>
 
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
 					<button type="submit" class="btn btn-primary">Simpan</button>
 				</div>
 			</form>
@@ -148,6 +148,19 @@
 		});
 	</script>
 <?php endif; ?>
+<?php if (session()->getFlashdata('error')) : ?>
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			Swal.fire({
+				icon: 'error',
+				title: 'Oups',
+				text: '<?= session()->getFlashdata('error') ?>',
+				showConfirmButton: false,
+				timer: 2000
+			});
+		});
+	</script>
+<?php endif; ?>
 <script>
 	var tb;
 	$(document).ready(function() {
@@ -161,20 +174,21 @@
 				},
 				"type": "POST",
 			},
-			"dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
-				"<'row'<'col-md-12'tr>>" +
-				"<'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12 text-right'i>>",
-			"pagingType": "full_numbers",
-			"oLanguage": {
-				"sSearch": "<i class='fa fa-search'></i> _INPUT_",
-				"sLengthMenu": "_MENU_",
-				"oPaginate": {
-					"sNext": "<i class='fa fa-chevron-right'></i>",
-					"sPrevious": "<i class='fa fa-chevron-left'></i>",
-					"sLast": "<i class='fa fa-chevron-double-right'></i>",
-					"sFirst": "<i class='fa fa-chevron-double-left'></i>",
-				}
-			},
+			 "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
+                   "<'row'<'col-md-12'tr>>" +
+                   "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
+                   
+            "pagingType": "full_numbers",
+            "oLanguage": {
+                "sSearch": "<i class='fa fa-search'></i> _INPUT_",
+                "sLengthMenu": "_MENU_",
+                "oPaginate": {
+                    "sNext": "<i class='fa fa-chevron-right'></i>",
+                    "sPrevious": "<i class='fa fa-chevron-left'></i>",
+                    "sLast": "<i class='fa fa-chevron-double-right'></i>",
+                    "sFirst": "<i class='fa fa-chevron-double-left'></i>",
+                }
+            },
 			"columns": [
 				// {
 				// 	data: 'Article_type',
@@ -208,7 +222,11 @@
 					data: 'TANGGAL_TERBIT_EDISI_SERIAL'
 				},
 				{
-					data: 'ISOPAC'
+					data: 'ISOPAC',
+					className: 'text-center',
+					render: function(data) {
+						return data == 1 ? 'YA' : 'Tidak';
+					}
 				},
 				{
 					data: 'action',

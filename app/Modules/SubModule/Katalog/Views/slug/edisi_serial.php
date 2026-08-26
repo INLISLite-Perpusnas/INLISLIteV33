@@ -8,7 +8,7 @@ $request = service('request');
   <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i> Edisi Serial
     <div class="btn-actions-pane-right actions-icon-btn">
       <?php if (is_allowed('katalog/edit')) : ?>
-        <a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus font-weight-bold"></i> Tambah Edisi Serial</a>
+        <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus font-weight-bold"></i> Tambah Edisi Serial</a>
       <?php endif; ?>
     </div>
   </div>
@@ -39,7 +39,7 @@ $request = service('request');
         <h5 class="modal-title">
           <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Tambah Edisi Serial
         </h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -67,7 +67,7 @@ $request = service('request');
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
           <button type="submit" class="btn btn-primary" name="submit" id="btnAdd">Simpan</button>
         </div>
       </form>
@@ -84,20 +84,21 @@ $request = service('request');
       "ajax": {
         "url": '<?php echo site_url('api/katalog/datatable-edisi-serial/' . $catalog->ID) ?>',
       },
-      "dom": "<'row'<'col-md-6 col-sm-8 col-xs-12 text-left'f><'col-md-6 col-sm-4 col-xs-12 d-none d-sm-block text-right'p>>" +
-        "<'row'<'col-md-12'tr>>" +
-        "<'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12 text-right'i>>",
-      "pagingType": "full_numbers",
-      "oLanguage": {
-        "sSearch": "<i class='fa fa-search'></i> _INPUT_",
-        "sLengthMenu": "_MENU_",
-        "oPaginate": {
-          "sNext": "<i class='fa fa-chevron-right'></i>",
-          "sPrevious": "<i class='fa fa-chevron-left'></i>",
-          "sLast": "<i class='fa fa-chevron-double-right'></i>",
-          "sFirst": "<i class='fa fa-chevron-double-left'></i>",
-        }
-      },
+     "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
+                   "<'row'<'col-md-12'tr>>" +
+                   "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
+                   
+            "pagingType": "full_numbers",
+            "oLanguage": {
+                "sSearch": "<i class='fa fa-search'></i> _INPUT_",
+                "sLengthMenu": "_MENU_",
+                "oPaginate": {
+                    "sNext": "<i class='fa fa-chevron-right'></i>",
+                    "sPrevious": "<i class='fa fa-chevron-left'></i>",
+                    "sLast": "<i class='fa fa-chevron-double-right'></i>",
+                    "sFirst": "<i class='fa fa-chevron-double-left'></i>",
+                }
+            },
       "columns": [{
           data: 'no',
           className: 'text-center',
@@ -158,7 +159,7 @@ $request = service('request');
     Swal.fire({
       title: '<?= lang('App.swal.are_you_sure') ?>',
       text: "<?= lang('App.swal.can_not_be_restored') ?>",
-      type: 'warning',
+      icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#dd6b55',
@@ -194,7 +195,7 @@ $request = service('request');
           Swal.fire({
             title: 'Berhasil',
             html: 'Edisi serial berhasil ditambah.',
-            type: 'success',
+            icon: 'success',
             showConfirmButton: false,
             timer: 5000,
           }).then(() => {
@@ -204,7 +205,7 @@ $request = service('request');
           Swal.fire({
             title: 'Oups',
             text: res.message,
-            type: 'error',
+            icon: 'error',
             showConfirmButton: false,
             timer: 5000
           }).then(() => {
@@ -219,7 +220,7 @@ $request = service('request');
         Swal.fire({
           title: 'Oups',
           text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
-          type: 'error',
+          icon: 'error',
           showConfirmButton: false,
           timer: 5000
         }).then(() => {

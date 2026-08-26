@@ -489,6 +489,20 @@ class Katalog extends \Base\Controllers\BaseResourceController
 
 			$files = (array) $this->request->getPost('upload_file');
 
+			// === Tambahan: katalog (non-artikel) hanya boleh punya satu konten digital ===
+			// Hanya berlaku untuk INSERT file baru (upload_id kosong). Multiple file per
+			// entitas hanya diperbolehkan untuk konten digital ARTIKEL (satu artikel = satu
+			// file, tapi satu katalog bisa banyak artikel), bukan untuk katalog itu sendiri.
+			if (empty($upload_id) && !empty($upload_ref_id)) {
+				$existing = $this->fileModel
+					->where('Catalog_id', $upload_ref_id)
+					->first();
+				if ($existing) {
+					throw new \RuntimeException('Katalog ini sudah memiliki konten digital. Satu katalog hanya boleh memiliki satu file konten digital — gunakan "Ubah File" untuk menggantinya.');
+				}
+			}
+			// === Akhir tambahan ===
+
 			if (count($files)) {
 				$insertData = [];
 				$updateData = [];
@@ -500,6 +514,14 @@ class Katalog extends \Base\Controllers\BaseResourceController
 						$maxSize = 12 * 1024 * 1024; // 12MB
 						if ($file->getSize() > $maxSize) {
 							throw new \RuntimeException("Ukuran file '{$name}' melebihi batas 12MB.");
+						}
+						// === Akhir tambahan ===
+
+						// === Tambahan cek tipe file harus PDF ===
+						$ext  = strtolower($file->getExtension());
+						$mime = strtolower($file->getMimeType());
+						if ($ext !== 'pdf' || $mime !== 'application/pdf') {
+							throw new \RuntimeException("File '{$name}' ditolak: hanya file berformat PDF yang diperbolehkan.");
 						}
 						// === Akhir tambahan ===
 
@@ -598,6 +620,19 @@ class Katalog extends \Base\Controllers\BaseResourceController
 
 			$upload_articles_id = $this->request->getPost('upload_articles_id');
 
+			// === Tambahan: satu artikel hanya boleh punya satu konten digital ===
+			// Hanya berlaku untuk INSERT file baru (upload_id kosong). Saat edit/ganti
+			// file untuk artikel yang sama (upload_id terisi), tidak dianggap duplikat.
+			if (empty($upload_id) && !empty($upload_articles_id)) {
+				$existing = $this->serialArticleFilesModel
+					->where('Articles_id', $upload_articles_id)
+					->first();
+				if ($existing) {
+					throw new \RuntimeException('Artikel ini sudah memiliki konten digital. Satu artikel hanya boleh memiliki satu file konten digital — gunakan "Ubah File" untuk menggantinya.');
+				}
+			}
+			// === Akhir tambahan ===
+
 			if (count($files)) {
 				$insertData = [];
 				$updateData = [];
@@ -609,6 +644,16 @@ class Katalog extends \Base\Controllers\BaseResourceController
 						$maxSize = 12 * 1024 * 1024; // 12MB
 						if ($file->getSize() > $maxSize) {
 							throw new \RuntimeException("Ukuran file '{$name}' melebihi batas 12MB.");
+						}
+						// === Akhir tambahan ===
+
+						// === Tambahan cek tipe file harus PDF ===
+						// Cek ekstensi DAN mime type asli (dari isi file, bukan cuma nama file)
+						// supaya file yang cuma di-rename jadi .pdf tetap ditolak.
+						$ext  = strtolower($file->getExtension());
+						$mime = strtolower($file->getMimeType());
+						if ($ext !== 'pdf' || $mime !== 'application/pdf') {
+							throw new \RuntimeException("File '{$name}' ditolak: hanya file berformat PDF yang diperbolehkan.");
 						}
 						// === Akhir tambahan ===
 
@@ -666,9 +711,9 @@ class Katalog extends \Base\Controllers\BaseResourceController
 				}
 
 				if ($upsertData) {
-					set_message('toastr_msg', 'File Konten Digital Artikel berhasil diupload');
-					set_message('toastr_type', 'success');
-
+					// Tidak set flashdata toastr di sini — modal upload sudah menampilkan
+					// SweetAlert sukses sendiri, jadi toast ini dulu muncul dobel setelah
+					// halaman redirect.
 					return $this->respondCreated([
 						'status'   => 201,
 						'error'    => false,
@@ -914,8 +959,9 @@ class Katalog extends \Base\Controllers\BaseResourceController
 		);
 		$save_data_id = $this->edisiSerialModel->insert($save_data);
 		if ($save_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Edisi Serial berhasil disimpan');
-			$this->session->setFlashdata('toastr_type', 'success');
+			// Tidak set flashdata toastr di sini — modal "Tambah Edisi Serial"
+			// sudah menampilkan SweetAlert sukses sendiri (lihat edisi_serial.php),
+			// jadi toast ini dulu muncul dobel setelah halaman reload.
 			$response = [
 				'error' => false,
 				'message' => 'Edisi Serial berhasil disimpan',
@@ -1162,7 +1208,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 
 		$db = db_connect();
 		$builder = $db->table('master_edisi_serial')
-			->select('id, no_edisi_serial')
+			->select('id, no_edisi_serial, tgl_edisi_serial')
 			->where('Catalog_id', $catalog_id)
 			->orderBy('no_edisi_serial', 'ASC');
 

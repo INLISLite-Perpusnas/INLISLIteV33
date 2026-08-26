@@ -122,6 +122,28 @@ $tanggal_pengadaan = date('Y-m-d', strtotime($eksemplar->TanggalPengadaan));
 								<input type="date" class="form-control" name="TanggalPengadaan" id="TanggalPengadaan" value="<?= $tanggal_pengadaan ?>" />
 							</div>
 
+							<?php if ((int) ($catalog->Worksheet_id ?? 0) === 4) : ?>
+								<div class="col-lg-4 col-md-6 mt-3">
+									<label for="EDISISERIAL">Edisi Serial</label>
+									<div class="select-wrapper">
+										<select class="form-control" name="EDISISERIAL" id="EDISISERIAL" style="width:100%">
+											<option value="">-- Pilih Edisi Serial --</option>
+											<?php if (!empty($eksemplar->EDISISERIAL)) : ?>
+												<option value="<?= esc($eksemplar->EDISISERIAL) ?>" selected><?= esc($eksemplar->EDISISERIAL) ?></option>
+											<?php endif; ?>
+										</select>
+									</div>
+									<small class="form-text text-muted">
+										Daftar diambil dari Edisi Serial yang sudah ditambahkan pada katalog ini.
+									</small>
+								</div>
+								<div class="col-lg-4 col-md-6 mt-3">
+									<label for="TANGGAL_TERBIT_EDISI_SERIAL">Tanggal Terbit Edisi Serial</label>
+									<input type="date" class="form-control" name="TANGGAL_TERBIT_EDISI_SERIAL" id="TANGGAL_TERBIT_EDISI_SERIAL"
+										value="<?= !empty($eksemplar->TANGGAL_TERBIT_EDISI_SERIAL) ? date('Y-m-d', strtotime($eksemplar->TANGGAL_TERBIT_EDISI_SERIAL)) : '' ?>" readonly />
+								</div>
+							<?php endif; ?>
+
 							<div class="col-lg-4 col-md-6 mt-3">
 								<label for="Source_id">Jenis Sumber</label>
 								<div class="select-wrapper">
@@ -340,6 +362,43 @@ $tanggal_pengadaan = date('Y-m-d', strtotime($eksemplar->TanggalPengadaan));
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
+
+<?php if ((int) ($catalog->Worksheet_id ?? 0) === 4) : ?>
+<script>
+    // =====================================================
+    // Edisi Serial (khusus terbitan berkala): dropdown diambil
+    // dari Edisi Serial yang sudah ditambahkan pada katalog ini,
+    // bukan input teks bebas. Tanggal Terbit ikut terisi otomatis.
+    // =====================================================
+    (function() {
+        var catalogId    = <?= json_encode($catalog_id) ?>;
+        var selectedNow  = <?= json_encode($eksemplar->EDISISERIAL ?? '') ?>;
+        var tglPerEdisi  = {};
+
+        if (!catalogId) return;
+
+        $.getJSON(`<?= base_url('api/katalog/get-edisi-serial') ?>/${catalogId}`, function(res) {
+            if (res.error) return;
+
+            var options = '<option value="">-- Pilih Edisi Serial --</option>';
+            res.data.forEach(function(item) {
+                tglPerEdisi[item.no_edisi_serial] = item.tgl_edisi_serial || '';
+                var isSelected = (item.no_edisi_serial === selectedNow) ? 'selected' : '';
+                options += `<option value="${item.no_edisi_serial}" ${isSelected}>${item.no_edisi_serial}</option>`;
+            });
+            $('#EDISISERIAL').html(options);
+
+            if (selectedNow) {
+                $('#TANGGAL_TERBIT_EDISI_SERIAL').val(tglPerEdisi[selectedNow] || '');
+            }
+        });
+
+        $('#EDISISERIAL').on('change', function() {
+            $('#TANGGAL_TERBIT_EDISI_SERIAL').val(tglPerEdisi[$(this).val()] || '');
+        });
+    })();
+</script>
+<?php endif; ?>
 
 <!-- Modal Add Partner -->
 <div class="modal fade" id="modalAddPartner" tabindex="-1" role="dialog" aria-labelledby="modalAddPartnerLabel" aria-hidden="true">

@@ -175,6 +175,25 @@ $catalog = get_catalog($catalog_id);
                                 <?php endif; ?>
                             </div>
 
+                            <?php if ((int) ($worksheet_id ?? 0) === 4) : ?>
+                                <div class="col-lg-4 col-md-6 mt-3">
+                                    <label for="EDISISERIAL">Edisi Serial</label>
+                                    <div class="select-wrapper">
+                                        <select class="form-control" name="EDISISERIAL" id="EDISISERIAL" style="width:100%">
+                                            <option value="">-- Pilih Edisi Serial --</option>
+                                        </select>
+                                    </div>
+                                    <small class="form-text text-muted">
+                                        Daftar diambil dari Edisi Serial yang sudah ditambahkan pada katalog ini.
+                                    </small>
+                                </div>
+                                <div class="col-lg-4 col-md-6 mt-3">
+                                    <label for="TANGGAL_TERBIT_EDISI_SERIAL">Tanggal Terbit Edisi Serial</label>
+                                    <input type="date" class="form-control" name="TANGGAL_TERBIT_EDISI_SERIAL" id="TANGGAL_TERBIT_EDISI_SERIAL"
+                                        value="<?= set_value('TANGGAL_TERBIT_EDISI_SERIAL') ?>" readonly />
+                                </div>
+                            <?php endif; ?>
+
                             <div class="col-lg-4 col-md-6 mt-3">
                                 <label for="Source_id">Jenis Sumber *</label>
                                 <div class="select-wrapper">
@@ -487,6 +506,43 @@ $catalog = get_catalog($catalog_id);
         getData(`<?= base_url('api/eksemplar/locations') ?>/${Location_Library_id}`, `#Location_id`, false, `-Pilih-`);
     });
 </script>
+
+<?php if ((int) ($worksheet_id ?? 0) === 4) : ?>
+<script>
+    // =====================================================
+    // Edisi Serial (khusus terbitan berkala): dropdown diambil
+    // dari Edisi Serial yang sudah ditambahkan pada katalog ini,
+    // bukan input teks bebas. Tanggal Terbit ikut terisi otomatis.
+    // =====================================================
+    (function() {
+        var catalogId    = <?= json_encode($catalog_id) ?>;
+        var selectedNow  = <?= json_encode(set_value('EDISISERIAL')) ?>;
+        var tglPerEdisi  = {};
+
+        if (!catalogId) return;
+
+        $.getJSON(`<?= base_url('api/katalog/get-edisi-serial') ?>/${catalogId}`, function(res) {
+            if (res.error) return;
+
+            var options = '<option value="">-- Pilih Edisi Serial --</option>';
+            res.data.forEach(function(item) {
+                tglPerEdisi[item.no_edisi_serial] = item.tgl_edisi_serial || '';
+                var isSelected = (item.no_edisi_serial === selectedNow) ? 'selected' : '';
+                options += `<option value="${item.no_edisi_serial}" ${isSelected}>${item.no_edisi_serial}</option>`;
+            });
+            $('#EDISISERIAL').html(options);
+
+            if (selectedNow) {
+                $('#TANGGAL_TERBIT_EDISI_SERIAL').val(tglPerEdisi[selectedNow] || '');
+            }
+        });
+
+        $('#EDISISERIAL').on('change', function() {
+            $('#TANGGAL_TERBIT_EDISI_SERIAL').val(tglPerEdisi[$(this).val()] || '');
+        });
+    })();
+</script>
+<?php endif; ?>
 
 <script>
     $(document).ready(function() {

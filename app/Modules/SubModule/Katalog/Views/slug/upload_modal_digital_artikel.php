@@ -5,7 +5,7 @@
                 <h5 class="modal-title">
                     <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> <span id="upload_title_header"></span>
                 </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -18,9 +18,11 @@
 			                        <label for="varchar">Artikel</label>
 			                      	<select class="search form-control" id="upload_articles_id" name="upload_articles_id">
                                   <option value="" selected disabled>Pilih Artikel ...</option>
+			                      		<?php $articlesWithFile = array_column($article_files ?? [], 'Articles_id'); ?>
 			                      		<?php foreach ($serial_articles as $key => $article) : ?>
-			                      			<option value="<?= $article->id ?>" <?= ($article->id == $cr_008_bkt) ? 'selected' : '' ?>>
-			                      				<?= $article->Title ?>
+			                      			<?php $alreadyHasFile = in_array($article->id, $articlesWithFile); ?>
+			                      			<option value="<?= $article->id ?>" <?= ($article->id == $cr_008_bkt) ? 'selected' : '' ?> data-has-file="<?= $alreadyHasFile ? '1' : '0' ?>">
+			                      				<?= $article->Title ?><?= $alreadyHasFile ? ' (sudah ada konten digital)' : '' ?>
 			                      			</option>
 			                      		<?php endforeach ?>
 			                      	</select>
@@ -49,7 +51,7 @@
                     <input type="hidden" name="upload_data_max_size" id="upload_data_max_size" value="">
                     <input type="hidden" name="upload_data_redirect_url" id="upload_data_redirect_url" value="">
 
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal"><?= lang('App.btn.close') ?></button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= lang('App.btn.close') ?></button>
                     <button type="submit" class="btn btn-primary" name="submit"><?= lang('App.btn.save') ?></button>
                 </div>
             </form>
@@ -68,6 +70,12 @@
 
         $('#upload_id').val($(this).attr('data-id'));
         console.log('upload_id: ' + $(this).attr('data-id'));
+
+        // Satu artikel hanya boleh punya satu konten digital: saat mode "Tambah File"
+        // (data-id kosong), artikel yang sudah punya file dikunci supaya tidak bisa
+        // dipilih lagi. Saat mode "Ubah File" (edit), semua tetap bisa dipilih.
+        var isAddMode = !$(this).attr('data-id');
+        $('#upload_articles_id option[data-has-file="1"]').prop('disabled', isAddMode);
 
         $('#upload_ref_id').val($(this).attr('data-ref-id'));
         $('#upload_articles_id').val($(this).attr('data-ref-id'));
@@ -122,7 +130,7 @@
                     Swal.fire({
                         title: 'Success',
                         text: 'File berhasil disimpan',
-                        type: 'success',
+                        icon: 'success',
                         showConfirmButton: false,
                         timer: 3000
                     })

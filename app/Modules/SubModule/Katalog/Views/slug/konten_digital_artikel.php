@@ -1,7 +1,21 @@
+<?php
+// Satu artikel hanya boleh punya satu konten digital, jadi tombol "Tambah File"
+// hanya ditampilkan kalau MASIH ADA artikel yang belum punya file sama sekali
+// (sebelumnya salah pakai $files, yaitu jumlah file konten digital katalog
+// biasa yang tidak ada hubungannya dengan artikel).
+$articlesWithFile   = array_column($article_files ?? [], 'Articles_id');
+$hasArticleTanpaFile = false;
+foreach ($serial_articles ?? [] as $article) {
+    if (!in_array($article->id, $articlesWithFile)) {
+        $hasArticleTanpaFile = true;
+        break;
+    }
+}
+?>
 <div class="card-header">
     <i class="header-icon lnr-file-empty icon-gradient bg-plum-plate"> </i> Konten Digital Artikel
     <div class="btn-actions-pane-right actions-icon-btn">
-        <?php if (count($files) < 3) : ?>
+        <?php if ($hasArticleTanpaFile) : ?>
             <a href="javascript:void(0);" 
               data-id="" 
               data-ref-id="<?= $catalog->ID ?>" 
@@ -9,11 +23,11 @@
               data-title-header="Upload Konten Digital Artikel" 
               data-title-file="File Konten Digital Artikel" 
               data-dropzone-url="<?= base_url('katalog/do_upload') ?>" 
-              data-upload-url="<?= base_url('api/katalog/upload_file_digital_artikel') ?>" 
-              data-max-files="3" 
-              data-max-size="12" 
+              data-upload-url="<?= base_url('api/katalog/upload_file_digital_artikel') ?>"
+              data-max-files="1"
+              data-max-size="12"
               data-format=".pdf" 
-              data-format-title="Format (PDF). Max 2MB" 
+              data-format-title="Format (PDF). Max 12MB"
               data-redirect-url="<?= base_url('katalog/edit/' . $catalog->ID . '?slug=konten_digital_artikel') ?>" 
               title="" 
               class="btn btn-success upload-data">
@@ -32,11 +46,15 @@
                     <strong>Nama File:</strong> <?= basename($row->FileURL) ?>
                 </div>
                 <div class="position-relative form-group">
-                    <a href="<?= base_url('uploads/katalog/' . $row->FileURL) ?>" target="_blank" class="btn btn-info btn-sm"><i class="fa fa-file-pdf"></i> Lihat File</a>
-                    <?php if (strpos($row->FileURL, 'encrypted_') === 0) : ?>
-                        <a href="<?= base_url('katalog/view_decrypted_article/' . $row->ID) ?>" target="_blank" class="btn btn-primary btn-sm view-decrypted" data-id="<?= $row->ID ?>"><i class="fa fa-lock-open"></i> Lihat File Decrypt</a>
+                    <?php $isEncrypted = strpos($row->FileURL, 'encrypted_') === 0; ?>
+                    <?php if ($isEncrypted) : ?>
+                        <!-- File terenkripsi: arahkan ke viewer yang mendekripsi kontennya,
+                             bukan link langsung ke file mentah (yang tidak bisa dibuka). -->
+                        <a href="<?= base_url('katalog/view_decrypted_article/' . $row->ID) ?>" target="_blank" class="btn btn-info btn-sm view-decrypted" data-id="<?= $row->ID ?>"><i class="fa fa-file-pdf"></i> Lihat File</a>
+                    <?php else : ?>
+                        <a href="<?= base_url('uploads/katalog/' . $row->FileURL) ?>" target="_blank" class="btn btn-info btn-sm"><i class="fa fa-file-pdf"></i> Lihat File</a>
                     <?php endif; ?>
-                    <a href="javascript:void(0);" 
+                    <a href="javascript:void(0);"
                       data-id="<?= $row->ID ?>" 
                       data-ref-id="<?= $row->Articles_id ?>" 
                       data-field="FileURL" 
@@ -47,7 +65,7 @@
                       data-max-files="1" 
                       data-max-size="12" 
                       data-format=".pdf" 
-                      data-format-title="Format (PDF). Max 2MB" 
+                      data-format-title="Format (PDF). Max 12MB" 
                       data-redirect-url="<?= base_url('katalog/edit/' . $catalog->ID . '?slug=konten_digital_artikel') ?>" 
                       title="" 
                       class="btn btn-warning btn-sm upload-data">

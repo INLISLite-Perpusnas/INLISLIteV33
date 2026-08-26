@@ -74,6 +74,11 @@ class Filters extends BaseConfig
                 'opac/downloadMarc*',       // method: semua downloadMarc (Utf8, Xml, Mods, dll)
                 'opac/member-login',        // method: memberLogin (login anggota via modal)
                 // 'opac/bacaDigital/*' TIDAK DIMASUKKAN agar terkena filter session (wajib login)
+
+                // --- PENGECUALIAN UNTUK MODUL ARTIKEL (publik, gaya OPAC) ---
+                'artikel*',                                // seluruh modul Artikel (index & detail)
+                'katalog/view_decrypted_article/*',        // viewer PDF artikel (dipakai juga oleh panel admin)
+                'katalog/get_decrypted_content_article/*', // stream konten PDF artikel yang sudah didekripsi
             ]],
             'cors',
             'permissions' => ['except' => [
@@ -109,6 +114,11 @@ class Filters extends BaseConfig
                 'opac/statistics_anggota',
                 'opac/downloadMarc*',
                 'opac/member-login',
+
+                // --- PENGECUALIAN UNTUK MODUL ARTIKEL (publik, gaya OPAC) ---
+                'artikel*',
+                'katalog/view_decrypted_article/*',
+                'katalog/get_decrypted_content_article/*',
 
             ]],
         ],

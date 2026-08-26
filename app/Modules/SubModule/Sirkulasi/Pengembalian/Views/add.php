@@ -250,7 +250,8 @@
                         <h6>Tanggal Pengembalian</h6>
                         <i class="fa fa-calendar input-icon"></i>
                         <input type="date" id="returnDateInput" class="pm-input"
-                               value="<?= date('Y-m-d') ?>" title="Tanggal Pengembalian">
+                               value="<?= date('Y-m-d') ?>" max="<?= date('Y-m-d') ?>" title="Tanggal Pengembalian">
+                        <small class="text-muted" style="display:block; margin-top:4px;">Hanya bisa hari ini atau tanggal mundur (backdate), tidak bisa tanggal yang akan datang.</small>
                     </div>
 
                     <div class="text-center" style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap">
