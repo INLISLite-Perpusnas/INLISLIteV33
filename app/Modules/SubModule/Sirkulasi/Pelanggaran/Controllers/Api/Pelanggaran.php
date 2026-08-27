@@ -35,7 +35,7 @@ class Pelanggaran extends \Base\Controllers\BaseResourceController
 	{
 		$db = db_connect();
 		$builder = $db->table('pelanggaran p')
-			->select('cli.ID, cli.ID as action')
+			->select('cli.ID, p.ID as action')
 			->select('cli.CollectionLoan_id, cli.LoanDate, cli.DueDate, cli.ActualReturn, cli.LateDays')
 			->select('p.UpdateDate, p.JumlahDenda, p.JumlahSuspend, p.Paid')
 			->select('jp.JenisPelanggaran')
@@ -48,14 +48,13 @@ class Pelanggaran extends \Base\Controllers\BaseResourceController
 			->join('jenis_denda jd', 'jd.ID = p.JenisDenda_id')
 			->join('collectionloans cl', 'cl.ID = p.CollectionLoan_id')
 			->join('collectionloanitems cli', 'cli.CollectionLoan_id = cl.ID')
-			->join('collections col', 'col.ID = cli.Collection_id')
-			->join('catalogs a', 'a.ID = col.Catalog_id')
-			->join('branchs b', 'b.ID = a.Branch_id', 'inner')
+			->join('collections col', 'col.ID = cli.Collection_id', 'left')
+			->join('catalogs a', 'a.ID = col.Catalog_id','left')
+			->join('branchs b', 'b.ID = a.Branch_id', 'left')
 			->join('members m', 'm.ID = cli.member_id')
-			->join('location_library loc', 'loc.ID = col.Location_Library_id');
-
+			->join('location_library loc', 'loc.ID = col.Location_Library_id','left');
+			
 		
-
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
 			->edit('CollectionLoan_id', function ($row) {
@@ -124,8 +123,8 @@ class Pelanggaran extends \Base\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('action', function ($row) {
-				$edit = '<a href="javascript:void(0);" data-href="' . base_url('api/sirkulasi-pelanggaran/detail/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-				$delete = '<a href="javascript:void(0);" data-href="' . base_url('pelanggaran/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+				$edit = '<a href="javascript:void(0);" data-href="' . base_url('api/sirkulasi-pelanggaran/detail/' . $row->action) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
+				$delete = '<a href="javascript:void(0);" data-href="' . base_url('pelanggaran/delete/' . $row->action) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
 				return $edit . ' ' . $delete;
 			})
 			->toJson();
