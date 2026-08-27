@@ -60,6 +60,25 @@ $request = service('request');
                 <button type="button" id="proses_opac" class="btn btn-primary ml-2" data-toggle="tooltip" data-placement="top" title="Semua katalog yang terpilih"><i class="fa fa-check-square"></i> Tampilkan di OPAC</button>
             </div>
 
+            <!-- ── Filter: Jenis Bahan (Worksheet) ── -->
+            <div class="d-flex align-items-center flex-wrap mb-3" style="gap:6px;">
+                <div class="input-group" style="width:280px; flex-shrink:0;">
+                    <div class="input-group-prepend">
+                        <span class="btn btn-secondary"><i class="fa fa-filter"></i> Jenis Bahan</span>
+                    </div>
+                    <select class="form-control" id="filter_worksheet_id">
+                        <option value="">-- Semua Jenis Bahan --</option>
+                        <?php foreach ($worksheets as $row) : ?>
+                            <option value="<?= $row->ID ?>"><?= esc($row->Name) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <button class="btn btn-outline-secondary" id="btnResetFilterWorksheet" type="button" style="height:38px; flex-shrink:0;">
+                    <i class="fa fa-undo"></i> Reset Filter
+                </button>
+            </div>
+
             <div class="table-responsive">
                 <form name="form_items" id="form_items">
                     <table style="width: 100%;" id="tbl_data" class="table table-hover table-striped table-bordered">
@@ -72,6 +91,7 @@ $request = service('request');
 
                                 <th class="text-center">BIBID</th>
                                 <th class="text-center" style="min-width: 300px;">Judul</th>
+                                <th class="text-center">Jenis Bahan</th>
                                 <th class="text-center">Edisi</th>
                                 <th class="text-center">Publisher</th>
                                 <th class="text-center">Deskripsi Fisik</th>
@@ -116,7 +136,9 @@ $request = service('request');
             "ajax": {
                 "url": "<?php echo site_url('api/katalog/datatable/0') ?>",
                 "type": "POST",
-
+                "data": function (d) {
+                    d.worksheet_id = $('#filter_worksheet_id').val();
+                }
             },
 
             "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
@@ -153,6 +175,12 @@ $request = service('request');
                 },
                 {
                     data: 'Title'
+                },
+                {
+                    data: 'WorksheetName',
+                    className: 'text-center',
+                    searchable: false,
+                    orderable: false
                 },
                 {
                     data: 'Edition',
@@ -255,6 +283,16 @@ $request = service('request');
                 });
             },
         });
+    });
+
+    // ── Filter: Jenis Bahan (Worksheet) ─────────────────────────────────────
+    $('#filter_worksheet_id').on('change', function() {
+        t.ajax.reload();
+    });
+
+    $('#btnResetFilterWorksheet').on('click', function() {
+        $('#filter_worksheet_id').val('');
+        t.ajax.reload();
     });
 
     $(".check_data").click(function() {

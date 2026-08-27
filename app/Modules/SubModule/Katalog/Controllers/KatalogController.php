@@ -24,7 +24,8 @@ class KatalogController extends \Base\Controllers\BaseController
 
     public function index()
     {
-        $data['title'] = 'Daftar Katalog';
+        $data['title']      = 'Daftar Katalog';
+        $data['worksheets'] = $this->worksheetModel->orderBy('NoUrut')->findAll();
         echo view('Katalog\Views\list', $data);
     }
 
