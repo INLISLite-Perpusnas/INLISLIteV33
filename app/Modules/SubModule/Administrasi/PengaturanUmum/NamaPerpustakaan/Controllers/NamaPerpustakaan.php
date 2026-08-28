@@ -274,6 +274,13 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 					if (!$this->settingModel->update($row->ID, ['Value' => $value])) {
 						$success = false;
 					}
+				} else {
+					// Baris settingnya belum ada di settingparameters (mis. 'JamOperasional'
+					// yang baru ditambahkan) — sebelumnya value ini dibuang begitu saja
+					// karena hanya di-update, tidak pernah di-insert.
+					if (!$this->settingModel->insert(['Name' => $name, 'Value' => $value])) {
+						$success = false;
+					}
 				}
 			}
 

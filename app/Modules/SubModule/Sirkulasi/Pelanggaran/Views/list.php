@@ -67,7 +67,7 @@ $slug = $request->getGet('slug') ?? '';
 						<th class="text-center">Jumlah Pelanggaran</th>
 						<th class="text-center" width="120">Jumlah Suspend</th>
 						<th class="text-center" width="100">Updated Date</th>
-						<th class="text-center" width="100">Aksi</th>
+						<th class="text-center" style="min-width:150px" width="100">Aksi</th>
 					</tr>
 				</thead>
 				<tbody>

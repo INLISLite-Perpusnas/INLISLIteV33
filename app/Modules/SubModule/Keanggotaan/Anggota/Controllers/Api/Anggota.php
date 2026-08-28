@@ -69,22 +69,48 @@ class Anggota extends \Base\Controllers\BaseResourceController
 			'a.EndDate',
 			'a.JenisAnggota_id',
 			'a.StatusAnggota_id',
+			'a.Kelas_id',
+			'a.Fakultas_id',
+			'a.Jurusan_id',
 			'a.CreateDate',
-			
+
 			// Kolom dari tabel join
 			'jenis_anggota.jenisanggota as JenisAnggota',
-			'status_anggota.Nama as StatusAnggota'
+			'status_anggota.Nama as StatusAnggota',
+			'kelas_siswa.namakelassiswa as KelasName',
+			'master_fakultas.Nama as FakultasName',
+			'master_jurusan.Nama as JurusanName'
 		]);
 		$builder->join('jenis_anggota', 'jenis_anggota.id = a.JenisAnggota_id', 'left'); // Menggunakan LEFT JOIN
 		$builder->join('status_anggota', 'status_anggota.id = a.StatusAnggota_id', 'left'); // Menggunakan LEFT JOIN
-		
+		$builder->join('kelas_siswa', 'kelas_siswa.id = a.Kelas_id', 'left'); // Menggunakan LEFT JOIN
+		$builder->join('master_fakultas', 'master_fakultas.id = a.Fakultas_id', 'left'); // Menggunakan LEFT JOIN
+		$builder->join('master_jurusan', 'master_jurusan.id = a.Jurusan_id', 'left'); // Menggunakan LEFT JOIN
+
 		if($isKeranjang == 1){
 			$builder->where('a.IsKeranjang', $isKeranjang);
 		}
 		elseif($isKeranjang==0){
 			$builder->where('a.IsKeranjang',$isKeranjang);
 		}
-       
+
+		// Filter berdasarkan Kelas (khusus perpustakaan sekolah)
+		$kelas_id = $this->request->getVar('kelas_id');
+		if (!empty($kelas_id)) {
+			$builder->where('a.Kelas_id', $kelas_id);
+		}
+
+		// Filter berdasarkan Fakultas & Jurusan (khusus perguruan tinggi)
+		$fakultas_id = $this->request->getVar('fakultas_id');
+		if (!empty($fakultas_id)) {
+			$builder->where('a.Fakultas_id', $fakultas_id);
+		}
+
+		$jurusan_id = $this->request->getVar('jurusan_id');
+		if (!empty($jurusan_id)) {
+			$builder->where('a.Jurusan_id', $jurusan_id);
+		}
+
 		/**
 		 * DataTables
 		 * @var \Hermawan\DataTables\DataTable $dataTable
@@ -162,7 +188,16 @@ class Anggota extends \Base\Controllers\BaseResourceController
 				}
 				return $html;
 			})
-		
+			->edit('KelasName', function ($row) {
+				return $row->KelasName ? '<span class="badge badge-info">' . esc($row->KelasName) . '</span>' : '-';
+			})
+			->edit('FakultasName', function ($row) {
+				return $row->FakultasName ? '<span class="badge badge-info">' . esc($row->FakultasName) . '</span>' : '-';
+			})
+			->edit('JurusanName', function ($row) {
+				return $row->JurusanName ? '<span class="badge badge-secondary">' . esc($row->JurusanName) . '</span>' : '-';
+			})
+
 			->edit('action', function ($row) {
 			$encId = encData((string) $row->ID);
 			$edit = '<button type="button" data-id="' . $encId . '" data-toggle="tooltip" data-placement="top" title="Ubah " class="btn btn-primary btn-edit-anggota"><i class="pe-7s-note font-weight-bold"> </i></button>';

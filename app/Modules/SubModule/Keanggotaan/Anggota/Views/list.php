@@ -49,7 +49,64 @@ $request = service('request');
                     <button type="button" id="proses_keranjang" class="btn btn-warning" data-toggle="tooltip" data-placement="top" title="Semua anggota yang terpilih"><i class="fa fa-shopping-cart"></i> Pindahkan ke Keranjang</button>
                     <button type="button" id="print_kartu" class="btn btn-primary ml-2" data-toggle="tooltip" data-placement="top" title="Print kartu anggota yang terpilih"><i class="fa fa-print"></i> Print Kartu</button>
                     <button type="button" id="aktifkan_online" class="btn btn-success ml-2" data-toggle="tooltip" data-placement="top" title="Aktifkan akses online untuk anggota yang terpilih"><i class="fa fa-globe"></i> Aktifkan Online</button>
+                    <?php if ($is_sekolah) : ?>
+                        <button type="button" id="update_kelas" class="btn btn-info ml-2" data-toggle="tooltip" data-placement="top" title="Update kelas anggota yang terpilih secara batch"><i class="fa fa-graduation-cap"></i> Update Batch Kelas</button>
+                    <?php endif; ?>
                 </div>
+
+                <?php if ($is_sekolah) : ?>
+                    <!-- ── Filter: Kelas (khusus perpustakaan sekolah) ── -->
+                    <div class="d-flex align-items-center flex-wrap mb-3" style="gap:6px;">
+                        <div class="input-group" style="width:280px; flex-shrink:0;">
+                            <div class="input-group-prepend">
+                                <span class="btn btn-secondary"><i class="fa fa-filter"></i> Kelas</span>
+                            </div>
+                            <select class="form-control" id="filter_kelas_id">
+                                <option value="">-- Semua Kelas --</option>
+                                <?php foreach ($kelas_list as $row) : ?>
+                                    <option value="<?= $row->id ?>"><?= esc($row->namakelassiswa) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-outline-secondary" id="btnResetFilterKelas" type="button" style="height:38px; flex-shrink:0;">
+                            <i class="fa fa-undo"></i> Reset Filter
+                        </button>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($is_perguruan_tinggi) : ?>
+                    <!-- ── Filter: Fakultas & Jurusan (khusus perguruan tinggi) ── -->
+                    <div class="d-flex align-items-center flex-wrap mb-3" style="gap:6px;">
+                        <div class="input-group" style="width:280px; flex-shrink:0;">
+                            <div class="input-group-prepend">
+                                <span class="btn btn-secondary"><i class="fa fa-filter"></i> Fakultas</span>
+                            </div>
+                            <select class="form-control" id="filter_fakultas_id">
+                                <option value="">-- Semua Fakultas --</option>
+                                <?php foreach ($fakultas_list as $row) : ?>
+                                    <option value="<?= $row->id ?>"><?= esc($row->Nama) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="input-group" style="width:280px; flex-shrink:0;">
+                            <div class="input-group-prepend">
+                                <span class="btn btn-secondary"><i class="fa fa-filter"></i> Jurusan</span>
+                            </div>
+                            <select class="form-control" id="filter_jurusan_id">
+                                <option value="">-- Semua Jurusan --</option>
+                                <?php foreach ($jurusan_list as $row) : ?>
+                                    <option value="<?= $row->id ?>"><?= esc($row->Nama) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-outline-secondary" id="btnResetFilterFakultasJurusan" type="button" style="height:38px; flex-shrink:0;">
+                            <i class="fa fa-undo"></i> Reset Filter
+                        </button>
+                    </div>
+                <?php endif; ?>
 
                 <table style="width: 100%;" id="tbl_data" class="table table-hover table-striped table-bordered">
                     <thead>
@@ -63,6 +120,13 @@ $request = service('request');
                             <th width="100">Tgl. Register</th>
                             <th width="100">Tgl. Berakhir</th>
                             <th width="130">Status Anggota</th>
+                            <?php if ($is_sekolah) : ?>
+                                <th width="120">Kelas</th>
+                            <?php endif; ?>
+                            <?php if ($is_perguruan_tinggi) : ?>
+                                <th width="150">Fakultas</th>
+                                <th width="150">Jurusan</th>
+                            <?php endif; ?>
                             <th style="min-width: 150px;">Aksi</th>
                         </tr>
                     </thead>
@@ -78,6 +142,9 @@ $request = service('request');
 <?= $this->section('script'); ?>
 <?= $this->include('Anggota\Views\modal_upload'); ?>
 <?= $this->include('Anggota\Views\modal_camera'); ?>
+<?php if ($is_sekolah) : ?>
+    <?= $this->include('Anggota\Views\modal_update_kelas'); ?>
+<?php endif; ?>
 <script>
       $(document).ready(function() {
         <?php if (session()->getFlashdata('swal_icon')) : ?>
@@ -101,6 +168,11 @@ $request = service('request');
             "scrollCollapse": true,
             "ajax": {
                 "url": '<?php echo site_url('api/anggota/datatable'); ?>',
+                "data": function(d) {
+                    d.kelas_id = $('#filter_kelas_id').val();
+                    d.fakultas_id = $('#filter_fakultas_id').val();
+                    d.jurusan_id = $('#filter_jurusan_id').val();
+                }
             },
             
             // KONFIGURASI DOM BARU
@@ -149,6 +221,28 @@ $request = service('request');
                     data: 'StatusAnggota',
                     className: 'text-center'
                 },
+                <?php if ($is_sekolah) : ?>
+                {
+                    data: 'KelasName',
+                    className: 'text-center',
+                    searchable: false,
+                    orderable: false
+                },
+                <?php endif; ?>
+                <?php if ($is_perguruan_tinggi) : ?>
+                {
+                    data: 'FakultasName',
+                    className: 'text-center',
+                    searchable: false,
+                    orderable: false
+                },
+                {
+                    data: 'JurusanName',
+                    className: 'text-center',
+                    searchable: false,
+                    orderable: false
+                },
+                <?php endif; ?>
                 {
                     data: 'action',
                     className: 'text-center',
@@ -162,7 +256,7 @@ $request = service('request');
 
             ],
             "order": [
-                [8, "desc"]
+                [<?= 8 + ($is_sekolah ? 1 : 0) + ($is_perguruan_tinggi ? 2 : 0) ?>, "desc"]
             ],
             "drawCallback": function(data, type, full, meta) {
                 var api = this.api();
@@ -204,6 +298,127 @@ $request = service('request');
 
     $(".check_data").click(function() {
         $('#tbl_data input:checkbox').not(this).prop('checked', this.checked);
+    });
+
+    // ── Filter: Kelas (khusus perpustakaan sekolah) ─────────────────────────
+    $('#filter_kelas_id').on('change', function() {
+        t.ajax.reload();
+    });
+
+    $('#btnResetFilterKelas').on('click', function() {
+        $('#filter_kelas_id').val('');
+        t.ajax.reload();
+    });
+
+    // ── Filter: Fakultas & Jurusan (khusus perguruan tinggi) ────────────────
+    $('#filter_fakultas_id, #filter_jurusan_id').on('change', function() {
+        t.ajax.reload();
+    });
+
+    $('#btnResetFilterFakultasJurusan').on('click', function() {
+        $('#filter_fakultas_id').val('');
+        $('#filter_jurusan_id').val('');
+        t.ajax.reload();
+    });
+
+    // ── Update Batch Kelas (khusus perpustakaan sekolah) ────────────────────
+    $('#update_kelas').click(function() {
+        var checkedBoxes = $('#tbl_data input[type="checkbox"]:checked').not('.check_data');
+
+        if (checkedBoxes.length === 0) {
+            Swal.fire({
+                title: 'Peringatan',
+                text: 'Silakan pilih minimal satu anggota untuk diupdate kelasnya',
+                icon: 'warning',
+                showConfirmButton: true,
+                confirmButtonText: 'OK'
+            });
+            return false;
+        }
+
+        $('#jml_anggota_terpilih').text(checkedBoxes.length);
+        $('#target_kelas_id').val('');
+        $('#modal_update_kelas').modal('show');
+
+        return false;
+    });
+
+    $('#btn_simpan_update_kelas').click(function() {
+        var checkedBoxes = $('#tbl_data input[type="checkbox"]:checked').not('.check_data');
+        var selectedIds = [];
+        checkedBoxes.each(function() {
+            var checkboxValue = $(this).val();
+            if (checkboxValue && checkboxValue !== 'on') {
+                selectedIds.push(checkboxValue);
+            }
+        });
+
+        var targetKelasId = $('#target_kelas_id').val();
+
+        if (!targetKelasId) {
+            Swal.fire({
+                title: 'Peringatan',
+                text: 'Silakan pilih kelas tujuan terlebih dahulu',
+                icon: 'warning',
+                showConfirmButton: true,
+                confirmButtonText: 'OK'
+            });
+            return false;
+        }
+
+        $('#modal_update_kelas').modal('hide');
+
+        Swal.fire({
+            title: 'Memproses...',
+            text: 'Sedang memperbarui kelas anggota',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        $.ajax({
+                url: '<?= base_url('anggota/update_batch_kelas') ?>',
+                type: 'POST',
+                data: {
+                    '<?= csrf_token() ?>': '<?= csrf_hash() ?>',
+                    member_ids: selectedIds,
+                    Kelas_id: targetKelasId
+                },
+                dataType: 'json'
+            })
+            .done(function(response) {
+                if (response.error === false) {
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        html: response.message,
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        t.ajax.reload(null, false);
+                        $('#tbl_data input:checkbox').prop('checked', false);
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Gagal',
+                        html: response.message,
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            })
+            .fail(function(jqXHR, textStatus, errorThrown) {
+                Swal.fire({
+                    title: 'Oops!',
+                    text: 'Terjadi kesalahan saat memproses data. Silakan coba lagi.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            });
+
+        return false;
     });
 
     $('#proses_keranjang').click(function() {

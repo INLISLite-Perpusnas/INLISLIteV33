@@ -56,4 +56,7 @@ change.log 19 Agustus 2026
 17. Menyesuaikan fitur di list ekesmplar yag ada di slug katalog dengan eksemplar yang ada di daftra eksemplar utama
 18. Memperbaiki bug inputan tanggal peminjaman dan pengembalian yang bisa di hari setelah tanggal hari ini
 19. Menambahkan filter Jenis Bahan di halaman list katalog
+20. Menambahkan tampilan jam layanan di footer halaman frontend
+21. Menambahkan filter kelas dan update bacth kelas untuk perpustakaan sekolah
+22. Menambahakan filter fakultas dan jurusan untuk perpustakaan perguruan Tinggi
 

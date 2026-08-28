@@ -6,6 +6,9 @@ $tentang_kami = $db->table('settingparameters')->where('Name', 'TentangKami')->g
 $logo = $db->table('settingparameters')->where('Name', 'Logo')->get()->getRow()->Value;
 $phone = $db->table('settingparameters')->where('Name', 'Phone')->get()->getRow()->Value;
 $email = $db->table('settingparameters')->where('Name', 'EmailPerpustakaan')->get()->getRow()->Value;
+// Nullsafe (?->) karena setting 'JamOperasional' belum tentu ada barisnya di
+// settingparameters — beda dari setting lain di atas yang sudah pasti ada.
+$jam_operasional = $db->table('settingparameters')->where('Name', 'JamOperasional')->get()->getRow()?->Value ?? 'Jam Operasional Perpustakaan Mitra';
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -465,6 +468,7 @@ $email = $db->table('settingparameters')->where('Name', 'EmailPerpustakaan')->ge
                         <li><i class="fa-solid fa-location-dot"></i> <span><?= esc($alamat) ?></span></li>
                         <li><i class="fa-solid fa-phone"></i> <span><?= esc($phone)  ?></span></li>
                         <li><i class="fa-solid fa-envelope"></i> <span><?= esc($email)  ?></span></li>
+                        <li><i class="fa-solid fa-clock"></i> <span><?= nl2br(esc($jam_operasional)) ?></span></li>
                     </ul>
                 </div>
 

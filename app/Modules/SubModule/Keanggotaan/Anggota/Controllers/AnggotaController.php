@@ -30,7 +30,84 @@ class AnggotaController extends \Base\Controllers\BaseController
         $this->data['message'] = $this->validation->getErrors()
             ? $this->validation->listErrors()
             : $this->session->getFlashdata('message');
+
+        $jenisPerpustakaan = $this->settingModel->where('Name', 'JenisPerpustakaan')->first()->Value ?? '';
+        $jenisPerpustakaan = strtoupper(trim($jenisPerpustakaan));
+        $this->data['is_sekolah'] = ($jenisPerpustakaan === 'SEKOLAH');
+        $this->data['is_perguruan_tinggi'] = ($jenisPerpustakaan === 'PERGURUAN TINGGI');
+
+        $db = db_connect();
+
+        if ($this->data['is_sekolah']) {
+            $this->data['kelas_list'] = $db->table('kelas_siswa')
+                ->where('active', 1)
+                ->orderBy('namakelassiswa', 'asc')
+                ->get()
+                ->getResult();
+        } else {
+            $this->data['kelas_list'] = [];
+        }
+
+        if ($this->data['is_perguruan_tinggi']) {
+            $this->data['fakultas_list'] = $db->table('master_fakultas')
+                ->where('active', 1)
+                ->orderBy('Nama', 'asc')
+                ->get()
+                ->getResult();
+            $this->data['jurusan_list'] = $db->table('master_jurusan')
+                ->where('active', 1)
+                ->orderBy('Nama', 'asc')
+                ->get()
+                ->getResult();
+        } else {
+            $this->data['fakultas_list'] = [];
+            $this->data['jurusan_list'] = [];
+        }
+
         echo view('Anggota\Views\list', $this->data);
+    }
+
+    // ----------------------------------------------------------------
+    // UPDATE BATCH KELAS (khusus perpustakaan sekolah)
+    // ----------------------------------------------------------------
+
+    public function update_batch_kelas()
+    {
+        $memberIds = $this->request->getPost('member_ids');
+        $kelasId   = $this->request->getPost('Kelas_id');
+
+        if (empty($memberIds) || empty($kelasId)) {
+            return $this->response->setJSON([
+                'error'   => true,
+                'message' => 'Pilih anggota dan kelas tujuan terlebih dahulu',
+            ]);
+        }
+
+        $memberIds = is_array($memberIds) ? $memberIds : explode(',', $memberIds);
+        $memberIds = array_filter(array_map('trim', $memberIds));
+
+        if (empty($memberIds)) {
+            return $this->response->setJSON([
+                'error'   => true,
+                'message' => 'Pilih anggota yang akan diperbarui kelasnya terlebih dahulu',
+            ]);
+        }
+
+        $updateData = [];
+        foreach ($memberIds as $id) {
+            $updateData[] = [
+                'ID'       => $id,
+                'Kelas_id' => $kelasId,
+                'UpdateBy' => login_id(),
+            ];
+        }
+
+        $this->anggotaModel->updateBatch($updateData, 'ID');
+
+        return $this->response->setJSON([
+            'error'   => false,
+            'message' => count($memberIds) . ' anggota berhasil diperbarui kelasnya',
+        ]);
     }
 
     public function keranjang()
