@@ -111,10 +111,10 @@ $paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
     /* Samakan tinggi semua tombol prepend dengan select */
     #cetak_panel .input-group-prepend .btn,
     .aksi-bar .input-group-prepend .btn {
-        height     : 38px;
+        height: 38px;
         line-height: 1;
         white-space: nowrap;
-        font-size  : 13px;
+        font-size: 13px;
     }
 </style>
 <?= $this->endSection('style'); ?>
@@ -285,7 +285,7 @@ $paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
 
             <form name="form_items" id="form_items">
                 <table style="width:100%;" id="tbl_data"
-                       class="table table-hover table-striped table-bordered">
+                    class="table table-hover table-striped table-bordered">
                     <thead>
                         <tr>
                             <th class="text-center" width="35">No</th>
@@ -316,299 +316,464 @@ $paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
 
 <?= $this->section('script'); ?>
 <script>
-$(document).ready(function () {
+    $(document).ready(function() {
 
-    // ── SweetAlert Flashdata ───────────────────────────────────────────────
-    <?php if (session()->getFlashdata('swal_icon')) : ?>
-        Swal.fire({
-            icon            : 'success',
-            title           : '<?= session()->getFlashdata('swal_title') ?>',
-            html            : '<?= session()->getFlashdata('swal_html') ?? session()->getFlashdata('swal_text') ?>',
-            showConfirmButton: false,
-            timer           : 3000
-        });
-    <?php endif; ?>
+        // ── SweetAlert Flashdata ───────────────────────────────────────────────
+        <?php if (session()->getFlashdata('swal_icon')) : ?>
+            Swal.fire({
+                icon: 'success',
+                title: '<?= session()->getFlashdata('swal_title') ?>',
+                html: '<?= session()->getFlashdata('swal_html') ?? session()->getFlashdata('swal_text') ?>',
+                showConfirmButton: false,
+                timer: 3000
+            });
+        <?php endif; ?>
 
-    // ── Konfigurasi kertas & model (di-inject dari PHP) ────────────────────
-    var paperSizeConfig = <?= $paper_size_json ?>;
+        // ── Konfigurasi kertas & model (di-inject dari PHP) ────────────────────
+        var paperSizeConfig = <?= $paper_size_json ?>;
 
-    // ── DataTable ─────────────────────────────────────────────────────────
-    var t = $('#tbl_data').DataTable({
-        processing : true,
-        serverSide : true,
-        scrollX    : true,
-        scrollCollapse: true,
-        ajax       : {
-            url : '<?= site_url('api/eksemplar/datatable') ?>',
-            data: function (d) {
-                d.location_library_id = $('#filter_location_library').val();
-                d.location_id         = $('#filter_location_id').val();
-                d.media_id            = $('#filter_media_id').val();
-            }
-        },
-        dom: "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
-                   "<'row'<'col-md-12'tr>>" +
-                   "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
-        pagingType : 'full_numbers',
-        oLanguage  : {
-            sSearch    : "<i class='fa fa-search'></i> _INPUT_",
-            sLengthMenu: "_MENU_",
-            oPaginate  : {
-                sNext    : "<i class='fa fa-chevron-right'></i>",
-                sPrevious: "<i class='fa fa-chevron-left'></i>",
-                sLast    : "<i class='fa fa-chevron-double-right'></i>",
-                sFirst   : "<i class='fa fa-chevron-double-left'></i>"
-            }
-        },
-        columns: [
-            {     data: 'no',
+        // ── DataTable ─────────────────────────────────────────────────────────
+        var t = $('#tbl_data').DataTable({
+            processing: true,
+            serverSide: true,
+            scrollX: true,
+            scrollCollapse: true,
+            ajax: {
+                url: '<?= site_url('api/eksemplar/datatable') ?>',
+                data: function(d) {
+                    d.location_library_id = $('#filter_location_library').val();
+                    d.location_id = $('#filter_location_id').val();
+                    d.media_id = $('#filter_media_id').val();
+                }
+            },
+            dom: "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
+                "<'row'<'col-md-12'tr>>" +
+                "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
+            pagingType: 'full_numbers',
+            oLanguage: {
+                sSearch: "<i class='fa fa-search'></i> _INPUT_",
+                sLengthMenu: "_MENU_",
+                oPaginate: {
+                    sNext: "<i class='fa fa-chevron-right'></i>",
+                    sPrevious: "<i class='fa fa-chevron-left'></i>",
+                    sLast: "<i class='fa fa-chevron-double-right'></i>",
+                    sFirst: "<i class='fa fa-chevron-double-left'></i>"
+                }
+            },
+            columns: [{
+                    data: 'no',
                     className: 'text-center',
                     searchable: false, // Wajib false
-                    orderable: false },
-            { data: 'ID',                  className: 'text-center', orderable: false },
-            { data: 'NomorBarcode',        className: 'text-left',   searchable: true },
-            { data: 'TanggalPengadaan',                              searchable: true },
-            { data: 'NoInduk',                                       searchable: true },
-            { data: 'Catalog_id',                                    searchable: true },
-            { data: 'ISDRM',               className: 'text-center', orderable: false },
-            { data: 'IsQUARANTINE',        className: 'text-center', orderable: false },
-            { data: 'IsOPAC',              className: 'text-center', searchable: false, orderable: false },
-            { data: 'StatusName',          className: 'text-center', searchable: true },
-            { data: 'LocationLibraryName', className: 'text-center', searchable: true },
-            { data: 'action',              className: 'text-center', orderable: false }
-        ],
-        drawCallback: function () {
-            $('[data-toggle="tooltip"]').tooltip();
-            $('.apply-status').bootstrapToggle();
-            $('.apply-status').on('change', function () {
-                var url       = $(this).attr('data-href');
-                var field     = $(this).attr('data-field');
-                var value     = $(this).is(':checked');
-                $.ajax({ url: url, type: 'POST', data: 'field=' + field + '&value=' + value })
-                    .done(function (res) {
-                        Swal.fire({
-                            title           : res.error == false ? 'Berhasil' : 'Gagal',
-                            html            : res.message,
-                            icon            : res.error == false ? 'success' : 'error',
-                            showConfirmButton: false,
-                            timer           : 5000
-                        });
-                    })
-                    .fail(function () {
-                        Swal.fire({
-                            title           : 'Oups',
-                            text            : 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
-                            icon            : 'error',
-                            showConfirmButton: false,
-                            timer           : 5000
-                        });
-                    });
-            });
-        }
-    });
+                    orderable: false
+                },
+                {
+                    data: 'ID',
+                    className: 'text-center',
+                    orderable: false
+                },
+                {
+                    data: 'NomorBarcode',
+                    className: 'text-left',
+                    render: function(data, type, row) {
+                        if (!data) {
+                            return '-';
+                        }
 
-    // ── Filter: Lokasi Perpustakaan & Lokasi Ruang ─────────────────────────
-    // Isi dropdown Lokasi Perpustakaan
-    $.getJSON('<?= site_url('api/eksemplar/locationlibrary') ?>', function (res) {
-        var data = res.data || res;
-        var $sel = $('#filter_location_library');
-        $.each(data, function (i, item) {
-            $sel.append($('<option>', { value: item.code, text: item.name }));
+                        // Ambil text barcode dari HTML
+                        var barcode = $('<div>').html(data).text().trim();
+
+                        // Escape
+                        var barcodeAttr = $('<div>').text(barcode).html();
+
+                        return '<span class="barcode-copy"' +
+                            ' data-barcode="' + barcodeAttr + '"' +
+                            ' title="Klik untuk menyalin barcode"' +
+                            ' style="' +
+                            'display:inline-flex;' +
+                            'align-items:center;' +
+                            'gap:5px;' +
+                            'padding:3px 5px;' +
+                            'border:1px solid transparent;' +
+                            'border-radius:4px;' +
+                            'background:transparent;' +
+                            'box-shadow:none;' +
+                            'cursor:pointer;' +
+                            'user-select:none;' +
+                            'transition:all .15s ease;' +
+                            '"' +
+                            ' onmouseover="' +
+                            'this.style.background=\'#f8f9fa\';' +
+                            'this.style.borderColor=\'#dee2e6\';' +
+                            'this.style.boxShadow=\'0 2px 5px rgba(0,0,0,.12)\';' +
+                            'this.style.transform=\'translateY(-1px)\';' +
+                            '"' +
+                            ' onmouseout="' +
+                            'this.style.background=\'transparent\';' +
+                            'this.style.borderColor=\'transparent\';' +
+                            'this.style.boxShadow=\'none\';' +
+                            'this.style.transform=\'translateY(0)\';' +
+                            '"' +
+                            '>' +
+                            '<span>' + barcodeAttr + '</span>' + '<i class="fa fa-copy text-primary barcode-copy-icon" style="opacity:.65;"></i>' +
+                            '</span>';
+                    },
+                    searchable: true
+                },
+                {
+                    data: 'TanggalPengadaan',
+                    searchable: true
+                },
+                {
+                    data: 'NoInduk',
+                    searchable: true
+                },
+                {
+                    data: 'Catalog_id',
+                    searchable: true
+                },
+                {
+                    data: 'ISDRM',
+                    className: 'text-center',
+                    orderable: false
+                },
+                {
+                    data: 'IsQUARANTINE',
+                    className: 'text-center',
+                    orderable: false
+                },
+                {
+                    data: 'IsOPAC',
+                    className: 'text-center',
+                    searchable: false,
+                    orderable: false
+                },
+                {
+                    data: 'StatusName',
+                    className: 'text-center',
+                    searchable: true
+                },
+                {
+                    data: 'LocationLibraryName',
+                    className: 'text-center',
+                    searchable: true
+                },
+                {
+                    data: 'action',
+                    className: 'text-center',
+                    orderable: false
+                }
+            ],
+            drawCallback: function() {
+                $('[data-toggle="tooltip"]').tooltip();
+                $('.apply-status').bootstrapToggle();
+                $('.apply-status').on('change', function() {
+                    var url = $(this).attr('data-href');
+                    var field = $(this).attr('data-field');
+                    var value = $(this).is(':checked');
+                    $.ajax({
+                            url: url,
+                            type: 'POST',
+                            data: 'field=' + field + '&value=' + value
+                        })
+                        .done(function(res) {
+                            Swal.fire({
+                                title: res.error == false ? 'Berhasil' : 'Gagal',
+                                html: res.message,
+                                icon: res.error == false ? 'success' : 'error',
+                                showConfirmButton: false,
+                                timer: 5000
+                            });
+                        })
+                        .fail(function() {
+                            Swal.fire({
+                                title: 'Oups',
+                                text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
+                                icon: 'error',
+                                showConfirmButton: false,
+                                timer: 5000
+                            });
+                        });
+                });
+            }
+        });
+
+        $(document).on('click', '.barcode-copy', function() {
+        var $element = $(this);
+        var barcode = $element.attr('data-barcode');
+        var $icon = $element.find('.barcode-copy-icon');
+
+        navigator.clipboard.writeText(barcode).then(function() {
+
+            // Ubah icon copy -> check
+            $icon
+                .removeClass('fa-copy text-primary')
+                .addClass('fa-check text-success');
+
+            // Kembalikan setelah 1 detik
+            setTimeout(function() {
+                $icon
+                    .removeClass('fa-check text-success')
+                    .addClass('fa-copy text-primary');
+            }, 1000);
+
+        }).catch(function(err) {
+            console.error('Gagal menyalin barcode:', err);
         });
     });
 
-    // Isi dropdown Lokasi Ruang saat Lokasi Perpustakaan berubah
-    $('#filter_location_library').on('change', function () {
-        var libraryId = $(this).val();
-        var $roomSel  = $('#filter_location_id');
-
-        $roomSel.html('<option value="">-- Semua Lokasi Ruang --</option>');
-
-        if (!libraryId) {
-            $roomSel.prop('disabled', true)
-                .html('<option value="">-- Pilih Lokasi Perpustakaan Dahulu --</option>');
-            t.ajax.reload();
-            return;
-        }
-
-        $roomSel.prop('disabled', false);
-
-        $.getJSON('<?= site_url('api/eksemplar/locations') ?>/' + libraryId, function (res) {
+        // ── Filter: Lokasi Perpustakaan & Lokasi Ruang ─────────────────────────
+        // Isi dropdown Lokasi Perpustakaan
+        $.getJSON('<?= site_url('api/eksemplar/locationlibrary') ?>', function(res) {
             var data = res.data || res;
-            $.each(data, function (i, item) {
-                $roomSel.append($('<option>', { value: item.code, text: item.name }));
+            var $sel = $('#filter_location_library');
+            $.each(data, function(i, item) {
+                $sel.append($('<option>', {
+                    value: item.code,
+                    text: item.name
+                }));
             });
         });
 
-        t.ajax.reload();
-    });
+        // Isi dropdown Lokasi Ruang saat Lokasi Perpustakaan berubah
+        $('#filter_location_library').on('change', function() {
+            var libraryId = $(this).val();
+            var $roomSel = $('#filter_location_id');
 
-    // Muat ulang tabel saat Lokasi Ruang berubah
-    $('#filter_location_id').on('change', function () {
-        t.ajax.reload();
-    });
+            $roomSel.html('<option value="">-- Semua Lokasi Ruang --</option>');
 
-    // Isi dropdown Bentuk Fisik
-    $.getJSON('<?= site_url('api/eksemplar/collectionmedias') ?>', function (res) {
-        var data = res.data || res;
-        var $sel = $('#filter_media_id');
-        $.each(data, function (i, item) {
-            $sel.append($('<option>', { value: item.code, text: item.name }));
-        });
-    });
+            if (!libraryId) {
+                $roomSel.prop('disabled', true)
+                    .html('<option value="">-- Pilih Lokasi Perpustakaan Dahulu --</option>');
+                t.ajax.reload();
+                return;
+            }
 
-    // Muat ulang tabel saat Bentuk Fisik berubah
-    $('#filter_media_id').on('change', function () {
-        t.ajax.reload();
-    });
+            $roomSel.prop('disabled', false);
 
-    // Reset filter
-    $('#btnResetFilter').on('click', function () {
-        $('#filter_location_library').val('');
-        $('#filter_location_id')
-            .html('<option value="">-- Pilih Lokasi Perpustakaan Dahulu --</option>')
-            .prop('disabled', true);
-        $('#filter_media_id').val('');
-        t.ajax.reload();
-    });
+            $.getJSON('<?= site_url('api/eksemplar/locations') ?>/' + libraryId, function(res) {
+                var data = res.data || res;
+                $.each(data, function(i, item) {
+                    $roomSel.append($('<option>', {
+                        value: item.code,
+                        text: item.name
+                    }));
+                });
+            });
 
-    // ── Tampil/Sembunyikan panel cetak ────────────────────────────────────
-    $('#action').on('change', function () {
-        if ($(this).val() === 'cetak-label') {
-            $('#cetak_panel').slideDown(200);
-        } else {
-            $('#cetak_panel').slideUp(200);
-            resetCetakPanel();
-        }
-    });
-
-    // Reset semua pilihan dalam panel cetak
-    function resetCetakPanel() {
-        $('#paper_size').val('');
-        $('#label_model').html('<option value="">-- Pilih Model --</option>');
-        $('#label_model_wrapper').hide();
-        $('#model_info_row').hide();
-        $('#model_info_text').text('');
-    }
-
-    // ── Isi dropdown Model saat Jenis Kertas berubah ──────────────────────
-    $('#paper_size').on('change', function () {
-        var paperKey  = $(this).val();
-        var $modelSel = $('#label_model');
-
-        // Reset model
-        $modelSel.html('<option value="">-- Pilih Model --</option>');
-        $('#model_info_row').hide();
-        $('#model_info_text').text('');
-
-        if (!paperKey || !paperSizeConfig[paperKey]) {
-            $('#label_model_wrapper').slideUp(200);
-            return;
-        }
-
-        var models = paperSizeConfig[paperKey].models;
-        $.each(models, function (modelKey, modelLabel) {
-            $modelSel.append(
-                $('<option>', { value: modelKey, text: modelLabel })
-            );
+            t.ajax.reload();
         });
 
-        $('#label_model_wrapper').slideDown(200);
-    });
+        // Muat ulang tabel saat Lokasi Ruang berubah
+        $('#filter_location_id').on('change', function() {
+            t.ajax.reload();
+        });
 
-    // ── Info model yang dipilih ───────────────────────────────────────────
-    $('#label_model').on('change', function () {
-        var modelText = $(this).find('option:selected').text();
-        var paperText = $('#paper_size').find('option:selected').text();
+        // Isi dropdown Bentuk Fisik
+        $.getJSON('<?= site_url('api/eksemplar/collectionmedias') ?>', function(res) {
+            var data = res.data || res;
+            var $sel = $('#filter_media_id');
+            $.each(data, function(i, item) {
+                $sel.append($('<option>', {
+                    value: item.code,
+                    text: item.name
+                }));
+            });
+        });
 
-        if ($(this).val()) {
-            $('#model_info_text').text(paperText + '  →  ' + modelText);
-            $('#model_info_row').show();
-        } else {
+        // Muat ulang tabel saat Bentuk Fisik berubah
+        $('#filter_media_id').on('change', function() {
+            t.ajax.reload();
+        });
+
+        // Reset filter
+        $('#btnResetFilter').on('click', function() {
+            $('#filter_location_library').val('');
+            $('#filter_location_id')
+                .html('<option value="">-- Pilih Lokasi Perpustakaan Dahulu --</option>')
+                .prop('disabled', true);
+            $('#filter_media_id').val('');
+            t.ajax.reload();
+        });
+
+        // ── Tampil/Sembunyikan panel cetak ────────────────────────────────────
+        $('#action').on('change', function() {
+            if ($(this).val() === 'cetak-label') {
+                $('#cetak_panel').slideDown(200);
+            } else {
+                $('#cetak_panel').slideUp(200);
+                resetCetakPanel();
+            }
+        });
+
+        // Reset semua pilihan dalam panel cetak
+        function resetCetakPanel() {
+            $('#paper_size').val('');
+            $('#label_model').html('<option value="">-- Pilih Model --</option>');
+            $('#label_model_wrapper').hide();
             $('#model_info_row').hide();
-        }
-    });
-
-    // ── Tombol Proses ─────────────────────────────────────────────────────
-    $('#btnProcess2').on('click', function () {
-        var action       = $('#action').val();
-        var paperSize    = $('#paper_size').val();
-        var labelModel   = $('#label_model').val();
-        var outputFormat = $('#output_format').val() || 'pdf';
-
-        // Validasi aksi
-        if (!action) {
-            Swal.fire({ icon: 'warning', title: 'Peringatan', text: 'Silakan pilih aksi terlebih dahulu!', showConfirmButton: true });
-            return false;
+            $('#model_info_text').text('');
         }
 
-        // Validasi khusus cetak label
-        if (action === 'cetak-label') {
-            if (!paperSize) {
-                Swal.fire({ icon: 'warning', title: 'Peringatan', text: 'Silakan pilih jenis kertas terlebih dahulu!', showConfirmButton: true });
-                return false;
+        // ── Isi dropdown Model saat Jenis Kertas berubah ──────────────────────
+        $('#paper_size').on('change', function() {
+            var paperKey = $(this).val();
+            var $modelSel = $('#label_model');
+
+            // Reset model
+            $modelSel.html('<option value="">-- Pilih Model --</option>');
+            $('#model_info_row').hide();
+            $('#model_info_text').text('');
+
+            if (!paperKey || !paperSizeConfig[paperKey]) {
+                $('#label_model_wrapper').slideUp(200);
+                return;
             }
-            if (!labelModel) {
-                Swal.fire({ icon: 'warning', title: 'Peringatan', text: 'Silakan pilih model label terlebih dahulu!', showConfirmButton: true });
-                return false;
-            }
-        }
 
-        // Kumpulkan ID eksemplar yang dicentang
-        var checkedItems = [];
-        $('#tbl_data tbody input.check:checked').each(function () {
-            checkedItems.push($(this).val());
+            var models = paperSizeConfig[paperKey].models;
+            $.each(models, function(modelKey, modelLabel) {
+                $modelSel.append(
+                    $('<option>', {
+                        value: modelKey,
+                        text: modelLabel
+                    })
+                );
+            });
+
+            $('#label_model_wrapper').slideDown(200);
         });
 
-        if (checkedItems.length === 0) {
-            Swal.fire({ icon: 'warning', title: 'Peringatan', text: 'Silakan pilih minimal satu eksemplar!', showConfirmButton: true });
-            return false;
-        }
+        // ── Info model yang dipilih ───────────────────────────────────────────
+        $('#label_model').on('change', function() {
+            var modelText = $(this).find('option:selected').text();
+            var paperText = $('#paper_size').find('option:selected').text();
 
-        // URL tujuan berdasarkan aksi
-        var urlMap = {
-            'cetak-label'        : '<?= base_url('eksemplar/print_label') ?>',
-            'tampil-opac'        : '<?= base_url('eksemplar/proses_opac') ?>',
-            'karantina-eksemplar': '<?= base_url('eksemplar/proses_karantina') ?>'
-        };
+            if ($(this).val()) {
+                $('#model_info_text').text(paperText + '  →  ' + modelText);
+                $('#model_info_row').show();
+            } else {
+                $('#model_info_row').hide();
+            }
+        });
 
-        var targetUrl = urlMap[action] || '';
-        if (!targetUrl) return false;
+        // ── Tombol Proses ─────────────────────────────────────────────────────
+        $('#btnProcess2').on('click', function() {
+            var action = $('#action').val();
+            var paperSize = $('#paper_size').val();
+            var labelModel = $('#label_model').val();
+            var outputFormat = $('#output_format').val() || 'pdf';
 
-        // Submit via virtual form
-        var form = $('<form>', { method: 'post', action: targetUrl });
-        form.append($('<input>', { type: 'hidden', name: 'eksemplar_ids', value: checkedItems.join(',') }));
+            // Validasi aksi
+            if (!action) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Peringatan',
+                    text: 'Silakan pilih aksi terlebih dahulu!',
+                    showConfirmButton: true
+                });
+                return false;
+            }
 
-        if (action === 'cetak-label') {
-            // eksemplar_tpl = key template (misal: cetak-label-a4-2, cetak-label-lr3, dst.)
-            // Controller akan memetakan key ini ke file view yang sesuai
-            form.append($('<input>', { type: 'hidden', name: 'eksemplar_tpl',   value: labelModel                    }));
-            form.append($('<input>', { type: 'hidden', name: 'paper_size',      value: paperSize                     }));
-            form.append($('<input>', { type: 'hidden', name: 'output_format',   value: outputFormat }));
-        }
+            // Validasi khusus cetak label
+            if (action === 'cetak-label') {
+                if (!paperSize) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Peringatan',
+                        text: 'Silakan pilih jenis kertas terlebih dahulu!',
+                        showConfirmButton: true
+                    });
+                    return false;
+                }
+                if (!labelModel) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Peringatan',
+                        text: 'Silakan pilih model label terlebih dahulu!',
+                        showConfirmButton: true
+                    });
+                    return false;
+                }
+            }
 
-        form.appendTo('body').submit();
-    });
+            // Kumpulkan ID eksemplar yang dicentang
+            var checkedItems = [];
+            $('#tbl_data tbody input.check:checked').each(function() {
+                checkedItems.push($(this).val());
+            });
 
-    // ── Checkbox: Pilih Semua ─────────────────────────────────────────────
-    $(document).on('change', '.check_data', function () {
-        $('#tbl_data tbody .check').prop('checked', $(this).prop('checked'));
-    });
+            if (checkedItems.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Peringatan',
+                    text: 'Silakan pilih minimal satu eksemplar!',
+                    showConfirmButton: true
+                });
+                return false;
+            }
 
-    $('#tbl_data tbody').on('change', '.check', function () {
-        if (!$(this).prop('checked')) {
+            // URL tujuan berdasarkan aksi
+            var urlMap = {
+                'cetak-label': '<?= base_url('eksemplar/print_label') ?>',
+                'tampil-opac': '<?= base_url('eksemplar/proses_opac') ?>',
+                'karantina-eksemplar': '<?= base_url('eksemplar/proses_karantina') ?>'
+            };
+
+            var targetUrl = urlMap[action] || '';
+            if (!targetUrl) return false;
+
+            // Submit via virtual form
+            var form = $('<form>', {
+                method: 'post',
+                action: targetUrl
+            });
+            form.append($('<input>', {
+                type: 'hidden',
+                name: 'eksemplar_ids',
+                value: checkedItems.join(',')
+            }));
+
+            if (action === 'cetak-label') {
+                // eksemplar_tpl = key template (misal: cetak-label-a4-2, cetak-label-lr3, dst.)
+                // Controller akan memetakan key ini ke file view yang sesuai
+                form.append($('<input>', {
+                    type: 'hidden',
+                    name: 'eksemplar_tpl',
+                    value: labelModel
+                }));
+                form.append($('<input>', {
+                    type: 'hidden',
+                    name: 'paper_size',
+                    value: paperSize
+                }));
+                form.append($('<input>', {
+                    type: 'hidden',
+                    name: 'output_format',
+                    value: outputFormat
+                }));
+            }
+
+            form.appendTo('body').submit();
+        });
+
+        // ── Checkbox: Pilih Semua ─────────────────────────────────────────────
+        $(document).on('change', '.check_data', function() {
+            $('#tbl_data tbody .check').prop('checked', $(this).prop('checked'));
+        });
+
+        $('#tbl_data tbody').on('change', '.check', function() {
+            if (!$(this).prop('checked')) {
+                $('.check_data').prop('checked', false);
+            } else {
+                var total = $('#tbl_data tbody .check').length;
+                var checked = $('#tbl_data tbody .check:checked').length;
+                $('.check_data').prop('checked', total === checked);
+            }
+        });
+
+        t.on('draw', function() {
             $('.check_data').prop('checked', false);
-        } else {
-            var total   = $('#tbl_data tbody .check').length;
-            var checked = $('#tbl_data tbody .check:checked').length;
-            $('.check_data').prop('checked', total === checked);
-        }
-    });
+        });
 
-    t.on('draw', function () {
-        $('.check_data').prop('checked', false);
     });
-
-});
 </script>
 <?= $this->endSection('script'); ?>

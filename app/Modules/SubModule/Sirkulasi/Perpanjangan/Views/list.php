@@ -86,7 +86,7 @@ $slug = $request->getGet('slug') ?? '';
                         <th class="text-center" width="90">Perpanjang <br>Ke-</th>
                         <th class="text-center" width="110">Status</th>
                         <th class="text-center" width="120">Lokasi <br>Perpustakaan</th>
-                        
+
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -102,19 +102,19 @@ $slug = $request->getGet('slug') ?? '';
     var groupColumn = 9;
     var t;
 
-    $(document).ready(function () {
+    $(document).ready(function() {
         t = $('#tbl_data').DataTable({
             "processing": true,
             "serverSide": true,
-			"scrollCollapse": true,
-			"scrollX": true,
+            "scrollCollapse": true,
+            "scrollX": true,
             "ajax": {
                 "url": '<?= site_url('api/sirkulasi-perpanjangan/datatable/' . $slug) ?>',
             },
-              dom: "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
-                   "<'row'<'col-md-12'tr>>" +
-                   "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
-                   
+            dom: "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
+                "<'row'<'col-md-12'tr>>" +
+                "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
+
             "pagingType": "full_numbers",
             "oLanguage": {
                 "sSearch": "<i class='fa fa-search'></i> _INPUT_",
@@ -128,68 +128,185 @@ $slug = $request->getGet('slug') ?? '';
             },
             "columns": [
                 // 0
-                { data: 'no',               className: 'text-center', orderable: false },
+                {
+                    data: 'no',
+                    className: 'text-center',
+                    orderable: false
+                },
                 // 1
-                { data: 'NomorBarcode' },
-                // 2
-                { data: 'Title' },
-                // 3
-                { data: 'LoanDate',         className: 'text-center' },
-                // 4
-                { data: 'DateExtend',       className: 'text-center' },
-                // 5
-                { data: 'CountExtend',      className: 'text-center' },
-                // 6
-                { data: 'LoanStatus',       className: 'text-center' },
-                // 7
-                { data: 'LocationLibrary' },
-                // 8
-                { data: 'action',           className: 'text-center', orderable: false },
-                // 9  — hidden, untuk group
-                { data: 'CollectionLoan_id', visible: false },
-                // 10 — hidden
-                { data: 'Fullname',          visible: false },
-                // 11 — hidden
-                { data: 'DueDate',           visible: false },
-                // 12 — hidden
-                { data: 'PublishLocation',   visible: false },
-                // 13 — hidden
-                { data: 'Publisher',         visible: false },
-                // 14 — hidden
-                { data: 'PublishYear',       visible: false },
-            ],
-            "columnDefs": [
-                { targets: [0, 7],       searchable: false },
-                { targets: [0, 2, 3, 4], orderable: false  },
-                { targets: 9,            visible: false },
-                { targets: 10,           visible: false },
-                { targets: 11,           visible: false },
-                { targets: 12,           visible: false },
-                { targets: 13,           visible: false },
-                { targets: 14,           visible: false },
-            ],
-            "order": [[4, "desc"]],
+                {
+                    data: 'NomorBarcode',
+                    className: 'text-nowrap',
+                    render: function(data, type, row) {
+                        if (!data) {
+                            return '-';
+                        }
 
-            "drawCallback": function (settings) {
-                var api  = this.api();
-                var rows = api.rows({ page: 'current' }).nodes();
+                        // Ambil text barcode dari HTML
+                        var barcode = $('<div>').html(data).text().trim();
+
+                        // Escape
+                        var barcodeAttr = $('<div>').text(barcode).html();
+
+                        return '<span class="barcode-copy"' +
+                            ' data-barcode="' + barcodeAttr + '"' +
+                            ' title="Klik untuk menyalin barcode"' +
+                            ' style="' +
+                            'display:inline-flex;' +
+                            'align-items:center;' +
+                            'gap:5px;' +
+                            'padding:3px 5px;' +
+                            'border:1px solid transparent;' +
+                            'border-radius:4px;' +
+                            'background:transparent;' +
+                            'box-shadow:none;' +
+                            'cursor:pointer;' +
+                            'user-select:none;' +
+                            'transition:all .15s ease;' +
+                            '"' +
+                            ' onmouseover="' +
+                            'this.style.background=\'#f8f9fa\';' +
+                            'this.style.borderColor=\'#dee2e6\';' +
+                            'this.style.boxShadow=\'0 2px 5px rgba(0,0,0,.12)\';' +
+                            'this.style.transform=\'translateY(-1px)\';' +
+                            '"' +
+                            ' onmouseout="' +
+                            'this.style.background=\'transparent\';' +
+                            'this.style.borderColor=\'transparent\';' +
+                            'this.style.boxShadow=\'none\';' +
+                            'this.style.transform=\'translateY(0)\';' +
+                            '"' +
+                            '>' +
+                            '<span>' + barcodeAttr + '</span>' + '<i class="fa fa-copy text-primary barcode-copy-icon" style="opacity:.65;"></i>' +
+                            '</span>';
+                    }
+                },
+                // 2
+                {
+                    data: 'Title'
+                },
+                // 3
+                {
+                    data: 'LoanDate',
+                    className: 'text-center'
+                },
+                // 4
+                {
+                    data: 'DateExtend',
+                    className: 'text-center'
+                },
+                // 5
+                {
+                    data: 'CountExtend',
+                    className: 'text-center'
+                },
+                // 6
+                {
+                    data: 'LoanStatus',
+                    className: 'text-center'
+                },
+                // 7
+                {
+                    data: 'LocationLibrary'
+                },
+                // 8
+                {
+                    data: 'action',
+                    className: 'text-center',
+                    orderable: false
+                },
+                // 9  — hidden, untuk group
+                {
+                    data: 'CollectionLoan_id',
+                    visible: false
+                },
+                // 10 — hidden
+                {
+                    data: 'Fullname',
+                    visible: false
+                },
+                // 11 — hidden
+                {
+                    data: 'DueDate',
+                    visible: false
+                },
+                // 12 — hidden
+                {
+                    data: 'PublishLocation',
+                    visible: false
+                },
+                // 13 — hidden
+                {
+                    data: 'Publisher',
+                    visible: false
+                },
+                // 14 — hidden
+                {
+                    data: 'PublishYear',
+                    visible: false
+                },
+            ],
+            "columnDefs": [{
+                    targets: [0, 7],
+                    searchable: false
+                },
+                {
+                    targets: [0, 2, 3, 4],
+                    orderable: false
+                },
+                {
+                    targets: 9,
+                    visible: false
+                },
+                {
+                    targets: 10,
+                    visible: false
+                },
+                {
+                    targets: 11,
+                    visible: false
+                },
+                {
+                    targets: 12,
+                    visible: false
+                },
+                {
+                    targets: 13,
+                    visible: false
+                },
+                {
+                    targets: 14,
+                    visible: false
+                },
+            ],
+            "order": [
+                [4, "desc"]
+            ],
+
+            "drawCallback": function(settings) {
+                var api = this.api();
+                var rows = api.rows({
+                    page: 'current'
+                }).nodes();
                 var last = null;
 
-                api.column(groupColumn, { page: 'current' }).data().each(function (group, i) {
+                api.column(groupColumn, {
+                    page: 'current'
+                }).data().each(function(group, i) {
                     if (last !== group) {
-                        var rowData  = api.row(i).data();
+                        var rowData = api.row(i).data();
                         var fullname = rowData.Fullname ?? '';
                         var memberNo = group;
 
                         $(rows).eq(i).before(
                             '<tr class="group">' +
-                                '<td colspan="9">' +
-                                    '<i class="fa fa-id-card mr-1 text-secondary"></i> ' +
-                                    memberNo +
-                                    (fullname
-                                        ? ' &nbsp;<span class="text-muted font-weight-normal">(' + fullname + ')</span>'
-                                        : '') +
-                                '</td>' +
+                            '<td colspan="9">' +
+                            '<i class="fa fa-id-card mr-1 text-secondary"></i> ' +
+                            memberNo +
+                            (fullname ?
+                                ' &nbsp;<span class="text-muted font-weight-normal">(' + fullname + ')</span>' :
+                                '') +
+                            '</td>' +
                             '</tr>'
                         );
                         last = group;
@@ -198,41 +315,87 @@ $slug = $request->getGet('slug') ?? '';
 
                 $(".apply-status").bootstrapToggle();
 
-                $(".apply-status").on('change', function () {
-                    var url       = $(this).attr('data-href');
-                    var field     = $(this).attr('data-field');
-                    var value     = $(this).is(':checked');
+                $(".apply-status").on('change', function() {
+                    var url = $(this).attr('data-href');
+                    var field = $(this).attr('data-field');
+                    var value = $(this).is(':checked');
                     var data_post = 'field=' + field + '&value=' + value;
 
-                    $.ajax({ url: url, type: 'POST', data: data_post })
-                        .done(function (res) {
+                    $.ajax({
+                            url: url,
+                            type: 'POST',
+                            data: data_post
+                        })
+                        .done(function(res) {
                             if (res.error == false) {
-                                Swal.fire({ title: 'Berhasil', html: res.message, type: 'success', showConfirmButton: false, timer: 5000 });
+                                Swal.fire({
+                                    title: 'Berhasil',
+                                    html: res.message,
+                                    type: 'success',
+                                    showConfirmButton: false,
+                                    timer: 5000
+                                });
                             } else {
-                                Swal.fire({ title: 'Gagal', text: res.message, type: 'error', showConfirmButton: false, timer: 5000 });
+                                Swal.fire({
+                                    title: 'Gagal',
+                                    text: res.message,
+                                    type: 'error',
+                                    showConfirmButton: false,
+                                    timer: 5000
+                                });
                             }
                         })
-                        .fail(function () {
-                            Swal.fire({ title: 'Oups', text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin', type: 'error', showConfirmButton: false, timer: 5000 });
+                        .fail(function() {
+                            Swal.fire({
+                                title: 'Oups',
+                                text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
+                                type: 'error',
+                                showConfirmButton: false,
+                                timer: 5000
+                            });
                         });
                 });
             },
 
-            "initComplete": function (settings, json) {
+            "initComplete": function(settings, json) {
                 var $searchInput = $('div.dataTables_filter input');
                 $searchInput.unbind();
-                $searchInput.bind('keyup', function (e) {
+                $searchInput.bind('keyup', function(e) {
                     if (e.keyCode == 13) {
                         if (this.value.length === 0) t.search('').draw();
-                        if (this.value.length >= 3)  t.search(this.value).draw();
+                        if (this.value.length >= 3) t.search(this.value).draw();
                     }
                 });
             }
         });
     });
 
+    $(document).on('click', '.barcode-copy', function() {
+        var $element = $(this);
+        var barcode = $element.attr('data-barcode');
+        var $icon = $element.find('.barcode-copy-icon');
+
+        navigator.clipboard.writeText(barcode).then(function() {
+
+            // Ubah icon copy -> check
+            $icon
+                .removeClass('fa-copy text-primary')
+                .addClass('fa-check text-success');
+
+            // Kembalikan setelah 1 detik
+            setTimeout(function() {
+                $icon
+                    .removeClass('fa-check text-success')
+                    .addClass('fa-copy text-primary');
+            }, 1000);
+
+        }).catch(function(err) {
+            console.error('Gagal menyalin barcode:', err);
+        });
+    });
+
     // Klik group row → toggle sort
-    $('#tbl_data tbody').on('click', 'tr.group', function () {
+    $('#tbl_data tbody').on('click', 'tr.group', function() {
         var currentOrder = t.order()[0];
         if (currentOrder[0] === groupColumn && currentOrder[1] === 'asc') {
             t.order([groupColumn, 'desc']).draw();
@@ -242,17 +405,17 @@ $slug = $request->getGet('slug') ?? '';
     });
 
     // Konfirmasi hapus
-    $("body").on("click", ".remove-data", function () {
+    $("body").on("click", ".remove-data", function() {
         var url = $(this).attr('data-href');
         Swal.fire({
-            title             : '<?= lang('App.swal.are_you_sure') ?>',
-            text              : "<?= lang('App.swal.can_not_be_restored') ?>",
-            type              : 'warning',
-            showCancelButton  : true,
+            title: '<?= lang('App.swal.are_you_sure') ?>',
+            text: "<?= lang('App.swal.can_not_be_restored') ?>",
+            type: 'warning',
+            showCancelButton: true,
             confirmButtonColor: '#3085d6',
-            cancelButtonColor : '#dd6b55',
-            confirmButtonText : '<?= lang('App.btn.yes') ?>',
-            cancelButtonText  : '<?= lang('App.btn.no') ?>'
+            cancelButtonColor: '#dd6b55',
+            confirmButtonText: '<?= lang('App.btn.yes') ?>',
+            cancelButtonText: '<?= lang('App.btn.no') ?>'
         }).then((result) => {
             if (result.value) window.location.href = url;
         });

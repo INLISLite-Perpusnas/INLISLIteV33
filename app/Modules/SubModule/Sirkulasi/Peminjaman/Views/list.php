@@ -376,21 +376,83 @@ $slug = $request->getGet('slug') ?? '';
                     "sFirst": "<i class='fa fa-chevron-double-left'></i>",
                 }
             },
-            "columns": [
-                { data: 'no',               className: 'text-center', orderable: false }, // 0
-                { data: 'NomorBarcode' },                                                  // 1
-                { data: 'Title' },                                                         // 2
-                { data: 'LoanDate',         className: 'text-center' },                   // 3
-                { data: 'LateDays',         className: 'text-center' },                   // 4
+            "columns": [{
+                    data: 'no',
+                    className: 'text-center',
+                    orderable: false
+                }, // 0
+                {
+                    data: 'NomorBarcode',
+                    className: 'text-nowrap',
+                    render: function(data, type, row) {
+                        if (!data) {
+                            return '-';
+                        }
+
+                        // Ambil text barcode dari HTML
+                        var barcode = $('<div>').html(data).text().trim();
+
+                        // Escape
+                        var barcodeAttr = $('<div>').text(barcode).html();
+
+                        return '<span class="barcode-copy"' +
+                            ' data-barcode="' + barcodeAttr + '"' +
+                            ' title="Klik untuk menyalin barcode"' +
+                            ' style="' +
+                            'display:inline-flex;' +
+                            'align-items:center;' +
+                            'gap:5px;' +
+                            'padding:3px 5px;' +
+                            'border:1px solid transparent;' +
+                            'border-radius:4px;' +
+                            'background:transparent;' +
+                            'box-shadow:none;' +
+                            'cursor:pointer;' +
+                            'user-select:none;' +
+                            'transition:all .15s ease;' +
+                            '"' +
+                            ' onmouseover="' +
+                            'this.style.background=\'#f8f9fa\';' +
+                            'this.style.borderColor=\'#dee2e6\';' +
+                            'this.style.boxShadow=\'0 2px 5px rgba(0,0,0,.12)\';' +
+                            'this.style.transform=\'translateY(-1px)\';' +
+                            '"' +
+                            ' onmouseout="' +
+                            'this.style.background=\'transparent\';' +
+                            'this.style.borderColor=\'transparent\';' +
+                            'this.style.boxShadow=\'none\';' +
+                            'this.style.transform=\'translateY(0)\';' +
+                            '"' +
+                            '>' +
+                            '<span>' + barcodeAttr + '</span>' + '<i class="fa fa-copy text-primary barcode-copy-icon" style="opacity:.65;"></i>'+
+                            '</span>';
+                    }
+                }, //1
+                {
+                    data: 'Title'
+                }, // 2
+                {
+                    data: 'LoanDate',
+                    className: 'text-center'
+                }, // 3
+                {
+                    data: 'LateDays',
+                    className: 'text-center'
+                }, // 4
                 {
                     data: 'ISDRM',
                     className: 'text-center',
                     render: function(data) {
                         return data == '1' ? 'YA' : 'TIDAK';
                     }
-                },                                                                         // 5
-                { data: 'LocationLibrary' },                                               // 6
-                { data: 'UpdateDate',       className: 'text-center' },                   // 7
+                }, // 5
+                {
+                    data: 'LocationLibrary'
+                }, // 6
+                {
+                    data: 'UpdateDate',
+                    className: 'text-center'
+                }, // 7
                 {
                     data: 'action_notif',
                     className: 'text-center',
@@ -401,38 +463,62 @@ $slug = $request->getGet('slug') ?? '';
                         // Hanya tampilkan tombol jika sudah melewati jatuh tempo
                         if (row.DueDate < today) {
                             // Pakai data-* attribute agar aman dari karakter kutip
-                            return '<button'
-                                + ' class="btn-notify btn-notify-single btn-send-notif"'
-                                + ' data-id="'       + (row.ID || '') + '"'
-                                + ' data-fullname="' + String(row.Fullname || '').replace(/"/g, '&quot;') + '"'
-                                + ' data-title="'   + stripHtml(row.Title || '').replace(/"/g, '&quot;') + '"'
-                                + ' data-publisher="' + stripHtml(row.Publisher || '').replace(/"/g, '&quot;') + '"'
-                                + ' title="Kirim notifikasi keterlambatan ke anggota ini">'
-                                + '<i class="fa fa-bell"></i> Kirim Notifikasi Keterlambatan'
-                                + '</button>';
+                            return '<button' +
+                                ' class="btn-notify btn-notify-single btn-send-notif"' +
+                                ' data-id="' + (row.ID || '') + '"' +
+                                ' data-fullname="' + String(row.Fullname || '').replace(/"/g, '&quot;') + '"' +
+                                ' data-title="' + stripHtml(row.Title || '').replace(/"/g, '&quot;') + '"' +
+                                ' data-publisher="' + stripHtml(row.Publisher || '').replace(/"/g, '&quot;') + '"' +
+                                ' title="Kirim notifikasi keterlambatan ke anggota ini">' +
+                                '<i class="fa fa-bell"></i> Kirim Notifikasi Keterlambatan' +
+                                '</button>';
                         }
                         return '<span class="text-muted" style="font-size:11px;">\u2014</span>';
                     }
-                },                                                                         // 8 (Kirim Notifikasi)
-                { data: 'CollectionLoan_id', visible: false },                             // 9 (Grouping)
-                { data: 'ID',               visible: false },                              // 10
-                { data: 'Fullname',         visible: false },                              // 11
-                { data: 'DueDate',          visible: false },                              // 12
-                { data: 'Publisher',        visible: false }                              // 13
+                }, // 8 (Kirim Notifikasi)
+                {
+                    data: 'CollectionLoan_id',
+                    visible: false
+                }, // 9 (Grouping)
+                {
+                    data: 'ID',
+                    visible: false
+                }, // 10
+                {
+                    data: 'Fullname',
+                    visible: false
+                }, // 11
+                {
+                    data: 'DueDate',
+                    visible: false
+                }, // 12
+                {
+                    data: 'Publisher',
+                    visible: false
+                } // 13
             ],
-            "columnDefs": [
-                { targets: [0, 5, 10, 11, 12, 13], searchable: false },
-                { targets: [0, 2, 3, 4, 5, 8, 9],  orderable: false  }
+            "columnDefs": [{
+                    targets: [0, 5, 10, 11, 12, 13],
+                    searchable: false
+                },
+                {
+                    targets: [0, 2, 3, 4, 5, 8, 9],
+                    orderable: false
+                }
             ],
             "order": [
                 [9, "desc"]
             ],
             "drawCallback": function(settings) {
-                var api  = this.api();
-                var rows = api.rows({ page: 'current' }).nodes();
+                var api = this.api();
+                var rows = api.rows({
+                    page: 'current'
+                }).nodes();
                 var last = null;
 
-                api.column(groupColumn, { page: 'current' })
+                api.column(groupColumn, {
+                        page: 'current'
+                    })
                     .data()
                     .each(function(group, i) {
                         if (last !== group) {
@@ -455,6 +541,30 @@ $slug = $request->getGet('slug') ?? '';
         });
     });
 
+    $(document).on('click', '.barcode-copy', function() {
+        var $element = $(this);
+        var barcode = $element.attr('data-barcode');
+        var $icon = $element.find('.barcode-copy-icon');
+
+        navigator.clipboard.writeText(barcode).then(function() {
+
+            // Ubah icon copy -> check
+            $icon
+                .removeClass('fa-copy text-primary')
+                .addClass('fa-check text-success');
+
+            // Kembalikan setelah 1 detik
+            setTimeout(function() {
+                $icon
+                    .removeClass('fa-check text-success')
+                    .addClass('fa-copy text-primary');
+            }, 1000);
+
+        }).catch(function(err) {
+            console.error('Gagal menyalin barcode:', err);
+        });
+    });
+
     $('#tbl_data tbody').on('click', 'tr.group', function() {
         var currentOrder = t.order()[0];
         if (currentOrder[0] === groupColumn && currentOrder[1] === 'asc') {
@@ -472,9 +582,9 @@ $slug = $request->getGet('slug') ?? '';
 
     // Delegasikan event ke tbody agar tetap bekerja setelah DataTable re-draw
     $('#tbl_data tbody').on('click', '.btn-send-notif', function() {
-        var id        = $(this).data('id');
-        var fullname  = $(this).data('fullname');
-        var title     = $(this).data('title');
+        var id = $(this).data('id');
+        var fullname = $(this).data('fullname');
+        var title = $(this).data('title');
         var publisher = $(this).data('publisher');
         openSingleNotifyModal(id, fullname, title, publisher);
     });
@@ -484,17 +594,17 @@ $slug = $request->getGet('slug') ?? '';
 
         Swal.fire({
             title: '<span style="font-size:16px;">Kirim Notifikasi Keterlambatan?</span>',
-            html: '<div style="text-align:left;font-size:13px;">'
-                + '<p style="margin:0 0 6px;color:#6b7280;">Email notifikasi akan dikirim ke anggota:</p>'
-                + '<p style="margin:0 0 2px;font-weight:700;font-size:15px;color:#1e293b;">' + escapeHtml(fullname) + '</p>'
-                + '<p style="margin:0 0 10px;color:#64748b;font-size:12px;">'
-                + '<i class="fa fa-book mr-1 text-info"></i>'
-                + '<strong>' + escapeHtml(title) + '</strong>'
-                + (publisher ? ' <span style="color:#9ca3af;">— ' + escapeHtml(publisher) + '</span>' : '')
-                + '</p>'
-                + '<div style="background:#fef2f2;border-radius:6px;padding:8px 12px;font-size:12px;color:#b91c1c;">'
-                + '<i class="fa fa-exclamation-triangle mr-1"></i>Buku telah melewati jatuh tempo pengembalian.'
-                + '</div></div>',
+            html: '<div style="text-align:left;font-size:13px;">' +
+                '<p style="margin:0 0 6px;color:#6b7280;">Email notifikasi akan dikirim ke anggota:</p>' +
+                '<p style="margin:0 0 2px;font-weight:700;font-size:15px;color:#1e293b;">' + escapeHtml(fullname) + '</p>' +
+                '<p style="margin:0 0 10px;color:#64748b;font-size:12px;">' +
+                '<i class="fa fa-book mr-1 text-info"></i>' +
+                '<strong>' + escapeHtml(title) + '</strong>' +
+                (publisher ? ' <span style="color:#9ca3af;">— ' + escapeHtml(publisher) + '</span>' : '') +
+                '</p>' +
+                '<div style="background:#fef2f2;border-radius:6px;padding:8px 12px;font-size:12px;color:#b91c1c;">' +
+                '<i class="fa fa-exclamation-triangle mr-1"></i>Buku telah melewati jatuh tempo pengembalian.' +
+                '</div></div>',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#f97316',
@@ -521,7 +631,9 @@ $slug = $request->getGet('slug') ?? '';
             html: '<span style="font-size:13px;color:#6b7280;">Harap tunggu sebentar.</span>',
             allowOutsideClick: false,
             allowEscapeKey: false,
-            didOpen: function() { Swal.showLoading(); }
+            didOpen: function() {
+                Swal.showLoading();
+            }
         });
 
         $.ajax({
@@ -601,9 +713,9 @@ $slug = $request->getGet('slug') ?? '';
                 // Render list anggota
                 var html = '';
                 res.data.forEach(function(member) {
-                    var emailBadge = member.has_email
-                        ? `<span class="has-email-badge"><i class="fa fa-check"></i> ${member.email}</span>`
-                        : `<span class="no-email-badge"><i class="fa fa-times"></i> Tidak ada email</span>`;
+                    var emailBadge = member.has_email ?
+                        `<span class="has-email-badge"><i class="fa fa-check"></i> ${member.email}</span>` :
+                        `<span class="no-email-badge"><i class="fa fa-times"></i> Tidak ada email</span>`;
 
                     var booksHtml = member.books.map(function(book) {
                         return `<div class="book-item">
@@ -663,8 +775,8 @@ $slug = $request->getGet('slug') ?? '';
                 $('#send-all-content').hide();
 
                 var alertClass = res.success ? 'success' : 'warning';
-                var icon       = res.success ? 'check-circle' : 'exclamation-triangle';
-                var errHtml    = '';
+                var icon = res.success ? 'check-circle' : 'exclamation-triangle';
+                var errHtml = '';
 
                 if (res.detail && res.detail.errors && res.detail.errors.length > 0) {
                     errHtml = '<ul class="mt-2 mb-0 small">' +
@@ -697,23 +809,25 @@ $slug = $request->getGet('slug') ?? '';
                 var swalIcon = res.success ? 'success' : 'warning';
                 var swalHtml = '<p style="font-size:14px;margin-bottom:12px;">' + escapeHtml(res.message) + '</p>';
                 if (res.detail) {
-                    swalHtml += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;">'
-                        + '<div style="background:#fef2f2;border-radius:8px;padding:10px;text-align:center;">'
-                        + '<div style="font-size:24px;font-weight:800;color:#dc2626;">' + res.detail.total_item_terlambat + '</div>'
-                        + '<div style="font-size:11px;color:#6b7280;">Item Terlambat</div></div>'
-                        + '<div style="background:#f0fdf4;border-radius:8px;padding:10px;text-align:center;">'
-                        + '<div style="font-size:24px;font-weight:800;color:#16a34a;">' + res.detail.email_terkirim + '</div>'
-                        + '<div style="font-size:11px;color:#6b7280;">Email Terkirim</div></div>'
-                        + '<div style="background:#f8fafc;border-radius:8px;padding:10px;text-align:center;">'
-                        + '<div style="font-size:24px;font-weight:800;color:#64748b;">' + res.detail.email_gagal + '</div>'
-                        + '<div style="font-size:11px;color:#6b7280;">Gagal</div></div>'
-                        + '</div>';
+                    swalHtml += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;">' +
+                        '<div style="background:#fef2f2;border-radius:8px;padding:10px;text-align:center;">' +
+                        '<div style="font-size:24px;font-weight:800;color:#dc2626;">' + res.detail.total_item_terlambat + '</div>' +
+                        '<div style="font-size:11px;color:#6b7280;">Item Terlambat</div></div>' +
+                        '<div style="background:#f0fdf4;border-radius:8px;padding:10px;text-align:center;">' +
+                        '<div style="font-size:24px;font-weight:800;color:#16a34a;">' + res.detail.email_terkirim + '</div>' +
+                        '<div style="font-size:11px;color:#6b7280;">Email Terkirim</div></div>' +
+                        '<div style="background:#f8fafc;border-radius:8px;padding:10px;text-align:center;">' +
+                        '<div style="font-size:24px;font-weight:800;color:#64748b;">' + res.detail.email_gagal + '</div>' +
+                        '<div style="font-size:11px;color:#6b7280;">Gagal</div></div>' +
+                        '</div>';
                     if (res.detail.errors && res.detail.errors.length > 0) {
-                        swalHtml += '<div style="margin-top:10px;text-align:left;background:#fef2f2;border-radius:6px;padding:8px 12px;">'
-                            + '<p style="font-size:12px;font-weight:600;color:#dc2626;margin:0 0 4px;">Error Detail:</p>'
-                            + '<ul style="font-size:12px;color:#7f1d1d;margin:0;padding-left:16px;">'
-                            + res.detail.errors.map(function(e){ return '<li>' + escapeHtml(e) + '</li>'; }).join('')
-                            + '</ul></div>';
+                        swalHtml += '<div style="margin-top:10px;text-align:left;background:#fef2f2;border-radius:6px;padding:8px 12px;">' +
+                            '<p style="font-size:12px;font-weight:600;color:#dc2626;margin:0 0 4px;">Error Detail:</p>' +
+                            '<ul style="font-size:12px;color:#7f1d1d;margin:0;padding-left:16px;">' +
+                            res.detail.errors.map(function(e) {
+                                return '<li>' + escapeHtml(e) + '</li>';
+                            }).join('') +
+                            '</ul></div>';
                     }
                 }
 
@@ -750,12 +864,12 @@ $slug = $request->getGet('slug') ?? '';
     function confirmAutoReturnDigital() {
         Swal.fire({
             title: '<span style="font-size:16px;">Kembalikan Buku Digital yang Jatuh Tempo?</span>',
-            html: '<div style="text-align:left;font-size:13px;color:#6b7280;">'
-                + 'Sistem akan memindai semua peminjaman <strong>buku digital</strong> yang sudah '
-                + 'melewati jatuh tempo dan langsung mengembalikannya secara otomatis.'
-                + '<div style="margin-top:10px;background:#fef2f2;border-radius:6px;padding:8px 12px;font-size:12px;color:#b91c1c;">'
-                + '<i class="fa fa-exclamation-triangle mr-1"></i>Tindakan ini tidak bisa dibatalkan.'
-                + '</div></div>',
+            html: '<div style="text-align:left;font-size:13px;color:#6b7280;">' +
+                'Sistem akan memindai semua peminjaman <strong>buku digital</strong> yang sudah ' +
+                'melewati jatuh tempo dan langsung mengembalikannya secara otomatis.' +
+                '<div style="margin-top:10px;background:#fef2f2;border-radius:6px;padding:8px 12px;font-size:12px;color:#b91c1c;">' +
+                '<i class="fa fa-exclamation-triangle mr-1"></i>Tindakan ini tidak bisa dibatalkan.' +
+                '</div></div>',
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#22c55e',
@@ -780,7 +894,9 @@ $slug = $request->getGet('slug') ?? '';
             html: '<span style="font-size:13px;color:#6b7280;">Harap tunggu sebentar.</span>',
             allowOutsideClick: false,
             allowEscapeKey: false,
-            didOpen: function() { Swal.showLoading(); }
+            didOpen: function() {
+                Swal.showLoading();
+            }
         });
 
         $.ajax({
@@ -788,41 +904,49 @@ $slug = $request->getGet('slug') ?? '';
             type: 'POST',
             dataType: 'json',
             success: function(res) {
-                var detail = res.detail || { total_item: 0, berhasil: 0, gagal: 0, items: [], errors: [] };
+                var detail = res.detail || {
+                    total_item: 0,
+                    berhasil: 0,
+                    gagal: 0,
+                    items: [],
+                    errors: []
+                };
 
                 var itemsHtml = '';
                 if (detail.items && detail.items.length > 0) {
-                    itemsHtml = '<div style="max-height:220px;overflow-y:auto;text-align:left;margin-top:10px;">'
-                        + detail.items.map(function(it) {
-                            return '<div style="padding:6px 10px;border-bottom:1px dashed #f1f5f9;font-size:12px;">'
-                                + '<strong>' + escapeHtml(it.title || '-') + '</strong>'
-                                + ' <span style="color:#9ca3af;">(' + escapeHtml(it.barcode || '-') + ')</span><br>'
-                                + '<span style="color:#6b7280;">' + escapeHtml(it.member || '-') + '</span>'
-                                + '</div>';
-                        }).join('')
-                        + '</div>';
+                    itemsHtml = '<div style="max-height:220px;overflow-y:auto;text-align:left;margin-top:10px;">' +
+                        detail.items.map(function(it) {
+                            return '<div style="padding:6px 10px;border-bottom:1px dashed #f1f5f9;font-size:12px;">' +
+                                '<strong>' + escapeHtml(it.title || '-') + '</strong>' +
+                                ' <span style="color:#9ca3af;">(' + escapeHtml(it.barcode || '-') + ')</span><br>' +
+                                '<span style="color:#6b7280;">' + escapeHtml(it.member || '-') + '</span>' +
+                                '</div>';
+                        }).join('') +
+                        '</div>';
                 }
 
                 var errorsHtml = '';
                 if (detail.errors && detail.errors.length > 0) {
-                    errorsHtml = '<div style="margin-top:10px;text-align:left;background:#fef2f2;border-radius:6px;padding:8px 12px;">'
-                        + '<p style="font-size:12px;font-weight:600;color:#dc2626;margin:0 0 4px;">Gagal diproses:</p>'
-                        + '<ul style="font-size:12px;color:#7f1d1d;margin:0;padding-left:16px;">'
-                        + detail.errors.map(function(e) { return '<li>' + escapeHtml(e) + '</li>'; }).join('')
-                        + '</ul></div>';
+                    errorsHtml = '<div style="margin-top:10px;text-align:left;background:#fef2f2;border-radius:6px;padding:8px 12px;">' +
+                        '<p style="font-size:12px;font-weight:600;color:#dc2626;margin:0 0 4px;">Gagal diproses:</p>' +
+                        '<ul style="font-size:12px;color:#7f1d1d;margin:0;padding-left:16px;">' +
+                        detail.errors.map(function(e) {
+                            return '<li>' + escapeHtml(e) + '</li>';
+                        }).join('') +
+                        '</ul></div>';
                 }
 
-                var swalHtml = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px;">'
-                    + '<div style="background:#f8fafc;border-radius:8px;padding:10px;text-align:center;">'
-                    + '<div style="font-size:24px;font-weight:800;color:#64748b;">' + detail.total_item + '</div>'
-                    + '<div style="font-size:11px;color:#6b7280;">Jatuh Tempo</div></div>'
-                    + '<div style="background:#f0fdf4;border-radius:8px;padding:10px;text-align:center;">'
-                    + '<div style="font-size:24px;font-weight:800;color:#16a34a;">' + detail.berhasil + '</div>'
-                    + '<div style="font-size:11px;color:#6b7280;">Berhasil</div></div>'
-                    + '<div style="background:#fef2f2;border-radius:8px;padding:10px;text-align:center;">'
-                    + '<div style="font-size:24px;font-weight:800;color:#dc2626;">' + detail.gagal + '</div>'
-                    + '<div style="font-size:11px;color:#6b7280;">Gagal</div></div>'
-                    + '</div>' + itemsHtml + errorsHtml;
+                var swalHtml = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px;">' +
+                    '<div style="background:#f8fafc;border-radius:8px;padding:10px;text-align:center;">' +
+                    '<div style="font-size:24px;font-weight:800;color:#64748b;">' + detail.total_item + '</div>' +
+                    '<div style="font-size:11px;color:#6b7280;">Jatuh Tempo</div></div>' +
+                    '<div style="background:#f0fdf4;border-radius:8px;padding:10px;text-align:center;">' +
+                    '<div style="font-size:24px;font-weight:800;color:#16a34a;">' + detail.berhasil + '</div>' +
+                    '<div style="font-size:11px;color:#6b7280;">Berhasil</div></div>' +
+                    '<div style="background:#fef2f2;border-radius:8px;padding:10px;text-align:center;">' +
+                    '<div style="font-size:24px;font-weight:800;color:#dc2626;">' + detail.gagal + '</div>' +
+                    '<div style="font-size:11px;color:#6b7280;">Gagal</div></div>' +
+                    '</div>' + itemsHtml + errorsHtml;
 
                 Swal.fire({
                     icon: detail.total_item === 0 ? 'info' : (detail.gagal > 0 ? 'warning' : 'success'),

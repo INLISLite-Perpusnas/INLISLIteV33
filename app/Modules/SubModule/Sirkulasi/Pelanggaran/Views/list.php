@@ -53,7 +53,7 @@ $slug = $request->getGet('slug') ?? '';
 
 	<div class="main-card mb-3 card">
 		<div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Pelanggaran
-			
+
 		</div>
 		<div class="card-body">
 			<?= get_message('message'); ?>
@@ -91,28 +91,72 @@ $slug = $request->getGet('slug') ?? '';
 			"ajax": {
 				"url": '<?php echo site_url('api/sirkulasi-pelanggaran/datatable/' . $slug) ?>',
 			},
-		 "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
-                "<'row'<'col-md-12'tr>>" +
-                "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
+			"dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
+				"<'row'<'col-md-12'tr>>" +
+				"<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
 
-            "pagingType": "full_numbers",
-            "oLanguage": {
-                "sSearch": "<i class='fa fa-search'></i> _INPUT_",
-                "sLengthMenu": "_MENU_",
-                "oPaginate": {
-                    "sNext": "<i class='fa fa-chevron-right'></i>",
-                    "sPrevious": "<i class='fa fa-chevron-left'></i>",
-                    "sLast": "<i class='fa fa-chevron-double-right'></i>",
-                    "sFirst": "<i class='fa fa-chevron-double-left'></i>",
-                }
-            },
+			"pagingType": "full_numbers",
+			"oLanguage": {
+				"sSearch": "<i class='fa fa-search'></i> _INPUT_",
+				"sLengthMenu": "_MENU_",
+				"oPaginate": {
+					"sNext": "<i class='fa fa-chevron-right'></i>",
+					"sPrevious": "<i class='fa fa-chevron-left'></i>",
+					"sLast": "<i class='fa fa-chevron-double-right'></i>",
+					"sFirst": "<i class='fa fa-chevron-double-left'></i>",
+				}
+			},
 			"columns": [{
 					data: 'no',
 					className: 'text-center',
 					orderable: false
 				},
 				{
-					data: 'NomorBarcode'
+					data: 'NomorBarcode',
+					className: 'text-nowrap',
+					render: function(data, type, row) {
+						if (!data) {
+							return '-';
+						}
+
+						// Ambil text barcode dari HTML
+						var barcode = $('<div>').html(data).text().trim();
+
+						// Escape
+						var barcodeAttr = $('<div>').text(barcode).html();
+
+						return '<span class="barcode-copy"' +
+							' data-barcode="' + barcodeAttr + '"' +
+							' title="Klik untuk menyalin barcode"' +
+							' style="' +
+							'display:inline-flex;' +
+							'align-items:center;' +
+							'gap:5px;' +
+							'padding:3px 5px;' +
+							'border:1px solid transparent;' +
+							'border-radius:4px;' +
+							'background:transparent;' +
+							'box-shadow:none;' +
+							'cursor:pointer;' +
+							'user-select:none;' +
+							'transition:all .15s ease;' +
+							'"' +
+							' onmouseover="' +
+							'this.style.background=\'#f8f9fa\';' +
+							'this.style.borderColor=\'#dee2e6\';' +
+							'this.style.boxShadow=\'0 2px 5px rgba(0,0,0,.12)\';' +
+							'this.style.transform=\'translateY(-1px)\';' +
+							'"' +
+							' onmouseout="' +
+							'this.style.background=\'transparent\';' +
+							'this.style.borderColor=\'transparent\';' +
+							'this.style.boxShadow=\'none\';' +
+							'this.style.transform=\'translateY(0)\';' +
+							'"' +
+							'>' +
+							'<span>' + barcodeAttr + '</span>' + '<i class="fa fa-copy text-primary barcode-copy-icon" style="opacity:.65;"></i>' +
+							'</span>';
+					}
 				},
 				{
 					data: 'Title'
@@ -257,6 +301,30 @@ $slug = $request->getGet('slug') ?? '';
 					}
 				});
 			}
+		});
+	});
+
+	$(document).on('click', '.barcode-copy', function() {
+		var $element = $(this);
+		var barcode = $element.attr('data-barcode');
+		var $icon = $element.find('.barcode-copy-icon');
+
+		navigator.clipboard.writeText(barcode).then(function() {
+
+			// Ubah icon copy -> check
+			$icon
+				.removeClass('fa-copy text-primary')
+				.addClass('fa-check text-success');
+
+			// Kembalikan setelah 1 detik
+			setTimeout(function() {
+				$icon
+					.removeClass('fa-check text-success')
+					.addClass('fa-copy text-primary');
+			}, 1000);
+
+		}).catch(function(err) {
+			console.error('Gagal menyalin barcode:', err);
 		});
 	});
 
