@@ -139,7 +139,21 @@ class Pelanggaran extends \Base\Controllers\BaseResourceController
 
 	public function detail($id = null)
 	{
-		$data = $this->pelanggaranModel->find($id);
+		$db = db_connect();
+		$data = $db->table('pelanggaran p')
+			->select('p.ID, p.CollectionLoan_id, p.CollectionLoanItem_id, p.JenisPelanggaran_id, p.JenisDenda_id, p.JumlahDenda, p.JumlahSuspend, p.Paid, p.CreateDate, p.UpdateDate')
+			->select('col.NomorBarcode')
+			->select('a.Title, a.Publisher')
+			->select('m.Fullname, m.MemberNo')
+			->select('cli.LateDays')
+			->join('collectionloanitems cli', 'cli.ID = p.CollectionLoanItem_id', 'left')
+			->join('collections col', 'col.ID = p.Collection_id', 'left')
+			->join('catalogs a', 'a.ID = col.Catalog_id', 'left')
+			->join('members m', 'm.ID = p.Member_id', 'left')
+			->where('p.ID', $id)
+			->get()
+			->getRowArray();
+
 		if ($data) {
 			return $this->respond($data);
 		} else {
@@ -176,25 +190,33 @@ class Pelanggaran extends \Base\Controllers\BaseResourceController
 
 	public function edit($id = null)
 	{
-		$update_data = array(
-			'LoanDate' => $this->request->getPost('LoanDate'),
-			'DueDate' => $this->request->getPost('DueDate'),
-			'LateDays' => $this->request->getPost('LateDays'),
-			'ActualReturn' => $this->request->getPost('ActualReturn'),
-		);
+		$jenisPelanggaranId = $this->request->getPost('JenisPelanggaran_id');
+		$jenisDendaId       = $this->request->getPost('JenisDenda_id');
+		$jumlahDenda        = $this->request->getPost('JumlahDenda');
+		$jumlahSuspend      = $this->request->getPost('JumlahSuspend');
+
+		$update_data = [
+			'JenisPelanggaran_id' => $jenisPelanggaranId,
+			'JenisDenda_id'       => $jenisDendaId,
+			'JumlahDenda'         => (float)$jumlahDenda,
+			'JumlahSuspend'       => (float)$jumlahSuspend,
+			'UpdateBy'            => user_id(),
+			'UpdateDate'          => date('Y-m-d H:i:s'),
+			'UpdateTerminal'      => $this->request->getIPAddress(),
+		];
 
 		$update_data_id = $this->pelanggaranModel->update($id, $update_data);
 		if ($update_data_id) {
-			$this->session->setFlashdata('toastr_msg', 'Pelanggaran berhasil disimpan');
+			$this->session->setFlashdata('toastr_msg', 'Pelanggaran berhasil diperbarui');
 			$this->session->setFlashdata('toastr_type', 'success');
 			$response = [
 				'error' => false,
-				'message' => 'Pelanggaran berhasil disimpan',
+				'message' => 'Pelanggaran berhasil diperbarui',
 			];
 		} else {
 			$response = [
 				'error' => true,
-				'message' => 'Pelanggaran gagal disimpan. Silakan coba lagi',
+				'message' => 'Pelanggaran gagal diperbarui. Silakan coba lagi',
 			];
 		}
 
