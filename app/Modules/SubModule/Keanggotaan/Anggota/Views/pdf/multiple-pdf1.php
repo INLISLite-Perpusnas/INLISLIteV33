@@ -1,3 +1,8 @@
+<?php
+$orientation = ($orientation ?? 'landscape') === 'portrait' ? 'portrait' : 'landscape';
+// Landscape: 4 anggota per halaman A4. Portrait: 3 anggota per halaman A4.
+$cards_per_page = $orientation === 'portrait' ? 3 : 4;
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -93,7 +98,7 @@
             box-shadow: 0 5mm 15mm rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
-            padding: 15mm 12mm;
+            padding: 12mm;
             gap: 2mm;
             box-sizing: border-box;
             position: relative;
@@ -344,6 +349,96 @@
             text-shadow: 0.2mm 0.2mm 0.5mm rgba(255,255,255,0.3);
         }
 
+        /* =====================================================
+           PORTRAIT LAYOUT — kartu tegak (vertikal)
+           3 anggota per halaman A4
+           ===================================================== */
+        body.orient-portrait .a4-container {
+            padding: 8mm 12mm;
+        }
+        body.orient-portrait .card-row {
+            height: 86mm;
+        }
+        body.orient-portrait .card-front,
+        body.orient-portrait .card-back {
+            width: 55mm;
+            height: 84mm;
+        }
+
+        /* ---- Kartu depan: tata ulang jadi kolom ---- */
+        body.orient-portrait .card-front {
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            text-align: center;
+            padding-top: 15mm;
+            box-sizing: border-box;
+        }
+        body.orient-portrait .front-left,
+        body.orient-portrait .front-right {
+            display: contents;
+        }
+        body.orient-portrait .front-header {
+            flex-direction: column;
+            align-items: center;
+            gap: 1mm;
+            text-align: center;
+        }
+        body.orient-portrait .front-logo {
+            width: 9mm;
+            height: 9mm;
+        }
+        body.orient-portrait .front-library-name {
+            font-size: 2.3mm;
+            text-align: center;
+        }
+        body.orient-portrait .front-name,
+        body.orient-portrait .front-photo,
+        body.orient-portrait .front-member-type,
+        body.orient-portrait .front-member-no,
+        body.orient-portrait .front-qr {
+            position: relative;
+            z-index: 5;
+        }
+        body.orient-portrait .front-name       { order: 1; font-size: 2.7mm; margin-bottom: 1.5mm; width: 100%; }
+        body.orient-portrait .front-photo      { order: 2; width: 16mm; height: 19mm; margin-bottom: 1.5mm; }
+        body.orient-portrait .front-member-type{ order: 3; margin-top: 0; font-size: 2.6mm; padding: 1mm 3mm; margin-bottom: 1.5mm; }
+        body.orient-portrait .front-member-no  { order: 4; font-size: 3mm; margin-bottom: 1.5mm; }
+        body.orient-portrait .front-qr         { order: 5; padding: 1.5mm; }
+        body.orient-portrait .front-qr img     { width: 13mm; height: 13mm; }
+
+        /* ---- Kartu belakang: rapikan untuk lebar sempit ---- */
+        body.orient-portrait .card-back {
+            padding: 3mm;
+        }
+        body.orient-portrait .back-content {
+            padding: 2mm;
+        }
+        body.orient-portrait .back-terms-title {
+            font-size: 3.2mm;
+            margin-bottom: 2.5mm;
+        }
+        body.orient-portrait .back-terms-list li {
+            font-size: 2.3mm;
+            margin-bottom: 1.5mm;
+        }
+        body.orient-portrait .back-terms-list li::before {
+            min-width: 3mm;
+            margin-right: 1mm;
+        }
+        body.orient-portrait .back-separator {
+            margin: 2.5mm 0;
+        }
+        body.orient-portrait .back-footer {
+            padding: 0 2mm 2mm 2mm;
+        }
+        body.orient-portrait .back-office-name {
+            font-size: 2.9mm;
+        }
+        body.orient-portrait .back-office-address {
+            font-size: 2.5mm;
+        }
+
         /* --- Upload Section --- */
         .upload-section {
             background: white;
@@ -430,7 +525,7 @@
         }
     </style>
 </head>
-<body>
+<body class="orient-<?= $orientation ?>">
     <div class="upload-section">
         <h3>🎨 Kustomisasi Background Kartu</h3>
         
@@ -475,11 +570,10 @@
     </div>
 
     <?php
-    // Split members into pages (2 rows per page, 1 member per row = 2 members per page)
-    $cards_per_page = 2;
+    // Split members into pages ($cards_per_page anggota per halaman, 1 anggota per row)
     $pages = array_chunk($members_data, $cards_per_page);
-    
-    foreach ($pages as $page_index => $page_data): 
+
+    foreach ($pages as $page_index => $page_data):
     ?>
         <div class="a4-container" style="<?= $page_index > 0 ? 'page-break-before: always;' : '' ?>">
             <?php foreach ($page_data as $member): ?>
@@ -524,10 +618,10 @@
                 </div>
             <?php endforeach; ?>
             
-            <?php 
-            // Fill empty rows if page has only 1 member
-            $empty_rows = 2 - count($page_data);
-            for ($i = 0; $i < $empty_rows; $i++): 
+            <?php
+            // Fill empty rows so the last page stays aligned
+            $empty_rows = $cards_per_page - count($page_data);
+            for ($i = 0; $i < $empty_rows; $i++):
             ?>
                 <div class="card-row">
                     <!-- Empty slots for alignment -->

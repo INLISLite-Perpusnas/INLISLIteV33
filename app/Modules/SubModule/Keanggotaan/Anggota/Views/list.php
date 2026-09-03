@@ -486,17 +486,29 @@ $request = service('request');
         // Konfirmasi sebelum print
         Swal.fire({
             title: 'Konfirmasi Print Kartu',
-            html: `Akan mencetak kartu untuk <strong>${selectedIds.length}</strong> anggota yang dipilih`,
+            html: `Akan mencetak kartu untuk <strong>${selectedIds.length}</strong> anggota yang dipilih.<br><br>
+                <div style="text-align:left;display:inline-block">
+                  <label style="margin-right:18px;cursor:pointer">
+                    <input type="radio" name="swal_orientation" value="landscape" checked> Landscape
+                  </label>
+                  <label style="cursor:pointer">
+                    <input type="radio" name="swal_orientation" value="portrait"> Portrait
+                  </label>
+                </div>`,
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#dd6b55',
             confirmButtonText: 'Ya, Print Kartu',
-            cancelButtonText: 'Batal'
+            cancelButtonText: 'Batal',
+            preConfirm: () => {
+                const sel = document.querySelector('input[name="swal_orientation"]:checked');
+                return sel ? sel.value : 'landscape';
+            }
         }).then((result) => {
             if (result.isConfirmed) {
                 // Kirim data ke controller
-                printKartuAnggota(selectedIds);
+                printKartuAnggota(selectedIds, result.value || 'landscape');
             }
         });
 
@@ -528,7 +540,7 @@ $request = service('request');
     });
 
     // Fungsi untuk mengirim data ke controller print kartu
-    function printKartuAnggota(ids) {
+    function printKartuAnggota(ids, orientation) {
         // Method 1: Kirim via POST dengan form hidden
         var form = $('<form></form>');
         form.attr('method', 'post');
@@ -539,6 +551,9 @@ $request = service('request');
         <?php if (csrf_token()): ?>
             form.append('<input type="hidden" name="<?= csrf_token() ?>" value="<?= csrf_hash() ?>" />');
         <?php endif; ?>
+
+        // Orientasi kartu (landscape / portrait)
+        form.append('<input type="hidden" name="orientation" value="' + (orientation === 'portrait' ? 'portrait' : 'landscape') + '" />');
 
         // Tambahkan IDs sebagai array
         $.each(ids, function(index, value) {

@@ -130,6 +130,10 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
             throw new \Exception('ID anggota tidak valid');
         }
 
+        // Orientasi kartu: 'landscape' (default) atau 'portrait'
+        $orientation = strtolower((string) $this->request->getPost('orientation'));
+        $this->data['orientation'] = $orientation === 'portrait' ? 'portrait' : 'landscape';
+
         $db = db_connect();
 
         $perpus_name = $db->table('settingparameters')
