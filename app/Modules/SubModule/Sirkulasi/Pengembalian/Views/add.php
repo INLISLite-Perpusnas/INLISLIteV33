@@ -915,29 +915,51 @@
                 if (overdueBooks.length > 0) {
                     this.showViolationModal(overdueBooks);
                 } else {
-                    // Tidak ada keterlambatan, langsung proses
-                    this.submitReturn(false, null);
+                    // Jika tidak ada keterlambatan, tanyakan konfirmasi kerusakan/hilang
+                Swal.fire({
+                        title: 'Konfirmasi Kondisi Pengembalian',
+                        text: 'Apakah terdapat pelanggaran pada buku yang dikembalikan, seperti buku hilang, rusak, atau kondisi lainnya?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#e8394d',
+                        cancelButtonColor: '#1B3878',
+                        confirmButtonText: 'Ya, Ada Pelanggaran',
+                        cancelButtonText: 'Tidak, Kondisi Baik'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.showViolationModal(this.booksToReturn);
+                        } else if (result.dismiss === Swal.DismissReason.cancel) {
+                            // Tidak ada pelanggaran, langsung proses pengembalian
+                            this.submitReturn(false, null);
+                        }
+                    });
                 }
             }
 
             showViolationModal(overdueBooks) {
-                // Render daftar buku terlambat di modal
+                // Render daftar buku di modal
                 const listEl = document.getElementById('overdueBookList');
                 listEl.innerHTML = overdueBooks.map(b => `
             <div style="background:var(--gray-100);border-radius:var(--radius-md);padding:10px 14px;margin-bottom:8px;border-left:4px solid var(--danger);">
                 <div style="font-size:14px;font-weight:700;color:var(--gray-800);">${b.title || '-'}</div>
                 <div style="font-size:12px;color:var(--gray-500);">
-                    <i class="fa fa-barcode"></i> ${b.barcode} &nbsp;|&nbsp;
-                    <span style="color:var(--danger);font-weight:700;"><i class="fa fa-exclamation-circle"></i> Terlambat ${b.days_overdue} hari</span>
+                    <i class="fa fa-barcode"></i> ${b.barcode} ${b.is_overdue ? `&nbsp;|&nbsp; <span style="color:var(--danger);font-weight:700;"><i class="fa fa-exclamation-circle"></i> Terlambat ${b.days_overdue} hari</span>` : ''}
                 </div>
             </div>`).join('');
 
-                document.getElementById('overdueInfoText').textContent =
-                    `${overdueBooks.length} dari ${this.booksToReturn.length} buku melewati tanggal jatuh tempo.`;
+                const hasOverdue = overdueBooks.some(b => b.is_overdue);
+                if (hasOverdue) {
+                    const overdueCount = overdueBooks.filter(b => b.is_overdue).length;
+                    document.getElementById('overdueInfoText').textContent =
+                        `${overdueCount} dari ${this.booksToReturn.length} buku melewati tanggal jatuh tempo.`;
+                } else {
+                    document.getElementById('overdueInfoText').textContent =
+                        `Proses pencatatan pelanggaran (kerusakan/kehilangan) untuk ${this.booksToReturn.length} buku.`;
+                }
 
                 // Reset form
                 document.getElementById('jumlahDendaInput').value = '';
-                document.getElementById('perHariCheck').checked = true;
+                document.getElementById('perHariCheck').checked = hasOverdue;
                 document.getElementById('dendaPreview').textContent = '';
 
                 // Simpan referensi overdueBooks untuk kalkulasi preview
@@ -958,7 +980,7 @@
                 }
 
                 if (perHari) {
-                    const totalDays = overdue.reduce((s, b) => s + b.days_overdue, 0);
+                    const totalDays = overdue.reduce((s, b) => s + (b.days_overdue || 0), 0);
                     const total = totalDays * nominal;
                     preview.innerHTML = `<i class="fa fa-info-circle"></i> Estimasi total denda: <b>Rp ${total.toLocaleString('id-ID')}</b> (${totalDays} hari × Rp ${nominal.toLocaleString('id-ID')})`;
                 } else {
