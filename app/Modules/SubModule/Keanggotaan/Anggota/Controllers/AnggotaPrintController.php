@@ -34,6 +34,10 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
         }
         $this->data['anggota'] = $anggota;
 
+        // Orientasi kartu: 'landscape' (default) atau 'portrait'
+        $orientation = strtolower((string) $this->request->getGet('orientation'));
+        $this->data['orientation'] = $orientation === 'portrait' ? 'portrait' : 'landscape';
+
         $this->data['perpus_name'] = $db->table('settingparameters')
             ->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value ?? "Perpustakaan Nasional";
 
@@ -90,6 +94,10 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
     public function printkartubelakang($id = null)
     {
         $db = db_connect();
+
+        // Orientasi kartu: 'landscape' (default) atau 'portrait'
+        $orientation = strtolower((string) $this->request->getGet('orientation'));
+        $this->data['orientation'] = $orientation === 'portrait' ? 'portrait' : 'landscape';
 
         $this->data['perpus_name'] = $db->table('settingparameters')
             ->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value ?? "Perpustakaan Nasional";

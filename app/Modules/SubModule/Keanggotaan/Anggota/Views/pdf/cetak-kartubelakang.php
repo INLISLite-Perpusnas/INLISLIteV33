@@ -52,7 +52,69 @@
             
             @page {
                 margin: 0;
-                size: landscape;
+            }
+        }
+
+        /* =====================================================
+           PORTRAIT LAYOUT — kartu belakang ditata vertikal
+           ===================================================== */
+        body.orient-portrait #libraryCardBack {
+            width: 620px;
+            min-width: 620px;
+            max-width: 620px;
+            height: 1004px;
+            min-height: 1004px;
+            max-height: 1004px;
+            padding: 55px 48px;
+            justify-content: flex-start;
+        }
+        body.orient-portrait .terms-title {
+            font-size: 27px;
+            margin-bottom: 30px;
+        }
+        body.orient-portrait .terms-list li {
+            font-size: 20px;
+            margin-bottom: 18px;
+        }
+        body.orient-portrait .separator {
+            margin: 30px 0 0;
+        }
+        body.orient-portrait .footer-section {
+            margin-top: auto;
+        }
+        body.orient-portrait .office-name {
+            font-size: 25px;
+        }
+        body.orient-portrait .office-address {
+            font-size: 18px;
+        }
+
+        /* Preview di layar */
+        @media screen {
+            body.orient-portrait {
+                justify-content: flex-start;
+            }
+            body.orient-portrait #libraryCardBack {
+                transform: scale(0.82);
+                transform-origin: top center;
+                margin-bottom: -170px;
+            }
+        }
+
+        /* Saat dicetak */
+        @media print {
+            body.orient-portrait {
+                display: block !important;
+                overflow: visible !important;
+                height: auto !important;
+            }
+            body.orient-portrait #libraryCardBack {
+                position: static !important;
+                width: 620px !important;
+                height: 1004px !important;
+                margin: 0 auto !important;
+                transform: scale(0.92) !important;
+                transform-origin: top center !important;
             }
         }
 
@@ -411,7 +473,8 @@
         }
     </style>
 </head>
-<body>
+<?php $orientation = ($orientation ?? 'landscape') === 'portrait' ? 'portrait' : 'landscape'; ?>
+<body class="orient-<?= $orientation ?>">
     <div class="upload-section">
         <h3>🎨 Kustomisasi Background Bagian Belakang</h3>
         
@@ -463,6 +526,11 @@
     </div>
 
     <div class="controls">
+        <div style="margin-bottom: 15px;">
+            <strong style="margin-right: 10px;">Orientasi:</strong>
+            <button type="button" id="btnLandscape" onclick="setOrientation('landscape')">🖼️ Landscape</button>
+            <button type="button" id="btnPortrait" onclick="setOrientation('portrait')">📄 Portrait</button>
+        </div>
         <button onclick="printCard()">🖨️ Print sebagai PDF</button>
         <button onclick="downloadAsHTML()" class="download-btn">💾 Download HTML</button>
         <button onclick="generatePDFWithLibrary()" class="download-btn">📄 Generate PDF (Advanced)</button>
@@ -646,51 +714,84 @@
             }
         }
 
+        // Orientasi kartu (landscape / portrait)
+        let currentOrientation = <?= json_encode($orientation) ?>;
+
+        function applyOrientationStyle() {
+            let styleEl = document.getElementById('dynamicPageStyle');
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'dynamicPageStyle';
+                document.head.appendChild(styleEl);
+            }
+            // Ukuran halaman cetak; tata letak kartu diatur lewat class body.orient-*
+            styleEl.textContent = '@page { size: ' + (currentOrientation === 'portrait' ? 'portrait' : 'landscape') + '; margin: 0; }';
+        }
+
+        function setOrientation(orientation) {
+            currentOrientation = orientation === 'portrait' ? 'portrait' : 'landscape';
+            document.body.classList.toggle('orient-portrait', currentOrientation === 'portrait');
+            document.body.classList.toggle('orient-landscape', currentOrientation === 'landscape');
+
+            const btnP = document.getElementById('btnPortrait');
+            const btnL = document.getElementById('btnLandscape');
+            if (btnP && btnL) {
+                const active = 'background-color:#2196F3;';
+                btnP.style.cssText = currentOrientation === 'portrait' ? active : '';
+                btnL.style.cssText = currentOrientation === 'landscape' ? active : '';
+            }
+
+            applyOrientationStyle();
+            showStatus('Orientasi kartu: ' + (currentOrientation === 'portrait' ? 'Portrait' : 'Landscape'));
+        }
+
         // Print Function
         function printCard() {
             try {
                 const controls = document.querySelector('.controls');
                 const status = document.querySelector('#status');
                 const uploadSections = document.querySelectorAll('.upload-section');
-                
+
                 controls.style.display = 'none';
                 status.style.display = 'none';
                 uploadSections.forEach(section => section.style.display = 'none');
-                
-                const style = document.createElement('style');
-                style.textContent = `
-                    @page {
-                        size: landscape;
-                        margin: 0;
-                    }
-                    @media print {
-                        body {
-                            margin: 0 !important;
-                            padding: 0 !important;
-                            overflow: hidden !important;
+
+                applyOrientationStyle();
+
+                if (currentOrientation !== 'portrait') {
+                    const style = document.createElement('style');
+                    style.id = 'tempLandscapePrintStyle';
+                    style.textContent = `
+                        @media print {
+                            body {
+                                margin: 0 !important;
+                                padding: 0 !important;
+                                overflow: hidden !important;
+                            }
+                            .card-container {
+                                transform: scale(0.8) !important;
+                                transform-origin: center center !important;
+                                position: absolute !important;
+                                top: 50% !important;
+                                left: 50% !important;
+                                margin-left: -402px !important;
+                                margin-top: -247px !important;
+                            }
                         }
-                        .card-container {
-                            transform: scale(0.8) !important;
-                            transform-origin: center center !important;
-                            position: absolute !important;
-                            top: 50% !important;
-                            left: 50% !important;
-                            margin-left: -402px !important;
-                            margin-top: -247px !important;
-                        }
-                    }
-                `;
-                document.head.appendChild(style);
-                
+                    `;
+                    document.head.appendChild(style);
+                }
+
                 window.print();
-                
+
                 setTimeout(() => {
                     controls.style.display = 'block';
                     status.style.display = 'block';
                     uploadSections.forEach(section => section.style.display = 'block');
-                    document.head.removeChild(style);
+                    const tmp = document.getElementById('tempLandscapePrintStyle');
+                    if (tmp) document.head.removeChild(tmp);
                 }, 1000);
-                
+
                 showStatus('Dialog print telah dibuka. Pilih "Save as PDF" sebagai printer.');
             } catch (error) {
                 showStatus('Error saat membuka dialog print: ' + error.message, 'error');
@@ -759,41 +860,41 @@
                 uploadSections.forEach(section => section.style.display = 'none');
                 
                 await new Promise(resolve => setTimeout(resolve, 100));
-                
+
+                const isPortrait = currentOrientation === 'portrait';
+
                 const canvas = await html2canvas(element, {
                     scale: 2,
                     useCORS: true,
                     allowTaint: true,
                     backgroundColor: null,
-                    width: 1004,
-                    height: 618,
+                    width: isPortrait ? element.offsetWidth : 1004,
+                    height: isPortrait ? element.offsetHeight : 618,
                     scrollX: 0,
                     scrollY: 0,
                     windowWidth: 1400,
-                    windowHeight: 900
+                    windowHeight: isPortrait ? 1400 : 900
                 });
-                
+
                 controls.style.display = 'block';
                 status.style.display = 'block';
                 uploadSections.forEach(section => section.style.display = 'block');
-                
+
                 const imgData = canvas.toDataURL('image/png', 1.0);
-                
+
                 const { jsPDF } = window.jspdf;
-                
-                const originalWidth = 1004;
-                const originalHeight = 618;
-                const ratio = originalWidth / originalHeight;
-                
-                const cardWidthMM = 297;
+
+                const ratio = canvas.width / canvas.height;
+
+                const cardWidthMM = isPortrait ? 210 : 297;
                 const cardHeightMM = Math.round(cardWidthMM / ratio);
-                
+
                 const pdf = new jsPDF({
-                    orientation: 'landscape',
+                    orientation: isPortrait ? 'portrait' : 'landscape',
                     unit: 'mm',
                     format: [cardWidthMM, cardHeightMM]
                 });
-                
+
                 pdf.addImage(imgData, 'PNG', 0, 0, cardWidthMM, cardHeightMM, '', 'FAST');
                 
                 pdf.save('kartu-anggota-perpustakaan-belakang-custom.pdf');
@@ -811,6 +912,7 @@
         window.addEventListener('load', function() {
             console.log('Card back with customization loaded successfully');
             updateOverlay();
+            setOrientation(currentOrientation); // Set orientasi awal + tombol aktif
         });
     </script>
 </body>

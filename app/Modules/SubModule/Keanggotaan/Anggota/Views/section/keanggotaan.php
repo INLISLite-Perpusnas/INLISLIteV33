@@ -1,10 +1,16 @@
 <form id="frm" method="post" action="<?= base_url('anggota/edit/' . $anggota->ID) ?>">
   <div class="form-group mt-1">
     <?php if (!$is_anggota) : ?>
-      <a target="_blank" href="<?= base_url('anggota/printanggota/' . $anggota->ID . '?slug=template-1'); ?>" data-toggle="tooltip" data-placement="top" title="Cetak Kartu" class="btn btn-lg btn-primary"><i class="fa fa-print"></i> Cetak Kartu Anggota
-      </a>
-      <a href="javascript:void(0);" data-href="<?= base_url('anggota/printkartubelakang/' . $anggota->ID . '?slug=template-2'); ?>" data-toggle="tooltip" data-placement="top" title="Cetak Kartu" class="btn btn-lg btn-primary remove-data"><i class="fa fa-print"></i> Cetak Kartu Belakang
-      </a>
+      <div class="mb-3">
+        <a target="_blank" href="<?= base_url('anggota/printanggota/' . $anggota->ID . '?slug=template-1&orientation=landscape'); ?>" data-toggle="tooltip" data-placement="top" title="Cetak Kartu (Landscape)" class="btn btn-lg btn-primary"><i class="fa fa-print"></i> Cetak Kartu Anggota
+        </a>
+        <a target="_blank" href="<?= base_url('anggota/printanggota/' . $anggota->ID . '?slug=template-1&orientation=portrait'); ?>" data-toggle="tooltip" data-placement="top" title="Cetak Kartu (Portrait)" class="btn btn-lg btn-primary"><i class="fa fa-print"></i> Cetak Kartu Anggota (Portrait)
+        </a>
+        <a href="javascript:void(0);" data-href="<?= base_url('anggota/printkartubelakang/' . $anggota->ID . '?slug=template-2&orientation=landscape'); ?>" data-toggle="tooltip" data-placement="top" title="Cetak Kartu Belakang (Landscape)" class="btn btn-lg btn-primary remove-data"><i class="fa fa-print"></i> Cetak Kartu Belakang
+        </a>
+        <a href="javascript:void(0);" data-href="<?= base_url('anggota/printkartubelakang/' . $anggota->ID . '?slug=template-2&orientation=portrait'); ?>" data-toggle="tooltip" data-placement="top" title="Cetak Kartu Belakang (Portrait)" class="btn btn-lg btn-primary remove-data"><i class="fa fa-print"></i> Cetak Kartu Belakang (Portrait)
+        </a>
+      </div>
 
       <a href="javascript:void(0);" data-href="<?= base_url('anggota/bebaspustaka/' . $anggota->ID); ?>" data-toggle="tooltip" data-placement="top" title="Cetak Kartu" class="btn btn-lg btn-primary cetak-kartu"><i class="fa fa-print"></i> Cetak Bebas pustaka
       </a>
