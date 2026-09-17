@@ -48,7 +48,7 @@ if (!function_exists('get_member_category')) {
 }
 
 if (!function_exists('member_register')) {
-    function member_register($email, $username, $password, $activate_hash = '', $form_data)
+    function member_register($email, $username, $password, $activate_hash = '', $form_data = [])
     {
         helper('parameter');
         $memberModel = new \Member\Models\MemberModel();
@@ -79,20 +79,24 @@ if (!function_exists('member_register')) {
             ];
             $user = new Myth\Auth\Entities\User($data_user);
             $users->withGroup('anggota');
-            $users->save($user);
+            if (!$users->save($user)) {
+                throw new \RuntimeException('Akun pengguna gagal disimpan.');
+            }
 
             $form_data['MemberNo']        = $username;
             $form_data['RegisterDate']    = date('Y-m-d');
             $form_data['StatusAnggota_id'] = 1;
+            $form_data['IsKeranjang']     = 0;
 
-            $memberModel->insert($form_data);
+            if ($memberModel->insert($form_data) === false) {
+                throw new \RuntimeException('Data anggota gagal disimpan.');
+            }
 
         } catch (\Exception $e) {
             $db->transRollback();
             return [
                 'error'       => true,
                 'message'     => 'Error, data anggota gagal disimpan. Silakan coba lagi',
-                'description' => $e->getMessage(),
             ];
         }
 

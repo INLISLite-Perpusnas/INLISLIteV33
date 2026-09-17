@@ -83,15 +83,12 @@ $branch = get_ref_single('branchs', 'ID=' . $user->branch_id, 'data');
 
                     <?php if (is_member('admin')) : ?>
                         <div class="position-relative form-group">
-                            <label for="groups">Role*</label>
-                            <div>
+                            <label for="frm_edit_groups">Role*</label>
+                            <select class="form-control" name="groups" id="frm_edit_groups" style="width: 100%;" required>
                                 <?php foreach ($groups as $group) : ?>
-                                    <div class="custom-checkbox custom-control custom-control-inline">
-                                        <input type="checkbox" id="groups<?= $group->id ?>" name="groups[]" value="<?= $group->id ?>" class="custom-control-input" <?= (in_array($group->name, $currentGroups)) ? 'checked="checked"' : '' ?>>
-                                        <label class="custom-control-label" for="groups<?= $group->id ?>"><?= $group->name ?></label>
-                                    </div>
+                                    <option value="<?= $group->id ?>" <?= array_key_exists($group->id, $currentGroups) ? 'selected' : '' ?>><?= $group->name ?></option>
                                 <?php endforeach; ?>
-                            </div>
+                            </select>
                         </div>
                     <?php endif ?>
 
@@ -130,6 +127,10 @@ $branch = get_ref_single('branchs', 'ID=' . $user->branch_id, 'data');
             placeholder: "Pilih Akses Lokasi",
             allowClear: true,
             // dropdownParent wajib di-set ke modal agar search box select2 bisa diklik saat di dalam modal
+            dropdownParent: $('#modal_edit')
+        });
+        $('#frm_edit_groups').select2({
+            placeholder: "Pilih role",
             dropdownParent: $('#modal_edit')
         });
     });

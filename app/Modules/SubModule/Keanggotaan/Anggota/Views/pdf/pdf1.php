@@ -173,18 +173,34 @@
             }
         }
 
+        /* html2canvas harus menangkap ukuran asli kartu, bukan versi preview
+           yang diperkecil untuk layar. */
+        body.orient-portrait .card-container.pdf-capture {
+            transform: none !important;
+            transform-origin: top left !important;
+            margin-bottom: 0 !important;
+        }
+
         /* Saat dicetak */
         @media print {
             body.orient-portrait {
                 display: block !important;
                 overflow: visible !important;
-                height: auto !important;
+                width: 620px !important;
+                height: 1004px !important;
+                margin: 0 !important;
+                padding: 0 !important;
             }
             body.orient-portrait .card-container {
                 position: static !important;
-                margin: 0 auto !important;
-                transform: scale(0.92) !important;
-                transform-origin: top center !important;
+                width: 620px !important;
+                height: 1004px !important;
+                min-height: 0 !important;
+                margin: 0 !important;
+                padding: 40px 34px 36px !important;
+                transform: none !important;
+                transform-origin: top left !important;
+                border-radius: 0 !important;
             }
         }
 
@@ -773,8 +789,11 @@ async function handleBackgroundUpload(event) {
                 styleEl.id = 'dynamicPageStyle';
                 document.head.appendChild(styleEl);
             }
-            // Ukuran halaman cetak; transform kartu diatur lewat class body.orient-*
-            styleEl.textContent = '@page { size: ' + (currentOrientation === 'portrait' ? 'portrait' : 'landscape') + '; margin: 0; }';
+            // Pada mode portrait, halaman PDF harus sama dengan kartu. Sebelumnya
+            // halaman A4/Letter membuat area putih karena kartu diperkecil.
+            styleEl.textContent = currentOrientation === 'portrait'
+                ? '@page { size: 620px 1004px; margin: 0; }'
+                : '@page { size: landscape; margin: 0; }';
         }
 
         function setOrientation(orientation) {
@@ -878,27 +897,35 @@ async function handleBackgroundUpload(event) {
                 const controls = document.querySelector('.controls');
                 const status = document.querySelector('#status');
                 const uploadSections = document.querySelectorAll('.upload-section');
+                const isPortrait = currentOrientation === 'portrait';
                 
                 controls.style.display = 'none';
                 status.style.display = 'none';
                 uploadSections.forEach(section => section.style.display = 'none');
+
+                // Preview portrait diperkecil di layar. Lepaskan transform tersebut
+                // sebelum diraster agar background mengisi seluruh halaman PDF.
+                if (isPortrait) {
+                    element.classList.add('pdf-capture');
+                    await new Promise(resolve => requestAnimationFrame(resolve));
+                }
                 
                 await new Promise(resolve => setTimeout(resolve, 100));
-
-                const isPortrait = currentOrientation === 'portrait';
 
                 const canvas = await html2canvas(element, {
                     scale: 2,
                     useCORS: true,
                     allowTaint: true,
                     backgroundColor: null,
-                    width: isPortrait ? element.offsetWidth : 1004,
-                    height: isPortrait ? element.offsetHeight : 618,
+                    width: isPortrait ? 620 : 1004,
+                    height: isPortrait ? 1004 : 618,
                     scrollX: 0,
                     scrollY: 0,
                     windowWidth: 1200,
                     windowHeight: isPortrait ? 1400 : 800
                 });
+
+                element.classList.remove('pdf-capture');
 
                 // Restore elements
                 controls.style.display = 'block';
@@ -918,13 +945,32 @@ async function handleBackgroundUpload(event) {
                     format: [pdfW, pdfH]
                 });
 
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH, '', 'FAST');
+                // Gunakan dimensi halaman aktual dari jsPDF agar gambar tidak
+                // menyisakan area kosong bila jsPDF menyesuaikan orientasi.
+                pdf.addImage(
+                    imgData,
+                    'PNG',
+                    0,
+                    0,
+                    pdf.internal.pageSize.getWidth(),
+                    pdf.internal.pageSize.getHeight(),
+                    '',
+                    'FAST'
+                );
                 
                 pdf.save('kartu-anggota-perpustakaan.pdf');
                 
                 showStatus('PDF berhasil digenerate dan didownload!');
                 
             } catch (error) {
+                const element = document.getElementById('libraryCard');
+                if (element) element.classList.remove('pdf-capture');
+                const controls = document.querySelector('.controls');
+                const status = document.querySelector('#status');
+                const uploadSections = document.querySelectorAll('.upload-section');
+                if (controls) controls.style.display = 'block';
+                if (status) status.style.display = 'block';
+                uploadSections.forEach(section => section.style.display = 'block');
                 showStatus('Error saat menggenerate PDF: ' + error.message, 'error');
                 console.error('PDF generation error:', error);
             }
