@@ -22,7 +22,8 @@ $slug = $request->getGet('slug') ?? '';
             <div class="page-title-actions">
                 <nav class="" aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
+                        <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i>
+                                Home</a></li>
                         <li class="breadcrumb-item">Setting</li>
                         <li class="breadcrumb-item" aria-current="page">Paramater</li>
                     </ol>
@@ -31,7 +32,7 @@ $slug = $request->getGet('slug') ?? '';
         </div>
     </div>
 
-   
+
 
     <ul class="body-tabs body-tabs-layout tabs-animated body-tabs-animated nav">
         <li class="nav-item">
@@ -39,9 +40,10 @@ $slug = $request->getGet('slug') ?? '';
                 <span>Semua</span>
             </a>
         </li>
-        <?php foreach (get_ref('ref-parameter', 'slug') as $row) : ?>
+        <?php foreach (get_ref('ref-parameter', 'slug') as $row): ?>
             <li class="nav-item">
-                <a class="nav-link <?= ($slug == (slugify($row->name))) ? 'active' : '' ?>" href="<?= base_url('parameter/?slug=' . slugify(($row->name))) ?>">
+                <a class="nav-link <?= ($slug == (slugify($row->name))) ? 'active' : '' ?>"
+                    href="<?= base_url('parameter/?slug=' . slugify(($row->name))) ?>">
                     <span><?= $row->name ?></span>
                 </a>
             </li>
@@ -51,7 +53,9 @@ $slug = $request->getGet('slug') ?? '';
     <div class="main-card mb-3 card">
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Paramater
             <div class="btn-actions-pane-right actions-icon-btn">
-                <a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class=" btn btn-success" title=""><i class="fa fa-plus"></i> Tambah Parameter</a>
+                <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create"
+                    href="javascript:void(0);" class=" btn btn-success" title=""><i class="fa fa-plus"></i> Tambah
+                    Parameter</a>
             </div>
         </div>
         <div class="card-body">
@@ -78,17 +82,17 @@ $slug = $request->getGet('slug') ?? '';
 <?= $this->include('Parameter\Views\update_modal'); ?>
 <script>
     var t;
-    $(document).ready(function() {
+    $(document).ready(function () {
         t = $('#tbl_params').DataTable({
             "processing": true,
             "serverSide": true,
             "ajax": {
                 "url": '<?php echo site_url('api/parameter/datatable/' . $slug); ?>',
             },
-          "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
-                   "<'row'<'col-md-12'tr>>" +
-                   "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
-                   
+            "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
+                "<'row'<'col-md-12'tr>>" +
+                "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
+
             "pagingType": "full_numbers",
             "oLanguage": {
                 "sSearch": "<i class='fa fa-search'></i> _INPUT_",
@@ -101,43 +105,43 @@ $slug = $request->getGet('slug') ?? '';
                 }
             },
             "columns": [{
-                    data: 'no',
-                    orderable: false,
-                    className: 'text-center'
-                },
-                {
-                    data: 'category',
-                    className: 'text-left'
-                },
-                {
-                    data: 'name',
-                    className: 'text-left'
-                },
-                {
-                    data: 'value',
-                    className: 'text-left'
-                },
-                {
-                    data: 'description',
-                    className: 'text-left'
-                },
-                {
-                    data: 'action',
-                    orderable: false,
-                    className: 'text-center'
-                },
+                data: 'no',
+                orderable: false,
+                className: 'text-center'
+            },
+            {
+                data: 'category',
+                className: 'text-left'
+            },
+            {
+                data: 'name',
+                className: 'text-left'
+            },
+            {
+                data: 'value',
+                className: 'text-left'
+            },
+            {
+                data: 'description',
+                className: 'text-left'
+            },
+            {
+                data: 'action',
+                orderable: false,
+                className: 'text-center'
+            },
             ],
             "order": [
                 [2, "asc"]
             ],
-            "drawCallback": function(data, type, full, meta) {
+            "drawCallback": function (data, type, full, meta) {
                 var api = this.api();
                 var data = api.rows().data();
             },
-            "initComplete": function(settings, json) {
+            "initComplete": function (settings, json) {
                 var $searchInput = $('div.dataTables_filter input');
                 $searchInput.unbind();
-                $searchInput.bind('keyup', function(e) {
+                $searchInput.bind('keyup', function (e) {
                     if (e.keyCode == 13) {
                         if (this.value.length == 0) {
                             t.search('').draw();
@@ -153,19 +157,19 @@ $slug = $request->getGet('slug') ?? '';
         });
     });
 
-    $('#search_name').on('keyup', function(e) {
+    $('#search_name').on('keyup', function (e) {
         t.columns('name:name').search(this.value).draw();
     });
 
-    $('#search_value').on('keyup', function() {
+    $('#search_value').on('keyup', function () {
         t.columns('value:name').search(this.value).draw();
     });
 
-    $('#search_description').on('keyup', function() {
+    $('#search_description').on('keyup', function () {
         t.columns('description:name').search(this.value).draw();
     });
 
-    $('#tbl_params').on('click', '.remove-data', function() {
+    $('#tbl_params').on('click', '.remove-data', function () {
         var url = $(this).attr('data-href');
         Swal.fire({
             title: '<?= lang('App.swal.are_you_sure') ?>',
@@ -184,7 +188,7 @@ $slug = $request->getGet('slug') ?? '';
         return false;
     });
 
-    $(".apply-param-status").on('change', function() {
+    $(".apply-param-status").on('change', function () {
         var switchStatus = $(this).is(':checked');
         var paramName = $(this).attr('data-param');
         var paramValue = $(this).attr('data-class');
