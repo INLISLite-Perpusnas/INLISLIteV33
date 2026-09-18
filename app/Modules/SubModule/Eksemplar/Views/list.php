@@ -102,42 +102,234 @@ $paper_size_config = [
 ];
 
 // Encode ke JSON agar bisa dikonsumsi JavaScript tanpa request AJAX tambahan
-$paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
+$flashIcon = session()->getFlashdata('swal_icon');
+$flashTitle = session()->getFlashdata('swal_title');
+$flashMessage = session()->getFlashdata('swal_html') ?? session()->getFlashdata('swal_text');
 ?>
 <?= $this->extend('App\Views\layout\main'); ?>
 
 <?= $this->section('style'); ?>
 <style>
-    /* Samakan tinggi semua tombol prepend dengan select */
-    #cetak_panel .input-group-prepend .btn,
-    .aksi-bar .input-group-prepend .btn {
-        height: 38px;
-        line-height: 1;
-        white-space: nowrap;
-        font-size: 13px;
+    .exemplar-list-page .page-title-heading h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        line-height: 1.2;
     }
+    .exemplar-list-page .page-title-subheading { margin: .25rem 0 0; }
+    .exemplar-list-page .app-page-title .page-title-wrapper {
+        display: flex;
+        width: 100%;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+    .exemplar-list-page .app-page-title .page-title-heading {
+        display: flex;
+        align-items: flex-start;
+        gap: .75rem;
+        min-width: 0;
+    }
+    .exemplar-list-page .app-page-title .page-title-icon {
+        display: inline-flex;
+        flex: 0 0 1.8rem;
+        width: 1.8rem;
+        height: 1.8rem;
+        margin: 0;
+        padding: 0;
+        align-items: center;
+        justify-content: center;
+        color: inherit;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+    }
+    .exemplar-list-page .app-page-title .page-title-icon i {
+        display: block;
+        font-size: 1.5rem;
+        line-height: 1.2;
+    }
+    .exemplar-list-page .app-page-title .page-title-actions {
+        margin-left: auto;
+        text-align: right;
+    }
+    .exemplar-list-page .app-page-title .breadcrumb {
+        justify-content: flex-end;
+        margin: 0;
+        padding: 0;
+        background: transparent;
+    }
+    .exemplar-list-page .exemplar-filter-label {
+        margin: 0; color: #fff; background: #495057; border: 1px solid #495057;
+        padding: .5rem .75rem; border-radius: .25rem 0 0 .25rem; white-space: nowrap;
+    }
+    .exemplar-list-page .exemplar-switch {
+        appearance: none; width: 2.75rem; height: 1.5rem; margin: 0;
+        border: 2px solid #6c757d; border-radius: 999px; background: #fff;
+        cursor: pointer; vertical-align: middle;
+        transition: background-color .15s ease, border-color .15s ease;
+    }
+    .exemplar-list-page .exemplar-switch::before {
+        content: ""; display: block; width: 1rem; height: 1rem; margin: .125rem;
+        border-radius: 50%; background: #6c757d; transition: transform .15s ease;
+    }
+    .exemplar-list-page .exemplar-switch:checked { background: #087f5b; border-color: #087f5b; }
+    .exemplar-list-page .exemplar-switch:checked::before { background: #fff; transform: translateX(1.25rem); }
+    .exemplar-list-page .exemplar-switch:disabled { cursor: wait; opacity: .65; }
+    .exemplar-list-page .exemplar-switch:focus-visible,
+    .exemplar-list-page input[type="checkbox"]:focus-visible,
+    .exemplar-list-page select:focus-visible,
+    .exemplar-list-page button:focus-visible,
+    .exemplar-list-page a:focus-visible { outline: 3px solid #f59f00; outline-offset: 2px; }
+    .exemplar-list-page #tbl_data th { vertical-align: middle; }
+    .exemplar-list-page #tbl_data .badge {
+        display: inline-block;
+        padding: .35em .65em;
+        color: #fff !important;
+        font-size: .75em;
+        font-weight: 700;
+        line-height: 1;
+        border-radius: .25rem;
+    }
+    .exemplar-list-page #tbl_data .badge-secondary {
+        color: #fff !important;
+        background-color: #495057 !important;
+    }
+    .exemplar-list-page #tbl_data .badge-success {
+        color: #fff !important;
+        background-color: #087f5b !important;
+    }
+    .exemplar-list-page .exemplar-controls { gap: .75rem; }
+    .exemplar-list-page .exemplar-create-actions { gap: .6rem; }
+    .exemplar-list-page .exemplar-search-wrapper {
+        margin-left: auto;
+    }
+    .exemplar-list-page .exemplar-search { min-width: 14rem; }
+    .exemplar-list-page .exemplar-pagination {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: .35rem;
+        background: #f8fafc;
+        border: 1px solid #dbe3ec;
+        border-radius: .75rem;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, .06);
+    }
+    .exemplar-list-page .exemplar-page-numbers {
+        display: inline-flex;
+        align-items: center;
+        gap: .25rem;
+    }
+    .exemplar-list-page .exemplar-page-button {
+        display: inline-flex;
+        min-width: 2.25rem;
+        height: 2.25rem;
+        padding: 0 .7rem;
+        gap: .35rem;
+        align-items: center;
+        justify-content: center;
+        color: #334155;
+        background: #fff;
+        border: 1px solid #cbd5e1;
+        border-radius: .5rem;
+        font-weight: 600;
+        line-height: 1;
+        transition: color .15s ease, background-color .15s ease, border-color .15s ease, transform .15s ease;
+    }
+    .exemplar-list-page .exemplar-page-button:hover:not(:disabled) {
+        color: #fff;
+        background: #3155a6;
+        border-color: #3155a6;
+        transform: translateY(-1px);
+    }
+    .exemplar-list-page .exemplar-page-button.is-active {
+        color: #fff;
+        background: #243f7e;
+        border-color: #243f7e;
+        box-shadow: 0 3px 8px rgba(36, 63, 126, .25);
+    }
+    .exemplar-list-page .exemplar-page-button:disabled {
+        color: #94a3b8;
+        background: #f1f5f9;
+        border-color: #e2e8f0;
+        cursor: not-allowed;
+    }
+    .exemplar-list-page .exemplar-page-ellipsis {
+        min-width: 1.5rem;
+        color: #64748b;
+        text-align: center;
+    }
+    .exemplar-list-page #exemplar_info { color: #495057; }
+    @media (prefers-reduced-motion: reduce) {
+        .exemplar-list-page *, .exemplar-list-page *::before { transition: none !important; }
+    }
+    @media (max-width: 576px) {
+        .exemplar-list-page .app-page-title .page-title-wrapper {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+        .exemplar-list-page .app-page-title .page-title-actions {
+            align-self: flex-end;
+        }
+        .exemplar-list-page .exemplar-search-wrapper {
+            width: 100%;
+            margin-left: 0;
+        }
+        .exemplar-list-page .exemplar-search {
+            width: 100%;
+        }
+        .exemplar-list-page .exemplar-pagination-label {
+            display: none;
+        }
+        .exemplar-list-page .exemplar-page-button {
+            min-width: 2rem;
+            height: 2rem;
+            padding: 0 .5rem;
+        }
+    }
+
+    .exemplar-list-page .app-page-title { margin-bottom: 1.5rem; }
+    .exemplar-list-page .card-header { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+    .exemplar-list-page .btn-actions-pane-right { margin-left: auto; }
+    .exemplar-list-page .card-footer { display: block; }
+    .exemplar-list-page .input-group { max-width: 100%; }
+    .exemplar-list-page .btn-primary { background: #2456a6; border-color: #2456a6; }
+    .exemplar-list-page .btn-success { background: #087f5b; border-color: #087f5b; }
+    .exemplar-list-page .text-primary { color: #2456a6 !important; }
+    .exemplar-list-page .text-muted { color: #545b62 !important; }
+    .exemplar-list-page #tbl_data .badge-warning { color: #212529 !important; background: #ffc107; }
+    .exemplar-list-page #tbl_data .badge-info { background: #126779; }
+    .exemplar-list-page #tbl_data .badge-danger { background: #b42318; }
+    .exemplar-list-page .barcode-copy,
+    .exemplar-list-page .exemplar-sort { border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+    .exemplar-list-page .barcode-copy { display: inline-flex; gap: .5rem; align-items: center; padding: .4rem; font-weight: 600; }
+    .exemplar-list-page .exemplar-sort { font-weight: 700; }
+    .exemplar-list-page .exemplar-sort::after { content: ' \2195'; }
+    .exemplar-list-page [aria-sort="ascending"] .exemplar-sort::after { content: ' \2191'; }
+    .exemplar-list-page [aria-sort="descending"] .exemplar-sort::after { content: ' \2193'; }
+    .exemplar-list-page .table-responsive { min-height: 24rem; }
 </style>
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
 
-<div class="app-main__inner">
+<section class="app-main__inner" aria-labelledby="exemplar-title">
     <div class="app-page-title">
         <div class="page-title-wrapper">
             <div class="page-title-heading">
                 <div class="page-title-icon">
-                    <i class="pe-7s-server icon-gradient bg-strong-bliss"></i>
+                    <i class="pe-7s-server icon-gradient bg-strong-bliss" aria-hidden="true"></i>
                 </div>
-                <div>Eksemplar
-                    <div class="page-title-subheading">Daftar semua Eksemplar</div>
+                <div><h1 id="exemplar-title">Eksemplar</h1>
+                    <p class="page-title-subheading">Daftar semua Eksemplar</p>
                 </div>
             </div>
             <div class="page-title-actions">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item">
-                            <a href="<?= base_url('Eksemplar') ?>">
-                                <i class="fa fa-home"></i> Home
+                            <a href="<?= base_url('eksemplar') ?>">
+                                <i class="fa fa-home" aria-hidden="true"></i> Home
                             </a>
                         </li>
                         <li class="breadcrumb-item" aria-current="page">Eksemplar</li>
@@ -147,16 +339,22 @@ $paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
         </div>
     </div>
 
+    <?php if ($flashIcon): ?>
+        <div class="alert <?= in_array($flashIcon, ['success', 'info'], true) ? 'alert-success' : 'alert-warning' ?>" role="status">
+            <strong><?= esc($flashTitle ?? '') ?></strong>
+            <?= esc(strip_tags($flashMessage ?? '')) ?>
+        </div>
+    <?php endif; ?>
     <div class="main-card mb-3 card">
 
         <!-- ── Card Header ──────────────────────────────────────────────── -->
         <div class="card-header">
-            <i class="header-icon lnr-list icon-gradient bg-plum-plate"></i>
+            <i class="header-icon fa fa-list icon-gradient bg-plum-plate" aria-hidden="true"></i>
             Daftar Eksemplar
             <div class="btn-actions-pane-right actions-icon-btn">
                 <?php if (is_allowed('eksemplar/create')) : ?>
-                    <a href="<?= base_url('eksemplar/create?slug=' . $slug) ?>" class="btn btn-success">
-                        <i class="fa fa-plus"></i> Tambah Eksemplar
+                    <a href="<?= esc(base_url('eksemplar/create') . '?' . http_build_query(['slug' => $slug])) ?>" class="btn btn-success">
+                        <i class="fa fa-plus" aria-hidden="true"></i> Tambah Eksemplar
                     </a>
                 <?php endif; ?>
             </div>
@@ -169,7 +367,7 @@ $paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
             <div class="d-flex align-items-center flex-wrap" style="gap:6px; padding: 8px 0 4px 0;">
                 <div class="input-group" style="width:280px; flex-shrink:0;">
                     <div class="input-group-prepend">
-                        <span class="btn btn-secondary">Pilih Aksi</span>
+                        <label class="exemplar-filter-label" for="action">Pilih Aksi</label>
                     </div>
                     <select class="form-control" id="action" name="action">
                         <option value="">-- Pilih Aksi --</option>
@@ -180,7 +378,7 @@ $paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
                 </div>
 
                 <button class="btn btn-primary" id="btnProcess2" type="button" style="height:38px; padding: 0 16px; flex-shrink:0;">
-                    <i class="fa fa-check"></i> Proses
+                    <i class="fa fa-check" aria-hidden="true"></i> Proses
                 </button>
             </div>
 
@@ -191,7 +389,7 @@ $paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
                     <!-- Jenis Kertas -->
                     <div class="input-group" style="width:280px; flex-shrink:0;">
                         <div class="input-group-prepend">
-                            <span class="btn btn-secondary">Jenis Kertas</span>
+                            <label class="exemplar-filter-label" for="paper_size">Jenis Kertas</label>
                         </div>
                         <select class="form-control" id="paper_size" name="paper_size">
                             <option value="">-- Pilih Jenis Kertas --</option>
@@ -213,7 +411,7 @@ $paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
                     <!-- Model Label (muncul setelah kertas dipilih) -->
                     <div class="input-group" id="label_model_wrapper" style="display:none; width:320px; flex-shrink:0;">
                         <div class="input-group-prepend">
-                            <span class="btn btn-secondary">Model Label</span>
+                            <label class="exemplar-filter-label" for="label_model">Model Label</label>
                         </div>
                         <select class="form-control" id="label_model" name="label_model">
                             <option value="">-- Pilih Model --</option>
@@ -223,7 +421,7 @@ $paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
                     <!-- Format Output -->
                     <div class="input-group" style="width:200px; flex-shrink:0;">
                         <div class="input-group-prepend">
-                            <span class="btn btn-secondary">Format</span>
+                            <label class="exemplar-filter-label" for="output_format">Format</label>
                         </div>
                         <select class="form-control" id="output_format" name="output_format">
                             <option value="pdf">PDF</option>
@@ -236,7 +434,7 @@ $paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
                 <!-- Info ringkas pilihan aktif -->
                 <div id="model_info_row" style="display:none; margin-top:4px;">
                     <small class="text-muted">
-                        <i class="fa fa-info-circle text-primary"></i>
+                        <i class="fa fa-info-circle text-primary" aria-hidden="true"></i>
                         <span id="model_info_text"></span>
                     </small>
                 </div>
@@ -253,7 +451,7 @@ $paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
             <div class="d-flex align-items-center flex-wrap mb-3" style="gap:6px;">
                 <div class="input-group" style="width:280px; flex-shrink:0;">
                     <div class="input-group-prepend">
-                        <span class="btn btn-secondary"><i class="fa fa-map-marker-alt"></i> Lokasi Perpustakaan</span>
+                        <label class="exemplar-filter-label" for="filter_location_library"><i class="fa fa-map-marker-alt" aria-hidden="true"></i> Lokasi Perpustakaan</label>
                     </div>
                     <select class="form-control" id="filter_location_library">
                         <option value="">-- Semua Lokasi Perpustakaan --</option>
@@ -262,7 +460,7 @@ $paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
 
                 <div class="input-group" style="width:280px; flex-shrink:0;">
                     <div class="input-group-prepend">
-                        <span class="btn btn-secondary"><i class="fa fa-door-open"></i> Lokasi Ruang</span>
+                        <label class="exemplar-filter-label" for="filter_location_id"><i class="fa fa-door-open" aria-hidden="true"></i> Lokasi Ruang</label>
                     </div>
                     <select class="form-control" id="filter_location_id" disabled>
                         <option value="">-- Pilih Lokasi Perpustakaan Dahulu --</option>
@@ -271,7 +469,7 @@ $paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
 
                 <div class="input-group" style="width:280px; flex-shrink:0;">
                     <div class="input-group-prepend">
-                        <span class="btn btn-secondary"><i class="fa fa-cube"></i> Bentuk Fisik</span>
+                        <label class="exemplar-filter-label" for="filter_media_id"><i class="fa fa-cube" aria-hidden="true"></i> Bentuk Fisik</label>
                     </div>
                     <select class="form-control" id="filter_media_id">
                         <option value="">-- Semua Bentuk Fisik --</option>
@@ -279,501 +477,83 @@ $paper_size_json = json_encode($paper_size_config, JSON_UNESCAPED_UNICODE);
                 </div>
 
                 <button class="btn btn-outline-secondary" id="btnResetFilter" type="button" style="height:38px; flex-shrink:0;">
-                    <i class="fa fa-undo"></i> Reset Filter
+                    <i class="fa fa-undo" aria-hidden="true"></i> Reset Filter
                 </button>
             </div>
 
+            <p id="exemplar_filter_error" class="text-danger" role="status" hidden>Pilihan filter gagal dimuat. Silakan muat ulang halaman.</p>
+            <div class="exemplar-controls d-flex align-items-end flex-wrap mb-3">
+                <div>
+                    <label for="exemplar_page_length" class="d-block mb-1">Data per halaman</label>
+                    <select id="exemplar_page_length" class="form-control">
+                        <option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option>
+                    </select>
+                </div>
+                <div class="exemplar-search-wrapper">
+                    <label for="exemplar_search" class="d-block mb-1">Cari eksemplar</label>
+                    <input type="search" id="exemplar_search" class="form-control exemplar-search" placeholder="Barcode, judul, no. induk..." autocomplete="off">
+                </div>
+            </div>
+            <div class="table-responsive" role="region" aria-label="Daftar eksemplar" tabindex="0">
             <form name="form_items" id="form_items">
                 <table style="width:100%;" id="tbl_data"
                     class="table table-hover table-striped table-bordered">
+                    <caption class="sr-only">Daftar eksemplar beserta status dan tindakan pengelolaannya.</caption>
                     <thead>
                         <tr>
-                            <th class="text-center" width="35">No</th>
-                            <th class="text-center" width="35">
-                                <input type="checkbox" class="check_data" title="Pilih Semua">
+                            <th scope="col" class="text-center" width="35">No</th>
+                            <th scope="col" class="text-center" width="35">
+                                <input type="checkbox" class="check_data" title="Pilih Semua" aria-label="Pilih semua eksemplar pada halaman ini">
                             </th>
-                            <th class="text-center" width="100">No. Barcode</th>
-                            <th class="text-center" width="100">Tanggal Pengadaan</th>
-                            <th class="text-center" width="100">No. Induk</th>
-                            <th class="text-center" style="min-width: 300px;">Data Bibliografis</th>
-                            <th class="text-center">DRM</th>
-                            <th class="text-center">Karantina</th>
-                            <th class="text-center">OPAC</th>
-                            <th class="text-center">Status</th>
-                            <th class="text-center" width="100">Lokasi</th>
-                            <th class="text-center" width="80">Aksi</th>
+                            <th scope="col" class="text-center" width="100"><button type="button" class="exemplar-sort" data-sort="NomorBarcode">No. Barcode</button></th>
+                            <th scope="col" class="text-center" width="100"><button type="button" class="exemplar-sort" data-sort="TanggalPengadaan">Tanggal Pengadaan</button></th>
+                            <th scope="col" class="text-center" width="100"><button type="button" class="exemplar-sort" data-sort="NoInduk">No. Induk</button></th>
+                            <th scope="col" class="text-center" style="min-width: 300px;"><button type="button" class="exemplar-sort" data-sort="Title">Data Bibliografis</button></th>
+                            <th scope="col" class="text-center">DRM</th>
+                            <th scope="col" class="text-center">Karantina</th>
+                            <th scope="col" class="text-center">OPAC</th>
+                            <th scope="col" class="text-center"><button type="button" class="exemplar-sort" data-sort="StatusName">Status</button></th>
+                            <th scope="col" class="text-center" width="100"><button type="button" class="exemplar-sort" data-sort="LocationLibraryName">Lokasi</button></th>
+                            <th scope="col" class="text-center" width="80">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody></tbody>
+                    <tbody id="exemplar_rows"><tr><td colspan="12" class="text-center">Memuat data eksemplar...</td></tr></tbody>
                 </table>
             </form>
+            </div>
+            <div class="d-flex justify-content-between align-items-center flex-wrap mt-3">
+                <p id="exemplar_info" class="mb-0" aria-live="polite">Memuat data eksemplar...</p>
+                <button type="button" id="exemplar_retry" class="btn btn-outline-secondary" hidden>Coba lagi</button>
+                <nav aria-label="Navigasi halaman eksemplar">
+                    <div class="exemplar-pagination">
+                        <button type="button" class="exemplar-page-button" id="exemplar_prev" disabled aria-label="Halaman sebelumnya">&#8249;</button>
+                        <div class="exemplar-page-numbers" id="exemplar_page_numbers"></div>
+                        <button type="button" class="exemplar-page-button" id="exemplar_next" disabled aria-label="Halaman berikutnya">&#8250;</button>
+                    </div>
+                </nav>
+            </div>
         </div>
 
     </div>
-</div>
+</section>
 
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
 <script>
-    $(document).ready(function() {
-
-        // ── SweetAlert Flashdata ───────────────────────────────────────────────
-        <?php if (session()->getFlashdata('swal_icon')) : ?>
-            Swal.fire({
-                icon: 'success',
-                title: '<?= session()->getFlashdata('swal_title') ?>',
-                html: '<?= session()->getFlashdata('swal_html') ?? session()->getFlashdata('swal_text') ?>',
-                showConfirmButton: false,
-                timer: 3000
-            });
-        <?php endif; ?>
-
-        // ── Konfigurasi kertas & model (di-inject dari PHP) ────────────────────
-        var paperSizeConfig = <?= $paper_size_json ?>;
-
-        // ── DataTable ─────────────────────────────────────────────────────────
-        var t = $('#tbl_data').DataTable({
-            processing: true,
-            serverSide: true,
-            scrollX: true,
-            scrollCollapse: true,
-            ajax: {
-                url: '<?= site_url('api/eksemplar/datatable') ?>',
-                data: function(d) {
-                    d.location_library_id = $('#filter_location_library').val();
-                    d.location_id = $('#filter_location_id').val();
-                    d.media_id = $('#filter_media_id').val();
-                }
-            },
-            dom: "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
-                "<'row'<'col-md-12'tr>>" +
-                "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
-            pagingType: 'full_numbers',
-            oLanguage: {
-                sSearch: "<i class='fa fa-search'></i> _INPUT_",
-                sLengthMenu: "_MENU_",
-                oPaginate: {
-                    sNext: "<i class='fa fa-chevron-right'></i>",
-                    sPrevious: "<i class='fa fa-chevron-left'></i>",
-                    sLast: "<i class='fa fa-chevron-double-right'></i>",
-                    sFirst: "<i class='fa fa-chevron-double-left'></i>"
-                }
-            },
-            columns: [{
-                    data: 'no',
-                    className: 'text-center',
-                    searchable: false, // Wajib false
-                    orderable: false
-                },
-                {
-                    data: 'ID',
-                    className: 'text-center',
-                    orderable: false
-                },
-                {
-                    data: 'NomorBarcode',
-                    className: 'text-left',
-                    render: function(data, type, row) {
-                        if (!data) {
-                            return '-';
-                        }
-
-                        // Ambil text barcode dari HTML
-                        var barcode = $('<div>').html(data).text().trim();
-
-                        // Escape
-                        var barcodeAttr = $('<div>').text(barcode).html();
-
-                        return '<span class="barcode-copy"' +
-                            ' data-barcode="' + barcodeAttr + '"' +
-                            ' title="Klik untuk menyalin barcode"' +
-                            ' style="' +
-                            'display:inline-flex;' +
-                            'align-items:center;' +
-                            'gap:5px;' +
-                            'padding:3px 5px;' +
-                            'border:1px solid transparent;' +
-                            'border-radius:4px;' +
-                            'background:transparent;' +
-                            'box-shadow:none;' +
-                            'cursor:pointer;' +
-                            'user-select:none;' +
-                            'transition:all .15s ease;' +
-                            '"' +
-                            ' onmouseover="' +
-                            'this.style.background=\'#f8f9fa\';' +
-                            'this.style.borderColor=\'#dee2e6\';' +
-                            'this.style.boxShadow=\'0 2px 5px rgba(0,0,0,.12)\';' +
-                            'this.style.transform=\'translateY(-1px)\';' +
-                            '"' +
-                            ' onmouseout="' +
-                            'this.style.background=\'transparent\';' +
-                            'this.style.borderColor=\'transparent\';' +
-                            'this.style.boxShadow=\'none\';' +
-                            'this.style.transform=\'translateY(0)\';' +
-                            '"' +
-                            '>' +
-                            '<span>' + barcodeAttr + '</span>' + '<i class="fa fa-copy text-primary barcode-copy-icon" style="opacity:.65;"></i>' +
-                            '</span>';
-                    },
-                    searchable: true
-                },
-                {
-                    data: 'TanggalPengadaan',
-                    searchable: true
-                },
-                {
-                    data: 'NoInduk',
-                    searchable: true
-                },
-                {
-                    data: 'Catalog_id',
-                    searchable: true
-                },
-                {
-                    data: 'ISDRM',
-                    className: 'text-center',
-                    orderable: false
-                },
-                {
-                    data: 'IsQUARANTINE',
-                    className: 'text-center',
-                    orderable: false
-                },
-                {
-                    data: 'IsOPAC',
-                    className: 'text-center',
-                    searchable: false,
-                    orderable: false
-                },
-                {
-                    data: 'StatusName',
-                    className: 'text-center',
-                    searchable: true
-                },
-                {
-                    data: 'LocationLibraryName',
-                    className: 'text-center',
-                    searchable: true
-                },
-                {
-                    data: 'action',
-                    className: 'text-center',
-                    orderable: false
-                }
-            ],
-            drawCallback: function() {
-                $('[data-toggle="tooltip"]').tooltip();
-                $('.apply-status').bootstrapToggle();
-                $('.apply-status').on('change', function() {
-                    var url = $(this).attr('data-href');
-                    var field = $(this).attr('data-field');
-                    var value = $(this).is(':checked');
-                    $.ajax({
-                            url: url,
-                            type: 'POST',
-                            data: 'field=' + field + '&value=' + value
-                        })
-                        .done(function(res) {
-                            Swal.fire({
-                                title: res.error == false ? 'Berhasil' : 'Gagal',
-                                html: res.message,
-                                icon: res.error == false ? 'success' : 'error',
-                                showConfirmButton: false,
-                                timer: 5000
-                            });
-                        })
-                        .fail(function() {
-                            Swal.fire({
-                                title: 'Oups',
-                                text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
-                                icon: 'error',
-                                showConfirmButton: false,
-                                timer: 5000
-                            });
-                        });
-                });
-            }
-        });
-
-        $(document).on('click', '.barcode-copy', function() {
-        var $element = $(this);
-        var barcode = $element.attr('data-barcode');
-        var $icon = $element.find('.barcode-copy-icon');
-
-        navigator.clipboard.writeText(barcode).then(function() {
-
-            // Ubah icon copy -> check
-            $icon
-                .removeClass('fa-copy text-primary')
-                .addClass('fa-check text-success');
-
-            // Kembalikan setelah 1 detik
-            setTimeout(function() {
-                $icon
-                    .removeClass('fa-check text-success')
-                    .addClass('fa-copy text-primary');
-            }, 1000);
-
-        }).catch(function(err) {
-            console.error('Gagal menyalin barcode:', err);
-        });
-    });
-
-        // ── Filter: Lokasi Perpustakaan & Lokasi Ruang ─────────────────────────
-        // Isi dropdown Lokasi Perpustakaan
-        $.getJSON('<?= site_url('api/eksemplar/locationlibrary') ?>', function(res) {
-            var data = res.data || res;
-            var $sel = $('#filter_location_library');
-            $.each(data, function(i, item) {
-                $sel.append($('<option>', {
-                    value: item.code,
-                    text: item.name
-                }));
-            });
-        });
-
-        // Isi dropdown Lokasi Ruang saat Lokasi Perpustakaan berubah
-        $('#filter_location_library').on('change', function() {
-            var libraryId = $(this).val();
-            var $roomSel = $('#filter_location_id');
-
-            $roomSel.html('<option value="">-- Semua Lokasi Ruang --</option>');
-
-            if (!libraryId) {
-                $roomSel.prop('disabled', true)
-                    .html('<option value="">-- Pilih Lokasi Perpustakaan Dahulu --</option>');
-                t.ajax.reload();
-                return;
-            }
-
-            $roomSel.prop('disabled', false);
-
-            $.getJSON('<?= site_url('api/eksemplar/locations') ?>/' + libraryId, function(res) {
-                var data = res.data || res;
-                $.each(data, function(i, item) {
-                    $roomSel.append($('<option>', {
-                        value: item.code,
-                        text: item.name
-                    }));
-                });
-            });
-
-            t.ajax.reload();
-        });
-
-        // Muat ulang tabel saat Lokasi Ruang berubah
-        $('#filter_location_id').on('change', function() {
-            t.ajax.reload();
-        });
-
-        // Isi dropdown Bentuk Fisik
-        $.getJSON('<?= site_url('api/eksemplar/collectionmedias') ?>', function(res) {
-            var data = res.data || res;
-            var $sel = $('#filter_media_id');
-            $.each(data, function(i, item) {
-                $sel.append($('<option>', {
-                    value: item.code,
-                    text: item.name
-                }));
-            });
-        });
-
-        // Muat ulang tabel saat Bentuk Fisik berubah
-        $('#filter_media_id').on('change', function() {
-            t.ajax.reload();
-        });
-
-        // Reset filter
-        $('#btnResetFilter').on('click', function() {
-            $('#filter_location_library').val('');
-            $('#filter_location_id')
-                .html('<option value="">-- Pilih Lokasi Perpustakaan Dahulu --</option>')
-                .prop('disabled', true);
-            $('#filter_media_id').val('');
-            t.ajax.reload();
-        });
-
-        // ── Tampil/Sembunyikan panel cetak ────────────────────────────────────
-        $('#action').on('change', function() {
-            if ($(this).val() === 'cetak-label') {
-                $('#cetak_panel').slideDown(200);
-            } else {
-                $('#cetak_panel').slideUp(200);
-                resetCetakPanel();
-            }
-        });
-
-        // Reset semua pilihan dalam panel cetak
-        function resetCetakPanel() {
-            $('#paper_size').val('');
-            $('#label_model').html('<option value="">-- Pilih Model --</option>');
-            $('#label_model_wrapper').hide();
-            $('#model_info_row').hide();
-            $('#model_info_text').text('');
-        }
-
-        // ── Isi dropdown Model saat Jenis Kertas berubah ──────────────────────
-        $('#paper_size').on('change', function() {
-            var paperKey = $(this).val();
-            var $modelSel = $('#label_model');
-
-            // Reset model
-            $modelSel.html('<option value="">-- Pilih Model --</option>');
-            $('#model_info_row').hide();
-            $('#model_info_text').text('');
-
-            if (!paperKey || !paperSizeConfig[paperKey]) {
-                $('#label_model_wrapper').slideUp(200);
-                return;
-            }
-
-            var models = paperSizeConfig[paperKey].models;
-            $.each(models, function(modelKey, modelLabel) {
-                $modelSel.append(
-                    $('<option>', {
-                        value: modelKey,
-                        text: modelLabel
-                    })
-                );
-            });
-
-            $('#label_model_wrapper').slideDown(200);
-        });
-
-        // ── Info model yang dipilih ───────────────────────────────────────────
-        $('#label_model').on('change', function() {
-            var modelText = $(this).find('option:selected').text();
-            var paperText = $('#paper_size').find('option:selected').text();
-
-            if ($(this).val()) {
-                $('#model_info_text').text(paperText + '  →  ' + modelText);
-                $('#model_info_row').show();
-            } else {
-                $('#model_info_row').hide();
-            }
-        });
-
-        // ── Tombol Proses ─────────────────────────────────────────────────────
-        $('#btnProcess2').on('click', function() {
-            var action = $('#action').val();
-            var paperSize = $('#paper_size').val();
-            var labelModel = $('#label_model').val();
-            var outputFormat = $('#output_format').val() || 'pdf';
-
-            // Validasi aksi
-            if (!action) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Peringatan',
-                    text: 'Silakan pilih aksi terlebih dahulu!',
-                    showConfirmButton: true
-                });
-                return false;
-            }
-
-            // Validasi khusus cetak label
-            if (action === 'cetak-label') {
-                if (!paperSize) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Peringatan',
-                        text: 'Silakan pilih jenis kertas terlebih dahulu!',
-                        showConfirmButton: true
-                    });
-                    return false;
-                }
-                if (!labelModel) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Peringatan',
-                        text: 'Silakan pilih model label terlebih dahulu!',
-                        showConfirmButton: true
-                    });
-                    return false;
-                }
-            }
-
-            // Kumpulkan ID eksemplar yang dicentang
-            var checkedItems = [];
-            $('#tbl_data tbody input.check:checked').each(function() {
-                checkedItems.push($(this).val());
-            });
-
-            if (checkedItems.length === 0) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Peringatan',
-                    text: 'Silakan pilih minimal satu eksemplar!',
-                    showConfirmButton: true
-                });
-                return false;
-            }
-
-            // URL tujuan berdasarkan aksi
-            var urlMap = {
-                'cetak-label': '<?= base_url('eksemplar/print_label') ?>',
-                'tampil-opac': '<?= base_url('eksemplar/proses_opac') ?>',
-                'karantina-eksemplar': '<?= base_url('eksemplar/proses_karantina') ?>'
-            };
-
-            var targetUrl = urlMap[action] || '';
-            if (!targetUrl) return false;
-
-            // Submit via virtual form
-            var form = $('<form>', {
-                method: 'post',
-                action: targetUrl
-            });
-            form.append($('<input>', {
-                type: 'hidden',
-                name: 'eksemplar_ids',
-                value: checkedItems.join(',')
-            }));
-
-            if (action === 'cetak-label') {
-                // eksemplar_tpl = key template (misal: cetak-label-a4-2, cetak-label-lr3, dst.)
-                // Controller akan memetakan key ini ke file view yang sesuai
-                form.append($('<input>', {
-                    type: 'hidden',
-                    name: 'eksemplar_tpl',
-                    value: labelModel
-                }));
-                form.append($('<input>', {
-                    type: 'hidden',
-                    name: 'paper_size',
-                    value: paperSize
-                }));
-                form.append($('<input>', {
-                    type: 'hidden',
-                    name: 'output_format',
-                    value: outputFormat
-                }));
-            }
-
-            form.appendTo('body').submit();
-        });
-
-        // ── Checkbox: Pilih Semua ─────────────────────────────────────────────
-        $(document).on('change', '.check_data', function() {
-            $('#tbl_data tbody .check').prop('checked', $(this).prop('checked'));
-        });
-
-        $('#tbl_data tbody').on('change', '.check', function() {
-            if (!$(this).prop('checked')) {
-                $('.check_data').prop('checked', false);
-            } else {
-                var total = $('#tbl_data tbody .check').length;
-                var checked = $('#tbl_data tbody .check:checked').length;
-                $('.check_data').prop('checked', total === checked);
-            }
-        });
-
-        t.on('draw', function() {
-            $('.check_data').prop('checked', false);
-        });
-
-    });
+window.exemplarListConfig = <?= json_encode([
+    'apiUrl' => site_url('api/eksemplar/datatable'),
+    'librariesUrl' => site_url('api/eksemplar/locationlibrary'),
+    'roomsUrl' => site_url('api/eksemplar/locations'),
+    'mediaUrl' => site_url('api/eksemplar/collectionmedias'),
+    'paperSizes' => $paper_size_config,
+    'csrfName' => csrf_token(),
+    'csrfHash' => csrf_hash(),
+    'actions' => [
+        'cetak-label' => base_url('eksemplar/print_label'),
+        'karantina-eksemplar' => base_url('eksemplar/proses_karantina'),
+    ],
+], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 </script>
+<script defer src="<?= base_url('assets/js/exemplar-list.js') ?>?v=<?= filemtime(FCPATH . 'assets/js/exemplar-list.js') ?>"></script>
 <?= $this->endSection('script'); ?>

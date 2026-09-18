@@ -315,10 +315,10 @@ if (!function_exists('_render_menu_backend')) {
                 $aClasses      = 'submenu-toggle' . ($childActive ? ' active' : '');
                 $html .= '
                 <li class="' . $liClasses . '">
-                    <a href="#" class="' . $aClasses . '">
-                        <i class="' . esc($row->icon) . '"></i>
+                    <a href="#" class="' . $aClasses . '" aria-expanded="' . ($childActive ? 'true' : 'false') . '">
+                        <i class="' . esc($row->icon) . '" aria-hidden="true"></i>
                         <span>' . esc($row->name) . '</span>
-                        <i class="fas fa-chevron-down caret"></i>
+                        <i class="fas fa-chevron-down caret" aria-hidden="true"></i>
                     </a>';
                 $html .= $child['html'];
                 $html .= '</li>';
@@ -328,7 +328,7 @@ if (!function_exists('_render_menu_backend')) {
                 $html .= '
                 <li>
                     <a href="' . $url . '" class="' . ($isActive ? 'active' : '') . '">
-                        <i class="' . esc($row->icon) . '"></i>
+                        <i class="' . esc($row->icon) . '" aria-hidden="true"></i>
                         <span>' . esc($row->name) . '</span>
                     </a>
                 </li>';

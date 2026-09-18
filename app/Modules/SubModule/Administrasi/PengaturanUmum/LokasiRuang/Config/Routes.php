@@ -26,5 +26,5 @@ $routes->group('api-lokasi-ruang', ['namespace' => 'LokasiRuang\Controllers\Api'
 	//custom
 	$subroutes->add('datatable', 'LokasiRuang::datatable');
 	$subroutes->add('datatable/(:any)', 'LokasiRuang::datatable/$1');
-	$subroutes->add('check/(:any)', 'LokasiRuang::check/$1');
+	$subroutes->get('check/(:segment)', 'LokasiRuang::check/$1');
 });

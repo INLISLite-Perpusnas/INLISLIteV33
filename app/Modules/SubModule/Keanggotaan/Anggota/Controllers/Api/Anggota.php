@@ -86,6 +86,7 @@ class Anggota extends \Base\Controllers\BaseResourceController
 		$builder->join('kelas_siswa', 'kelas_siswa.id = a.Kelas_id', 'left'); // Menggunakan LEFT JOIN
 		$builder->join('master_fakultas', 'master_fakultas.id = a.Fakultas_id', 'left'); // Menggunakan LEFT JOIN
 		$builder->join('master_jurusan', 'master_jurusan.id = a.Jurusan_id', 'left'); // Menggunakan LEFT JOIN
+		$statusOptions = $db->table('status_anggota')->select('id, Nama')->orderBy('Nama', 'asc')->get()->getResult();
 
 		if($isKeranjang == 1){
 			$builder->where('a.IsKeranjang', $isKeranjang);
@@ -118,7 +119,7 @@ class Anggota extends \Base\Controllers\BaseResourceController
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
 			->edit('cid', function ($row) {
-				$html = '<input type="checkbox" class="check" name="ID[]" value="' . $row->cid . '">';
+				$html = '<input type="checkbox" class="check" name="ID[]" value="' . (int) $row->cid . '" aria-label="Pilih anggota ' . esc($row->FullName, 'attr') . '">';
 				return $html;
 			})
 			->edit('FullName', function ($row) {
@@ -129,7 +130,7 @@ class Anggota extends \Base\Controllers\BaseResourceController
 					'<div class="widget-content p-0">
 							<div class="widget-content-wrapper">
 								<div class="widget-content-left mr-3">
-									<a href="' . $image . '" class="image-link"><img width="100" class="rounded" src="' . $image . '" id="lazy' . $row->ID . '" class="lazy" data-src="' . $image . '" onerror="this.onerror=null;this.src=' . $default . ';" alt=""></a>
+									<a href="' . $image . '" class="image-link" aria-label="Lihat foto ' . esc($row->FullName, 'attr') . '"><img width="100" height="100" class="rounded" src="' . $image . '" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=\'' . $default . '\';" alt="Foto ' . esc($row->FullName, 'attr') . '"></a>
 								</div>
 						
 								<div class="widget-content-left">
@@ -180,13 +181,13 @@ class Anggota extends \Base\Controllers\BaseResourceController
 				$html  =  '<badge class="badge badge-warning badge-pill">' . substr($row->EndDate, 0, 10) . '</badge>';
 				return $html;
 			})
-			->edit('StatusAnggota', function ($row) {
-				$html = '<select class="form-control apply-select" name="status_anggota" style="width:100%" data-href="' . base_url('api/anggota/switch/' . $row->ID) . '" data-field="StatusAnggota_id">';
-				foreach (get_ref_table('status_anggota', 'id, Nama', 'id IS NOT NULL', 'data') as $row2) {
+			->edit('StatusAnggota', function ($row) use ($statusOptions) {
+				$html = '<select class="form-control apply-select" name="status_anggota" aria-label="Status anggota ' . esc($row->FullName, 'attr') . '" style="width:100%" data-href="' . base_url('api/anggota/switch/' . $row->ID) . '" data-field="StatusAnggota_id">';
+				foreach ($statusOptions as $row2) {
 					$selected = $row2->id == $row->StatusAnggota_id ? 'selected' : '';
-					$html .= '<option value="' . $row2->id . '" ' . $selected . '>' . $row2->Nama . '</option>';
+					$html .= '<option value="' . (int) $row2->id . '" ' . $selected . '>' . esc($row2->Nama) . '</option>';
 				}
-				return $html;
+				return $html . '</select>';
 			})
 			->edit('KelasName', function ($row) {
 				return $row->KelasName ? '<span class="badge badge-info">' . esc($row->KelasName) . '</span>' : '-';
@@ -200,10 +201,10 @@ class Anggota extends \Base\Controllers\BaseResourceController
 
 			->edit('action', function ($row) {
 			$encId = encData((string) $row->ID);
-			$edit = '<button type="button" data-id="' . $encId . '" data-toggle="tooltip" data-placement="top" title="Ubah " class="btn btn-primary btn-edit-anggota"><i class="pe-7s-note font-weight-bold"> </i></button>';
-			$delete = '<a href="javascript:void(0);" data-href="' . base_url('anggota/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+			$edit = '<button type="button" data-id="' . $encId . '" title="Ubah" aria-label="Ubah anggota" class="btn btn-primary btn-edit-anggota"><i class="pe-7s-note font-weight-bold" aria-hidden="true"></i></button>';
+			$delete = '<a href="javascript:void(0);" data-href="' . base_url('anggota/delete/' . $row->ID) . '" title="Hapus" aria-label="Hapus anggota" class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold" aria-hidden="true"></i></a>';
 			if ($row->IsKeranjang == 1) {
-				$edit = '<a href="' . base_url('anggota/pulihkan_keranjang?ID[]=' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Pulihkan " class="btn btn-warning"><i class="fa fa-undo font-weight-bold"> </i></a>';
+				$edit = '<a href="' . base_url('anggota/pulihkan_keranjang?ID[]=' . $row->ID) . '" title="Pulihkan" aria-label="Pulihkan anggota" class="btn btn-warning"><i class="fa fa-undo font-weight-bold" aria-hidden="true"></i></a>';
 			}
 			return $edit . ' ' . $delete;
 		})
@@ -365,17 +366,20 @@ class Anggota extends \Base\Controllers\BaseResourceController
 	{
 		$upload_id = $this->request->getPost('upload_id');
 		$upload_field = $this->request->getPost('upload_field');
-		$upload_title = $this->request->getPost('upload_title');
+		if (!ctype_digit((string) $upload_id) || !$this->anggotaModel->find((int) $upload_id)) {
+			return $this->fail('Anggota tidak ditemukan.', 404);
+		}
 
 		$update_data = [];
 		$file = $this->request->getFile('file_pendukung');
 		
-		if ($file && $file->isValid() && !$file->hasMoved()) {
+		if ($file && $file->isValid() && !$file->hasMoved()
+			&& $file->getSize() <= 10 * 1024 * 1024
+			&& in_array($file->getMimeType(), ['image/jpeg', 'image/png'], true)) {
 			$newFileName = $file->getRandomName();
 			$file->move($this->modulePath, $newFileName);
 			
-			$field = !empty($upload_field) ? $upload_field : 'PhotoUrl';
-			$update_data[$field] = $newFileName;
+			$update_data['PhotoUrl'] = $newFileName;
 		}
 
 		if (empty($update_data)) {
@@ -416,13 +420,26 @@ class Anggota extends \Base\Controllers\BaseResourceController
 	public function capture_file()
 	{
 		$capture_id = $this->request->getPost('capture_id');
+		$update_data = [];
+		if (!ctype_digit((string) $capture_id) || !$this->anggotaModel->find((int) $capture_id)) {
+			return $this->fail('Anggota tidak ditemukan.', 404);
+		}
 
 		$base64_string = $this->request->getPost('camera_image');
-		if (!empty($base64_string)) {
-			$file = new File($this->uploadPath);
-			$newFileName = $file->getRandomName() . '.jpg';
-			base64_to_jpeg($base64_string, $this->modulePath . $newFileName);
+		if (!empty($base64_string) && strlen($base64_string) <= 14 * 1024 * 1024
+			&& preg_match('/^data:image\/(jpeg|jpg|png);base64,/i', $base64_string)) {
+			$binary = base64_decode(substr($base64_string, strpos($base64_string, ',') + 1), true);
+			$imageInfo = $binary === false ? false : @getimagesizefromstring($binary);
+			if ($binary === false || strlen($binary) > 10 * 1024 * 1024 || $imageInfo === false
+				|| !in_array($imageInfo['mime'], ['image/jpeg', 'image/png'], true)) {
+				return $this->fail('Foto kamera tidak valid.', 415);
+			}
+			$extension = $imageInfo['mime'] === 'image/png' ? 'png' : 'jpg';
+			$newFileName = bin2hex(random_bytes(16)) . '.' . $extension;
+			file_put_contents($this->modulePath . $newFileName, $binary, LOCK_EX);
 			$update_data['PhotoUrl'] =  $newFileName;
+		} else {
+			return $this->fail('Foto kamera tidak valid.', 415);
 		}
 
 		$anggota = $this->anggotaModel->find($capture_id);

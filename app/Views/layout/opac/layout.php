@@ -1,14 +1,35 @@
 <?php
 $db = db_connect();
-$nama_perpustakaan = $db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value ?: "Perpustakaan Mitra";
-$alamat = $db->table('settingparameters')->where('Name', 'NamaLokasiPerpustakaan')->get()->getRow()->Value ?: "Jl.Perpustakaan Mitra";
-$tentang_kami = $db->table('settingparameters')->where('Name', 'TentangKami')->get()->getRow()->Value ?: "Perpustakaan Mitra";
-$logo = $db->table('settingparameters')->where('Name', 'Logo')->get()->getRow()->Value;
-$phone = $db->table('settingparameters')->where('Name', 'Phone')->get()->getRow()->Value;
-$email = $db->table('settingparameters')->where('Name', 'EmailPerpustakaan')->get()->getRow()->Value;
+$settingNames = ['NamaPerpustakaan', 'NamaLokasiPerpustakaan', 'TentangKami', 'Logo', 'Phone', 'EmailPerpustakaan', 'JamOperasional'];
+$settingRows = $db->table('settingparameters')
+    ->select('Name, Value')
+    ->whereIn('Name', $settingNames)
+    ->get()
+    ->getResultArray();
+$settings = array_column($settingRows, 'Value', 'Name');
+
+$nama_perpustakaan = $settings['NamaPerpustakaan'] ?? 'Perpustakaan Mitra';
+$alamat = $settings['NamaLokasiPerpustakaan'] ?? 'Jl. Perpustakaan Mitra';
+$tentang_kami = $settings['TentangKami'] ?? 'Perpustakaan Mitra';
+$logo = $settings['Logo'] ?? '';
+$phone = $settings['Phone'] ?? '';
+$email = $settings['EmailPerpustakaan'] ?? '';
 // Nullsafe (?->) karena setting 'JamOperasional' belum tentu ada barisnya di
 // settingparameters — beda dari setting lain di atas yang sudah pasti ada.
-$jam_operasional = $db->table('settingparameters')->where('Name', 'JamOperasional')->get()->getRow()?->Value ?? 'Jam Operasional Perpustakaan Mitra';
+$jam_operasional = $settings['JamOperasional'] ?? 'Jam Operasional Perpustakaan Mitra';
+$isHomePage = !empty($is_home_page);
+$isOpacIndex = !empty($is_opac_index);
+$isGuestBookLocation = !empty($is_guestbook_location);
+$isOptimizedPublicPage = $isHomePage || $isOpacIndex || $isGuestBookLocation;
+$bootstrapFile = $isHomePage
+    ? 'home-bootstrap.min.css'
+    : ($isOpacIndex
+        ? 'opac-bootstrap.min.css'
+        : ($isGuestBookLocation ? 'guestbook-bootstrap.min.css' : 'bootstrap.min.css'));
+$pageTitle = isset($title) ? $title : 'OPAC - ' . $nama_perpustakaan;
+$pageDescription = isset($meta_description)
+    ? $meta_description
+    : 'Temukan koleksi, layanan, berita, dan informasi terbaru dari ' . $nama_perpustakaan . '.';
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -16,12 +37,20 @@ $jam_operasional = $db->table('settingparameters')->where('Name', 'JamOperasiona
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo isset($title) ? $title : 'OPAC - ' . $nama_perpustakaan; ?></title>
+    <title><?= esc($pageTitle) ?></title>
+    <meta name="description" content="<?= esc($pageDescription) ?>">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="<?= current_url() ?>">
 
     <link rel="icon" href="<?= !empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/logo-inlislite-icon.webp') ?>">
-<link rel="stylesheet" href="<?= base_url('assets/css') ?>/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<?= base_url('assets/css/' . $bootstrapFile) ?>">
+    <?php if ($isOptimizedPublicPage): ?>
+        <link rel="preload" href="<?= base_url('assets/fonts/home/fa-solid-subset.woff2') ?>" as="font" type="font/woff2" crossorigin>
+        <link rel="stylesheet" href="<?= base_url('assets/css/home-icons.css') ?>">
+    <?php elseif (!$isOptimizedPublicPage): ?>
+        <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <?php endif; ?>
 
     <style>
         :root {
@@ -39,7 +68,7 @@ $jam_operasional = $db->table('settingparameters')->where('Name', 'JamOperasiona
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
             background-color: var(--slate-50);
             color: var(--slate-800);
             -webkit-font-smoothing: antialiased;
@@ -244,6 +273,10 @@ $jam_operasional = $db->table('settingparameters')->where('Name', 'JamOperasiona
             margin-top: 4px;
         }
 
+        .footer-custom .text-secondary {
+            color: #cbd5e1 !important;
+        }
+
         /* ─── Pagination Custom ─── */
         .pagination .page-link {
             color: #1b3878;
@@ -309,7 +342,7 @@ $jam_operasional = $db->table('settingparameters')->where('Name', 'JamOperasiona
                 href="<?= base_url('home') ?>"
                 title="<?= esc($nama_perpustakaan) ?>">
                 <img src="<?= !empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png') ?>"
-                    alt="Logo" class="bg-white p-1 shadow-sm">
+                    alt="Logo <?= esc($nama_perpustakaan) ?>" class="bg-white p-1 shadow-sm" width="52" height="52" fetchpriority="high">
                 <div class="brand-text">
                     <h1><?= esc($nama_perpustakaan) ?></h1>
                     <p>INLISLIte 3.3</p>
@@ -444,8 +477,8 @@ $jam_operasional = $db->table('settingparameters')->where('Name', 'JamOperasiona
                 <div class="col-lg-4 mb-4 mb-lg-0">
                     <div class="d-flex align-items-center gap-3 mb-4">
                         <img src="<?=  base_url('assets/img/Logo-Inlislite.webp') ?>"
-                            alt="Logo" class="rounded bg-white p-1" style="width:150px;height:70px;object-fit:cover;">
-                        <h4 class="m-0 fw-bold"><?= esc($nama_perpustakaan) ?></h4>
+                            alt="Logo INLISLite" class="rounded bg-white p-1" style="width:150px;height:70px;object-fit:cover;" width="150" height="70" loading="lazy">
+                        <p class="m-0 fs-4 fw-bold"><?= esc($nama_perpustakaan) ?></p>
                     </div>
                     <p class="text-secondary" style="font-size:0.9rem;line-height:1.8;">
                         <?= esc($tentang_kami) ?>
@@ -453,7 +486,7 @@ $jam_operasional = $db->table('settingparameters')->where('Name', 'JamOperasiona
                 </div>
 
                 <div class="col-lg-2 col-md-6 mb-4 mb-lg-0 offset-lg-1">
-                    <h5 class="footer-title">Layanan</h5>
+                    <h2 class="footer-title">Layanan</h2>
                     <ul class="footer-links">
                         <?php if (env('Is_keanggotaan_online') == 1): ?><li><a href="<?= base_url('home/pendaftaran-online') ?>">Keanggotaan Online</a></li><?php endif; ?>
                         <li><a href="<?= base_url('peminjaman-mandiri') ?>">Peminjaman Mandiri</a></li>
@@ -463,7 +496,7 @@ $jam_operasional = $db->table('settingparameters')->where('Name', 'JamOperasiona
                 </div>
 
                 <div class="col-lg-4 col-md-6">
-                    <h5 class="footer-title">Kontak & Lokasi</h5>
+                    <h2 class="footer-title">Kontak & Lokasi</h2>
                     <ul class="footer-links footer-contact">
                         <li><i class="fa-solid fa-location-dot"></i> <span><?= esc($alamat) ?></span></li>
                         <li><i class="fa-solid fa-phone"></i> <span><?= esc($phone)  ?></span></li>
@@ -481,9 +514,11 @@ $jam_operasional = $db->table('settingparameters')->where('Name', 'JamOperasiona
         </div>
     </footer>
 
-    <script src="<?= base_url('assets/js'); ?>/jquery-4.0.0.min.js"></script>
+    <?php if (!$isOptimizedPublicPage): ?>
+        <script src="<?= base_url('assets/js'); ?>/jquery-4.0.0.min.js"></script>
+        <script src="<?= base_url('assets/js'); ?>/sweetalert2@8.js"></script>
+    <?php endif; ?>
     <script src="<?= base_url('assets/js'); ?>/bootstrap.min.js"></script>
-    <script src="<?= base_url('assets/js'); ?>/sweetalert2@8.js"></script>
 
     <?= $this->renderSection('script') ?>
 </body>

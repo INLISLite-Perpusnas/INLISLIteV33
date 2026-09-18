@@ -1,0 +1,27 @@
+.member-list-page .app-page-title{padding:30px;margin:-30px -30px 30px;position:relative;color:#fff}
+.member-list-page .page-title-wrapper{display:flex;align-items:center;position:relative}
+.member-list-page .page-title-heading{display:flex;align-items:center;font-size:1.25rem;font-weight:400}
+.member-list-page .page-title-subheading{padding-top:3px;font-size:.88rem;opacity:.92}
+.member-list-page .page-title-actions{margin-left:auto}
+.member-list-page .page-title-actions .breadcrumb{margin:0;padding:0;background:transparent}
+.member-list-page .breadcrumb-item,.member-list-page .breadcrumb-item::before,.member-list-page .breadcrumb-item a{color:#fff!important}
+.member-list-page .page-title-icon{width:50px;height:50px;margin-right:30px;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:.25rem;box-shadow:0 .46875rem 2.1875rem rgba(4,9,20,.03);font-size:2rem}
+.member-list-page .card-header{height:3.5rem;padding:0 .625rem 0 1.25rem;display:flex;align-items:center;background:#fff;border-bottom:1px solid rgba(26,54,126,.125);color:rgba(13,27,62,.7);font-size:.88rem;font-weight:700;text-transform:uppercase}
+.member-list-page .card-header .header-icon{font-size:1.65rem;margin-right:.625rem}
+.member-list-page .btn-actions-pane-right{margin-left:auto}
+.member-list-page .input-group-prepend{display:flex;margin-right:-1px}
+.member-list-page .input-group-prepend .btn{border-top-right-radius:0;border-bottom-right-radius:0}
+.member-list-page .input-group-prepend+.form-control{border-top-left-radius:0;border-bottom-left-radius:0}
+.member-list-page .ml-2{margin-left:.5rem!important}.member-list-page .mr-3{margin-right:1rem!important}
+.member-list-page .text-left{text-align:left!important}.member-list-page .text-right{text-align:right!important}.member-list-page .font-weight-bold{font-weight:700!important}
+.member-list-page .badge-pill{padding-right:.6em;padding-left:.6em;border-radius:10rem}
+.member-list-page .badge-primary{color:#fff;background:#4054b2}.member-list-page .badge-info{color:#fff;background:#087990}.member-list-page .badge-warning{color:#212529;background:#f7b924}
+.member-list-page .widget-content-wrapper{display:flex;align-items:center}.member-list-page .widget-heading{font-weight:700}.member-list-page .widget-subheading{color:#526079;font-size:.88rem}
+.member-list-page .toggle{position:relative;overflow:hidden;border-color:rgba(0,0,0,.2)}
+.member-list-page .toggle input{position:absolute;width:1px;height:1px;margin:-1px;clip:rect(0,0,0,0);overflow:hidden}
+.member-list-page .toggle-group{position:absolute;width:200%;top:0;bottom:0;left:0;transition:left .35s}.member-list-page .toggle.off .toggle-group{left:-100%}
+.member-list-page .toggle-on,.member-list-page .toggle-off{position:absolute;top:0;bottom:0;margin:0;border:0;border-radius:0}.member-list-page .toggle-on{left:0;right:50%}.member-list-page .toggle-off{left:50%;right:0}.member-list-page .toggle-handle{position:relative;margin:0 auto;height:100%;width:0;border-width:0;background:#fff}
+.member-list-page .toggle.btn{min-width:59px;min-height:34px}.member-list-page .toggle.btn-xs{min-width:35px;min-height:22px}.member-list-page .toggle-on.btn-xs{padding-right:12px}.member-list-page .toggle-off.btn-xs{padding-left:12px}
+.member-list-page .lnr-list,.member-list-page .pe-7s-id,.member-list-page .pe-7s-trash{font-family:"Font Awesome 5 Pro"!important;font-style:normal;font-weight:900}.member-list-page .lnr-list::before{content:"\f03a"}.member-list-page .pe-7s-id::before{content:"\f2c2"}.member-list-page .pe-7s-trash::before{content:"\f2ed"}
+.member-list-page div.dataTables_wrapper div.dataTables_filter{text-align:left}.member-list-page div.dataTables_wrapper div.dataTables_paginate{text-align:right}
+.member-list-page .swal2-container{z-index:2000!important}.member-list-page .swal2-icon{display:flex!important}

@@ -1,51 +1,87 @@
 <?= $this->extend('App\Views\layout\opac\layout'); ?>
 
+<?= $this->section('style') ?>
+<style>
+	.location-settings {
+		background-color: #fff;
+		margin-top: 120px;
+		padding: 2rem 0 4rem;
+	}
+	.location-card {
+		max-width: 860px;
+		margin-inline: auto;
+		padding: clamp(1.25rem, 4vw, 2.5rem);
+		border: 1px solid #d7dee8;
+		border-radius: 1rem;
+		box-shadow: 0 10px 30px rgba(15, 23, 42, .08);
+	}
+	.location-card label { font-weight: 600; margin-bottom: .5rem; }
+	.location-card .form-control:focus,
+	.location-card .btn:focus-visible {
+		outline: 3px solid #ffbf47;
+		outline-offset: 2px;
+	}
+	.required-marker { color: #b42318; }
+	.form-status { min-height: 1.5rem; font-weight: 600; }
+	.form-status.success { color: #146c43; }
+	.form-status.error { color: #b42318; }
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 
-<section class="main-contact-area contact-info-area contact-info-three offer-area" style="background-color: #ffffff;margin-top: 150px;"  >
-	
+<section class="location-settings" aria-labelledby="location-settings-title">
 	<div class="container">
-		<h2>Atur Lokasi Ruang Perpustakaan</h2>
-		<div class="row">
+		<div class="location-card">
+		<h2 id="location-settings-title">Atur Lokasi Ruang Perpustakaan</h2>
+		<p class="text-secondary">Masukkan kode lokasi yang diberikan administrator, periksa kodenya, lalu simpan pengaturan.</p>
+
+		<?php if (!empty($message)): ?>
+			<div class="alert alert-danger" role="alert">
+				<?= esc(trim(strip_tags((string) $message))) ?>
+			</div>
+		<?php endif; ?>
+
+		<div class="row mt-4">
 			<div class="col-lg-12">
 				<div class="contact-wrap contact-pages mb-0">
 					<div class="contact-form contact-form-mb">
-						<form id="frm_register" method="post">
-							<?=csrf_field()?>
+						<form id="frm_register" method="post" action="<?= base_url('buku-tamu/lokasi') ?>" autocomplete="off">
+							<?= csrf_field() ?>
 							<div class="row">
 								<div class="col-md-12">
 									<div class="form-group">
-										<label>Kode Lokasi Ruang Perpustakaan</label>
-										<input type="text" name="Code" id="Code" class="form-control" required data-error="Kode kosong" placeholder="">
-										<small class="help-block with-errors">Contoh: ABC1230101 </small>
+										<label for="Code">Kode Lokasi Ruang Perpustakaan <span class="required-marker" aria-hidden="true">*</span></label>
+										<input type="text" name="Code" id="Code" class="form-control" required
+											minlength="3" maxlength="24" pattern="[A-Za-z0-9-]+" spellcheck="false"
+											value="<?= esc(old('Code')) ?>" aria-describedby="code-help code-status">
+										<small id="code-help" class="form-text text-secondary">Contoh: ABC1230101. Gunakan huruf, angka, atau tanda hubung.</small>
 									</div>
 								</div>
-								<div class="col-md-6">
-									<div class="form-group">
-										<label>&nbsp;</label>
-										<button type="button" class="btn btn-primary" id="btnCheck" style="margin-left:0; background-color:#336899;">Cek Kode</button>
+								<div class="col-md-12 mt-3">
+									<div class="form-group d-flex align-items-center gap-3 flex-wrap">
+										<button type="button" class="btn btn-primary" id="btnCheck">Cek Kode</button>
+										<span id="code-status" class="form-status" role="status" aria-live="polite"></span>
 									</div>
 								</div>
 							</div>
-							<div class="row">
+							<div class="row mt-3">
 								<div class="col-md-6">
 									<div class="form-group">
-										<label>Lokasi Perpustakaan</label>
-										<input type="text" name="LocationLibrary" id="LocationLibrary" class="form-control">
-										<input type="hidden" name="LocationLibrary_id" id="LocationLibrary_id" class="form-control">
+										<label for="LocationLibrary">Lokasi Perpustakaan</label>
+										<input type="text" id="LocationLibrary" class="form-control" readonly aria-readonly="true">
 									</div>
 								</div>
 								<div class="col-md-6">
 									<div class="form-group">
-										<label>Lokasi Ruang</label>
-										<input type="text" name="Location" id="Location" class="form-control">
-										<input type="hidden" name="Location_id" id="Location_id" class="form-control">
+										<label for="Location">Lokasi Ruang</label>
+										<input type="text" id="Location" class="form-control" readonly aria-readonly="true">
 									</div>
 								</div>
-							</div><br>
-							<div class="modal-footer" stlye=ml-2>
+							</div>
+							<div class="d-flex justify-content-end gap-2 mt-4">
 								<button type="reset" class="btn btn-danger">Reset Form</button>
-								<button type="submit" class="btn btn-primary" style="margin-left: 2px;">Simpan Pengaturan</button>
+								<button type="submit" class="btn btn-primary" id="btnSave" disabled>Simpan Pengaturan</button>
 							</div>
 						</form>
 					</div>
@@ -53,69 +89,80 @@
 				<div>
 				</div>
 			</div>
-
+		</div>
+		</div>
+	</div>
 </section>
 
 <?= $this->endsection() ?>
 
 <?= $this->section('script') ?>
 <script>
-	$("#btnCheck").click(function() {
-       
-		$("#btnCheck").html('<i class="fa fa-spinner fa-spin loading"></i> Mohon menunggu...');
-		$("#btnCheck").attr('disabled', true);
+	(() => {
+		'use strict';
 
-		var url = "<?= base_url('api-lokasi-ruang/check') ?>";
-		var code = $("#Code").val();
+		const form = document.getElementById('frm_register');
+		const codeInput = document.getElementById('Code');
+		const checkButton = document.getElementById('btnCheck');
+		const saveButton = document.getElementById('btnSave');
+		const libraryInput = document.getElementById('LocationLibrary');
+		const locationInput = document.getElementById('Location');
+		const status = document.getElementById('code-status');
+		const checkUrl = <?= json_encode(base_url('api-lokasi-ruang/check'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 
-		$.ajax({
-				url: `${url}/${code}`,
-			})
-			.done(function(res) {
-				$('#Branch').val(res.Branch_name);
-				$('#Branch_id').val(res.Branch_id);
+		function clearResult() {
+			libraryInput.value = '';
+			locationInput.value = '';
+			saveButton.disabled = true;
+			status.textContent = '';
+			status.className = 'form-status';
+		}
 
-				$('#LocationLibrary').val(res.LocationLibrary_name);
-				$('#LocationLibrary_id').val(res.LocationLibrary_id);
+		codeInput.addEventListener('input', clearResult);
+		form.addEventListener('reset', () => setTimeout(clearResult, 0));
 
-				$('#Location').val(res.Name);
-				$('#Location_id').val(res.ID);
+		checkButton.addEventListener('click', async () => {
+			codeInput.value = codeInput.value.trim().toUpperCase();
+			if (!codeInput.checkValidity()) {
+				codeInput.reportValidity();
+				return;
+			}
 
-				$("#btnCheck").attr('disabled', false);
-				$("#btnCheck").html('Cek Kode');
-			})
-			.fail(function(res) {
-				console.log(res);
+			clearResult();
+			checkButton.disabled = true;
+			checkButton.textContent = 'Memeriksa...';
+			status.textContent = 'Kode sedang diperiksa.';
 
-				Swal.fire({
-					title: 'Oups',
-					text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
-					type: 'error',
-					showConfirmButton: false,
-					timer: 5000
-				}).then(() => {
-					$("#btnCheck").attr('disabled', false);
-					$("#btnCheck").html('Cek Kode');
+			try {
+				const response = await fetch(`${checkUrl}/${encodeURIComponent(codeInput.value)}`, {
+					headers: { 'Accept': 'application/json' },
+					credentials: 'same-origin'
 				});
-			});
+				if (!response.ok) throw new Error('Kode tidak valid');
 
-		return false;
-	});
+				const result = await response.json();
+				libraryInput.value = String(result.LocationLibrary_name || '');
+				locationInput.value = String(result.Name || '');
+				saveButton.disabled = false;
+				status.textContent = 'Kode valid. Lokasi siap disimpan.';
+				status.className = 'form-status success';
+			} catch (error) {
+				status.textContent = 'Kode tidak ditemukan, tidak aktif, atau terlalu banyak percobaan.';
+				status.className = 'form-status error';
+			} finally {
+				checkButton.disabled = false;
+				checkButton.textContent = 'Cek Kode';
+			}
+		});
 
-	$("#frm_register").submit(function(e) {
-    e.preventDefault(); // Prevent the form from submitting the traditional way
-
-    var locationId = $("#Location_id").val();
-
-    // Simpan Location_id sebagai cookie (misal expired dalam 7 hari)
-    document.cookie = "Location_id=" + locationId + "; path=/; expires=" + new Date(new Date().getTime() + 7*24*60*60*1000).toUTCString();
-
-    // Redirect ke halaman /buku-tamu
-	window.location.href = "<?= base_url('/buku-tamu') ?>";
-
-
-    return false;
-});
+		form.addEventListener('submit', (event) => {
+			if (saveButton.disabled) {
+				event.preventDefault();
+				status.textContent = 'Periksa kode lokasi sebelum menyimpan.';
+				status.className = 'form-status error';
+			}
+		});
+	})();
 </script>
 
 <?= $this->endsection() ?>

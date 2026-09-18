@@ -18,7 +18,7 @@ if (!isset($routes)) {
 // PROFIL ANGGOTA (akses mandiri anggota)
 // -----------------------------------------------------------------------
 $routes->get('profil_anggota', 'AnggotaController::profile', ['namespace' => 'Anggota\Controllers']);
-$routes->post('profil_anggota', 'AnggotaController::edit', ['namespace' => 'Anggota\Controllers']);
+$routes->post('profil_anggota', 'AnggotaController::edit', ['namespace' => 'Anggota\Controllers', 'filter' => 'csrf']);
 
 // -----------------------------------------------------------------------
 // ANGGOTA - Web Routes
@@ -30,12 +30,15 @@ $routes->group('anggota', ['namespace' => 'Anggota\Controllers'], function ($sub
     $subroutes->add('index',                  'AnggotaController::index');
     $subroutes->add('keranjang',              'AnggotaController::keranjang');
     $subroutes->add('detail/(:any)',          'AnggotaController::detail/$1');
-    $subroutes->add('create',                 'AnggotaController::create');
-    $subroutes->add('do_upload',              'AnggotaController::do_upload');
+    $subroutes->get('create',                 'AnggotaController::create');
+    $subroutes->post('create',                'AnggotaController::create', ['filter' => 'csrf']);
+    $subroutes->post('do_upload',             'AnggotaController::do_upload', ['filter' => 'csrf']);
     $subroutes->add('do_delete',              'AnggotaController::do_delete');
     $subroutes->put('edit',                   'AnggotaController::edit');
-    $subroutes->add('edit/(:any)',            'AnggotaController::edit/$1');
-    $subroutes->add('edit/(:any)/(:any)',     'AnggotaController::edit/$1/$2');
+    $subroutes->get('edit/(:any)',            'AnggotaController::edit/$1');
+    $subroutes->post('edit/(:any)',           'AnggotaController::edit/$1', ['filter' => 'csrf']);
+    $subroutes->get('edit/(:any)/(:any)',     'AnggotaController::edit/$1/$2');
+    $subroutes->post('edit/(:any)/(:any)',    'AnggotaController::edit/$1/$2', ['filter' => 'csrf']);
     $subroutes->add('delete/(:any)',          'AnggotaController::delete/$1');
     $subroutes->add('apply_status/(:any)',    'AnggotaController::apply_status/$1');
     $subroutes->add('get_defaults/(:num)',    'AnggotaController::getDefaults/$1');
@@ -85,6 +88,6 @@ $routes->group('api/anggota', ['namespace' => 'Anggota\Controllers\Api'], functi
     $subroutes->add('datatable',          'Anggota::datatable');
     $subroutes->add('datatable/(:any)',   'Anggota::datatable/$1');
     $subroutes->add('switch/(:any)',      'Anggota::switch/$1');
-    $subroutes->add('upload_file',        'Anggota::upload_file');
-    $subroutes->add('capture_file',       'Anggota::capture_file');
+    $subroutes->post('upload_file',       'Anggota::upload_file', ['filter' => 'csrf']);
+    $subroutes->post('capture_file',      'Anggota::capture_file', ['filter' => 'csrf']);
 });

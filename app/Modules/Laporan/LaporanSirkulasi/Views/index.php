@@ -35,14 +35,34 @@ $request = service('request');
 }
 .filters-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 15px;
     margin-bottom: 20px;
 }
-@media (max-width: 768px) {
+#filterForm .period-selector,
+#filterForm .period-filter {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+}
+#filterForm .filters-container > .filter-section {
+    min-width: 0;
+    margin-bottom: 0;
+}
+#filterForm .period-filter .row { row-gap: 15px; }
+#filterForm .criteria-section { grid-column: 1 / -1; }
+#filterForm .criteria-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+#filterForm .criteria-heading h6 { margin: 0; }
+#filterForm .criterion-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 15px; align-items: start; margin-top: 12px; }
+#filterForm .criterion-control { min-width: 0; }
+#filterForm .criterion-control .select2-selection--single { min-height: 38px; border-color: #ced4da; }
+#filterForm .criterion-control .select2-selection__rendered { line-height: 36px; }
+#filterForm .criterion-control .select2-selection__arrow { height: 36px; }
+@media (max-width: 767px) {
     .filters-container {
         grid-template-columns: 1fr;
     }
+    #filterForm .criterion-row { grid-template-columns: minmax(0, 1fr) auto; }
+    #filterForm .criterion-control:first-child { grid-column: 1 / -1; }
 }
 </style>
 <?= $this->endSection('style'); ?>
@@ -74,7 +94,7 @@ $request = service('request');
     <div class="card">
         <div class="card-header">
             <h5><strong>Export Data Peminjaman Buku</strong></h5>
-            <p class="text-muted mb-0">Pilih kolom dan filter yang diinginkan. Anda dapat mengkombinasikan beberapa filter sekaligus.</p>
+
         </div>
         <div class="card-body">
             <?php if (session('errors')) : ?>
@@ -140,6 +160,24 @@ $request = service('request');
                         </div>
                         <div class="col-md-4">
                             <div class="form-check">
+                                <input class="form-check-input column-checkbox" type="checkbox" name="columns[]" value="penerbit" id="penerbit">
+                                <label class="form-check-label" for="penerbit">Penerbit</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input column-checkbox" type="checkbox" name="columns[]" value="kelas_ddc" id="kelas_ddc">
+                                <label class="form-check-label" for="kelas_ddc">Kelas DDC</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input column-checkbox" type="checkbox" name="columns[]" value="subjek" id="subjek">
+                                <label class="form-check-label" for="subjek">Subjek</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
                                 <input class="form-check-input column-checkbox" type="checkbox" name="columns[]" value="tanggal_peminjaman" id="tanggal_peminjaman" checked>
                                 <label class="form-check-label" for="tanggal_peminjaman">
                                     Tanggal Peminjaman
@@ -199,19 +237,87 @@ $request = service('request');
 
                 <!-- Multiple Filters Container -->
                 <div class="filters-container">
-                    <!-- Filter Tanggal Peminjaman -->
-                    <div class="filter-section">
-                        <h6><i class="fas fa-calendar-alt"></i> Filter Berdasarkan Tanggal Peminjaman</h6>
+                    <div class="form-group period-selector">
+                        <label for="filter_type"><b>Filter Berdasarkan</b></label>
+                        <select class="form-control" name="filter_type" id="filter_type">
+                            <option value="date">Tanggal</option>
+                            <option value="month">Bulan</option>
+                            <option value="year">Tahun</option>
+                        </select>
+                    </div>
+                    <!-- Filter Tanggal Kunjungan -->
+                    <div id="date_filter" class="filter-section period-filter">
+                        <h6 class="mb-3"><i class="fas fa-calendar-alt" aria-hidden="true"></i> Filter Berdasarkan Tanggal</h6>
                         <div class="row">
                             <div class="col-md-6">
-                                <label>Tanggal Mulai</label>
-                                <input type="date" name="start_date" id="start_date" class="form-control">
+                                <label for="start_date">Tanggal Mulai</label>
+                                <input type="date" id="start_date" name="start_date" class="form-control">
                             </div>
                             <div class="col-md-6">
-                                <label>Tanggal Akhir</label>
-                                <input type="date" name="end_date" id="end_date" class="form-control">
+                                <label for="end_date">Tanggal Akhir</label>
+                                <input type="date" id="end_date" name="end_date" class="form-control">
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Filter Bulan & Tahun Kunjungan -->
+                    <div id="month_filter" class="filter-section period-filter" style="display: none;">
+                        <h6 class="mb-3"><i class="fas fa-calendar-alt" aria-hidden="true"></i> Filter Berdasarkan Bulan</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="month">Bulan</label>
+                                <select name="month" id="month" class="form-control" disabled>
+                                    <?php for ($i = 1; $i <= 12; $i++) : ?>
+                                        <option value="<?= $i ?>"><?= date('F', mktime(0, 0, 0, $i, 1)) ?></option>
+                                    <?php endfor ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="month_year">Tahun</label>
+                                <select name="year" id="month_year" class="form-control" disabled>
+                                    <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
+                                        <option value="<?= $i ?>"><?= $i ?></option>
+                                    <?php endfor ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter Tahun Kunjungan Saja -->
+                    <div id="year_filter" class="filter-section period-filter" style="display: none;">
+                        <h6 class="mb-3"><i class="fas fa-calendar-alt" aria-hidden="true"></i> Filter Berdasarkan Tahun</h6>
+                        <label for="year_only">Tahun</label>
+                        <select name="year" id="year_only" class="form-control" disabled>
+                            <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
+                                <option value="<?= $i ?>"><?= $i ?></option>
+                            <?php endfor ?>
+                        </select>
+                    </div>
+
+                    <?php foreach (['member' => 'Kriteria Anggota Peminjam', 'catalog' => 'Kriteria Koleksi Dipinjam'] as $group => $label): ?>
+                    <div class="filter-section criteria-section" aria-labelledby="<?= $group ?>_criteria_heading">
+                        <div class="criteria-heading">
+                            <h6 id="<?= $group ?>_criteria_heading"><?= esc($label) ?></h6>
+                            <button type="button" class="btn btn-success" data-add-criterion="<?= $group ?>" aria-label="Tambah <?= esc($label, 'attr') ?>" title="Tambah kriteria">
+                                <i class="fas fa-plus-circle" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <p class="text-muted mb-0">Pilih kriteria dan nilainya. Semua kriteria yang diisi harus terpenuhi.</p>
+                        <div id="<?= $group ?>_criteria_rows"></div>
+                    </div>
+                    <?php endforeach; ?>
+
+                    <div class="filter-section">
+                        <h6><i class="fas fa-trophy" aria-hidden="true"></i> Anggota Paling Banyak Meminjam</h6>
+                        <label for="top_borrowers">Jumlah anggota dalam peringkat</label>
+                        <select name="top_borrowers" id="top_borrowers" class="form-control">
+                            <option value="">-- Semua Anggota --</option>
+                            <option value="5">5 Anggota Teratas</option>
+                            <option value="10">10 Anggota Teratas</option>
+                            <option value="25">25 Anggota Teratas</option>
+                            <option value="50">50 Anggota Teratas</option>
+                        </select>
+                        <small class="form-text text-muted">Dihitung dari jumlah eksemplar yang dipinjam sesuai periode dan kriteria aktif. Membatasi jumlah anggota, bukan jumlah baris peminjaman. Kolom peringkat dan jumlah buku ditambahkan otomatis.</small>
                     </div>
 
                     <!-- Filter Status Peminjaman -->
@@ -225,19 +331,8 @@ $request = service('request');
                         </select>
                     </div>
 
-                    <!-- Filter Nama Anggota -->
-                    <div class="filter-section">
-                        <h6><i class="fas fa-user"></i> Filter Berdasarkan Nama Anggota</h6>
-                        <label>Nama Anggota</label>
-                        <input type="text" name="member_name" id="member_name" class="form-control" placeholder="Masukkan nama anggota...">
-                    </div>
+                   
 
-                    <!-- Filter Judul Buku -->
-                    <div class="filter-section">
-                        <h6><i class="fas fa-book"></i> Filter Berdasarkan Judul Buku</h6>
-                        <label>Judul Buku</label>
-                        <input type="text" name="book_title" id="book_title" class="form-control" placeholder="Masukkan judul buku...">
-                    </div>
                 </div>
 
                 <!-- Export Button -->
@@ -281,9 +376,42 @@ $request = service('request');
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
+<script src="<?= base_url('assets/js/circulation-criteria.js') ?>?v=<?= filemtime(FCPATH . 'assets/js/circulation-criteria.js') ?>"></script>
 <script>
 $(document).ready(function() {
     let currentColumns = [];
+    CirculationCriteria.init({
+        url: <?= json_encode(base_url('laporan-sirkulasi')) ?>,
+        labels: <?= json_encode($criteriaLabels, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
+    });
+
+    function updatePeriodFilter() {
+        $('#filterForm .period-filter').hide().find('input, select').prop('disabled', true);
+        $('#' + $('#filter_type').val() + '_filter').show().find('input, select').prop('disabled', false);
+    }
+    $('#filter_type').on('change', updatePeriodFilter);
+    updatePeriodFilter();
+
+    function periodFilters() {
+        const type = $('#filter_type').val();
+        const filters = { filter_type: type, top_borrowers: $('#top_borrowers').val(), ...CirculationCriteria.values() };
+        if (type === 'date') {
+            filters.start_date = $('#start_date').val();
+            filters.end_date = $('#end_date').val();
+        } else if (type === 'month') {
+            filters.month = $('#month').val();
+            filters.year = $('#month_year').val();
+        } else if (type === 'year') {
+            filters.year = $('#year_only').val();
+        }
+        return filters;
+    }
+
+    function appendPeriodFilters(form) {
+        Object.entries(periodFilters()).forEach(function ([name, value]) {
+            form.append($('<input>', { type: 'hidden', name: name, value: value }));
+        });
+    }
     
     // Handle Select All Columns
     $('#select_all_columns').change(function() {
@@ -334,11 +462,9 @@ $(document).ready(function() {
             type: 'POST',
             data: {
                 columns: selectedColumns,
-                start_date: $('#start_date').val(),
-                end_date: $('#end_date').val(),
+                ...periodFilters(),
                 loan_status: $('#loan_status').val(),
-                member_name: $('#member_name').val(),
-                book_title: $('#book_title').val()
+                member_name: $('#member_name').val()
             },
             dataType: 'json',
             success: function(response) {
@@ -399,18 +525,8 @@ $(document).ready(function() {
         });
         
         // Tambahkan filter
-        form.append($('<input>', {
-            'type': 'hidden',
-            'name': 'start_date',
-            'value': $('#start_date').val()
-        }));
-        
-        form.append($('<input>', {
-            'type': 'hidden',
-            'name': 'end_date',
-            'value': $('#end_date').val()
-        }));
-        
+        appendPeriodFilters(form);
+
         form.append($('<input>', {
             'type': 'hidden',
             'name': 'loan_status',
@@ -423,11 +539,6 @@ $(document).ready(function() {
             'value': $('#member_name').val()
         }));
         
-        form.append($('<input>', {
-            'type': 'hidden',
-            'name': 'book_title',
-            'value': $('#book_title').val()
-        }));
         
         // Submit form
         $('body').append(form);
@@ -469,11 +580,9 @@ $(document).ready(function() {
             form.append($('<input>', { 'type': 'hidden', 'name': 'columns[]', 'value': col }));
         });
 
-        form.append($('<input>', { 'type': 'hidden', 'name': 'start_date',  'value': $('#start_date').val() }));
-        form.append($('<input>', { 'type': 'hidden', 'name': 'end_date',    'value': $('#end_date').val() }));
+        appendPeriodFilters(form);
         form.append($('<input>', { 'type': 'hidden', 'name': 'loan_status', 'value': $('#loan_status').val() }));
         form.append($('<input>', { 'type': 'hidden', 'name': 'member_name', 'value': $('#member_name').val() }));
-        form.append($('<input>', { 'type': 'hidden', 'name': 'book_title',  'value': $('#book_title').val() }));
 
         $('body').append(form);
         form.submit();
@@ -488,10 +597,15 @@ $(document).ready(function() {
     function displayPreview(data, columns, total) {
         // Mapping nama kolom
         const columnNames = {
+            'peringkat': 'Peringkat',
+            'jumlah_peminjaman': 'Jumlah Buku Dipinjam',
             'nama_anggota': 'Nama Anggota',
             'MemberNo': 'Nomor Anggota',
             'NomorBarcode': 'Nomor Barcode',
             'judul_buku': 'Judul Buku',
+            'penerbit': 'Penerbit',
+            'kelas_ddc': 'Kelas DDC',
+            'subjek': 'Subjek',
             'tanggal_peminjaman': 'Tanggal Peminjaman',
             'tanggal_jatuh_tempo': 'Tanggal Jatuh Tempo',
             'tanggal_pengembalian': 'Tanggal Pengembalian',
@@ -559,8 +673,10 @@ $(document).ready(function() {
 function clearAllFilters() {
     if (confirm('Apakah Anda yakin ingin menghapus semua filter?')) {
         // Clear all input fields
-        $('input[type="date"], input[type="text"]').val('');
-        $('select').prop('selectedIndex', 0);
+        $('#filterForm input[type="date"], #filterForm input[type="text"]').val('');
+        $('#filterForm select').prop('selectedIndex', 0);
+        CirculationCriteria.reset();
+        $('#filter_type').trigger('change');
     }
 }
 </script>

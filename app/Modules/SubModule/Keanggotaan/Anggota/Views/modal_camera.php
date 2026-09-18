@@ -47,15 +47,19 @@
   font-family: "Lucida Grande", "Arial", sans-serif;
   width: 760px;
 }
+
+.camera-success-alert .swal2-icon:not(.swal2-success) {
+	display: none !important;
+}
 </style>
 <?=$this->endSection('style');?>
 
-<div class="modal fade" id="modal_camera" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="modal_camera" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="modalCameraTitle" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Ambil Gambar
+                <h5 class="modal-title" id="modalCameraTitle">
+                    <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate" aria-hidden="true"> </i> Ambil Gambar
                 </h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -67,19 +71,19 @@
                     <div class="form-row">
 						<div class="col-md-12 is_camera">
 							<div class="position-relative form-group">
-								<label for="file_image" class="">Camera</label>
+								<label for="video" class="">Camera</label>
 								<div>
 									<div class="row contentarea">
 										<div class="col">
 											<div class="camera">
-												<video id="video">Video stream not available.</video>
-												<button id="startbutton">Capture</button> 
+												<video id="video" aria-label="Pratinjau kamera anggota">Video stream not available.</video>
+																								<button id="startbutton" type="button" aria-label="Ambil foto dari kamera">Capture</button>
 											</div>
-											<canvas id="canvas"></canvas>
+											<canvas id="canvas" role="img" aria-label="Hasil foto dari kamera"></canvas>
 										</div>
 										<div class="col">
 											<div class="output">
-												<img id="photo" alt="The screen capture will appear in this box.">
+												<img id="photo" alt="Hasil foto anggota dari kamera">
 												<input type="hidden" name="camera_image" id="camera_image" value=""> <br>
 												<small class="text-muted">Hasil capture yang akan diupload</small>
 											</div>
@@ -127,7 +131,7 @@
 				video.play();
 			})
 			.catch(function(err) {
-				console.log("An error occurred: " + err);
+				$('#form_capture_message').html('Kamera tidak dapat diakses. Periksa izin kamera browser.');
 			});
 
 			video.addEventListener('canplay', function(ev){
@@ -187,6 +191,7 @@
 		$('#form_capture').submit(function(e) {
 			e.preventDefault()
 			var data_post = $(this).serializeArray();
+			data_post.push({name: '<?= csrf_token() ?>', value: $('input[name="<?= csrf_token() ?>"]').val()});
 			var id = $('#capture_id').val();
 
 			$('.loading').show()
@@ -198,13 +203,13 @@
 					data: data_post,
 				})
 				.done(function(res) {
-					console.log(res)
 					if (res.status === 201) {
 						$('#modal_camera').modal('hide');
 						Swal.fire({
 							title: 'Berhasil',
 							text: 'Foto berhasil disimpan',
 							icon: 'success',
+							customClass: 'camera-success-alert',
 							showConfirmButton: false,
 							timer: 3000
 						}).then(function() {
@@ -215,8 +220,7 @@
 					}
 				})
 				.fail(function(res) {
-					console.log(res)
-					// $('#form_capture_message').html(res.responseJSON.messages.error)
+					$('#form_capture_message').html('Foto gagal disimpan. Silakan coba lagi.');
 				})
 				.always(function() {
 					$('.loading').hide()

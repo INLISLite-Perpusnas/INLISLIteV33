@@ -1,0 +1,28 @@
+@font-face {
+    font-family: "Auth Font Awesome";
+    font-style: normal;
+    font-weight: 900;
+    font-display: swap;
+    src: url("../fonts/auth/fa-solid-subset.woff2") format("woff2");
+}
+
+.fas {
+    display: inline-block;
+    font-family: "Auth Font Awesome";
+    font-style: normal;
+    font-variant: normal;
+    font-weight: 900;
+    line-height: 1;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+}
+
+.fa-clock::before { content: "\f017"; }
+.fa-exclamation-triangle::before { content: "\f071"; }
+.fa-eye::before { content: "\f06e"; }
+.fa-eye-slash::before { content: "\f070"; }
+.fa-lock::before { content: "\f023"; }
+.fa-mobile-alt::before { content: "\f3cd"; }
+.fa-shield-alt::before { content: "\f3ed"; }
+.fa-sign-in-alt::before { content: "\f2f6"; }
+.fa-user::before { content: "\f007"; }

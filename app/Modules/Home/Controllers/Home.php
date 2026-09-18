@@ -35,6 +35,8 @@ class Home extends \Base\Controllers\BaseController
     public function index()
     {
         $this->data['title'] = 'Beranda - Perpustakaan Digital';
+        $this->data['meta_description'] = 'Cari koleksi perpustakaan, lihat buku populer dan terbaru, serta baca berita dan informasi layanan perpustakaan.';
+        $this->data['is_home_page'] = true;
 
         $useCache = env('is_home_cache') == 1;
         $cacheKey = 'home_index_data';

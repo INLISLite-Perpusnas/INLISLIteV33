@@ -120,8 +120,11 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
         ->join('collectionstatus as cs', 'a.Status_id = cs.ID', 'left')
         ->join('location_library as Loc', 'a.Location_Library_id = Loc.ID', 'left')
 		->join('catalogs as cat', 'a.Catalog_id = cat.ID', 'left')
-        ->where('a.IsQUARANTINE', $IsQUARANTINE)
-		->orderBy('a.ID', 'DESC');
+        ->where('a.IsQUARANTINE', $IsQUARANTINE);
+
+    if ($this->request->getGet('lite') !== '1') {
+        $builder->orderBy('a.ID', 'DESC');
+    }
 
     if (!empty($catalog_id)) {
         $builder->where('a.Catalog_id', $catalog_id);
@@ -147,6 +150,54 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
     $media_id = $this->request->getGet('media_id');
     if (!empty($media_id)) {
         $builder->where('a.Media_id', $media_id);
+    }
+
+    // Raw, paginated data for the lightweight list. Keep the DataTables
+    // response below for the catalog detail and quarantine screens.
+    if ($this->request->getGet('lite') === '1') {
+        $search = trim((string) $this->request->getGet('search'));
+        if ($search !== '') {
+            $builder->groupStart()
+                ->like('a.NomorBarcode', $search)
+                ->orLike('a.NoInduk', $search)
+                ->orLike('a.TanggalPengadaan', $search)
+                ->orLike('cat.Title', $search)
+                ->orLike('cat.Author', $search)
+                ->orLike('cat.Publisher', $search)
+                ->orLike('cs.Name', $search)
+                ->orLike('Loc.Name', $search)
+                ->groupEnd();
+        }
+        $length = (int) $this->request->getGet('length');
+        $length = in_array($length, [10, 25, 50, 100], true) ? $length : 10;
+        $filtered = (clone $builder)->countAllResults();
+        $pages = max(1, (int) ceil($filtered / $length));
+        $page = min($pages, max(1, (int) $this->request->getGet('page')));
+        $offset = ($page - 1) * $length;
+        $sortColumns = [
+            'NomorBarcode' => 'a.NomorBarcode',
+            'TanggalPengadaan' => 'a.TanggalPengadaan',
+            'NoInduk' => 'a.NoInduk',
+            'Title' => 'cat.Title',
+            'StatusName' => 'cs.Name',
+            'LocationLibraryName' => 'Loc.Name',
+        ];
+        $sort = $sortColumns[$this->request->getGet('sort') ?? ''] ?? 'a.ID';
+        $direction = $this->request->getGet('direction') === 'asc' ? 'ASC' : 'DESC';
+        $builder->select('cat.Publikasi')->orderBy($sort, $direction);
+        if ($sort !== 'a.ID') {
+            $builder->orderBy('a.ID', 'DESC');
+        }
+        $rows = $builder->get($length, $offset)->getResultArray();
+        foreach ($rows as &$row) {
+            $row['editUrl'] = base_url('eksemplar/edit/' . $row['ID']);
+            if ($catalog_id !== '') {
+                $row['editUrl'] .= '?' . http_build_query(['catalog_id' => $catalog_id]);
+            }
+            $row['switchUrl'] = base_url('api/eksemplar/switch/' . $row['ID']);
+        }
+        unset($row);
+        return $this->response->setJSON(compact('rows', 'filtered', 'page', 'pages', 'offset', 'length'));
     }
 
     $dataTable = DataTable::of($builder)
@@ -444,8 +495,8 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 
 	public function switch($id = null)
 	{
-		$field = $this->request->getGet('field');
-		$value = $this->request->getGet('value');
+		$field = $this->request->getPost('field') ?? $this->request->getGet('field');
+		$value = $this->request->getPost('value') ?? $this->request->getGet('value');
 
 		$update_data_id = $this->eksemplarModel->update($id, array($field => ($value == 'true') ? 1 : 0));
 

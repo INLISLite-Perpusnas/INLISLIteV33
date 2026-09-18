@@ -1,0 +1,87 @@
+@font-face {
+    font-family: "Home Font Awesome";
+    font-style: normal;
+    font-weight: 900;
+    font-display: swap;
+    src: url("../fonts/home/fa-solid-subset.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Home Font Awesome Regular";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("../fonts/home/fa-regular-subset.woff2") format("woff2");
+}
+
+.fa-solid,
+.fas,
+.fa-regular {
+    display: inline-block;
+    font-style: normal;
+    font-variant: normal;
+    line-height: 1;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+}
+
+.fa-solid,
+.fas {
+    font-family: "Home Font Awesome";
+    font-weight: 900;
+}
+
+.fa-regular {
+    font-family: "Home Font Awesome Regular";
+    font-weight: 400;
+}
+
+.fa-fw { width: 1.25em; text-align: center; }
+.fa-2x { font-size: 2em; }
+.fa-3x { font-size: 3em; }
+.fa-4x { font-size: 4em; }
+
+.fa-address-book::before { content: "\f2b9"; }
+.fa-arrow-right::before { content: "\f061"; }
+.fa-bars::before { content: "\f0c9"; }
+.fa-bolt::before { content: "\f0e7"; }
+.fa-book-bookmark::before { content: "\f02d"; }
+.fa-book-open::before { content: "\f518"; }
+.fa-book-reader::before { content: "\f5da"; }
+.fa-books::before { content: "\f5db"; }
+.fa-building::before { content: "\f1ad"; }
+.fa-calendar::before { content: "\f133"; }
+.fa-calendar-alt::before { content: "\f073"; }
+.fa-chair::before { content: "\f6c0"; }
+.fa-chart-pie::before { content: "\f200"; }
+.fa-chevron-left::before { content: "\f053"; }
+.fa-chevron-right::before { content: "\f054"; }
+.fa-clock::before { content: "\f017"; }
+.fa-compass::before { content: "\f14e"; }
+.fa-desktop::before { content: "\f108"; }
+.fa-envelope::before { content: "\f0e0"; }
+.fa-eye::before { content: "\f06e"; }
+.fa-fire::before { content: "\f06d"; }
+.fa-gauge::before { content: "\f3fd"; }
+.fa-globe::before { content: "\f0ac"; }
+.fa-hand-holding-hand::before { content: "\f4c4"; }
+.fa-hand-holding-heart::before { content: "\f4be"; }
+.fa-home::before { content: "\f015"; }
+.fa-id-card::before { content: "\f2c2"; }
+.fa-location-dot::before { content: "\f3c5"; }
+.fa-list::before { content: "\f03a"; }
+.fa-magnifying-glass::before,
+.fa-search::before { content: "\f002"; }
+.fa-map-marker-alt::before { content: "\f3c5"; }
+.fa-newspaper::before { content: "\f1ea"; }
+.fa-person-walking::before { content: "\f554"; }
+.fa-phone::before { content: "\f095"; }
+.fa-right-to-bracket::before { content: "\f2f6"; }
+.fa-rotate-left::before { content: "\f0e2"; }
+.fa-search-minus::before { content: "\f010"; }
+.fa-star::before { content: "\f005"; }
+.fa-stream::before { content: "\f550"; }
+.fa-sync-alt::before { content: "\f2f1"; }
+.fa-tags::before { content: "\f02c"; }
+.fa-user-edit::before { content: "\f4ff"; }
+.fa-users::before { content: "\f0c0"; }

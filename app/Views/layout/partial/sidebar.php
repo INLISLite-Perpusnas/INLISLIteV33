@@ -1,12 +1,20 @@
 <?php
-$db=db_connect();
-$logo = $db->table('settingparameters')->where('Name', 'Logo')->get()->getRow()->Value;
-use Dompdf\Css\Style;
-
 $request = service('request');
 helper('menu');
 $user = user();
 $group = isset($user->category) ? $user->category : 'admin';
+$menuHtml = null;
+if (!empty($isLightweightBackendPage)) {
+    $menuCacheKey = 'dashboard_menu_' . hash('sha256', $group . ':' . $request->getUri()->getPath());
+    $menuHtml = cache($menuCacheKey);
+}
+
+if (!is_string($menuHtml)) {
+    $menuHtml = display_menu_backend(0, 1, $group);
+    if (!empty($menuCacheKey)) {
+        cache()->save($menuCacheKey, $menuHtml, 300);
+    }
+}
 ?>
 
 <style>
@@ -53,7 +61,7 @@ $group = isset($user->category) ? $user->category : 'admin';
     .nav-label-argon {
         font-size: 11px;
         font-weight: 700;
-        color: #8392ab;
+        color: #526079;
         text-transform: uppercase;
         margin: 20px 0 10px 10px;
         letter-spacing: 0.5px;
@@ -63,7 +71,7 @@ $group = isset($user->category) ? $user->category : 'admin';
         display: flex;
         align-items: center;
         padding: 12px 15px;
-        color: #67748e;
+        color: #526079;
         text-decoration: none;
         border-radius: 8px;
         font-size: 16px;
@@ -307,25 +315,29 @@ $group = isset($user->category) ? $user->category : 'admin';
     }
 </style>
 
-<aside class="sidebar-argon">
+<aside class="sidebar-argon" id="dashboard-sidebar" aria-label="Navigasi utama">
     <div class="sidebar-brand">
         <!-- Toggle button - posisi absolute di kanan atas -->
-        <button class="sidebar-toggle" id="sidebarToggle" title="Toggle Sidebar">
-            <i class="fas fa-bars"></i>
+        <button class="sidebar-toggle" id="sidebarToggle" type="button"
+            title="Buka atau tutup sidebar" aria-label="Buka atau tutup sidebar"
+            aria-controls="dashboard-sidebar" aria-expanded="true">
+            <i class="fas fa-bars" aria-hidden="true"></i>
         </button>
         
         <div>
-            <img src="<?= !empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png') ?>" style="width: 80px; height: 80px; object-fit: contain; border-radius: 16px; margin-bottom: 20px;">
+            <img src="<?= esc($sidebarLogoUrl ?? (!empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png'))) ?>"
+                alt="Logo <?= esc($nama_perpustakaan ?? 'perpustakaan') ?>" width="80" height="80"
+                style="width:80px;height:80px;object-fit:contain;border-radius:16px;margin-bottom:20px;" fetchpriority="high">
         </div>
         <span class="brand-text">INLISLite</span>
     </div>
 
-    <?= display_menu_backend(0, 1, isset(user()->category) ? user()->category : 'admin'); ?>
+    <?= $menuHtml ?>
 
     <div class="sidebar-footer">
-        <img src="<?= base_url('themes/uigniter/images/avatars/2.jpg') ?>" width="35" alt="User Avatar">
+        <img src="<?= base_url('themes/uigniter/images/avatars/2.jpg') ?>" width="35" height="35" alt="Avatar pengguna" loading="lazy">
         <div>
-            <strong><?= user()->username ?></strong>
+            <strong><?= esc(user()->username) ?></strong>
             <a href="<?= base_url('logout') ?>" class="text-danger">Logout</a>
         </div>
     </div>

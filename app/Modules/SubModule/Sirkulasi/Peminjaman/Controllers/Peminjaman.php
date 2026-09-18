@@ -617,9 +617,13 @@ private function getDayName($day_index)
         $this->db->transBegin();
         
         try {
-           $collection_loan = get_ref_single('collectionloans', 'ID IS NOT NULL','data');
-
-            $lastNumber = $collection_loan ? (int) substr($collection_loan->ID, -5) : 0;
+            // Ambil ID terakhir secara deterministik dan kunci baris selama
+            // transaksi. get_ref_single() tidak menjamin urutan sehingga dua
+            // transaksi bersamaan dapat menghasilkan ID yang sama.
+            $collection_loan = $this->db->query(
+                'SELECT ID FROM collectionloans WHERE ID IS NOT NULL ORDER BY ID DESC LIMIT 1 FOR UPDATE'
+            )->getRow();
+            $lastNumber = $collection_loan ? (int) substr((string) $collection_loan->ID, -5) : 0;
             $increment = $lastNumber + 1;
 
             $collection_loan_id = get_pad_number($increment, date('ymd'), 5);
