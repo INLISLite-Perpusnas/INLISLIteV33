@@ -2,12 +2,11 @@
 
 ?>
 <?= $this->section('style') ?>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous">
-<link rel="stylesheet" href="<?= base_url('assets'); ?>/css/dashboard.css">
+<style><?= file_get_contents(FCPATH . 'assets/css/dashboard.css') ?></style>
 <?= $this->endSection('style') ?>
 
 <?= $this->section('page') ?>
-<div class="app-main__inner">
+<div class="app-main__inner" aria-labelledby="dashboard-title">
    <div class="dashboard-container">
        <!-- Page Header -->
     <div class="page-header">
@@ -15,21 +14,21 @@
                
                <div style="display: flex; align-items: center; gap: 15px;">
                    <div class="page-icon">
-                       <i class="fas fa-tachometer-alt"></i>
+                       <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
                    </div>
                    <div>
-                       <h1>Dashboard</h1>
-                       <div class="page-subtitle">Sistem Manajemen Perpustakaan Digital</div>
+                       <h1 id="dashboard-title">Dashboard</h1>
+                       <p class="page-subtitle">Sistem Manajemen Perpustakaan Digital</p>
                    </div>
                </div>
                
                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 5px;">
                  <button type="button" class="btn-send-api" id="btnKirimLaporan">
-                    <i class="fas fa-paper-plane"></i> Kirim Laporan
+                    <i class="fas fa-paper-plane" aria-hidden="true"></i> Kirim Laporan
                 </button>
                    
                    <small style="color: #dc2626; font-weight: 600; font-size: 11px; background: #fee2e2; padding: 4px 8px; border-radius: 6px;">
-                       <i class="fas fa-exclamation-circle"></i> Setiap Perpustakaan Wajib mengirimkan laporan total data setiap bulan
+                       <i class="fas fa-exclamation-circle" aria-hidden="true"></i> Setiap Perpustakaan Wajib mengirimkan laporan total data setiap bulan
                    </small>
                </div>
 
@@ -37,232 +36,119 @@
        </div>
 
        <!-- Statistics Cards -->
-       <div class="stats-grid">
-           <div class="stat-card info" data-href="<?= base_url('anggota') ?>">
+       <section class="stats-grid" aria-label="Statistik pengguna dan kunjungan">
+           <a class="stat-card info" href="<?= base_url('anggota') ?>" aria-label="Jumlah anggota: <?= number_format((int) ($total_anggota ?? 0)) ?>">
                <div class="stat-header">
                    <div class="stat-content">
-                       <h3>Jumlah Anggota</h3>
-                       <div class="stat-number" data-target="<?= $total_anggota ?? 0 ?>">0</div>
+                       <h2>Jumlah Anggota</h2>
+                       <div class="stat-number"><?= number_format((int) ($total_anggota ?? 0)) ?></div>
                    </div>
                    <div class="stat-icon">
-                       <i class="fas fa-users"></i>
+                       <i class="fas fa-users" aria-hidden="true"></i>
                    </div>
                </div>
-           </div>
+           </a>
 
-           <div class="stat-card success" data-href="<?= base_url('user') ?>">
+           <a class="stat-card success" href="<?= base_url('user') ?>" aria-label="User aktif: <?= number_format((int) ($total_user_active ?? 0)) ?>">
                <div class="stat-header">
                    <div class="stat-content">
-                       <h3>User Aktif</h3>
-                       <div class="stat-number" data-target="<?= $total_user_active ?? 0 ?>">0</div>
+                       <h2>User Aktif</h2>
+                       <div class="stat-number"><?= number_format((int) ($total_user_active ?? 0)) ?></div>
                    </div>
                    <div class="stat-icon">
-                       <i class="fas fa-user-check"></i>
+                       <i class="fas fa-user-check" aria-hidden="true"></i>
                    </div>
                </div>
-           </div>
+           </a>
 
-           <div class="stat-card warning" data-href="<?= base_url('bukutamu') ?>">
+           <a class="stat-card warning" href="<?= base_url('bukutamu') ?>" aria-label="Kunjungan anggota: <?= number_format((int) ($total_anggota_guest ?? 0)) ?>">
                <div class="stat-header">
                    <div class="stat-content">
-                       <h3>Kunjungan Anggota</h3>
-                       <div class="stat-number" data-target="<?= $total_anggota_guest ?? 0 ?>">0</div>
+                       <h2>Kunjungan Anggota</h2>
+                       <div class="stat-number"><?= number_format((int) ($total_anggota_guest ?? 0)) ?></div>
                    </div>
                    <div class="stat-icon">
-                       <i class="fas fa-door-open"></i>
+                       <i class="fas fa-door-open" aria-hidden="true"></i>
                    </div>
                </div>
-           </div>
+           </a>
 
-           <div class="stat-card danger" data-href="<?= base_url('bukutamu/non_anggota') ?>">
+           <a class="stat-card danger" href="<?= base_url('bukutamu/non_anggota') ?>" aria-label="Kunjungan non anggota: <?= number_format((int) ($total_nonanggota_guest ?? 0)) ?>">
                <div class="stat-header">
                    <div class="stat-content">
-                       <h3>Kunjungan Non Anggota</h3>
-                       <div class="stat-number" data-target="<?= $total_nonanggota_guest ?? 0 ?>">0</div>
+                       <h2>Kunjungan Non Anggota</h2>
+                       <div class="stat-number"><?= number_format((int) ($total_nonanggota_guest ?? 0)) ?></div>
                    </div>
                    <div class="stat-icon">
-                       <i class="fas fa-user-times"></i>
+                       <i class="fas fa-user-times" aria-hidden="true"></i>
                    </div>
                </div>
-           </div>
+           </a>
 
-           <div class="stat-card dark">
+           <div class="stat-card dark" role="group" aria-label="Anggota bebas pustaka: <?= number_format((int) ($total_anggota_bebas_pustaka ?? 0)) ?>">
                <div class="stat-header">
                    <div class="stat-content">
-                       <h3>Anggota Bebas Pustaka</h3>
-                       <div class="stat-number" data-target="<?= $total_anggota_bebas_pustaka ?? 0 ?>">0</div>
+                       <h2>Anggota Bebas Pustaka</h2>
+                       <div class="stat-number"><?= number_format((int) ($total_anggota_bebas_pustaka ?? 0)) ?></div>
                    </div>
                    <div class="stat-icon">
-                       <i class="fas fa-graduation-cap"></i>
+                       <i class="fas fa-graduation-cap" aria-hidden="true"></i>
                    </div>
                </div>
            </div>
-       </div>
+       </section>
 
        <!-- Chart Cards -->
-       <div class="chart-grid">
-           <div class="chart-card" data-href="<?= base_url('katalog') ?>">
+       <section class="chart-grid" aria-label="Statistik koleksi dan sirkulasi">
+           <a class="chart-card" href="<?= base_url('katalog') ?>" aria-label="Total katalog: <?= number_format((int) ($total_katalog ?? 0)) ?>">
                <div class="chart-header">
                    <div class="chart-icon">
-                       <i class="fas fa-book"></i>
+                       <i class="fas fa-book" aria-hidden="true"></i>
                    </div>
-                   <div class="chart-title">Total Katalog</div>
+                   <h2 class="chart-title">Total Katalog</h2>
                </div>
-               <div class="chart-value" data-target="<?= $total_katalog ?? 0 ?>">0</div>
-           </div>
+               <div class="chart-value"><?= number_format((int) ($total_katalog ?? 0)) ?></div>
+           </a>
 
-           <div class="chart-card" data-href="<?= base_url('eksemplar') ?>">
+           <a class="chart-card" href="<?= base_url('eksemplar') ?>" aria-label="Total koleksi: <?= number_format((int) ($total_koleksi ?? 0)) ?>">
                <div class="chart-header">
                    <div class="chart-icon">
-                       <i class="fas fa-layer-group"></i>
+                       <i class="fas fa-layer-group" aria-hidden="true"></i>
                    </div>
-                   <div class="chart-title">Total Koleksi</div>
+                   <h2 class="chart-title">Total Koleksi</h2>
                </div>
-               <div class="chart-value" data-target="<?= $total_koleksi ?? 0 ?>">0</div>
-           </div>
+               <div class="chart-value"><?= number_format((int) ($total_koleksi ?? 0)) ?></div>
+           </a>
 
-           <div class="chart-card" data-href="<?= base_url('sirkulasi-peminjaman') ?>">
+           <a class="chart-card" href="<?= base_url('sirkulasi-peminjaman') ?>" aria-label="Total peminjaman: <?= number_format((int) ($total_peminjaman ?? 0)) ?>">
                <div class="chart-header">
                    <div class="chart-icon">
-                       <i class="fas fa-handshake"></i>
+                       <i class="fas fa-handshake" aria-hidden="true"></i>
                    </div>
-                   <div class="chart-title">Total Peminjaman</div>
+                   <h2 class="chart-title">Total Peminjaman</h2>
                </div>
-               <div class="chart-value" data-target="<?= $total_peminjaman ?? 0 ?>">0</div>
-           </div>
-       </div>
+               <div class="chart-value"><?= number_format((int) ($total_peminjaman ?? 0)) ?></div>
+           </a>
+       </section>
    </div>
 </div>
 <?= $this->endSection('page') ?>
 
 <?= $this->section('script') ?>
 <script>
-   // Number counter animation
-   function animateNumbers() {
-       const counters = document.querySelectorAll('.stat-number, .chart-value');
-       
-       const animateCounter = (counter) => {
-           const target = parseInt(counter.getAttribute('data-target'));
-           if (target === 0) {
-               counter.textContent = '0';
-               return;
-           }
-           
-           const increment = target / 100;
-           let current = 0;
-           
-           const timer = setInterval(() => {
-               current += increment;
-               if (current >= target) {
-                   current = target;
-                   clearInterval(timer);
-               }
-               counter.textContent = Math.floor(current).toLocaleString();
-           }, 20);
-       };
-       
-       const observer = new IntersectionObserver((entries) => {
-           entries.forEach(entry => {
-               if (entry.isIntersecting) {
-                   animateCounter(entry.target);
-                   observer.unobserve(entry.target);
-               }
-           });
-       }, { threshold: 0.5 });
-       
-       counters.forEach(counter => {
-           observer.observe(counter);
-       });
-   }
-
-   // Card hover effects
-   function initCardEffects() {
-       const cards = document.querySelectorAll('.stat-card, .chart-card');
-
-       cards.forEach(card => {
-           if (card.dataset.href) {
-               card.style.cursor = 'pointer';
-           }
-
-           card.addEventListener('mouseenter', () => {
-               card.style.transform = 'translateY(-10px) scale(1.02)';
-           });
-
-           card.addEventListener('mouseleave', () => {
-               card.style.transform = 'translateY(0) scale(1)';
-           });
-       });
-   }
-
-   // Click ripple effect + navigasi
-   function initClickEffects() {
-       document.querySelectorAll('.stat-card, .chart-card').forEach(card => {
-           card.addEventListener('click', function(e) {
-               const ripple = document.createElement('div');
-               const rect = card.getBoundingClientRect();
-               const size = 20;
-
-               ripple.style.position = 'absolute';
-               ripple.style.borderRadius = '50%';
-               ripple.style.background = 'rgba(102, 126, 234, 0.3)';
-               ripple.style.transform = 'scale(0)';
-               ripple.style.animation = 'ripple 0.6s linear';
-               ripple.style.left = (e.clientX - rect.left - size/2) + 'px';
-               ripple.style.top = (e.clientY - rect.top - size/2) + 'px';
-               ripple.style.width = ripple.style.height = size + 'px';
-               ripple.style.pointerEvents = 'none';
-
-               card.appendChild(ripple);
-
-               const href = card.dataset.href;
-               if (href) {
-                   setTimeout(() => { window.location.href = href; }, 200);
-               } else {
-                   setTimeout(() => { ripple.remove(); }, 600);
-               }
-           });
-       });
-   }
-
-   // Initialize animations
-   document.addEventListener('DOMContentLoaded', () => {
-       animateNumbers();
-       initCardEffects();
-       initClickEffects();
-   });
-
-   // Add ripple animation CSS
-   const style = document.createElement('style');
-   style.textContent = `
-       @keyframes ripple {
-           to {
-               transform: scale(4);
-               opacity: 0;
-           }
-       }
-   `;
-   document.head.appendChild(style);
-
-  
-</script>
-<script>
     document.addEventListener('DOMContentLoaded', function() {
         
         // 1. Definisikan URL dan Tombol
-        const CONTROLLER_URL = "<?= base_url('dashboard/kirimlaporan') ?>";
+        const CONTROLLER_URL = <?= json_encode(base_url('dashboard/kirimlaporan'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
         const btn = document.getElementById('btnKirimLaporan');
-
-        console.log("Status Script: Ready (V8 Compatible)");
         
         if (!btn) {
-            console.error("FATAL ERROR: Tombol dengan ID 'btnKirimLaporan' tidak ditemukan!");
             return;
         }
 
         // 2. Pasang Event Listener
         btn.addEventListener('click', async function(e) {
             e.preventDefault();
-            console.log("Tombol diklik...");
 
             const originalText = btn.innerHTML;
             let isConfirmed = false;
@@ -286,20 +172,15 @@
 
             // Jika user klik batal atau klik di luar area
             if (!isConfirmed) {
-                console.log("Aksi dibatalkan user.");
                 return;
             }
-
-            console.log("User mengonfirmasi. Memulai proses...");
 
             // --- TAHAP 2: UI LOADING ---
             try {
                 btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+                btn.textContent = 'Memproses...';
 
                 // --- TAHAP 3: FETCH DATA ---
-                console.log("Melakukan Fetch ke:", CONTROLLER_URL);
-
                 // Handling CSRF (Jika diperlukan)
                 let headers = {
                     'Content-Type': 'application/json',
@@ -335,7 +216,6 @@
                 }
 
             } catch (error) {
-                console.error('Error Occurred:', error);
                 if (typeof Swal !== 'undefined') {
                     Swal.fire('Gagal!', error.message || 'Koneksi Gagal.', 'error');
                 } else {
@@ -345,7 +225,6 @@
                 // --- TAHAP 5: RESET TOMBOL ---
                 btn.disabled = false;
                 btn.innerHTML = originalText;
-                console.log("Proses selesai.");
             }
         });
     });

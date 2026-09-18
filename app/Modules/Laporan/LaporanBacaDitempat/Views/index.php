@@ -32,9 +32,26 @@ $date_to = $request->getGet('date_to') ?? '';
 }
 .filters-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 15px;
     margin-bottom: 20px;
+}
+#report-form .period-selector,
+#report-form .period-filter {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+}
+#report-form .filters-container > .filter-section {
+    min-width: 0;
+    margin-bottom: 0;
+}
+#report-form .period-filter .row {
+    row-gap: 15px;
+}
+@media (max-width: 767px) {
+    #report-form .filters-container {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 </style>
 <?= $this->endSection('style'); ?>
@@ -77,7 +94,7 @@ $date_to = $request->getGet('date_to') ?? '';
                 </div>
             <?php endif ?>
 
-            <form action="<?= base_url('laporan-baca-ditempat/export') ?>" method="post">
+            <form id="report-form" action="<?= base_url('laporan-baca-ditempat/export') ?>" method="post">
                 <?= csrf_field() ?>
                 <div class="columns-section">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -108,38 +125,44 @@ $date_to = $request->getGet('date_to') ?? '';
 
                 <!-- Multiple Filters Container -->
                 <div class="filters-container">
+                    <div class="form-group period-selector">
+                        <label for="filter_type"><b>Filter Berdasarkan</b></label>
+                        <select class="form-control" name="filter_type" id="filter_type">
+                            <option value="date">Tanggal</option>
+                            <option value="month">Bulan</option>
+                            <option value="year">Tahun</option>
+                        </select>
+                    </div>
                     <!-- Filter Tanggal Kunjungan -->
-                    <div class="filter-section">
-                        <h6><i class="fas fa-calendar-alt"></i> Filter Berdasarkan Tanggal Kunjungan</h6>
+                    <div id="date_filter" class="filter-section period-filter">
+                        <h6 class="mb-3"><i class="fas fa-calendar-alt" aria-hidden="true"></i> Filter Berdasarkan Tanggal</h6>
                         <div class="row">
                             <div class="col-md-6">
-                                <label>Tanggal Mulai</label>
+                                <label for="start_date">Tanggal Mulai</label>
                                 <input type="date" id="start_date" name="start_date" class="form-control">
                             </div>
                             <div class="col-md-6">
-                                <label>Tanggal Akhir</label>
+                                <label for="end_date">Tanggal Akhir</label>
                                 <input type="date" id="end_date" name="end_date" class="form-control">
                             </div>
                         </div>
                     </div>
 
                     <!-- Filter Bulan & Tahun Kunjungan -->
-                    <div class="filter-section">
-                        <h6><i class="fas fa-calendar-alt"></i> Filter Berdasarkan Bulan & Tahun Kunjungan</h6>
+                    <div id="month_filter" class="filter-section period-filter" style="display: none;">
+                        <h6 class="mb-3"><i class="fas fa-calendar-alt" aria-hidden="true"></i> Filter Berdasarkan Bulan</h6>
                         <div class="row">
                             <div class="col-md-6">
-                                <label>Bulan</label>
-                                <select name="month" class="form-control">
-                                    <option value="">-- Pilih Bulan --</option>
+                                <label for="month">Bulan</label>
+                                <select name="month" id="month" class="form-control" disabled>
                                     <?php for ($i = 1; $i <= 12; $i++) : ?>
                                         <option value="<?= $i ?>"><?= date('F', mktime(0, 0, 0, $i, 1)) ?></option>
                                     <?php endfor ?>
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label>Tahun</label>
-                                <select name="year" class="form-control">
-                                    <option value="">-- Pilih Tahun --</option>
+                                <label for="month_year">Tahun</label>
+                                <select name="year" id="month_year" class="form-control" disabled>
                                     <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
                                         <option value="<?= $i ?>"><?= $i ?></option>
                                     <?php endfor ?>
@@ -149,11 +172,10 @@ $date_to = $request->getGet('date_to') ?? '';
                     </div>
 
                     <!-- Filter Tahun Kunjungan Saja -->
-                    <div class="filter-section">
-                        <h6><i class="fas fa-calendar"></i> Filter Berdasarkan Tahun Kunjungan Saja</h6>
-                        <label>Tahun</label>
-                        <select name="year_only" id="year_only" class="form-control">
-                            <option value="">-- Pilih Tahun --</option>
+                    <div id="year_filter" class="filter-section period-filter" style="display: none;">
+                        <h6 class="mb-3"><i class="fas fa-calendar-alt" aria-hidden="true"></i> Filter Berdasarkan Tahun</h6>
+                        <label for="year_only">Tahun</label>
+                        <select name="year" id="year_only" class="form-control" disabled>
                             <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
                                 <option value="<?= $i ?>"><?= $i ?></option>
                             <?php endfor ?>
@@ -213,8 +235,13 @@ $date_to = $request->getGet('date_to') ?? '';
                     <!-- Filter Penerbit -->
                     <div class="filter-section">
                         <h6><i class="fas fa-book"></i> Filter Berdasarkan Penerbit</h6>
-                        <label>Penerbit</label>
-                        <input type="text" name="penerbit" class="form-control" placeholder="Masukkan nama penerbit...">
+                        <label for="penerbit">Penerbit</label>
+                        <select name="penerbit" id="penerbit" class="form-control" style="width: 100%;">
+                            <option value="">-- Semua Penerbit --</option>
+                            <?php foreach ($publisherOptions ?? [] as $publisher) : ?>
+                                <option value="<?= esc($publisher->Publisher, 'attr') ?>"><?= esc($publisher->Publisher) ?></option>
+                            <?php endforeach ?>
+                        </select>
                     </div>
                     
                 </div>
@@ -260,6 +287,20 @@ $date_to = $request->getGet('date_to') ?? '';
 <script>
 
 $(document).ready(function() {
+    $('#penerbit').select2({
+        placeholder: '-- Semua Penerbit --',
+        allowClear: true,
+        width: '100%'
+    });
+
+    function updatePeriodFilter() {
+        const activeSection = '#' + $('#filter_type').val() + '_filter';
+        $('#report-form .period-filter').hide().find('input, select').prop('disabled', true);
+        $(activeSection).show().find('input, select').prop('disabled', false);
+    }
+    $('#filter_type').on('change', updatePeriodFilter);
+    updatePeriodFilter();
+
     // Function to update preview table
     function updatePreview() {
         const selectedColumns = [];
@@ -267,16 +308,9 @@ $(document).ready(function() {
             selectedColumns.push($(this).val());
         });
 
-        const formData = new FormData();
-        formData.append('start_date', $('input[name="start_date"]').val());
-        formData.append('end_date', $('input[name="end_date"]').val());
-        formData.append('month', $('select[name="month"]').val());
-        formData.append('year', $('select[name="year"]').val());
-        formData.append('year_only', $('select[name="year_only"]').val());
-        formData.append('member_type_id', $('select[name="member_type_id"]').val());
-        formData.append('location_library_id', $('select[name="location_library_id"]').val());
-        formData.append('noinduk', $('input[name="noinduk"]').val());
-        formData.append('penerbit', $('input[name="penerbit"]').val());
+        // FormData mengabaikan input nonaktif, sama seperti submit Excel/PDF.
+        const formData = new FormData(document.getElementById('report-form'));
+        formData.delete('columns[]');
         formData.append('columns', JSON.stringify(selectedColumns));
 
         // Show loading indicator
@@ -361,18 +395,11 @@ function setExportAction(type) {
 function clearAllFilters() {
     if (confirm('Apakah Anda yakin ingin menghapus semua filter?')) {
         // Clear all input fields
-        $('input[type="date"], input[type="text"], input[type="email"]').val('');
-        $('select').prop('selectedIndex', 0);
-        
-        // Update preview
-        const selectedColumns = [];
-        $('input[name="columns[]"]:checked').each(function() {
-            selectedColumns.push($(this).val());
-        });
-        
-        if (selectedColumns.length > 0) {
-            updatePreview();
-        }
+        $('#report-form input[type="date"], #report-form input[type="text"], #report-form input[type="email"]').val('');
+        $('#report-form select').prop('selectedIndex', 0);
+        $('#penerbit').val('').trigger('change.select2');
+        // Sinkronkan panel aktif dan jalankan pembaruan preview melalui event.
+        $('#filter_type').trigger('change');
     }
 }
 </script>

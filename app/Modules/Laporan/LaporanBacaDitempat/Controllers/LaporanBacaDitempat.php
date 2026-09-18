@@ -40,7 +40,12 @@ class LaporanBacaDitempat extends \Base\Controllers\BaseController
             'periode' => 'Tanggal Kunjungan',
             'nama' => 'Nama',
             'noinduk' => 'No. Induk',
-            'noanggota' => 'No. Anggota'
+            'noanggota' => 'No. Anggota',
+            'judul_katalog' => 'Judul',
+            'pengarang_katalog' => 'Pengarang',
+            'penerbit_katalog' => 'Penerbit',
+            'subjek_katalog' => 'Subjek',
+            'nomor_dewey' => 'Nomor Dewey'
         // Add more columns as needed
         ];
 
@@ -67,11 +72,20 @@ class LaporanBacaDitempat extends \Base\Controllers\BaseController
             ->findAll();
 
 
+        $publisherOptions = db_connect('data')->table('catalogs')
+            ->distinct()
+            ->select('Publisher')
+            ->where('Publisher IS NOT NULL', null, false)
+            ->where('TRIM(Publisher) !=', '')
+            ->orderBy('Publisher')
+            ->get()->getResult();
+
         $data = [
             'columns' => $columns,
             'memberTypeOptions' => $memberTypeOptions,
             'locationOptions' => $locationOptions,
-            'roomOptions' => $roomOptions
+            'roomOptions' => $roomOptions,
+            'publisherOptions' => $publisherOptions,
         ];
 		
         /** @var array<string, mixed> $data */
@@ -90,6 +104,9 @@ class LaporanBacaDitempat extends \Base\Controllers\BaseController
         $query=$this->guestModel->select('NoPengunjung as no_pengunjung,
                 location_library.Name AS lokasi, Location_Library_id,
                 locations.Name AS lok_ruang, catalogs.Publisher AS penerbit,
+                catalogs.Title AS judul_katalog, catalogs.Author AS pengarang_katalog,
+                catalogs.Publisher AS penerbit_katalog, catalogs.Subject AS subjek_katalog,
+                catalogs.DeweyNo AS nomor_dewey,
                 NoInduk AS noinduk,
                 members.MemberNo AS noanggota, members.JenisAnggota_id,
                 (CASE WHEN bacaditempat.Member_id IS NULL 
@@ -122,14 +139,7 @@ class LaporanBacaDitempat extends \Base\Controllers\BaseController
                             <tr>';
         
         foreach ($columns as $column) {
-            if($column == 'no_pengunjung') $column = 'Nomor Pengunjung';
-            else if($column == 'lokasi') $column = 'Lokasi Perpustakaan';
-            else if($column == 'lok_ruang') $column = 'Lokasi Ruang';
-            else if($column == 'periode') $column = 'Tanggal Kunjungan';
-            else if($column == 'noinduk') $column = 'No. Induk';
-            else if($column == 'noanggota') $column = 'No. Anggota';
-            else if($column == 'nama') $column = 'Nama';
-            $html .= '<th>' . esc($column) . '</th>';
+            $html .= '<th>' . esc($this->getColumnLabel($column)) . '</th>';
         }
         
         $html .= '</tr></thead><tbody>';
@@ -137,10 +147,7 @@ class LaporanBacaDitempat extends \Base\Controllers\BaseController
         foreach ($members as $member) {
             $html .= '<tr>';
             foreach ($columns as $column) {
-                $value = $member->$column;
-                if (in_array($column, ['periode']) && $value) {
-                    $value = date('d-m-Y', strtotime($value));
-                }
+                $value = $this->getFormattedValue($member, $column);
                 $html .= '<td>' . esc($value) . '</td>';
             }
             $html .= '</tr>';
@@ -170,6 +177,9 @@ class LaporanBacaDitempat extends \Base\Controllers\BaseController
         $countQuery=$this->guestModel->select('NoPengunjung as no_pengunjung,
                 location_library.Name AS lokasi, Location_Library_id,
                 locations.Name AS lok_ruang, catalogs.Publisher AS penerbit,
+                catalogs.Title AS judul_katalog, catalogs.Author AS pengarang_katalog,
+                catalogs.Publisher AS penerbit_katalog, catalogs.Subject AS subjek_katalog,
+                catalogs.DeweyNo AS nomor_dewey,
                 NoInduk AS noinduk,
                 members.MemberNo AS noanggota, members.JenisAnggota_id,
                 (CASE WHEN bacaditempat.Member_id IS NULL 
@@ -201,6 +211,9 @@ class LaporanBacaDitempat extends \Base\Controllers\BaseController
         $query=$this->guestModel->select('NoPengunjung as no_pengunjung,
                 location_library.Name AS lokasi, Location_Library_id,
                 locations.Name AS lok_ruang, catalogs.Publisher AS penerbit,
+                catalogs.Title AS judul_katalog, catalogs.Author AS pengarang_katalog,
+                catalogs.Publisher AS penerbit_katalog, catalogs.Subject AS subjek_katalog,
+                catalogs.DeweyNo AS nomor_dewey,
                 NoInduk AS noinduk,
                 members.MemberNo AS noanggota, members.JenisAnggota_id,
                 (CASE WHEN bacaditempat.Member_id IS NULL 
@@ -301,6 +314,9 @@ class LaporanBacaDitempat extends \Base\Controllers\BaseController
         $countQuery = $this->guestModel->select('NoPengunjung as no_pengunjung,
                 location_library.Name AS lokasi, Location_Library_id,
                 locations.Name AS lok_ruang, catalogs.Publisher AS penerbit,
+                catalogs.Title AS judul_katalog, catalogs.Author AS pengarang_katalog,
+                catalogs.Publisher AS penerbit_katalog, catalogs.Subject AS subjek_katalog,
+                catalogs.DeweyNo AS nomor_dewey,
                 NoInduk AS noinduk,
                 members.MemberNo AS noanggota, members.JenisAnggota_id,
                 (CASE WHEN bacaditempat.Member_id IS NULL
@@ -329,6 +345,9 @@ class LaporanBacaDitempat extends \Base\Controllers\BaseController
         $query = $this->guestModel->select('NoPengunjung as no_pengunjung,
                 location_library.Name AS lokasi, Location_Library_id,
                 locations.Name AS lok_ruang, catalogs.Publisher AS penerbit,
+                catalogs.Title AS judul_katalog, catalogs.Author AS pengarang_katalog,
+                catalogs.Publisher AS penerbit_katalog, catalogs.Subject AS subjek_katalog,
+                catalogs.DeweyNo AS nomor_dewey,
                 NoInduk AS noinduk,
                 members.MemberNo AS noanggota, members.JenisAnggota_id,
                 (CASE WHEN bacaditempat.Member_id IS NULL
@@ -422,26 +441,37 @@ class LaporanBacaDitempat extends \Base\Controllers\BaseController
      // Helper function untuk apply multiple filters
     private function applyFilters($query)
     {
-        // Filter berdasarkan tanggal dibuat
-        $startDate = $this->request->getPost('start_date');
-        $endDate = $this->request->getPost('end_date');
-        if ($startDate && $endDate) {
-            $query->where('bacaditempat.CreateDate >=', $startDate)
-                  ->where('bacaditempat.CreateDate <=', $endDate);
-        }
-
-        // Filter berdasarkan bulan dan tahun dibuat
-        $month = $this->request->getPost('month');
-        $year = $this->request->getPost('year');
-        if ($month && $year) {
-            $query->where('MONTH(bacaditempat.CreateDate)', $month)
-                  ->where('YEAR(bacaditempat.CreateDate)', $year);
-        }
-
-        // Filter berdasarkan tahun saja (jika tidak ada bulan)
-        $yearOnly = $this->request->getPost('year_only');
-        if ($yearOnly && !$month) {
-            $query->where('YEAR(bacaditempat.CreateDate)', $yearOnly);
+        // Terapkan hanya periode yang aktif, sama untuk preview, Excel, dan PDF.
+        $filterType = $this->request->getPost('filter_type') ?? 'date';
+        switch ($filterType) {
+            case 'date':
+                $startDate = $this->request->getPost('start_date');
+                $endDate = $this->request->getPost('end_date');
+                if ($startDate) {
+                    $query->where('bacaditempat.CreateDate >=', $startDate);
+                }
+                if ($endDate) {
+                    $end = \DateTimeImmutable::createFromFormat('!Y-m-d', $endDate);
+                    if ($end && $end->format('Y-m-d') === $endDate) {
+                        // Batas eksklusif hari berikutnya mencakup seluruh tanggal akhir.
+                        $query->where('bacaditempat.CreateDate <', $end->modify('+1 day')->format('Y-m-d'));
+                    }
+                }
+                break;
+            case 'month':
+                $month = $this->request->getPost('month');
+                $year = $this->request->getPost('year');
+                if ($month && $year) {
+                    $query->where('MONTH(bacaditempat.CreateDate)', $month)
+                          ->where('YEAR(bacaditempat.CreateDate)', $year);
+                }
+                break;
+            case 'year':
+                $year = $this->request->getPost('year');
+                if ($year) {
+                    $query->where('YEAR(bacaditempat.CreateDate)', $year);
+                }
+                break;
         }
 
         // Filter berdasarkan jenis anggota
@@ -464,8 +494,8 @@ class LaporanBacaDitempat extends \Base\Controllers\BaseController
 
         // // Filter berdasarkan penerbit
         $publisher = $this->request->getPost('penerbit');
-        if ($publisher) {
-            $query->like('catalogs.Publisher', $publisher);
+        if ($publisher !== null && $publisher !== '') {
+            $query->where('catalogs.Publisher', $publisher);
         }
 
     }
@@ -480,7 +510,12 @@ class LaporanBacaDitempat extends \Base\Controllers\BaseController
             'periode' => 'Tanggal Kunjungan',
             'nama' => 'Nama',
             'noinduk' => 'No. Induk',
-            'noanggota' => 'No. Anggota'
+            'noanggota' => 'No. Anggota',
+            'judul_katalog' => 'Judul',
+            'pengarang_katalog' => 'Pengarang',
+            'penerbit_katalog' => 'Penerbit',
+            'subjek_katalog' => 'Subjek',
+            'nomor_dewey' => 'Nomor Dewey'
         ];
 
         return isset($columnHeaders[$column]) ? $columnHeaders[$column] : $column;

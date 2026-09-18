@@ -47,6 +47,8 @@ class Opac extends \Base\Controllers\BaseController
 {
     $startTime = microtime(true);
     $this->data['title'] = 'OPAC - Online Public Access Catalog';
+    $this->data['meta_description'] = 'Telusuri judul, pengarang, subjek, penerbit, dan koleksi perpustakaan melalui katalog daring.';
+    $this->data['is_opac_index'] = true;
 
     // ✅ Validasi member_no
     $memberNo = $this->request->getVar('member_no') ?? '';
@@ -189,7 +191,7 @@ private function loadRegularCatalogscache()
 
     } else {
         // ========== CACHE MISS ==========
-        $builder = $this->katalogModel->select('catalogs.*')->orderBy("ID", "DESC");
+        $builder = $this->katalogModel->select('catalogs.*')->where('IsOPAC', 1)->orderBy("ID", "DESC");
 
         $search = sanitizeSearch($this->request->getVar('search'));
 

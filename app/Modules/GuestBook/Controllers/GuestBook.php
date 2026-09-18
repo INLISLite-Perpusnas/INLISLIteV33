@@ -46,10 +46,8 @@ class GuestBook extends \App\Controllers\BaseController
 		// Get member data from database
 		$member = $member_no ? $this->db->table('members')->where('MemberNo', $member_no)->get()->getRow() : null;
 
-		// Get location id from cookie
-		$locationId = $this->request->getCookie('Location_id');
-		// Check if location id is available
-		if (!$locationId) {
+		$location = $this->getSelectedLocation();
+		if (!$location) {
 			return redirect()->to('buku-tamu/lokasi');
 		}
 	    $today = date('Y-m-d');
@@ -66,23 +64,9 @@ class GuestBook extends \App\Controllers\BaseController
 		$this->data['totalKunjungan'] = $totalKunjungan;
 
 
-		// Query for location data
-		$builder = $this->db->table('locations as a')
-			->select('a.ID, a.Code, a.Name')
-			->select('b.Name as LocationLibrary_name, b.Code as LocationLibrary_code')
-			->select('a.Branch_id, c.Name as Branch_name')
-			->join('location_library as b', 'b.ID = a.LocationLibrary_id', 'left')
-			->join('branchs as c', 'c.ID = a.Branch_id', 'left')
-			->where('a.ID', $locationId);
-
-		// Get location data
-		$data = $builder->get()->getRow();
-
-		
-
 		// Set data for view
 		$this->data['title'] = 'Buku Tamu - Anggota';
-		$this->data['data'] = $data;
+		$this->data['data'] = $location;
 		$this->data['member'] = $member;
 		$this->data['tujuan_kunjungan'] = get_ref_table('tujuan_kunjungan', 'ID, TujuanKunjungan', 'Member=1', 'data');
 		$this->data['message'] = $this->validation->getErrors()
@@ -96,23 +80,111 @@ class GuestBook extends \App\Controllers\BaseController
 
 	public function lokasi()
 	{
-		$this->data['title'] = 'Setting- Lokasi';
+		$this->response
+			->setHeader('X-Frame-Options', 'SAMEORIGIN')
+			->setHeader('X-Content-Type-Options', 'nosniff')
+			->setHeader('Referrer-Policy', 'same-origin')
+			->setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+
+		$this->data['title'] = 'Atur Lokasi Buku Tamu';
+		$this->data['meta_description'] = 'Pilih lokasi ruang perpustakaan untuk layanan buku tamu.';
+		$this->data['is_guestbook_location'] = true;
+
+		if ($this->request->getMethod() === 'POST') {
+			$throttler = service('throttler');
+			$throttleKey = hash('sha256', 'guestbook-location:' . $this->request->getIPAddress());
+			if (!$throttler->check($throttleKey, 10, MINUTE)) {
+				return redirect()->back()->withInput()->with('message', 'Terlalu banyak percobaan. Silakan tunggu satu menit.');
+			}
+
+			$code = strtoupper(trim((string) $this->request->getPost('Code')));
+			$isValid = $this->validation->setRules([
+				'Code' => [
+					'label' => 'Kode Lokasi',
+					'rules' => 'required|min_length[3]|max_length[24]|regex_match[/^[A-Z0-9-]+$/]',
+				],
+			])->run(['Code' => $code]);
+
+			if (!$isValid) {
+				return redirect()->back()->withInput()->with('message', 'Kode lokasi harus terdiri dari 3-24 huruf, angka, atau tanda hubung.');
+			}
+
+			$location = $this->locationQuery()
+				->where('a.Code', $code)
+				->where('a.active', 1)
+				->get()
+				->getRow();
+
+			if (!$location) {
+				return redirect()->back()->withInput()->with('message', 'Kode lokasi tidak ditemukan atau sudah tidak aktif.');
+			}
+
+			$this->session->set('GuestBookLocation_id', (int) $location->ID);
+			$response = redirect()->to(base_url('buku-tamu'));
+			$response->setCookie(
+				'Location_id',
+				(string) $location->ID,
+				604800,
+				'',
+				'/',
+				'',
+				$this->request->isSecure(),
+				true,
+				'Lax'
+			);
+
+			return $response;
+		}
+
 		$this->data['message'] = $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message');
-		echo view('GuestBook\Views\lokasi', $this->data);
+		return view('GuestBook\Views\lokasi', $this->data);
+	}
+
+	private function locationQuery()
+	{
+		return $this->db->table('locations as a')
+			->select('a.ID, a.Code, a.Name, a.Branch_id')
+			->select('b.Name as LocationLibrary_name, b.Code as LocationLibrary_code')
+			->select('c.Name as Branch_name')
+			->join('location_library as b', 'b.ID = a.LocationLibrary_id', 'left')
+			->join('branchs as c', 'c.ID = a.Branch_id', 'left');
+	}
+
+	private function getSelectedLocation(): ?object
+	{
+		$locationId = filter_var(
+			$this->session->get('GuestBookLocation_id'),
+			FILTER_VALIDATE_INT,
+			['options' => ['min_range' => 1]]
+		);
+
+		if ($locationId === false) {
+			return null;
+		}
+
+		return $this->locationQuery()
+			->where('a.ID', $locationId)
+			->where('a.active', 1)
+			->get()
+			->getRow();
 	}
 
 	public function store_anggota()
 {
-    $locationId = $this->request->getCookie('Location_id');
-    if (!$locationId) {
-        return redirect()->to('buku-tamu');
+    $location = $this->getSelectedLocation();
+    if (!$location) {
+        return redirect()->to('buku-tamu/lokasi');
     }
+    $locationId = $location->ID;
 
-    $this->validation->setRule('member_no', 'Nomor Anggota', 'trim|required');
+    $this->validation->setRule('member_no', 'Nomor Anggota', 'trim|required|max_length[50]');
 
     if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
-        $member_no = $this->request->getPost('member_no');
-        $member = get_ref_single('members', 'MemberNo="' . $member_no . '"', 'data');
+        $member_no = trim((string) $this->request->getPost('member_no'));
+        $member = $this->db->table('members')
+            ->where('MemberNo', $member_no)
+            ->get()
+            ->getRow();
         
         if (!empty($member)) {
             // 1. Buat array data dengan informasi yang pasti disimpan
@@ -157,25 +229,15 @@ class GuestBook extends \App\Controllers\BaseController
 }
 	public function non_anggota($prefix = '')
 	{
-		$locationId = $this->request->getCookie('Location_id');
-		// Check if location id is available
-		if (!$locationId) {
+		$location = $this->getSelectedLocation();
+		if (!$location) {
 			return redirect()->to('buku-tamu/lokasi');
 		}
+		$locationId = $location->ID;
 		$this->data['SettingBukuTamu'] = $this->settingModel->where('Name', 'SettingBukuTamu')->first()->Value ?? '0';
-		$builder = $this->db->table('locations as a')
-			->select('a.ID, a.Code, a.Name')
-			->select('b.Name as LocationLibrary_name, b.Code as LocationLibrary_code')
-			->select('a.Branch_id, c.Name as Branch_name')
-			->join('location_library as b', 'b.ID = a.LocationLibrary_id', 'left')
-			->join('branchs as c', 'c.ID = a.Branch_id', 'left')
-			->where('a.ID', $locationId);
-
-		// Get location data
-		$data = $builder->get()->getRow();
 		$this->data['title'] = 'Buku Tamu - Non Anggota';
-		$this->data['data'] = $data;
-		$branch_id = $data->Branch_id;
+		$this->data['data'] = $location;
+		$branch_id = $location->Branch_id;
 
 		 $today = date('Y-m-d');
 		$builderAnggota = $this->db->table('memberguesses');
@@ -240,11 +302,11 @@ class GuestBook extends \App\Controllers\BaseController
 
 public function rombongan()
 {
-	$locationId = $this->request->getCookie('Location_id');
-	// Check if location id is available
-	if (!$locationId) {
+	$location = $this->getSelectedLocation();
+	if (!$location) {
 		return redirect()->to('buku-tamu/lokasi');
 	}
+	$locationId = $location->ID;
 	 $today = date('Y-m-d');
 		$builderAnggota = $this->db->table('memberguesses');
         $builderAnggota->where('DATE(CreateDate)', $today);
@@ -256,19 +318,9 @@ public function rombongan()
         $totalRombongan = (int)($resultRombongan->total_personel ?? 0);
 		$totalKunjungan = $totalAnggota + $totalRombongan;
 		$this->data['totalKunjungan'] = $totalKunjungan;
-	$builder = $this->db->table('locations as a')
-		->select('a.ID, a.Code, a.Name')
-		->select('b.Name as LocationLibrary_name, b.Code as LocationLibrary_code')
-		->select('a.Branch_id, c.Name as Branch_name')
-		->join('location_library as b', 'b.ID = a.LocationLibrary_id', 'left')
-		->join('branchs as c', 'c.ID = a.Branch_id', 'left')
-		->where('a.ID', $locationId);
-
-	// Get location data
-	$data = $builder->get()->getRow();
 	$this->data['title'] = 'Buku Tamu - Rombongan';
-	$this->data['data'] = $data;
-	$branch_id = $data->Branch_id;
+	$this->data['data'] = $location;
+	$branch_id = $location->Branch_id;
 	
 	// Enhanced validation rules
 	$this->validation->setRules([

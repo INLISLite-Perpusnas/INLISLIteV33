@@ -2,10 +2,8 @@
 <?= $this->extend('App\Views\layout\blank' ); ?>
 <?= $this->section('style'); ?>
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    
     * {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
     }
 
     .login-container {
@@ -150,7 +148,7 @@
     }
 
     .form-control::placeholder {
-        color: #a0aec0;
+        color: #667085;
         font-weight: 400;
     }
 
@@ -237,7 +235,7 @@
     .copyright {
         text-align: center;
         margin-top: 30px;
-        color: rgba(255, 255, 255, 0.8);
+        color: rgba(255, 255, 255, 0.95);
         font-size: 14px;
         font-weight: 400;
     }
@@ -364,12 +362,39 @@
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
+
+    .btn-login:focus-visible,
+    #togglePasswordButton:focus-visible {
+        outline: 3px solid #fbbf24;
+        outline-offset: 3px;
+    }
+
+    #togglePasswordButton {
+        right: 5px !important;
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .login-container::before,
+        .login-card,
+        .logo-icon::before,
+        .floating-elements::before,
+        .floating-elements::after,
+        .btn-login.loading::after {
+            animation: none;
+        }
+    }
 </style>
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
 <div class="login-container">
-    <div class="floating-elements"></div>
+    <div class="floating-elements" aria-hidden="true"></div>
     
     <div class="d-flex align-items-center justify-content-center min-vh-100 position-relative" style="z-index: 1;">
         <div class="login-card">
@@ -379,22 +404,22 @@
                 <!-- Logo and Title -->
                 <div class="logo-container">
                     <img style="width: 80px; height: 80px; object-fit: contain; border-radius: 16px; margin-bottom: 20px;" 
-                         src="<?= !empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png') ?>" 
-                         alt="Logo">
+                         src="<?= esc(!empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png'), 'attr') ?>"
+                         alt="Logo perpustakaan" width="80" height="80" fetchpriority="high" decoding="async">
                     
                     <h1 class="app-title">Login INLISLite</h1>
                     <p class="app-subtitle">
-                        <?= get_parameter('site-description', 'Sistem Manajemen Perpustakaan') ?>
+                        <?= esc(get_parameter('site-description', 'Sistem Manajemen Perpustakaan')) ?>
                     </p>
                     
                     <div class="feature-badge">
-                        <i class="fas fa-shield-alt"></i>
+                        <i class="fas fa-shield-alt" aria-hidden="true"></i>
                         Secure Access
                     </div>
                 </div>
 
                 <!-- Messages -->
-                <div id="infoMessage">
+                <div id="infoMessage" role="status" aria-live="polite" aria-atomic="true">
                     <?= view('Myth\Auth\Views\_message_block') ?>
                 </div>
 
@@ -409,7 +434,7 @@
                                placeholder="Masukkan username Anda"
                                required
                                autocomplete="username">
-                        <i class="fas fa-user input-icon"></i>
+                         <i class="fas fa-user input-icon" aria-hidden="true"></i>
                     </div>
                 </div>
 
@@ -424,35 +449,39 @@
                                placeholder="Masukkan password Anda"
                                required
                                autocomplete="current-password">
-                        <i class="fas fa-lock input-icon"></i>
+                         <i class="fas fa-lock input-icon" aria-hidden="true"></i>
                         <button type="button" 
                                 class="btn btn-link position-absolute" 
-                                style="right: 15px; top: 50%; transform: translateY(-50%); color: #a0aec0; text-decoration: none; padding: 0;"
-                                onclick="togglePassword()">
-                            <i class="fas fa-eye" id="toggleIcon"></i>
+                                style="top: 50%; transform: translateY(-50%); color: #667085; text-decoration: none; padding: 0;"
+                                onclick="togglePassword()"
+                                aria-label="Tampilkan password"
+                                aria-controls="password"
+                                id="togglePasswordButton">
+                            <i class="fas fa-eye" id="toggleIcon" aria-hidden="true"></i>
                         </button>
                     </div>
                 </div>
 
                 <!-- hCaptcha -->
-                <div class="hcaptcha-container">
+                <div class="hcaptcha-container" aria-label="Verifikasi keamanan">
                     <?php if (!empty($hcaptcha_site_key)): ?>
                         <div class="h-captcha" 
-                             data-sitekey="<?= $hcaptcha_site_key ?>"
+                             data-sitekey="<?= esc($hcaptcha_site_key, 'attr') ?>"
                              data-callback="onHcaptchaSuccess"
                              data-expired-callback="onHcaptchaExpired"
                              data-error-callback="onHcaptchaError"></div>
                     <?php else: ?>
                         <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle"></i>
+                            <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
                             hCaptcha belum dikonfigurasi. Hubungi administrator.
                         </div>
                     <?php endif; ?>
                 </div>
+                <div id="captchaStatus" class="visually-hidden" role="status" aria-live="polite"></div>
 
                 <!-- Login Button -->
                 <button type="submit" class="btn-login" id="loginBtn" disabled>
-                    <i class="fas fa-sign-in-alt me-2"></i>
+                    <i class="fas fa-sign-in-alt me-2" aria-hidden="true"></i>
                     Masuk ke Sistem
                 </button>
 
@@ -460,15 +489,15 @@
                 <div class="text-center mt-4">
                     <div class="row text-muted" style="font-size: 12px;">
                         <div class="col-4">
-                            <i class="fas fa-shield-alt text-success"></i><br>
+                            <i class="fas fa-shield-alt text-success" aria-hidden="true"></i><br>
                             <small>Aman</small>
                         </div>
                         <div class="col-4">
-                            <i class="fas fa-clock text-primary"></i><br>
+                            <i class="fas fa-clock text-primary" aria-hidden="true"></i><br>
                             <small>24/7</small>
                         </div>
                         <div class="col-4">
-                            <i class="fas fa-mobile-alt text-info"></i><br>
+                            <i class="fas fa-mobile-alt text-info" aria-hidden="true"></i><br>
                             <small>Responsive</small>
                         </div>
                     </div>
@@ -491,31 +520,34 @@
 <script>
 // hCaptcha callback functions
 function onHcaptchaSuccess(token) {
-    console.log('hCaptcha verified successfully');
     document.getElementById('loginBtn').disabled = false;
+    document.getElementById('captchaStatus').textContent = 'Verifikasi keamanan berhasil.';
 }
 
 function onHcaptchaExpired() {
-    console.log('hCaptcha expired');
     document.getElementById('loginBtn').disabled = true;
+    document.getElementById('captchaStatus').textContent = 'Verifikasi keamanan kedaluwarsa. Silakan verifikasi kembali.';
 }
 
 function onHcaptchaError(error) {
-    console.log('hCaptcha error:', error);
     document.getElementById('loginBtn').disabled = true;
+    document.getElementById('captchaStatus').textContent = 'Verifikasi keamanan gagal dimuat. Silakan coba kembali.';
 }
 
 // Toggle password visibility
 function togglePassword() {
     const passwordInput = document.getElementById('password');
     const toggleIcon = document.getElementById('toggleIcon');
+    const toggleButton = document.getElementById('togglePasswordButton');
     
     if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
         toggleIcon.className = 'fas fa-eye-slash';
+        toggleButton.setAttribute('aria-label', 'Sembunyikan password');
     } else {
         passwordInput.type = 'password';
         toggleIcon.className = 'fas fa-eye';
+        toggleButton.setAttribute('aria-label', 'Tampilkan password');
     }
 }
 
@@ -540,7 +572,8 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     
     const loginBtn = document.getElementById('loginBtn');
     loginBtn.classList.add('loading');
-    loginBtn.innerHTML = 'Memproses...';
+    loginBtn.textContent = 'Memproses...';
+    loginBtn.setAttribute('aria-busy', 'true');
     loginBtn.disabled = true;
 });
 
@@ -555,20 +588,6 @@ document.querySelectorAll('.form-control').forEach(input => {
             this.parentElement.querySelector('.input-icon').style.color = '#a0aec0';
         }
     });
-});
-
-// Enhanced security: Clear form on page unload
-window.addEventListener('beforeunload', function() {
-    document.getElementById('password').value = '';
-    <?php if (!empty($hcaptcha_site_key)): ?>
-    if (typeof hcaptcha !== 'undefined') {
-        try {
-            hcaptcha.reset();
-        } catch (e) {
-            console.log('hCaptcha reset failed:', e);
-        }
-    }
-    <?php endif; ?>
 });
 
 // Auto-focus on first empty field
@@ -589,36 +608,12 @@ document.getElementById('loginForm').addEventListener('reset', function() {
     if (typeof hcaptcha !== 'undefined') {
         try {
             hcaptcha.reset();
-        } catch (e) {
-            console.log('hCaptcha reset failed:', e);
-        }
+        } catch (e) {}
     }
     document.getElementById('loginBtn').disabled = true;
     <?php endif; ?>
 });
 
-// Debugging: Log hCaptcha status
-<?php if (!empty($hcaptcha_site_key)): ?>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('hCaptcha Site Key:', '<?= $hcaptcha_site_key ?>');
-    
-    // Tunggu hCaptcha dimuat
-    const checkHcaptcha = setInterval(function() {
-        if (typeof hcaptcha !== 'undefined') {
-            console.log('hCaptcha API loaded successfully');
-            clearInterval(checkHcaptcha);
-        }
-    }, 100);
-    
-    // Timeout setelah 10 detik
-    setTimeout(function() {
-        clearInterval(checkHcaptcha);
-        if (typeof hcaptcha === 'undefined') {
-            console.error('hCaptcha failed to load after 10 seconds');
-        }
-    }, 10000);
-});
-<?php endif; ?>
 </script>
 
 <?= $this->endSection('page'); ?>

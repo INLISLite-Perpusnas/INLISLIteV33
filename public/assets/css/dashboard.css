@@ -19,7 +19,6 @@
         padding: 24px 30px;
         margin-bottom: 24px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        animation: slideDown 0.8s ease-out;
     }
 
     .page-title {
@@ -68,24 +67,28 @@
         overflow: hidden;
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         transition: all 0.3s ease;
-        cursor: pointer;
-        opacity: 0;
-        transform: translateY(20px);
-        animation: fadeInUp 0.6s ease-out forwards;
+        cursor: default;
         min-height: 140px;
         color: white;
     }
 
-    .stat-card:nth-child(1) { animation-delay: 0.1s; }
-    .stat-card:nth-child(2) { animation-delay: 0.2s; }
-    .stat-card:nth-child(3) { animation-delay: 0.3s; }
-    .stat-card:nth-child(4) { animation-delay: 0.4s; }
-    .stat-card:nth-child(5) { animation-delay: 0.5s; }
-    .stat-card:nth-child(6) { animation-delay: 0.6s; }
-
     .stat-card:hover {
         transform: translateY(-6px);
         box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+    }
+
+    a.stat-card,
+    a.chart-card {
+        color: #fff;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    a.stat-card:focus-visible,
+    a.chart-card:focus-visible,
+    .btn-send-api:focus-visible {
+        outline: 4px solid #facc15;
+        outline-offset: 3px;
     }
 
     .stat-card::before {
@@ -100,22 +103,22 @@
     }
 
     .stat-card.info { 
-        background: linear-gradient(135deg, #06b6d4, #0891b2);
+        background: linear-gradient(135deg, #0e7490, #155e75);
     }
     .stat-card.primary { 
-        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
     }
     .stat-card.success { 
-        background: linear-gradient(135deg, #10b981, #059669);
+        background: linear-gradient(135deg, #047857, #065f46);
     }
     .stat-card.warning { 
-        background: linear-gradient(135deg, #f59e0b, #d97706);
+        background: linear-gradient(135deg, #92400e, #78350f);
     }
     .stat-card.danger { 
-        background: linear-gradient(135deg, #ef4444, #dc2626);
+        background: linear-gradient(135deg, #b91c1c, #991b1b);
     }
     .stat-card.dark { 
-        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        background: linear-gradient(135deg, #4338ca, #3730a3);
     }
 
     .stat-header {
@@ -135,14 +138,13 @@
         color: white;
         font-size: 20px;
         background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
         box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
         flex-shrink: 0;
     }
 
-    .stat-content h3 {
+    .stat-content h2 {
         font-size: 13px;
-        color: rgba(255, 255, 255, 0.8);
+        color: #ffffff;
         font-weight: 500;
         margin-bottom: 4px;
         white-space: nowrap;
@@ -168,27 +170,21 @@
         padding: 24px;
         position: relative;
         overflow: hidden;
-        opacity: 0;
-        transform: translateY(20px);
-        animation: fadeInUp 0.6s ease-out forwards;
         min-height: 140px;
         color: white;
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         transition: all 0.3s ease;
-        cursor: pointer;
+        cursor: default;
     }
 
     .chart-card:nth-child(1) { 
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        animation-delay: 0.7s; 
+        background: linear-gradient(135deg, #4c1d95, #5b21b6);
     }
     .chart-card:nth-child(2) { 
-        background: linear-gradient(135deg, #f093fb, #f5576c);
-        animation-delay: 0.8s; 
+        background: linear-gradient(135deg, #9d174d, #be123c);
     }
     .chart-card:nth-child(3) { 
-        background: linear-gradient(135deg, #4facfe, #00f2fe);
-        animation-delay: 0.9s; 
+        background: linear-gradient(135deg, #075985, #0369a1);
     }
 
     .chart-card:hover {
@@ -211,7 +207,6 @@
         align-items: center;
         justify-content: center;
         background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
         color: white;
         font-size: 18px;
         box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
@@ -221,7 +216,7 @@
     .chart-title {
         font-size: 16px;
         font-weight: 600;
-        color: rgba(255, 255, 255, 0.9);
+        color: #ffffff;
     }
 
     .chart-value {
@@ -303,7 +298,7 @@
 
     /* Tambahan Style Tombol Kirim */
     .btn-send-api {
-        background: linear-gradient(135deg, #10b981, #059669);
+        background: linear-gradient(135deg, #047857, #065f46);
         color: white;
         border: none;
         padding: 12px 24px;
@@ -328,4 +323,13 @@
         cursor: not-allowed;
         transform: none;
         box-shadow: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            scroll-behavior: auto !important;
+            transition-duration: .01ms !important;
+            animation-duration: .01ms !important;
+            animation-iteration-count: 1 !important;
+        }
     }

@@ -749,16 +749,21 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 		$collection_id = $json->collection_id ?? null;
 		$user_id = $json->user_id ?? null;
 
-		$collection_loan = get_ref_single('collectionloans', 'ID IS NOT NULL', 'data');
-		$increment = ((int) substr($collection_loan->ID, -5)) + 1;
-		$collection_loan_id = get_pad_number($increment, date('ymd'), 5);
-
 		// Validasi input
 		if (!$member_id || !$branch_id || !$collection_id || !$user_id) {
 			return $this->fail('Missing required fields', 400);
 		}
 
 		try {
+			$this->db->transBegin();
+			// Lock the latest row while generating the sequential loan number so
+			// concurrent requests cannot receive the same collectionloans.ID.
+			$collection_loan = $this->db->query(
+				'SELECT ID FROM collectionloans WHERE ID IS NOT NULL ORDER BY ID DESC LIMIT 1 FOR UPDATE'
+			)->getRow();
+			$increment = ($collection_loan ? (int) substr((string) $collection_loan->ID, -5) : 0) + 1;
+			$collection_loan_id = get_pad_number($increment, date('ymd'), 5);
+
 			// Check if member exists
 			$member = $this->anggotaModel->where('ID', $member_id)->first();
 
@@ -800,6 +805,7 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 				$this->collectionLoanModel->insert($loanData);
 				$loanId = $this->collectionLoanModel->insertID();
 			} catch (\Exception $e) {
+				$this->db->transRollback();
 				return $this->fail('Failed to create loan: ' . $e->getMessage(), 500);
 			}
 
@@ -826,8 +832,14 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 				->update();
 
 			// Kirim respons sukses
+			if ($this->db->transStatus() === false) {
+				$this->db->transRollback();
+				return $this->fail('Failed to create loan', 500);
+			}
+			$this->db->transCommit();
 			return $this->respond(['message' => 'Loan created successfully'], 200);
 		} catch (\Exception $e) {
+			$this->db->transRollback();
 			return $this->fail('Error: ' . $e->getMessage(), 500);
 		}
 	}

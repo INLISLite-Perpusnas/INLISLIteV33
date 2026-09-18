@@ -100,6 +100,9 @@ $request = service('request');
 <script>
   Dropzone.autoDiscover = false;
   var file_image = setDropzone('file_image', 'anggota', '.jpg,.jpeg,.png', 1, 10);
+  file_image.on('sending', function(file, xhr, formData) {
+    formData.append('<?= csrf_token() ?>', $('input[name="<?= csrf_token() ?>"]').val());
+  });
 </script>
 
 <script>
@@ -219,9 +222,14 @@ $request = service('request');
           success: function(response) {
             if (response.success && response.data) {
               $.each(response.data, function(key, jurusan) {
-                jurusanSelect.append(
-                  `<option value="${jurusan.id}" ${$("#Jurusan_id")[0].dataset.value === jurusan.id ? "selected" : ""}>${jurusan.Nama}</option>`
-                );
+                const option = $('<option>', {
+                  value: jurusan.id,
+                  text: jurusan.Nama
+                });
+                if (String($("#Jurusan_id")[0].dataset.value) === String(jurusan.id)) {
+                  option.prop('selected', true);
+                }
+                jurusanSelect.append(option);
               });
             }
           },

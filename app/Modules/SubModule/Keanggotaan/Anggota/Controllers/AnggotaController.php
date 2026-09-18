@@ -20,6 +20,76 @@ class AnggotaController extends \Base\Controllers\BaseController
         $this->initAnggotaBase();
     }
 
+    public function do_upload()
+    {
+        $file = $this->request->getFile('file');
+        $allowedMimes = ['image/jpeg', 'image/png'];
+
+        if (!$file || !$file->isValid() || $file->hasMoved()) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'success' => false,
+                'msg' => 'File foto tidak valid.',
+            ]);
+        }
+
+        if ($file->getSize() > 10 * 1024 * 1024 || !in_array($file->getMimeType(), $allowedMimes, true)) {
+            return $this->response->setStatusCode(415)->setJSON([
+                'success' => false,
+                'msg' => 'Foto harus berupa JPG atau PNG dengan ukuran maksimal 10 MB.',
+            ]);
+        }
+
+        $newFileName = $file->getRandomName();
+        $file->move($this->uploadPath, $newFileName);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'data' => [
+                'name' => $newFileName,
+                'type' => $file->getMimeType(),
+            ],
+            'msg' => 'Foto berhasil diunggah.',
+        ]);
+    }
+
+    private function validReferenceIds($values, string $table, string $column): bool
+    {
+        if (!is_array($values) || $values === []) {
+            return false;
+        }
+
+        $ids = array_values(array_unique(array_map('intval', $values)));
+        if (in_array(0, $ids, true)) {
+            return false;
+        }
+
+        return count($ids) === db_connect()->table($table)
+            ->whereIn($column, $ids)
+            ->countAllResults();
+    }
+
+    private function storeCameraImage(string $dataUri)
+    {
+        if (strlen($dataUri) > 14 * 1024 * 1024 || !preg_match('/^data:image\/(jpeg|jpg|png);base64,/i', $dataUri, $matches)) {
+            return false;
+        }
+
+        $encoded = substr($dataUri, strpos($dataUri, ',') + 1);
+        $binary = base64_decode($encoded, true);
+        if ($binary === false || strlen($binary) > 10 * 1024 * 1024) {
+            return false;
+        }
+
+        $imageInfo = @getimagesizefromstring($binary);
+        if ($imageInfo === false || !in_array($imageInfo['mime'], ['image/jpeg', 'image/png'], true)) {
+            return false;
+        }
+
+        $extension = $imageInfo['mime'] === 'image/png' ? 'png' : 'jpg';
+        $filename = bin2hex(random_bytes(16)) . '.' . $extension;
+        return file_put_contents($this->modulePath . $filename, $binary, LOCK_EX) === false ? false : $filename;
+    }
+
     // ----------------------------------------------------------------
     // INDEX & LIST
     // ----------------------------------------------------------------
@@ -27,6 +97,7 @@ class AnggotaController extends \Base\Controllers\BaseController
     public function index()
     {
         $this->data['title'] = ' Anggota';
+        $this->data['is_member_list_page'] = true;
         $this->data['message'] = $this->validation->getErrors()
             ? $this->validation->listErrors()
             : $this->session->getFlashdata('message');
@@ -193,6 +264,21 @@ class AnggotaController extends \Base\Controllers\BaseController
         ]);
 
         if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
+            $Koleksi = $this->request->getPost('CategoryLoan_id');
+            $Locations = $this->request->getPost('LocationLoan_id');
+            if (!$this->validReferenceIds($Koleksi, 'collectioncategorys', 'id')
+                || !$this->validReferenceIds($Locations, 'location_library', 'ID')) {
+                $this->session->setFlashdata('message', 'Koleksi dan lokasi perpustakaan wajib dipilih dengan benar.');
+                echo view('Anggota\Views\add', $this->data);
+                return;
+            }
+
+            $email = trim((string) $this->request->getPost('Email'));
+            if ($db->table('members')->where('Email', $email)->countAllResults() > 0) {
+                $this->session->setFlashdata('message', 'Email ini sudah terdaftar sebagai anggota.');
+                echo view('Anggota\Views\add', $this->data);
+                return;
+            }
 
             $existingMember = $db->table('members')->where('MemberNo', $MemberNo)->get()->getRow();
             while ($existingMember) {
@@ -241,56 +327,56 @@ class AnggotaController extends \Base\Controllers\BaseController
             $province = $this->request->getPost('Province');
             if (!empty($province)) {
                 $region = $this->regionModel->where('code', $province)->first();
-                $save_data['Province'] = $region->name;
+                $save_data['Province'] = $region->name ?? null;
             }
 
             $city = $this->request->getPost('City');
             if (!empty($city)) {
                 $region = $this->regionModel->where('code', $city)->first();
-                $save_data['City'] = $region->name;
+                $save_data['City'] = $region->name ?? null;
             }
 
             $kecamatan = $this->request->getPost('Kecamatan');
             if (!empty($kecamatan)) {
                 $region = $this->regionModel->where('code', $kecamatan)->first();
-                $save_data['Kecamatan'] = $region->name;
+                $save_data['Kecamatan'] = $region->name ?? null;
             }
 
             $kelurahan = $this->request->getPost('Kelurahan');
             if (!empty($kelurahan)) {
                 $region = $this->regionModel->where('code', $kelurahan)->first();
-                $save_data['Kelurahan'] = $region->name;
+                $save_data['Kelurahan'] = $region->name ?? null;
             }
 
             $provinceNow = $this->request->getPost('ProvinceNow');
             if (!empty($provinceNow)) {
                 $region = $this->regionModel->where('code', $provinceNow)->first();
-                $save_data['ProvinceNow'] = $region->name;
+                $save_data['ProvinceNow'] = $region->name ?? null;
             }
 
             $cityNow = $this->request->getPost('CityNow');
             if (!empty($cityNow)) {
                 $region = $this->regionModel->where('code', $cityNow)->first();
-                $save_data['CityNow'] = $region->name;
+                $save_data['CityNow'] = $region->name ?? null;
             }
 
             $kecamatanNow = $this->request->getPost('KecamatanNow');
             if (!empty($kecamatanNow)) {
                 $region = $this->regionModel->where('code', $kecamatanNow)->first();
-                $save_data['KecamatanNow'] = $region->name;
+                $save_data['KecamatanNow'] = $region->name ?? null;
             }
 
             $kelurahanNow = $this->request->getPost('KelurahanNow');
             if (!empty($kelurahanNow)) {
                 $region = $this->regionModel->where('code', $kelurahanNow)->first();
-                $save_data['KelurahanNow'] = $region->name;
+                $save_data['KelurahanNow'] = $region->name ?? null;
             }
 
             $files = (array) $this->request->getPost('PhotoUrl');
             if (count($files)) {
                 $listed_file = [];
                 foreach ($files as $uuid => $name) {
-                    if (file_exists($this->uploadPath . $name)) {
+                    if (is_string($name) && basename($name) === $name && is_file($this->uploadPath . $name)) {
                         $file = new File($this->uploadPath . $name);
                         $newFileName = $file->getRandomName();
                         $file->move($this->modulePath, $newFileName);
@@ -302,16 +388,20 @@ class AnggotaController extends \Base\Controllers\BaseController
 
             $base64_string = $this->request->getPost('camera_image');
             if (!empty($base64_string)) {
-                $file = new File($this->uploadPath);
-                $newFileName = $file->getRandomName() . '.jpg';
-                base64_to_jpeg($base64_string, $this->modulePath . $newFileName);
+                $newFileName = $this->storeCameraImage($base64_string);
+                if ($newFileName === false) {
+                    $this->session->setFlashdata('message', 'Foto kamera tidak valid. Gunakan JPG atau PNG maksimal 10 MB.');
+                    echo view('Anggota\Views\add', $this->data);
+                    return;
+                }
                 $save_data['PhotoUrl'] = $newFileName;
             }
 
-            $newAnggotaId = $this->anggotaModel->protect(false)->insert($save_data);
+            $membersTable = $db->table('members');
+            $membersTable->insert($save_data);
+            $newAnggotaId = $db->insertID();
 
             if ($newAnggotaId) {
-                $Koleksi = $this->request->getPost('CategoryLoan_id');
                 if (!empty($Koleksi)) {
                     $save_akses_koleksi = [];
                     for ($x = 0; $x < count($Koleksi); $x++) {
@@ -325,7 +415,6 @@ class AnggotaController extends \Base\Controllers\BaseController
                     }
                 }
 
-                $Locations = $this->request->getPost('LocationLoan_id');
                 $save_akses_lokasi = [];
                 for ($x = 0; $x < count($Locations); $x++) {
                     $save_akses_lokasi[] = [
@@ -360,12 +449,16 @@ class AnggotaController extends \Base\Controllers\BaseController
 
     public function camera()
     {
-        $filename = 'pic_' . date('YmdHis') . '.jpeg';
-        $url = '';
-        if (move_uploaded_file($_FILES['file_image']['tmp_name'], 'upload/' . $filename)) {
-            $url = 'http://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['REQUEST_URI']) . '/upload/' . $filename;
+        $file = $this->request->getFile('file_image');
+        if (!$file || !$file->isValid() || $file->hasMoved()
+            || $file->getSize() > 10 * 1024 * 1024
+            || !in_array($file->getMimeType(), ['image/jpeg', 'image/png'], true)) {
+            return $this->response->setStatusCode(415)->setBody('Foto tidak valid.');
         }
-        echo $url;
+
+        $filename = $file->getRandomName();
+        $file->move($this->modulePath, $filename);
+        return $this->response->setBody(base_url('uploads/anggota/' . $filename));
     }
 
     public function profile()
@@ -426,6 +519,9 @@ class AnggotaController extends \Base\Controllers\BaseController
         }
 
         $anggota = $this->anggotaModel->find($ID);
+        if (!$anggota) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
         $this->data['title']               = 'Ubah Anggota';
         $this->data['anggota']             = $anggota;
         $this->data['CreateBy']            = get_username($anggota->CreateBy ?? 0);
@@ -455,6 +551,22 @@ class AnggotaController extends \Base\Controllers\BaseController
 
         if ($this->request->getPost()) {
             if ($this->validation->withRequest($this->request)->run()) {
+                $Koleksi = $this->request->getPost('CategoryLoan_id');
+                $Locations = $this->request->getPost('LocationLoan_id');
+                if (!$this->validReferenceIds($Koleksi, 'collectioncategorys', 'id')
+                    || !$this->validReferenceIds($Locations, 'location_library', 'ID')) {
+                    return $this->request->isAJAX()
+                        ? $this->response->setJSON(['success' => false, 'message' => 'Koleksi dan lokasi perpustakaan wajib dipilih dengan benar.'])
+                        : redirect()->back()->with('message', 'Koleksi dan lokasi perpustakaan wajib dipilih dengan benar.');
+                }
+
+                $email = trim((string) $this->request->getPost('Email'));
+                if ($email !== '' && $db->table('members')->where('Email', $email)->where('ID !=', $ID)->countAllResults() > 0) {
+                    return $this->request->isAJAX()
+                        ? $this->response->setJSON(['success' => false, 'message' => 'Email ini sudah terdaftar sebagai anggota lain.'])
+                        : redirect()->back()->with('message', 'Email ini sudah terdaftar sebagai anggota lain.');
+                }
+
                 $update_data = [
                     'Fullname'           => $this->request->getPost('Fullname'),
                     'MemberNo'           => $MemberNo,
@@ -492,58 +604,61 @@ class AnggotaController extends \Base\Controllers\BaseController
                 $province = $this->request->getPost('Province');
                 if (!empty($province)) {
                     $region = $this->regionModel->where('code', $province)->first();
-                    $update_data['Province'] = $region->name;
+                    $update_data['Province'] = $region->name ?? null;
                 }
 
                 $city = $this->request->getPost('City');
                 if (!empty($city)) {
                     $region = $this->regionModel->where('code', $city)->first();
-                    $update_data['City'] = $region->name;
+                    $update_data['City'] = $region->name ?? null;
                 }
 
                 $kecamatan = $this->request->getPost('Kecamatan');
                 if (!empty($kecamatan)) {
                     $region = $this->regionModel->where('code', $kecamatan)->first();
-                    $update_data['Kecamatan'] = $region->name;
+                    $update_data['Kecamatan'] = $region->name ?? null;
                 }
 
                 $kelurahan = $this->request->getPost('Kelurahan');
                 if (!empty($kelurahan)) {
                     $region = $this->regionModel->where('code', $kelurahan)->first();
-                    $update_data['Kelurahan'] = $region->name;
+                    $update_data['Kelurahan'] = $region->name ?? null;
                 }
 
                 $provinceNow = $this->request->getPost('ProvinceNow');
                 if (!empty($provinceNow)) {
                     $region = $this->regionModel->where('code', $provinceNow)->first();
-                    $update_data['ProvinceNow'] = $region->name;
+                    $update_data['ProvinceNow'] = $region->name ?? null;
                 }
 
                 $cityNow = $this->request->getPost('CityNow');
                 if (!empty($cityNow)) {
                     $region = $this->regionModel->where('code', $cityNow)->first();
-                    $update_data['CityNow'] = $region->name;
+                    $update_data['CityNow'] = $region->name ?? null;
                 }
 
                 $kecamatanNow = $this->request->getPost('KecamatanNow');
                 if (!empty($kecamatanNow)) {
                     $region = $this->regionModel->where('code', $kecamatanNow)->first();
-                    $update_data['KecamatanNow'] = $region->name;
+                    $update_data['KecamatanNow'] = $region->name ?? null;
                 }
 
                 $kelurahanNow = $this->request->getPost('KelurahanNow');
                 if (!empty($kelurahanNow)) {
                     $region = $this->regionModel->where('code', $kelurahanNow)->first();
-                    $update_data['KelurahanNow'] = $region->name;
+                    $update_data['KelurahanNow'] = $region->name ?? null;
                 }
 
                 $is_camera = $this->request->getPost('is_camera');
                 if ($is_camera) {
                     $base64_string = $this->request->getPost('camera_image');
                     if (!empty($base64_string)) {
-                        $file = new File($this->uploadPath);
-                        $newFileName = $file->getRandomName() . '.jpg';
-                        base64_to_jpeg($base64_string, $this->modulePath . $newFileName);
+                        $newFileName = $this->storeCameraImage($base64_string);
+                        if ($newFileName === false) {
+                            return $this->request->isAJAX()
+                                ? $this->response->setJSON(['success' => false, 'message' => 'Foto kamera tidak valid. Gunakan JPG atau PNG maksimal 10 MB.'])
+                                : redirect()->back()->with('message', 'Foto kamera tidak valid. Gunakan JPG atau PNG maksimal 10 MB.');
+                        }
                         $update_data['PhotoUrl'] = $newFileName;
                     }
                 } else {
@@ -551,9 +666,9 @@ class AnggotaController extends \Base\Controllers\BaseController
                     if (count($files)) {
                         $listed_file = [];
                         foreach ($files as $uuid => $name) {
-                            if (file_exists($this->modulePath . $name)) {
+                            if (is_string($name) && basename($name) === $name && is_file($this->modulePath . $name)) {
                                 $listed_file[] = $name;
-                            } elseif (file_exists($this->uploadPath . $name)) {
+                            } elseif (is_string($name) && basename($name) === $name && is_file($this->uploadPath . $name)) {
                                 $file = new File($this->uploadPath . $name);
                                 $newFileName = $file->getRandomName();
                                 $file->move($this->modulePath, $newFileName);
@@ -566,11 +681,10 @@ class AnggotaController extends \Base\Controllers\BaseController
 
                 $anggotaUpdate = $this->anggotaModel->update($ID, $update_data);
                 if ($anggotaUpdate) {
-                    $Koleksi = $this->request->getPost('CategoryLoan_id');
                     $this->AksesKoleksiModel->where('member_id', $member_id)->delete();
 
                     $save_akses_koleksi = [];
-                    for ($x = 0; $x < count($Koleksi); $x++) {
+                    for ($x = 0; $x < count((array) $Koleksi); $x++) {
                         $save_akses_koleksi[] = [
                             'Member_id'       => $member_id,
                             'CategoryLoan_id' => $Koleksi[$x],
@@ -580,10 +694,9 @@ class AnggotaController extends \Base\Controllers\BaseController
                         }
                     }
 
-                    $Locations = $this->request->getPost('LocationLoan_id');
                     $this->anggotahakaksesModel->where('member_id', $member_id)->delete();
                     $save_akses_lokasi = [];
-                    for ($x = 0; $x < count($Locations); $x++) {
+                    for ($x = 0; $x < count((array) $Locations); $x++) {
                         $save_akses_lokasi[] = [
                             'Member_id'       => $member_id,
                             'LocationLoan_id' => $Locations[$x],

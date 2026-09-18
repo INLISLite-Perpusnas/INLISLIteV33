@@ -21,8 +21,9 @@ public function login()
         
         // Tambahkan hCaptcha site key
         $data['hcaptcha_site_key'] = getenv('HCAPTCHA_SITE_KEY');
+        $data['is_auth_login'] = true;
 
-		$data['title'] = 'Login Form | Profiling';
+		$data['title'] = 'Login INLISLite';
 		echo view('Auth\Views\authlogin', $data);
 	}
 

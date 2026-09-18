@@ -33,8 +33,11 @@ class Dashboard extends \Base\Controllers\BaseController
 		return $setting ? $setting->Value : $default;
 	}
 
-	public function index()
-{
+    public function index()
+    {
+    $this->data['is_dashboard_page'] = true;
+    $this->data['meta_description'] = 'Ringkasan statistik dan aktivitas sistem perpustakaan.';
+
     if(is_member('anggota')){
         $page = 'anggota';
         $member_no = user()->username;
@@ -82,7 +85,7 @@ class Dashboard extends \Base\Controllers\BaseController
 
         echo view('Dashboard\Views\\' . $page, $this->data);
     }
-}
+    }
 
 public function kirimlaporan()
 {

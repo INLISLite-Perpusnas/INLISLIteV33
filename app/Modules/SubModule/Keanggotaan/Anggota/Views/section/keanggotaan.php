@@ -1,4 +1,5 @@
 <form id="frm" method="post" action="<?= base_url('anggota/edit/' . $anggota->ID) ?>">
+  <?= csrf_field() ?>
   <div class="form-group mt-1">
     <?php if (!$is_anggota) : ?>
       <div class="mb-3">
