@@ -48,6 +48,10 @@ class Member extends \Base\Controllers\BaseResourceController
     $inputFields = [
       'IdentityNo',
       'IdentityType_id',
+      'JenisAnggota_id',
+      'MemberNo',
+      'RegisterDate',
+      'EndDate',
       'Email',
       'Fullname',
       'Phone',
@@ -76,6 +80,7 @@ class Member extends \Base\Controllers\BaseResourceController
     $rules = [
       'IdentityNo'       => 'required|max_length[100]',
       'IdentityType_id'  => 'required|is_natural_no_zero',
+      'JenisAnggota_id'  => 'required|is_natural_no_zero',
       'Email'            => 'required|valid_email|max_length[254]',
       'Fullname'         => 'required|max_length[255]',
       'Phone'            => 'required|regex_match[/^[0-9]{8,20}$/]',
@@ -111,6 +116,33 @@ class Member extends \Base\Controllers\BaseResourceController
     }
 
     $dataDb = db_connect('data');
+    $jenisAnggota = $dataDb->table('jenis_anggota')
+      ->select('id, MasaBerlakuAnggota')
+      ->where('id', $form_data['JenisAnggota_id'])
+      ->get()->getRow();
+
+    if (!$jenisAnggota) {
+      return $this->simpleResponse([
+        'error' => true,
+        'message' => 'Jenis anggota yang dipilih tidak valid.',
+      ]);
+    }
+
+    $form_data['RegisterDate'] = date('Y-m-d');
+    $form_data['EndDate'] = date(
+      'Y-m-d H:i:s',
+      strtotime('+' . ((int) ($jenisAnggota->MasaBerlakuAnggota ?: 365)) . ' days', strtotime($form_data['RegisterDate'] . ' 23:59:59'))
+    );
+
+    $numberSetting = $dataDb->table('settingparameters')
+      ->where('Name', 'TipeNomorAnggota')->get()->getRow();
+    if (($numberSetting->Value ?? 'Manual') === 'Manual' && empty($form_data['MemberNo'])) {
+      return $this->simpleResponse([
+        'error' => true,
+        'message' => 'Nomor anggota wajib diisi.',
+      ]);
+    }
+
     $identityTypeExists = $dataDb->table('master_jenis_identitas')
       ->where('id', $form_data['IdentityType_id'])
       ->countAllResults() > 0;

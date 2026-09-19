@@ -615,18 +615,30 @@ private function getDayName($day_index)
         // --- PERBAIKAN TRANSAKSI DIMULAI DI SINI ---
         // Gunakan transBegin() untuk transaksi manual
         $this->db->transBegin();
+        $loanNumberLockAcquired = false;
         
         try {
-            // Ambil ID terakhir secara deterministik dan kunci baris selama
-            // transaksi. get_ref_single() tidak menjamin urutan sehingga dua
-            // transaksi bersamaan dapat menghasilkan ID yang sama.
-            $collection_loan = $this->db->query(
-                'SELECT ID FROM collectionloans WHERE ID IS NOT NULL ORDER BY ID DESC LIMIT 1 FOR UPDATE'
+            // Serialisasi generator nomor agar transaksi paralel tidak membuat ID yang sama.
+            $lockResult = $this->db->query(
+                "SELECT GET_LOCK('inlislite_collectionloans_id', 10) AS lock_acquired"
             )->getRow();
-            $lastNumber = $collection_loan ? (int) substr((string) $collection_loan->ID, -5) : 0;
+            $loanNumberLockAcquired = $lockResult && (int) $lockResult->lock_acquired === 1;
+
+            if (!$loanNumberLockAcquired) {
+                throw new \Exception('Tidak dapat mengunci generator nomor transaksi. Silakan coba lagi.');
+            }
+
+            $todayPrefix = date('ymd');
+            $collection_loan = $this->db->query(
+                'SELECT MAX(ID) AS max_id FROM collectionloans WHERE ID LIKE ? FOR UPDATE',
+                [$todayPrefix . '%']
+            )->getRow();
+            $lastNumber = ($collection_loan && $collection_loan->max_id)
+                ? (int) substr((string) $collection_loan->max_id, -5)
+                : 0;
             $increment = $lastNumber + 1;
 
-            $collection_loan_id = get_pad_number($increment, date('ymd'), 5);
+            $collection_loan_id = get_pad_number($increment, $todayPrefix, 5);
             $loanDate = $inputLoanDate ? date('Y-m-d', strtotime($inputLoanDate)) . ' ' . date('H:i:s') : date('Y-m-d H:i:s');
             $dueDate = date('Y-m-d H:i:s', strtotime($loanDate . " +{$loanDays} days"));
             
@@ -698,6 +710,8 @@ private function getDayName($day_index)
             
             // Commit semua perubahan jika sukses
             $this->db->transCommit();
+            $this->db->query("SELECT RELEASE_LOCK('inlislite_collectionloans_id')");
+            $loanNumberLockAcquired = false;
             
             // Clear session
             $this->session->remove($sessionKey);
@@ -708,6 +722,9 @@ private function getDayName($day_index)
         } catch (\Exception $e) {
             // Rollback jika terjadi kegagalan di titik manapun
             $this->db->transRollback();
+            if ($loanNumberLockAcquired) {
+                $this->db->query("SELECT RELEASE_LOCK('inlislite_collectionloans_id')");
+            }
             
             // Catat error sebenarnya ke file log
             log_message('error', 'Loan processing error: ' . $e->getMessage());

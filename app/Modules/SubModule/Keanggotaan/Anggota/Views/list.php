@@ -258,8 +258,9 @@ $request = service('request');
                 }
 
             ],
+            <?php $createDateColumnIndex = 8 + ($is_sekolah ? 1 : 0) + ($is_perguruan_tinggi ? 2 : 0); ?>
             "order": [
-                [<?= 8 + ($is_sekolah ? 1 : 0) + ($is_perguruan_tinggi ? 2 : 0) ?>, "desc"]
+                [<?= $createDateColumnIndex ?>, "desc"]
             ],
             "drawCallback": function(data, type, full, meta) {
                 var api = this.api();

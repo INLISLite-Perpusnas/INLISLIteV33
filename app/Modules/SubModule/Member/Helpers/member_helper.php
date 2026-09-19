@@ -50,7 +50,7 @@ if (!function_exists('get_member_category')) {
 if (!function_exists('member_register')) {
     function member_register($email, $username, $password, $activate_hash = '', $form_data = [])
     {
-        helper('parameter');
+        helper(['parameter', 'anggota']);
         $memberModel = new \Member\Models\MemberModel();
 
         $existing = $memberModel
@@ -78,13 +78,43 @@ if (!function_exists('member_register')) {
                 'active'   => 0,
             ];
             $user = new Myth\Auth\Entities\User($data_user);
-            $users->withGroup('anggota');
-            if (!$users->save($user)) {
-                throw new \RuntimeException('Akun pengguna gagal disimpan.');
+
+            // Pendaftaran online memakai grup ini; siapkan jika database belum memiliki seed Auth.
+            $memberGroup = $db->table('auth_groups')
+                ->where('name', 'anggota')->get()->getFirstRow();
+            if (!$memberGroup) {
+                $db->table('auth_groups')->insert([
+                    'name' => 'anggota',
+                    'description' => 'Anggota perpustakaan',
+                ]);
             }
 
-            $form_data['MemberNo']        = $username;
-            $form_data['RegisterDate']    = date('Y-m-d');
+            $users->withGroup('anggota');
+            if (!$users->save($user)) {
+                $userErrors = method_exists($users, 'errors') ? $users->errors() : [];
+                throw new \RuntimeException('Akun pengguna gagal disimpan: ' . json_encode($userErrors));
+            }
+
+            $setting = $db->table('settingparameters')
+                ->where('Name', 'TipeNomorAnggota')->get()->getRow();
+            if (($setting->Value ?? 'Manual') === 'Otomatis') {
+                $form_data['MemberNo'] = generateMemberNumber($form_data['IdentityNo'] ?? $username);
+                while ($memberModel->where('MemberNo', $form_data['MemberNo'])->first()) {
+                    $form_data['MemberNo'] = generateMemberNumber($form_data['IdentityNo'] ?? $username);
+                }
+            } else {
+                $form_data['MemberNo'] = trim((string) ($form_data['MemberNo'] ?? ''));
+            }
+
+            if ($form_data['MemberNo'] === '') {
+                throw new \RuntimeException('Nomor anggota wajib diisi.');
+            }
+
+            if ($memberModel->where('MemberNo', $form_data['MemberNo'])->first()) {
+                throw new \RuntimeException('Nomor anggota sudah terdaftar.');
+            }
+
+            $form_data['RegisterDate'] = $form_data['RegisterDate'] ?? date('Y-m-d');
             $form_data['StatusAnggota_id'] = 1;
             $form_data['IsKeranjang']     = 0;
 
@@ -94,6 +124,10 @@ if (!function_exists('member_register')) {
 
         } catch (\Exception $e) {
             $db->transRollback();
+            log_message(
+                'error',
+                'Online member registration failed: ' . $e->getMessage() . PHP_EOL . $e->getTraceAsString()
+            );
             return [
                 'error'       => true,
                 'message'     => 'Error, data anggota gagal disimpan. Silakan coba lagi',

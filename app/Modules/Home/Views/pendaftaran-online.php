@@ -317,6 +317,19 @@
           </div>
           <div class="col-md-6">
             <div class="form-group">
+              <label class="form-label required">Jenis Anggota</label>
+              <select class="form-select" name="JenisAnggota_id" id="JenisAnggota_id" required>
+                <option value="" disabled selected>Pilih Jenis Anggota</option>
+                <?php foreach (get_ref_table('jenis_anggota', 'id, jenisanggota, MasaBerlakuAnggota', null, 'data') as $row) : ?>
+                  <option value="<?= esc($row->id, 'attr') ?>" data-days="<?= esc($row->MasaBerlakuAnggota, 'attr') ?>">
+                    <?= esc($row->jenisanggota) ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
               <label class="form-label required">Jenis Identitas</label>
               <select class="form-select" name="IdentityType_id" id="IdentityType_id" required>
                 <option value="" disabled selected>Jenis identitas</option>
@@ -324,6 +337,34 @@
                   <option value="<?= $row->id ?>" <?= set_select('IdentityType_id', $row->id) ?>><?= $row->Nama ?></option>
                 <?php endforeach; ?>
               </select>
+            </div>
+          </div>
+        </div>
+
+        <?php
+          $memberNumberSetting = db_connect()->table('settingparameters')
+            ->where('Name', 'TipeNomorAnggota')->get()->getRow();
+          $memberNumberType = $memberNumberSetting->Value ?? 'Manual';
+        ?>
+        <div class="row">
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="form-label<?= $memberNumberType === 'Manual' ? ' required' : '' ?>">Nomor Anggota</label>
+              <input type="text" name="MemberNo" id="MemberNo" class="form-control"
+                placeholder="<?= $memberNumberType === 'Manual' ? 'Masukkan Nomor Anggota' : 'Dibuat otomatis' ?>"
+                <?= $memberNumberType === 'Manual' ? 'required' : 'readonly' ?>>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="form-label">Tanggal Pendaftaran</label>
+              <input type="date" name="RegisterDate" id="RegisterDate" class="form-control" value="<?= date('Y-m-d') ?>" readonly>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="form-label">Masa Berlaku</label>
+              <input type="datetime-local" name="EndDate" id="EndDate" class="form-control" readonly>
             </div>
           </div>
         </div>
@@ -573,7 +614,25 @@
     $(document).ready(function() {
       // Progress tracking
       updateProgress();
+      updateMemberEndDate();
     });
+
+    function updateMemberEndDate() {
+      const selected = $('#JenisAnggota_id option:selected');
+      const days = parseInt(selected.data('days'), 10);
+      const registerDate = $('#RegisterDate').val();
+      if (!registerDate || Number.isNaN(days)) {
+        $('#EndDate').val('');
+        return;
+      }
+
+      const endDate = new Date(`${registerDate}T00:00:00`);
+      endDate.setDate(endDate.getDate() + days);
+      const pad = value => String(value).padStart(2, '0');
+      $('#EndDate').val(`${endDate.getFullYear()}-${pad(endDate.getMonth() + 1)}-${pad(endDate.getDate())}T23:59`);
+    }
+
+    $('#JenisAnggota_id').on('change', updateMemberEndDate);
 
     const resetSelect = (dom, label, disabled = true) => {
       $(dom)

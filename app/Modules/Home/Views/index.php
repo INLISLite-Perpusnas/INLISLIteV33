@@ -67,11 +67,13 @@
 
     /* Image Utils */
     .book-cover {
-        height: 240px;
-        object-fit: contain;
-        width: 100%;
-        background-color: #e2e8f0;
-    }
+    aspect-ratio: 2 / 3;      /* kunci rasio portrait sesuai cover buku */
+    height: auto;
+    object-fit: cover;         /* crop rapi tanpa letterbox, ukuran seragam */
+    object-position: center;
+    width: 100%;
+    background-color: #e2e8f0;
+}
 
     .news-cover {
         height: 100px;

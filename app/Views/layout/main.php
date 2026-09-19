@@ -575,7 +575,7 @@ $page_title = ucfirst($segment2 ?: $segment1);
         <script src="<?= base_url('assets/js/datatables.min.js') ?>"></script>
         <script src="<?= base_url('assets/vendors/form-components/toggle-switch.min.js') ?>"></script>
         <script src="<?= base_url('assets/vendors/magnific-popup/jquery.magnific-popup.min.js') ?>"></script>
-        <script src="<?= base_url('assets/js/sweetalert2@8.js') ?>"></script>
+        <script src="<?= base_url('assets/js/sweetalert2.all.min.js') ?>"></script>
     <?php elseif (!$isLightweightBackendPage): ?>
         <?= $this->include('App\Views\layout\partial\script'); ?>
         <?= $this->include('App\Views\layout\partial\script_custom'); ?>
