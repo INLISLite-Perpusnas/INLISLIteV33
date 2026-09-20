@@ -854,6 +854,57 @@ public function browse()
         return view('Opac\Views\statistics_anggota', $this->data);
     }  
 
+    public function statistics_kunjungan()
+    {
+        $this->data['title'] = 'Statistik Kunjungan';
+
+        $periods = [
+            '30' => ['label' => '30 hari terakhir', 'sql' => 'INTERVAL 30 DAY'],
+            '90' => ['label' => '90 hari terakhir', 'sql' => 'INTERVAL 90 DAY'],
+            '180' => ['label' => '180 hari terakhir', 'sql' => 'INTERVAL 180 DAY'],
+            '6m' => ['label' => '6 bulan terakhir', 'sql' => 'INTERVAL 6 MONTH'],
+            '12m' => ['label' => '12 bulan terakhir', 'sql' => 'INTERVAL 12 MONTH'],
+        ];
+        $selectedPeriod = (string) ($this->request->getGet('period') ?? '30');
+        if (!isset($periods[$selectedPeriod])) {
+            $selectedPeriod = '30';
+        }
+        $periodStart = "DATE_SUB(CURDATE(), {$periods[$selectedPeriod]['sql']})";
+        $periodCondition = "visits.CreateDate >= {$periodStart}";
+
+        $this->data['periods'] = $periods;
+        $this->data['selected_period'] = $selectedPeriod;
+        $this->data['selected_period_label'] = $periods[$selectedPeriod]['label'];
+
+        $visitTables = "
+            SELECT CreateDate,
+                CASE
+                    WHEN NoAnggota IS NULL OR TRIM(NoAnggota) = '' THEN 'Non Anggota'
+                    ELSE 'Anggota'
+                END AS visit_type,
+                1 AS visitor_count
+            FROM memberguesses
+            WHERE CreateDate IS NOT NULL
+            UNION ALL
+            SELECT CreateDate, 'Rombongan' AS visit_type,
+                GREATEST(COALESCE(CountPersonel, 0), 1) AS visitor_count
+            FROM groupguesses
+            WHERE CreateDate IS NOT NULL
+        ";
+
+        $this->data['total_visits'] = $this->db->query("SELECT COUNT(*) AS total FROM ({$visitTables}) visits WHERE {$periodCondition}")->getRow()->total ?? 0;
+        $this->data['total_visitors'] = $this->db->query("SELECT COALESCE(SUM(visitor_count), 0) AS total FROM ({$visitTables}) visits WHERE {$periodCondition}")->getRow()->total ?? 0;
+        $this->data['today_visits'] = $this->db->query("SELECT COUNT(*) AS total FROM ({$visitTables}) visits WHERE {$periodCondition} AND DATE(visits.CreateDate) = CURDATE()")->getRow()->total ?? 0;
+        $this->data['today_visitors'] = $this->db->query("SELECT COALESCE(SUM(visitor_count), 0) AS total FROM ({$visitTables}) visits WHERE {$periodCondition} AND DATE(visits.CreateDate) = CURDATE()")->getRow()->total ?? 0;
+        $this->data['month_visitors'] = $this->db->query("SELECT COALESCE(SUM(visitor_count), 0) AS total FROM ({$visitTables}) visits WHERE {$periodCondition} AND YEAR(visits.CreateDate) = YEAR(CURDATE()) AND MONTH(visits.CreateDate) = MONTH(CURDATE())")->getRow()->total ?? 0;
+
+        $this->data['visit_types'] = $this->db->query("SELECT visit_type, COUNT(*) AS visits, COALESCE(SUM(visitor_count), 0) AS visitors FROM ({$visitTables}) visits WHERE {$periodCondition} GROUP BY visit_type ORDER BY visitors DESC")->getResult();
+        $this->data['monthly_visits'] = $this->db->query("SELECT DATE_FORMAT(visits.CreateDate, '%Y-%m') AS month_key, DATE_FORMAT(visits.CreateDate, '%b %Y') AS month_name, COUNT(*) AS visits, COALESCE(SUM(visitor_count), 0) AS visitors FROM ({$visitTables}) visits WHERE {$periodCondition} GROUP BY month_key, month_name ORDER BY month_key ASC")->getResult();
+        $this->data['hourly_visits'] = $this->db->query("SELECT DAYOFWEEK(visits.CreateDate) AS day_number, HOUR(visits.CreateDate) AS visit_hour, COALESCE(SUM(visitor_count), 0) AS visitors FROM ({$visitTables}) visits WHERE {$periodCondition} AND HOUR(visits.CreateDate) BETWEEN 7 AND 20 GROUP BY day_number, visit_hour ORDER BY day_number, visit_hour")->getResult();
+
+        return view('Opac\Views\statistics_kunjungan', $this->data);
+    }
+
         // Anggota peminjam per jenis kelamin
 
 

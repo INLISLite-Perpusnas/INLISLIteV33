@@ -71,6 +71,7 @@ class Filters extends BaseConfig
                 'opac/export',              // method: export
                 'opac/statistics',          // method: statistics
                 'opac/statistics_anggota',  // method: statistics_anggota
+                'opac/statistics_kunjungan', // method: statistics_kunjungan
                 'opac/downloadMarc*',       // method: semua downloadMarc (Utf8, Xml, Mods, dll)
                 'opac/member-login',        // method: memberLogin (login anggota via modal)
                 // 'opac/bacaDigital/*' TIDAK DIMASUKKAN agar terkena filter session (wajib login)
@@ -112,6 +113,7 @@ class Filters extends BaseConfig
                 'opac/export',
                 'opac/statistics',
                 'opac/statistics_anggota',
+                'opac/statistics_kunjungan',
                 'opac/downloadMarc*',
                 'opac/member-login',
 
