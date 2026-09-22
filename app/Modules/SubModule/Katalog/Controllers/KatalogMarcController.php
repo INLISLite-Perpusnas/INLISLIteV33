@@ -37,26 +37,26 @@ class KatalogMarcController extends \Base\Controllers\BaseController
         if ($this->request->getPost()) {
             if ($this->validation->withRequest($this->request)->run()) {
                 $catalogsModel = new DataModel('catalogs', null, 'ID');
-                $save_data     = [
-                    'Worksheet_id'  => $this->request->getPost('Worksheet_id'),
+                $save_data = [
+                    'Worksheet_id' => $this->request->getPost('Worksheet_id'),
                     'ControlNumber' => get_control_number(),
-                    'BIBID'         => random_string('numeric', 13),
-                    'Branch_id'     => user()->branch_id,
+                    'BIBID' => random_string('numeric', 13),
+                    'Branch_id' => user()->branch_id,
                 ];
 
                 if ($this->request->getPost('IsRDA') !== null) {
                     $save_data['IsRDA'] = $this->request->getPost('IsRDA') ? 1 : 0;
                 }
 
-                $CatalogId  = $catalogsModel->insert($save_data);
+                $CatalogId = $catalogsModel->insert($save_data);
                 $catalog_ruas_data = $this->_buildRuasData($CatalogId);
 
                 if (!empty($catalog_ruas_data)) {
                     // Sisipkan Tag 001 di paling awal
                     array_unshift($catalog_ruas_data, [
-                        'CatalogId'  => $CatalogId,
-                        'Tag'        => '001',
-                        'Value'      => $save_data['ControlNumber'],
+                        'CatalogId' => $CatalogId,
+                        'Tag' => '001',
+                        'Value' => $save_data['ControlNumber'],
                         'Indicator1' => '',
                         'Indicator2' => '',
                     ]);
@@ -70,7 +70,7 @@ class KatalogMarcController extends \Base\Controllers\BaseController
                 $this->session->setFlashdata('swal_icon', 'success');
                 $this->session->setFlashdata('swal_title', 'Berhasil');
                 $this->session->setFlashdata('swal_text', 'Katalog Form MARC berhasil ditambah');
-                
+
                 return redirect()->to('katalog');
 
             } else {
@@ -98,7 +98,7 @@ class KatalogMarcController extends \Base\Controllers\BaseController
     public function edit_marc($id = null)
     {
         $catalogsModel = new DataModel('catalogs', null, 'ID');
-        $catalog       = $catalogsModel->find($id);
+        $catalog = $catalogsModel->find($id);
 
         if (!$catalog) {
             $this->session->setFlashdata('swal_icon', 'error');
@@ -107,7 +107,7 @@ class KatalogMarcController extends \Base\Controllers\BaseController
             return redirect()->to('katalog');
         }
 
-        $data['title']   = 'Edit Katalog Form MARC';
+        $data['title'] = 'Edit Katalog Form MARC';
         $data['catalog'] = $catalog;
 
         $this->validation->setRule('Worksheet_id', 'Jenis Bahan', 'required');
@@ -127,13 +127,16 @@ class KatalogMarcController extends \Base\Controllers\BaseController
                     // Pastikan Tag 001 ada
                     $has_001 = false;
                     foreach ($catalog_ruas_data as $item) {
-                        if ($item['Tag'] === '001') { $has_001 = true; break; }
+                        if ($item['Tag'] === '001') {
+                            $has_001 = true;
+                            break;
+                        }
                     }
                     if (!$has_001) {
                         array_unshift($catalog_ruas_data, [
-                            'CatalogId'  => $id,
-                            'Tag'        => '001',
-                            'Value'      => $catalog->ControlNumber,
+                            'CatalogId' => $id,
+                            'Tag' => '001',
+                            'Value' => $catalog->ControlNumber,
                             'Indicator1' => '',
                             'Indicator2' => '',
                         ]);
@@ -163,29 +166,29 @@ class KatalogMarcController extends \Base\Controllers\BaseController
         }
 
         // GET - tampilkan form dengan data existing
-        $session      = service('session');
+        $session = service('session');
         $worksheet_id = $this->request->getvar('worksheet_id') ?? $catalog->Worksheet_id;
         $session->remove('worksheet_id');
         $session->remove('worksheet_fields');
         $session->set('worksheet_id', $worksheet_id);
 
         $katalogRuasModel = new DataModel('catalog_ruas', null, 'ID');
-        $existing_ruas    = $katalogRuasModel->where('CatalogId', $id)->findAll();
+        $existing_ruas = $katalogRuasModel->where('CatalogId', $id)->findAll();
 
         $existing_data = [];
         foreach ($existing_ruas as $ruas) {
             $existing_data[$ruas->Tag][] = [
-                'Value'      => $ruas->Value,
+                'Value' => $ruas->Value,
                 'Indicator1' => $ruas->Indicator1,
                 'Indicator2' => $ruas->Indicator2,
             ];
         }
 
-        $all_tags              = get_all_tags($worksheet_id);
+        $all_tags = get_all_tags($worksheet_id);
         $data['existing_data'] = $existing_data;
-        $data['session_tags']  = $all_tags->session_tags;
+        $data['session_tags'] = $all_tags->session_tags;
         $data['filtered_tags'] = $all_tags->filtered_tags;
-        $data                  = array_merge($data, $this->_getWorksheetList());
+        $data = array_merge($data, $this->_getWorksheetList());
 
         return view('Katalog\Views\edit_marc', $data);
     }
@@ -196,7 +199,7 @@ class KatalogMarcController extends \Base\Controllers\BaseController
 
     public function ekspor_marc()
     {
-        $IDs    = $this->request->getVar('ID');
+        $IDs = $this->request->getVar('ID');
         $format = $this->request->getVar('format') ?? 'mrc';
 
         if (!$IDs || empty($format)) {
@@ -209,7 +212,8 @@ class KatalogMarcController extends \Base\Controllers\BaseController
         $collection = [];
         foreach ($IDs as $id) {
             $catalog = $this->katalogModel->asArray()->find($id);
-            if (!$catalog) continue;
+            if (!$catalog)
+                continue;
 
             $record = $this->katalogRuasModel
                 ->select('*')
@@ -259,19 +263,20 @@ class KatalogMarcController extends \Base\Controllers\BaseController
         }
 
         $preview = [];
-        $store   = [];
+        $store = [];
 
         foreach ($files as $file) {
-            if (!$file->isValid()) continue;
+            if (!$file->isValid())
+                continue;
 
-            $content  = file_get_contents($file->getTempName());
+            $content = file_get_contents($file->getTempName());
             $filename = $file->getName();
-            $ext      = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
             try {
                 if ($ext === 'xml') {
-                    $result  = $this->_parseMarcXmlRecords($content, $filename);
-                    $store   = array_merge($store,   $result['store']);
+                    $result = $this->_parseMarcXmlRecords($content, $filename);
+                    $store = array_merge($store, $result['store']);
                     $preview = array_merge($preview, $result['preview']);
                 } else {
                     $marcContent = $this->_normalizeMarcContent($content);
@@ -280,14 +285,14 @@ class KatalogMarcController extends \Base\Controllers\BaseController
                         $taglistData = $this->_parseFieldsToTaglist($record);
                         $catalogData = $this->_mapTagsToCatalogData($taglistData);
 
-                        $store[]   = ['catalog' => $catalogData, 'taglist' => $taglistData];
+                        $store[] = ['catalog' => $catalogData, 'taglist' => $taglistData];
                         $preview[] = [
-                            'title'     => $catalogData['Title']       ?? '-',
-                            'author'    => $catalogData['Author']      ?? '-',
-                            'publisher' => $catalogData['Publisher']   ?? '-',
-                            'year'      => $catalogData['PublishYear'] ?? '-',
-                            'isbn'      => $catalogData['ISBN']        ?? '-',
-                            'file'      => $filename,
+                            'title' => $catalogData['Title'] ?? '-',
+                            'author' => $catalogData['Author'] ?? '-',
+                            'publisher' => $catalogData['Publisher'] ?? '-',
+                            'year' => $catalogData['PublishYear'] ?? '-',
+                            'isbn' => $catalogData['ISBN'] ?? '-',
+                            'file' => $filename,
                         ];
                     }
                 }
@@ -307,7 +312,7 @@ class KatalogMarcController extends \Base\Controllers\BaseController
 
         return $this->response->setJSON([
             'success' => true,
-            'total'   => count($preview),
+            'total' => count($preview),
             'records' => $preview,
         ]);
     }
@@ -323,50 +328,52 @@ class KatalogMarcController extends \Base\Controllers\BaseController
         $this->db->transStart();
 
         try {
-            $results    = [];
+            $results = [];
             $tableFields = $this->db->getFieldNames('catalogs');
 
             foreach ($store as $parsed) {
                 $catalogData = $parsed['catalog'];
                 $taglistData = $parsed['taglist'];
 
-                $catalogData['Worksheet_id']   = 1;
-                $catalogData['Branch_id']      = user()->branch_id ?? 2522;
-                $catalogData['CreateBy']       = user_id();
-                $catalogData['CreateDate']     = date('Y-m-d H:i:s');
-                $catalogData['UpdateBy']       = user_id();
-                $catalogData['UpdateDate']     = date('Y-m-d H:i:s');
+                $catalogData['Worksheet_id'] = 1;
+                $catalogData['Branch_id'] = user()->branch_id ?? 2522;
+                $catalogData['CreateBy'] = user_id();
+                $catalogData['CreateDate'] = date('Y-m-d H:i:s');
+                $catalogData['UpdateBy'] = user_id();
+                $catalogData['UpdateDate'] = date('Y-m-d H:i:s');
                 $catalogData['CreateTerminal'] = $this->request->getIPAddress();
-                $catalogData['active']         = 1;
+                $catalogData['active'] = 1;
 
                 $filteredData = array_intersect_key($catalogData, array_flip($tableFields));
                 $this->db->table('catalogs')->insert($filteredData);
                 $newCatalogId = $this->db->insertID();
 
-                if (!$newCatalogId) throw new \Exception('Gagal menyimpan: ' . ($catalogData['Title'] ?? '?'));
+                if (!$newCatalogId)
+                    throw new \Exception('Gagal menyimpan: ' . ($catalogData['Title'] ?? '?'));
 
                 if (!empty($catalogData['BIBID'])) {
                     $this->db->table('catalog_ruas')->insert([
-                        'CatalogId'  => $newCatalogId,
-                        'Tag'        => '035',
+                        'CatalogId' => $newCatalogId,
+                        'Tag' => '035',
                         'Indicator1' => '#',
                         'Indicator2' => '#',
-                        'Value'      => '$a ' . $catalogData['BIBID'],
-                        'Sequence'   => 0,
+                        'Value' => '$a ' . $catalogData['BIBID'],
+                        'Sequence' => 0,
                     ]);
                 }
 
                 $ruasBatch = [];
-                $seq       = 1;
+                $seq = 1;
                 foreach ($taglistData as $dataruas) {
-                    if ($dataruas['tag'] == '035' || strtolower($dataruas['tag']) == 'leader') continue;
+                    if ($dataruas['tag'] == '035' || strtolower($dataruas['tag']) == 'leader')
+                        continue;
                     $ruasBatch[] = [
-                        'CatalogId'  => $newCatalogId,
-                        'Tag'        => $dataruas['tag'],
+                        'CatalogId' => $newCatalogId,
+                        'Tag' => $dataruas['tag'],
                         'Indicator1' => ($dataruas['ind1'] === ' ' || $dataruas['ind1'] === null) ? '#' : $dataruas['ind1'],
                         'Indicator2' => ($dataruas['ind2'] === ' ' || $dataruas['ind2'] === null) ? '#' : $dataruas['ind2'],
-                        'Value'      => $dataruas['value'],
-                        'Sequence'   => $seq++,
+                        'Value' => $dataruas['value'],
+                        'Sequence' => $seq++,
                     ];
                 }
 
@@ -387,7 +394,7 @@ class KatalogMarcController extends \Base\Controllers\BaseController
 
             return $this->response->setJSON([
                 'success' => true,
-                'total'   => count($results),
+                'total' => count($results),
                 'results' => $results,
                 'message' => 'Berhasil mengimpor ' . count($results) . ' katalog',
             ]);
@@ -418,12 +425,12 @@ class KatalogMarcController extends \Base\Controllers\BaseController
         $xml = simplexml_load_string($xmlContent);
         if ($xml === false) {
             $errors = libxml_get_errors();
-            $msg    = !empty($errors) ? $errors[0]->message : 'Unknown XML error';
+            $msg = !empty($errors) ? $errors[0]->message : 'Unknown XML error';
             libxml_clear_errors();
             throw new \Exception('XML tidak valid: ' . trim($msg));
         }
 
-        $store   = [];
+        $store = [];
         $preview = [];
 
         foreach ($xml->record as $record) {
@@ -431,51 +438,52 @@ class KatalogMarcController extends \Base\Controllers\BaseController
 
             // Leader
             if (isset($record->leader)) {
-                $taglist[] = ['tag' => 'leader', 'ind1' => ' ', 'ind2' => ' ', 'value' => (string)$record->leader];
+                $taglist[] = ['tag' => 'leader', 'ind1' => ' ', 'ind2' => ' ', 'value' => (string) $record->leader];
             }
 
             // Control fields (tag < 010)
             foreach ($record->controlfield as $cf) {
                 $taglist[] = [
-                    'tag'   => (string)($cf['tag'] ?? ''),
-                    'ind1'  => ' ',
-                    'ind2'  => ' ',
-                    'value' => (string)$cf,
+                    'tag' => (string) ($cf['tag'] ?? ''),
+                    'ind1' => ' ',
+                    'ind2' => ' ',
+                    'value' => (string) $cf,
                 ];
             }
 
             // Data fields
             foreach ($record->datafield as $df) {
-                $ind1 = (string)($df['ind1'] ?? ' ');
-                $ind2 = (string)($df['ind2'] ?? ' ');
+                $ind1 = (string) ($df['ind1'] ?? ' ');
+                $ind2 = (string) ($df['ind2'] ?? ' ');
                 $ind1 = ($ind1 === '#') ? ' ' : $ind1;
                 $ind2 = ($ind2 === '#') ? ' ' : $ind2;
 
                 $parts = [];
                 foreach ($df->subfield as $sf) {
-                    $parts[] = '$' . (string)($sf['code'] ?? '') . ' ' . (string)$sf;
+                    $parts[] = '$' . (string) ($sf['code'] ?? '') . ' ' . (string) $sf;
                 }
 
                 $taglist[] = [
-                    'tag'   => (string)($df['tag'] ?? ''),
-                    'ind1'  => $ind1,
-                    'ind2'  => $ind2,
+                    'tag' => (string) ($df['tag'] ?? ''),
+                    'ind1' => $ind1,
+                    'ind2' => $ind2,
                     'value' => implode(' ', $parts),
                 ];
             }
 
-            if (empty($taglist)) continue;
+            if (empty($taglist))
+                continue;
 
             $catalogData = $this->_mapTagsToCatalogData($taglist);
 
-            $store[]   = ['catalog' => $catalogData, 'taglist' => $taglist];
+            $store[] = ['catalog' => $catalogData, 'taglist' => $taglist];
             $preview[] = [
-                'title'     => $catalogData['Title']       ?? '-',
-                'author'    => $catalogData['Author']      ?? '-',
-                'publisher' => $catalogData['Publisher']   ?? '-',
-                'year'      => $catalogData['PublishYear'] ?? '-',
-                'isbn'      => $catalogData['ISBN']        ?? '-',
-                'file'      => $filename,
+                'title' => $catalogData['Title'] ?? '-',
+                'author' => $catalogData['Author'] ?? '-',
+                'publisher' => $catalogData['Publisher'] ?? '-',
+                'year' => $catalogData['PublishYear'] ?? '-',
+                'isbn' => $catalogData['ISBN'] ?? '-',
+                'file' => $filename,
             ];
         }
 
@@ -491,34 +499,44 @@ class KatalogMarcController extends \Base\Controllers\BaseController
      */
     private function _buildRuasData(int $CatalogId): array
     {
-        $Indicator1s = $this->request->getPost('Indicator1');
-        $Indicator2s = $this->request->getPost('Indicator2');
-        $Values      = $this->request->getPost('Value');
+        $Indicator1s = $this->request->getPost('Indicator1') ?? [];
+        $Indicator2s = $this->request->getPost('Indicator2') ?? [];
+        $Values = $this->request->getPost('Value') ?? [];
 
-        $catalogRuasData = [];
-        foreach ($Values as $key => $value) {
-            $items = [];
-            $items['Value']      = is_array($Values[$key])      ? $Values[$key]      : [$Values[$key]];
-            $items['Indicator1'] = is_array($Indicator1s[$key]) ? $Indicator1s[$key] : [$Indicator1s[$key]];
-            $items['Indicator2'] = is_array($Indicator2s[$key]) ? $Indicator2s[$key] : [$Indicator2s[$key]];
-            $catalogRuasData[$key] = $items;
-        }
+        // Daftar tag kontrol MARC yang tidak memiliki indikator dan subfield
+        $controlTags = ['005', '006', '007', '008'];
 
         $catalog_ruas_data = [];
-        foreach ($catalogRuasData as $key => $items) {
-            foreach ($items['Value'] as $index => $row) {
+
+        foreach ($Values as $key => $valData) {
+            $valuesArr = is_array($valData) ? $valData : [$valData];
+
+            foreach ($valuesArr as $index => $rowValue) {
+                // Jika tag termasuk Control Tag, set indikator kosong secara otomatis
+                if (in_array($key, $controlTags)) {
+                    $ind1 = '';
+                    $ind2 = '';
+                } else {
+                    // Untuk tag biasa, ambil dari post berdasarkan key & index dengan aman
+                    $ind1 = $Indicator1s[$key][$index] ?? ($Indicator1s[$key] ?? '');
+                    $ind2 = $Indicator2s[$key][$index] ?? ($Indicator2s[$key] ?? '');
+                }
+
                 $catalog_ruas_data[] = [
-                    'CatalogId'  => $CatalogId,
-                    'Tag'        => $key,
-                    'Value'      => $items['Value'][$index] ?? '',
-                    'Indicator1' => $items['Indicator1'][$index] ?? '',
-                    'Indicator2' => $items['Indicator2'][$index] ?? '',
+                    'CatalogId' => $CatalogId,
+                    'Tag' => $key,
+                    'Value' => $rowValue,
+                    'Indicator1' => is_array($ind1) ? ($ind1[$index] ?? '') : $ind1,
+                    'Indicator2' => is_array($ind2) ? ($ind2[$index] ?? '') : $ind2,
                 ];
             }
         }
 
-        // Filter baris yang hanya berisi '$a' tanpa nilai
-        $catalog_ruas_data = array_values(array_filter($catalog_ruas_data, function ($item) {
+        // Filter baris yang hanya berisi '$a' tanpa nilai (kecuali tag kontrol)
+        $catalog_ruas_data = array_values(array_filter($catalog_ruas_data, function ($item) use ($controlTags) {
+            if (in_array($item['Tag'], $controlTags)) {
+                return true; // Jangan filter tag kontrol meskipun tidak ada $a
+            }
             return trim($item['Value']) !== '$a';
         }));
 
@@ -530,7 +548,7 @@ class KatalogMarcController extends \Base\Controllers\BaseController
      */
     private function _getMarcFormData(): array
     {
-        $session      = service('session');
+        $session = service('session');
         $worksheet_id = $this->request->getvar('worksheet_id') ?? 1;
 
         if (!$session->has('worksheet_id')) {
@@ -547,7 +565,7 @@ class KatalogMarcController extends \Base\Controllers\BaseController
         $all_tags = get_all_tags($worksheet_id);
 
         return [
-            'session_tags'  => $all_tags->session_tags,
+            'session_tags' => $all_tags->session_tags,
             'filtered_tags' => $all_tags->filtered_tags,
         ] + $this->_getWorksheetList();
     }
@@ -570,7 +588,7 @@ class KatalogMarcController extends \Base\Controllers\BaseController
             $content .= "=LDR  00000nam  2200000   4500\n";
 
             foreach ($record as $field) {
-                $tag  = str_pad($field->Tag, 3, '0', STR_PAD_LEFT);
+                $tag = str_pad($field->Tag, 3, '0', STR_PAD_LEFT);
                 $ind1 = $field->Indicator1 ?: ' ';
                 $ind2 = $field->Indicator2 ?: ' ';
 
@@ -592,41 +610,46 @@ class KatalogMarcController extends \Base\Controllers\BaseController
     private function _eksporXlsx(array $collection)
     {
         $spreadsheet = new Spreadsheet();
-        $sheet       = $spreadsheet->getActiveSheet();
+        $sheet = $spreadsheet->getActiveSheet();
 
         $headers = ['Id Katalog', 'Tag', 'Ind1', 'Ind2', 'Nilai'];
         $sheet->fromArray($headers, NULL, 'A1');
 
         $sheet->getStyle('A1:E1')->getFont()->setBold(true);
         $sheet->getStyle('A1:E1')->getFill()->applyFromArray([
-            'fillType'   => Fill::FILL_SOLID,
+            'fillType' => Fill::FILL_SOLID,
             'startColor' => ['argb' => 'FFDDDDDD'],
         ]);
 
-        $row             = 2;
-        $lastKatalogId   = null;
+        $row = 2;
+        $lastKatalogId = null;
 
         foreach ($collection as $record) {
             $idKatalog = $record[0]->ID ?? '';
 
             usort($record, function ($a, $b) {
-                if ($a->Tag === 'a') return -1;
-                if ($b->Tag === 'a') return 1;
+                if ($a->Tag === 'a')
+                    return -1;
+                if ($b->Tag === 'a')
+                    return 1;
                 $aIsNum = is_numeric($a->Tag);
                 $bIsNum = is_numeric($b->Tag);
-                if ($aIsNum && $bIsNum) return (int)$a->Tag <=> (int)$b->Tag;
-                if ($aIsNum) return -1;
-                if ($bIsNum) return 1;
+                if ($aIsNum && $bIsNum)
+                    return (int) $a->Tag <=> (int) $b->Tag;
+                if ($aIsNum)
+                    return -1;
+                if ($bIsNum)
+                    return 1;
                 return strcmp($a->Tag, $b->Tag);
             });
 
             if ($idKatalog !== $lastKatalogId) {
-                $urutan        = 1;
+                $urutan = 1;
                 $lastKatalogId = $idKatalog;
             }
 
             foreach ($record as $field) {
-                $tag  = str_pad($field->Tag, 3, '0', STR_PAD_LEFT);
+                $tag = str_pad($field->Tag, 3, '0', STR_PAD_LEFT);
                 $ind1 = $field->Indicator1 ?: ' ';
                 $ind2 = $field->Indicator2 ?: ' ';
 
@@ -655,7 +678,7 @@ class KatalogMarcController extends \Base\Controllers\BaseController
             ->setVertical(Alignment::VERTICAL_CENTER)
             ->setHorizontal(Alignment::HORIZONTAL_LEFT);
 
-        $writer   = new Xlsx($spreadsheet);
+        $writer = new Xlsx($spreadsheet);
         $filename = 'export_marc.xlsx';
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -701,12 +724,28 @@ class KatalogMarcController extends \Base\Controllers\BaseController
      */
     private function _mapTagsToCatalogData(array $taglist): array
     {
-        $result    = [];
+        $result = [];
         $delimiter = ' ; ';
 
-        foreach (['ControlNumber','Title','Author','Edition','Publisher','PublishLocation',
-                  'PublishYear','Publikasi','Subject','PhysicalDescription','ISBN',
-                  'CallNumber','Note','Languages','DeweyNo','BIBID','IsRDA'] as $k) {
+        foreach ([
+            'ControlNumber',
+            'Title',
+            'Author',
+            'Edition',
+            'Publisher',
+            'PublishLocation',
+            'PublishYear',
+            'Publikasi',
+            'Subject',
+            'PhysicalDescription',
+            'ISBN',
+            'CallNumber',
+            'Note',
+            'Languages',
+            'DeweyNo',
+            'BIBID',
+            'IsRDA'
+        ] as $k) {
             $result[$k] = null;
         }
 
@@ -715,7 +754,7 @@ class KatalogMarcController extends \Base\Controllers\BaseController
         };
 
         foreach ($taglist as $tags) {
-            $tagcode  = $tags['tag'];
+            $tagcode = $tags['tag'];
             $tagvalue = $tags['value'];
 
             switch ($tagcode) {
@@ -736,7 +775,10 @@ class KatalogMarcController extends \Base\Controllers\BaseController
                     $result['Title'] = $result['Title'] ? $result['Title'] . $delimiter . $val : $val;
                     break;
 
-                case '100': case '700': case '710': case '711':
+                case '100':
+                case '700':
+                case '710':
+                case '711':
                     $val = $cleanValue($tagvalue);
                     if ($val != '') {
                         $result['Author'] = $result['Author'] ? $result['Author'] . $delimiter . $val : $val;
@@ -750,33 +792,50 @@ class KatalogMarcController extends \Base\Controllers\BaseController
                     }
                     break;
 
-                case '260': case '264':
+                case '260':
+                case '264':
                     $result['IsRDA'] = ($tagcode == '264') ? 1 : 0;
                     $parts = explode('$', $tagvalue);
-                    $locs = []; $pubs = []; $years = []; $fullPub = [];
+                    $locs = [];
+                    $pubs = [];
+                    $years = [];
+                    $fullPub = [];
 
                     foreach ($parts as $part) {
-                        if (empty($part)) continue;
-                        $code     = substr($part, 0, 1);
-                        $val      = trim(substr($part, 1));
+                        if (empty($part))
+                            continue;
+                        $code = substr($part, 0, 1);
+                        $val = trim(substr($part, 1));
                         $valClean = trim($val, " :,;/");
                         if ($val != '') {
                             switch ($code) {
-                                case 'a': $locs[]    = $valClean; break;
-                                case 'b': $pubs[]    = $valClean; break;
-                                case 'c': $years[]   = $valClean; break;
+                                case 'a':
+                                    $locs[] = $valClean;
+                                    break;
+                                case 'b':
+                                    $pubs[] = $valClean;
+                                    break;
+                                case 'c':
+                                    $years[] = $valClean;
+                                    break;
                             }
                             $fullPub[] = $val;
                         }
                     }
 
-                    if (!empty($locs))    $result['PublishLocation'] = implode('; ', $locs);
-                    if (!empty($pubs))    $result['Publisher']       = implode('; ', $pubs);
-                    if (!empty($years))   $result['PublishYear']     = implode('; ', $years);
-                    if (!empty($fullPub)) $result['Publikasi']       = implode(' ', $fullPub);
+                    if (!empty($locs))
+                        $result['PublishLocation'] = implode('; ', $locs);
+                    if (!empty($pubs))
+                        $result['Publisher'] = implode('; ', $pubs);
+                    if (!empty($years))
+                        $result['PublishYear'] = implode('; ', $years);
+                    if (!empty($fullPub))
+                        $result['Publikasi'] = implode(' ', $fullPub);
                     break;
 
-                case '650': case '600': case '651':
+                case '650':
+                case '600':
+                case '651':
                     $val = $cleanValue($tagvalue);
                     if ($val != '') {
                         $result['Subject'] = $result['Subject'] ? $result['Subject'] . ' -- ' . $val : $val;
@@ -785,10 +844,13 @@ class KatalogMarcController extends \Base\Controllers\BaseController
 
                 case '300':
                     $val = $cleanValue($tagvalue);
-                    if ($val != '') $result['PhysicalDescription'] = $val;
+                    if ($val != '')
+                        $result['PhysicalDescription'] = $val;
                     break;
 
-                case '020': case '022': case '024':
+                case '020':
+                case '022':
+                case '024':
                     $val = $cleanValue($tagvalue);
                     if ($val != '') {
                         $result['ISBN'] = $result['ISBN'] ? $result['ISBN'] . $delimiter . $val : $val;
@@ -802,7 +864,12 @@ class KatalogMarcController extends \Base\Controllers\BaseController
                     }
                     break;
 
-                case '500': case '502': case '504': case '505': case '520': case '542':
+                case '500':
+                case '502':
+                case '504':
+                case '505':
+                case '520':
+                case '542':
                     $val = $cleanValue($tagvalue);
                     if ($val != '') {
                         $result['Note'] = $result['Note'] ? $result['Note'] . $delimiter . $val : $val;
