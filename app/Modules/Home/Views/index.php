@@ -526,14 +526,19 @@
             </div>
         </div>
 
-        <div class="row g-4">
-            <?php if (!empty($featured_books)): ?>
+        <?php if (!empty($featured_books)): ?>
+            <div class="popular-slider-wrapper">
+                <button type="button" class="popular-slider-nav prev" id="koleksiTerbaruSliderPrev" aria-label="Koleksi sebelumnya">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+
+                <div class="popular-slider" id="koleksiTerbaruSlider">
                 <?php foreach (array_slice($featured_books, 0, 5) as $i => $book): ?>
                     <?php
                     $defaultCover = base_url('assets/img/default-cover.webp');
                     $thumbUrl     = get_catalog_thumb_url($book->CoverURL ?: '', 200, 340);
                     ?>
-                    <div class="col-6 col-md-4 col-lg">
+                    <div class="popular-card-item">
                         <div class="card h-100 border-0 shadow-sm hover-card rounded-xl overflow-hidden bg-white">
                             <img src="<?= $thumbUrl ?>"
                                  class="card-img-top book-cover"
@@ -553,13 +558,18 @@
                         </div>
                     </div>
                 <?php endforeach; ?>
-            <?php else: ?>
-                <div class="col-12 text-center py-5">
-                    <i class="fa-solid fa-book-open fa-3x text-secondary opacity-50 mb-3"></i>
-                    <p class="text-secondary">Koleksi buku masih belum tersedia</p>
                 </div>
-            <?php endif; ?>
-        </div>
+
+                <button type="button" class="popular-slider-nav next" id="koleksiTerbaruSliderNext" aria-label="Koleksi berikutnya">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        <?php else: ?>
+            <div class="text-center py-5">
+                <i class="fa-solid fa-book-open fa-3x text-secondary opacity-50 mb-3"></i>
+                <p class="text-secondary">Koleksi buku masih belum tersedia</p>
+            </div>
+        <?php endif; ?>
 
         <div class="text-center mt-5">
             <a href="<?= base_url('opac') ?>" class="btn btn-brand rounded-pill px-5 py-2 fw-semibold shadow-sm">
@@ -670,6 +680,7 @@
 
         initCardSlider('seringDipinjamSlider', 'seringDipinjamSliderPrev', 'seringDipinjamSliderNext');
         initCardSlider('seringDibacaSlider', 'seringDibacaSliderPrev', 'seringDibacaSliderNext');
+        initCardSlider('koleksiTerbaruSlider', 'koleksiTerbaruSliderPrev', 'koleksiTerbaruSliderNext');
 
         function animateCounters() {
             document.querySelectorAll('.stat-number').forEach((element) => {
