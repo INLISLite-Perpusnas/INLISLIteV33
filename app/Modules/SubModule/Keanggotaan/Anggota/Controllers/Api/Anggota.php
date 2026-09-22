@@ -112,6 +112,8 @@ class Anggota extends \Base\Controllers\BaseResourceController
 			$builder->where('a.Jurusan_id', $jurusan_id);
 		}
 
+		$builder->orderBy('a.ID', 'desc');
+
 		/**
 		 * DataTables
 		 * @var \Hermawan\DataTables\DataTable $dataTable

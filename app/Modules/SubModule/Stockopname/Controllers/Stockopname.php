@@ -382,24 +382,27 @@ class Stockopname extends \Base\Controllers\BaseController
     if (!in_array($perPageDetails, $allowedPerPage, true)) {
         $perPageDetails = 25;
     }
-    $totalDetails  = $this->stockopnamedetailModel->getDetailCount($id);
+    $locationLibraryId = (int) ($this->request->getVar('location_library_id') ?? 0);
+    $locationId = (int) ($this->request->getVar('location_id') ?? 0);
+    $totalDetails  = $this->stockopnamedetailModel->getStockopnameDetailsCount($id, $locationLibraryId, $locationId);
     $offsetDetails = ($pageDetails - 1) * $perPageDetails;
-    $details = $this->stockopnamedetailModel->getStockopnameDetails($id, $perPageDetails, $offsetDetails);
+    $details = $this->stockopnamedetailModel->getStockopnameDetails($id, $perPageDetails, $offsetDetails, $locationLibraryId, $locationId);
 
     $detailsPager = $pager->makeLinks($pageDetails, $perPageDetails, $totalDetails, 'default_full', 0, 'details');
 
     // -- Pagination for Collections Not In Stockopname --
     $pageNotIn = $this->request->getVar('page_notIn') ? (int)$this->request->getVar('page_notIn') : 1;
     $perPageNotIn = 10; // Items per page for the "not in" list
-    $totalNotIn = $this->stockopnamedetailModel->getCollectionsNotInStockopnameCount($id);
+    $totalNotIn = $this->stockopnamedetailModel->getCollectionsNotInStockopnameCount($id, null, $locationLibraryId, $locationId);
     $offsetNotIn = ($pageNotIn - 1) * $perPageNotIn;
-    $collectionsNotInStockopname = $this->stockopnamedetailModel->getCollectionsNotInStockopname($id, $perPageNotIn, $offsetNotIn);
+    $collectionsNotInStockopname = $this->stockopnamedetailModel->getCollectionsNotInStockopname($id, $perPageNotIn, $offsetNotIn, null, $locationLibraryId, $locationId);
     $notInPager = $pager->makeLinks($pageNotIn, $perPageNotIn, $totalNotIn, 'default_full', 0, 'notIn');
 
 
     // Get reference data for dropdowns
     $db = db_connect('data');
     $locations = $this->locationModel->findAll();
+    $locationLibraries = $db->table('location_library')->orderBy('Name')->get()->getResultObject();
     $statuses  = $db->table('collectionstatus')->orderBy('ID')->get()->getResultObject();
     $rules     = $db->table('collectionrules')->orderBy('ID')->get()->getResultObject();
 
@@ -420,6 +423,9 @@ class Stockopname extends \Base\Controllers\BaseController
     $this->data['totalNotInStockopname'] = $totalNotIn;
 
     $this->data['locations'] = $locations;
+    $this->data['locationLibraries'] = $locationLibraries;
+    $this->data['selectedLocationLibraryId'] = $locationLibraryId;
+    $this->data['selectedLocationId'] = $locationId;
     $this->data['statuses']  = $statuses;
     $this->data['rules']     = $rules;
 

@@ -576,9 +576,25 @@ $page_title = ucfirst($segment2 ?: $segment1);
         <script src="<?= base_url('assets/vendors/form-components/toggle-switch.min.js') ?>"></script>
         <script src="<?= base_url('assets/vendors/magnific-popup/jquery.magnific-popup.min.js') ?>"></script>
         <script src="<?= base_url('assets/js/sweetalert2.all.min.js') ?>"></script>
+    <?php elseif ($isLightweightBackendPage): ?>
+        <script src="<?= base_url('assets/js/sweetalert2@8.js') ?>"></script>
     <?php elseif (!$isLightweightBackendPage): ?>
         <?= $this->include('App\Views\layout\partial\script'); ?>
         <?= $this->include('App\Views\layout\partial\script_custom'); ?>
+    <?php endif; ?>
+
+    <?php $swal_permission = session()->getFlashdata('swal_permission'); ?>
+    <?php if ($isLightweightBackendPage && is_array($swal_permission)): ?>
+    <script>
+        Swal.fire({
+            icon: '<?= esc((string)($swal_permission['icon'] ?? 'error')) ?>',
+            title: '<?= esc((string)($swal_permission['title'] ?? 'Akses Ditolak')) ?>',
+            text: '<?= esc((string)($swal_permission['text'] ?? 'Maaf anda tidak memiliki hak akses')) ?>',
+            confirmButtonColor: '#d33',
+            timer: 4000,
+            timerProgressBar: true,
+        });
+    </script>
     <?php endif; ?>
 
     <?php if (!$isLightweightBackendPage): ?>

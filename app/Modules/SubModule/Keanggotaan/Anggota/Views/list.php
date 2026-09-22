@@ -169,6 +169,7 @@ $request = service('request');
             "searchDelay": 350,
             "scrollX": true,
             "scrollCollapse": true,
+            "order": [[<?= 8 + ($is_sekolah ? 1 : 0) + ($is_perguruan_tinggi ? 2 : 0) ?>, "desc"]],
             "ajax": {
                 "url": '<?php echo site_url('api/anggota/datatable'); ?>',
                 "data": function(d) {

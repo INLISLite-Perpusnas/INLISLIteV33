@@ -18,7 +18,7 @@ class StockopnamedetailModel extends \Base\Models\DataModel
     protected $validationMessages 	= [];
     protected $skipValidation     	= true;
   
-    public function getStockopnameDetails($stockopnameId, $limit = null, $offset = null)
+    public function getStockopnameDetails($stockopnameId, $limit = null, $offset = null, $locationLibraryId = null, $locationId = null)
     {
         $builder = $this->db->table('stockopnamedetail sd')
             ->select('
@@ -45,7 +45,13 @@ class StockopnamedetailModel extends \Base\Models\DataModel
             ->join('collectionrules currRule', 'sd.CurrentCollectionRuleID = currRule.ID', 'left')
             ->where('sd.StockOpnameID', $stockopnameId)
             ->orderBy('sd.CreateDate', 'DESC');
-           
+
+        if (!empty($locationLibraryId)) {
+            $builder->where('currLoc.LocationLibrary_id', $locationLibraryId);
+        }
+        if (!empty($locationId)) {
+            $builder->where('sd.CurrentLocationID', $locationId);
+        }
 
         if ($limit !== null) {
             $builder->limit($limit, $offset);
@@ -92,7 +98,7 @@ class StockopnamedetailModel extends \Base\Models\DataModel
     /**
      * Get collections that are not yet in stockopname
      */
-    public function getCollectionsNotInStockopname($stockopnameId, $limit = 150, $offset = 0, $search = null)
+    public function getCollectionsNotInStockopname($stockopnameId, $limit = 150, $offset = 0, $search = null, $locationLibraryId = null, $locationId = null)
     {
         $builder = $this->db->table('collections c')
             ->select('
@@ -128,6 +134,13 @@ class StockopnamedetailModel extends \Base\Models\DataModel
                 ->groupEnd();
         }
 
+        if (!empty($locationLibraryId)) {
+            $builder->where('loc.LocationLibrary_id', $locationLibraryId);
+        }
+        if (!empty($locationId)) {
+            $builder->where('c.Location_id', $locationId);
+        }
+
         return $builder->orderBy('cat.Title', 'ASC')
             ->limit($limit, $offset)
             ->get()
@@ -137,10 +150,11 @@ class StockopnamedetailModel extends \Base\Models\DataModel
     /**
      * Get count of collections not in stockopname
      */
-    public function getCollectionsNotInStockopnameCount($stockopnameId, $search = null)
+    public function getCollectionsNotInStockopnameCount($stockopnameId, $search = null, $locationLibraryId = null, $locationId = null)
     {
         $builder = $this->db->table('collections c')
             ->join('catalogs cat', 'c.catalog_id = cat.id', 'left')
+            ->join('locations loc', 'c.location_id = loc.ID', 'left')
             ->where('c.id NOT IN (
                 SELECT CollectionID 
                 FROM stockopnamedetail 
@@ -154,6 +168,13 @@ class StockopnamedetailModel extends \Base\Models\DataModel
                 ->orLike('cat.Author', $search)
                 ->orLike('c.CallNumber', $search)
                 ->groupEnd();
+        }
+
+        if (!empty($locationLibraryId)) {
+            $builder->where('loc.LocationLibrary_id', $locationLibraryId);
+        }
+        if (!empty($locationId)) {
+            $builder->where('c.Location_id', $locationId);
         }
 
         return $builder->countAllResults();
@@ -178,6 +199,22 @@ class StockopnamedetailModel extends \Base\Models\DataModel
     public function getDetailCount($stockopnameId)
     {
         return $this->where('StockOpnameID', $stockopnameId)->countAllResults();
+    }
+
+    public function getStockopnameDetailsCount($stockopnameId, $locationLibraryId = null, $locationId = null)
+    {
+        $builder = $this->db->table('stockopnamedetail sd')
+            ->join('locations currLoc', 'sd.CurrentLocationID = currLoc.ID', 'left')
+            ->where('sd.StockOpnameID', $stockopnameId);
+
+        if (!empty($locationLibraryId)) {
+            $builder->where('currLoc.LocationLibrary_id', $locationLibraryId);
+        }
+        if (!empty($locationId)) {
+            $builder->where('sd.CurrentLocationID', $locationId);
+        }
+
+        return $builder->countAllResults();
     }
 
     /**

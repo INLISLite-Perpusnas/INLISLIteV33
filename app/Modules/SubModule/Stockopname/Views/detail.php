@@ -314,6 +314,40 @@
         </div>
     </div>
 
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" action="<?= current_url() ?>" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="location_library_id" class="form-label">Lokasi</label>
+                    <select id="location_library_id" name="location_library_id" class="form-select">
+                        <option value="">Semua Lokasi</option>
+                        <?php foreach ($locationLibraries as $library): ?>
+                            <option value="<?= $library->ID ?>" <?= $library->ID == (isset($selectedLocationLibraryId) ? $selectedLocationLibraryId : 0) ? 'selected' : '' ?>>
+                                <?= esc($library->Name) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="location_id" class="form-label">Lokasi Ruang</label>
+                    <select id="location_id" name="location_id" class="form-select">
+                        <option value="">Semua Lokasi Ruang</option>
+                        <?php foreach ($locations as $loc): ?>
+                            <option value="<?= $loc->ID ?>" data-location-library-id="<?= $loc->LocationLibrary_id ?>"
+                                <?= $loc->ID == (isset($selectedLocationId) ? $selectedLocationId : 0) ? 'selected' : '' ?>>
+                                <?= esc($loc->Name) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Filter</button>
+                    <a href="<?= current_url() ?>" class="btn btn-light">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Stockopname Details Table -->
     <div class="row mb-4">
         <div class="col-12">
@@ -635,6 +669,27 @@
     };
 
     $(document).ready(function() {
+        const $locationLibrary = $('#location_library_id');
+        const $location = $('#location_id');
+
+        function filterLocations() {
+            const libraryId = $locationLibrary.val();
+            $location.find('option').each(function() {
+                const $option = $(this);
+                const optionLibraryId = $option.data('location-library-id');
+                $option.toggle(!$option.val() || !libraryId || String(optionLibraryId) === String(libraryId));
+            });
+            if ($location.find('option:selected').is(':hidden')) {
+                $location.val('');
+            }
+        }
+
+        filterLocations();
+        $locationLibrary.on('change', function() {
+            $location.val('');
+            filterLocations();
+        });
+
         // Catatan: DataTables tidak lagi dipakai di tabel ini.
         // Pagination sekarang murni ditangani server-side oleh pager bawaan CI4
         // (lihat $detailsPager di controller & view), supaya kuat untuk data
