@@ -254,11 +254,32 @@
     }
 
     @media (max-width: 768px) {
-        .catalog-card .row { flex-direction: column; }
-        .catalog-card .col-4,
-        .catalog-card .col-8 { flex: 0 0 100%; max-width: 100%; }
-        .catalog-card .col-8 { padding-left: 0 !important; padding-top: 1rem; }
-        .book-cover { max-width: 120px; margin-inline: auto; }
+        .catalog-card {
+            height: auto;
+        }
+
+        .catalog-card .row {
+            flex-direction: row;
+            height: auto !important;
+        }
+
+        .catalog-card .col-4 {
+            flex: 0 0 33.333333%;
+            max-width: 33.333333%;
+        }
+
+        .catalog-card .col-8 {
+            flex: 0 0 66.666667%;
+            max-width: 66.666667%;
+        }
+
+        .catalog-card .book-cover-wrapper {
+            height: 180px !important;
+        }
+
+        .book-cover {
+            height: 180px;
+        }
     }
 </style>
 <?= $this->endSection() ?>
