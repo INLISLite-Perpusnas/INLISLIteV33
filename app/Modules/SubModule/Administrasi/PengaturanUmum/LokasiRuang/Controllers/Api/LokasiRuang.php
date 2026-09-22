@@ -170,8 +170,15 @@ class LokasiRuang extends \Base\Controllers\BaseResourceController
 
 	public function check($code = null)
 {
-    if (!$code) {
-        return $this->fail('Kode tidak boleh kosong', 400);
+    $throttler = service('throttler');
+    $throttleKey = hash('sha256', 'location-check:' . $this->request->getIPAddress());
+    if (!$throttler->check($throttleKey, 20, MINUTE)) {
+		return $this->fail('Terlalu banyak permintaan. Silakan tunggu satu menit.', 429);
+    }
+
+    $code = strtoupper(trim((string) $code));
+    if (!preg_match('/^[A-Z0-9-]{3,24}$/', $code)) {
+		return $this->fail('Format kode lokasi tidak valid.', 400);
     }
 
     $db = db_connect();
@@ -180,12 +187,13 @@ class LokasiRuang extends \Base\Controllers\BaseResourceController
         ->select('a.ID, a.Code, a.Name')
         ->select('b.ID as LocationLibrary_id, b.Name as LocationLibrary_name, b.Code as LocationLibrary_code')
         ->join('location_library as b', 'b.ID = a.LocationLibrary_id', 'left')
-        ->where('a.Code', $code);
+        ->where('a.Code', $code)
+        ->where('a.active', 1);
 
     $data = $builder->get()->getRow();
 
     if (!$data) {
-        return $this->failNotFound('Data tidak ditemukan untuk kode: ' . $code);
+		return $this->failNotFound('Kode lokasi tidak ditemukan atau sudah tidak aktif.');
     }
 
     return $this->respond($data);

@@ -1,9 +1,9 @@
-<div class="modal fade" id="modal_update_kelas" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="modal_update_kelas" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="modalUpdateKelasTitle" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="header-icon lnr-graduation-hat icon-gradient bg-plum-plate"> </i> Update Batch Kelas
+                <h5 class="modal-title" id="modalUpdateKelasTitle">
+                    <i class="header-icon lnr-graduation-hat icon-gradient bg-plum-plate" aria-hidden="true"> </i> Update Batch Kelas
                 </h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -12,7 +12,7 @@
             <div class="modal-body">
                 <p>Kelas akan diubah untuk <strong><span id="jml_anggota_terpilih">0</span></strong> anggota yang terpilih.</p>
                 <div class="form-group">
-                    <label for="target_kelas_id">Pindahkan ke Kelas</label>
+                    <label for="target_kelas_id" class="form-label">Kelas tujuan</label>
                     <select class="form-control" id="target_kelas_id">
                         <option value="">-- Pilih Kelas Tujuan --</option>
                         <?php foreach ($kelas_list as $row) : ?>

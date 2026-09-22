@@ -1,8 +1,6 @@
 <?= $this->extend('App\Views\layout\opac\layout'); ?>
 
 <?= $this->section('style') ?>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" integrity="sha384-KZO2FRYNmIHerhfYMjCIUaJeGBRXP7CN24SiNSG+wdDzgwvxWbl16wMVtWiJTcMt" crossorigin="anonymous">
-<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" integrity="sha384-IrMr0LFnIMa9H6HhC5VVqVuWNEIwspnRLKQc0SUyPj4Cy4s02DiWDZEoJOo5WNK6" crossorigin="anonymous" />
 <style>
     :root {
       --primary-color: #2563eb;
@@ -297,7 +295,7 @@
 
     <!-- Registration Form -->
     <div class="registration-container">
-      <form id="frm_register" action="">
+      <form id="frm_register" method="post" novalidate>
         <!-- Section 1: Verifikasi -->
         <div class="section-header">
           <div class="icon">
@@ -319,13 +317,54 @@
           </div>
           <div class="col-md-6">
             <div class="form-group">
+              <label class="form-label required">Jenis Anggota</label>
+              <select class="form-select" name="JenisAnggota_id" id="JenisAnggota_id" required>
+                <option value="" disabled selected>Pilih Jenis Anggota</option>
+                <?php foreach (get_ref_table('jenis_anggota', 'id, jenisanggota, MasaBerlakuAnggota', null, 'data') as $row) : ?>
+                  <option value="<?= esc($row->id, 'attr') ?>" data-days="<?= esc($row->MasaBerlakuAnggota, 'attr') ?>">
+                    <?= esc($row->jenisanggota) ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
               <label class="form-label required">Jenis Identitas</label>
-              <select class="form-control" name="IdentityType_id" id="IdentityType_id" placeholder="Jenis identitas">
+              <select class="form-select" name="IdentityType_id" id="IdentityType_id" required>
                 <option value="" disabled selected>Jenis identitas</option>
                 <?php foreach (get_table('master_jenis_identitas', 'id, Nama', null, 'data') as $row) : ?>
                   <option value="<?= $row->id ?>" <?= set_select('IdentityType_id', $row->id) ?>><?= $row->Nama ?></option>
                 <?php endforeach; ?>
               </select>
+            </div>
+          </div>
+        </div>
+
+        <?php
+          $memberNumberSetting = db_connect()->table('settingparameters')
+            ->where('Name', 'TipeNomorAnggota')->get()->getRow();
+          $memberNumberType = $memberNumberSetting->Value ?? 'Manual';
+        ?>
+        <div class="row">
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="form-label<?= $memberNumberType === 'Manual' ? ' required' : '' ?>">Nomor Anggota</label>
+              <input type="text" name="MemberNo" id="MemberNo" class="form-control"
+                placeholder="<?= $memberNumberType === 'Manual' ? 'Masukkan Nomor Anggota' : 'Dibuat otomatis' ?>"
+                <?= $memberNumberType === 'Manual' ? 'required' : 'readonly' ?>>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="form-label">Tanggal Pendaftaran</label>
+              <input type="date" name="RegisterDate" id="RegisterDate" class="form-control" value="<?= date('Y-m-d') ?>" readonly>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="form-label">Masa Berlaku</label>
+              <input type="datetime-local" name="EndDate" id="EndDate" class="form-control" readonly>
             </div>
           </div>
         </div>
@@ -390,13 +429,13 @@
           <div class="col-md-4">
             <div class="form-group">
               <label class="form-label required">Tanggal Lahir</label>
-              <input type="date" name="DateOfBirth" id="DateOfBirth" class="form-control" required>
+              <input type="date" name="DateOfBirth" id="DateOfBirth" class="form-control" max="<?= date('Y-m-d') ?>" required>
             </div>
           </div>
           <div class="col-md-4">
             <div class="form-group">
               <label class="form-label required">Jenis Kelamin</label>
-              <select class="form-select" name="Sex_id" id="Sex_id">
+              <select class="form-select" name="Sex_id" id="Sex_id" required>
                 <option value="">Pilih Jenis Kelamin</option>
                 <option value="1">Laki-laki</option>
                 <option value="2">Perempuan</option>
@@ -427,7 +466,7 @@
             <div class="col-md-6 col-lg-3">
               <div class="form-group">
                 <label class="form-label required">Provinsi</label>
-                <select class="form-select" id="Province" name="Province">
+                <select class="form-select" id="Province" name="Province" required>
                   <option value="">Pilih Provinsi</option>
                 </select>
               </div>
@@ -435,7 +474,7 @@
             <div class="col-md-6 col-lg-3">
               <div class="form-group">
                 <label class="form-label required">Kota</label>
-                <select class="form-select" id="City" name="City">
+                <select class="form-select" id="City" name="City" required disabled>
                   <option value="">Pilih Kota</option>
                 </select>
               </div>
@@ -443,7 +482,7 @@
             <div class="col-md-6 col-lg-3">
               <div class="form-group">
                 <label class="form-label required">Kecamatan</label>
-                <select class="form-select" id="District" name="Kecamatan">
+                <select class="form-select" id="District" name="Kecamatan" required disabled>
                   <option value="">Pilih Kecamatan</option>
                 </select>
               </div>
@@ -451,7 +490,7 @@
             <div class="col-md-6 col-lg-3">
               <div class="form-group">
                 <label class="form-label required">Kelurahan</label>
-                <select class="form-select" id="SubDistrict" name="Kelurahan">
+                <select class="form-select" id="SubDistrict" name="Kelurahan" required disabled>
                   <option value="">Pilih Kelurahan</option>
                 </select>
               </div>
@@ -490,7 +529,7 @@
             <div class="col-md-6 col-lg-3">
               <div class="form-group">
                 <label class="form-label required">Provinsi</label>
-                <select class="form-select" id="ProvinceNow" name="ProvinceNow">
+                <select class="form-select" id="ProvinceNow" name="ProvinceNow" required>
                   <option value="">Pilih Provinsi</option>
                 </select>
               </div>
@@ -498,7 +537,7 @@
             <div class="col-md-6 col-lg-3">
               <div class="form-group">
                 <label class="form-label required">Kota</label>
-                <select class="form-select" id="CityNow" name="CityNow">
+                <select class="form-select" id="CityNow" name="CityNow" required disabled>
                   <option value="">Pilih Kota</option>
                 </select>
               </div>
@@ -506,7 +545,7 @@
             <div class="col-md-6 col-lg-3">
               <div class="form-group">
                 <label class="form-label required">Kecamatan</label>
-                <select class="form-select" id="DistrictNow" name="KecamatanNow">
+                <select class="form-select" id="DistrictNow" name="KecamatanNow" required disabled>
                   <option value="">Pilih Kecamatan</option>
                 </select>
               </div>
@@ -514,7 +553,7 @@
             <div class="col-md-6 col-lg-3">
               <div class="form-group">
                 <label class="form-label required">Kelurahan</label>
-                <select class="form-select" id="SubDistrictNow" name="KelurahanNow">
+                <select class="form-select" id="SubDistrictNow" name="KelurahanNow" required disabled>
                   <option value="">Pilih Kelurahan</option>
                 </select>
               </div>
@@ -532,7 +571,7 @@
 
         <div class="checkbox-group">
           <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="check_agree" required>
+            <input class="form-check-input" type="checkbox" id="check_agree" name="check_agree" value="1" required>
             <label class="form-check-label" for="check_agree">
               <i class="fas fa-check-circle me-2"></i>
               Saya menyatakan bahwa data yang diisi adalah benar dan dapat dipertanggungjawabkan
@@ -548,7 +587,6 @@
         </div>
 
         <div id="msgSubmit" class="text-center mt-3 d-none"></div>
-        <input type="hidden" value="0" name="IsKeranjang" id="IsKeranjang" class="form-control">
       </form>
     </div>
 
@@ -565,102 +603,180 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('script') ?>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js" integrity="sha384-JnbsSLBmv2/R0fUmF2XYIcAEMPHEAO51Gitn9IjL4l89uFTIgtLF1+jqIqqd9FSk" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js" integrity="sha384-I4Qw/vWb/sK/7VwepTtkaq636YLYClbEgEwKp3ueUCvjiLFrcoKUFAY5mOl40Fj3" crossorigin="anonymous"></script>
 
 <script>
+    let isIdentityVerified = false;
+    let verifiedIdentityNo = '';
+    let verifiedEmail = '';
+
     // Initialize form
     $(document).ready(function() {
-      // Initialize Select2
-      $('.form-select').select2({
-        theme: 'bootstrap-5',
-        width: '100%'
-      });
-
       // Progress tracking
       updateProgress();
+      updateMemberEndDate();
     });
 
-    /* Axios - Original API calls */
+    function updateMemberEndDate() {
+      const selected = $('#JenisAnggota_id option:selected');
+      const days = parseInt(selected.data('days'), 10);
+      const registerDate = $('#RegisterDate').val();
+      if (!registerDate || Number.isNaN(days)) {
+        $('#EndDate').val('');
+        return;
+      }
+
+      const endDate = new Date(`${registerDate}T00:00:00`);
+      endDate.setDate(endDate.getDate() + days);
+      const pad = value => String(value).padStart(2, '0');
+      $('#EndDate').val(`${endDate.getFullYear()}-${pad(endDate.getMonth() + 1)}-${pad(endDate.getDate())}T23:59`);
+    }
+
+    $('#JenisAnggota_id').on('change', updateMemberEndDate);
+
+    const resetSelect = (dom, label, disabled = true) => {
+      $(dom)
+        .html(`<option value="">${label}</option>`)
+        .val('')
+        .removeClass('is-valid is-invalid')
+        .prop('disabled', disabled);
+    };
+
     const getData = async (url, dom, selected = false) => {
-      await axios.get(url).then(res => {
-        $(dom).html('<option value="">Loading...</option>');
-        var output = '<option value="">-Select-</option>';
+      $(dom).html('<option value="">Memuat...</option>').prop('disabled', true);
+
+      try {
+        const res = await axios.get(url);
+        let output = '<option value="">- Pilih -</option>';
         $.each(res.data, function(key, val) {
-          output += '<option value="' + val.code + '" data-text="' + val.name + '">' + val.name + '</option>';
+          const option = $('<option>', {
+            value: val.code,
+            text: val.name
+          });
+          output += option.prop('outerHTML');
         });
-        $(dom).html(output);
-        if (selected) {
-          $(dom).val(selected);
+        $(dom).html(output).prop('disabled', false);
+        if (selected !== false && selected !== null && selected !== '') {
+          $(dom).val(String(selected));
         }
-      }).catch(err => {
-        console.error(err)
-      });
+        return true;
+      } catch (err) {
+        console.error(err);
+        $(dom).html('<option value="">Data gagal dimuat</option>').prop('disabled', true);
+        return false;
+      }
     }
 
     // Load initial data
     const baseUrl = '<?php echo base_url(); ?>';
     getData(`${baseUrl}/api/region/province`, `#Province`);
 
-    $('#Province').change(function(e) {
-      var code = $(this).val();
-      getData(`${baseUrl}/api/region/city/${code}`, `#City`);
+    $('#Province').change(async function() {
+      const code = $(this).val();
+      resetSelect('#City', 'Pilih Kota');
+      resetSelect('#District', 'Pilih Kecamatan');
+      resetSelect('#SubDistrict', 'Pilih Kelurahan');
+      if (code) await getData(`${baseUrl}/api/region/city/${code}`, '#City');
     });
 
-    $('#City').change(function(e) {
-      var code = $(this).val();
-      getData(`${baseUrl}/api/region/district/${code}`, `#District`);
+    $('#City').change(async function() {
+      const code = $(this).val();
+      resetSelect('#District', 'Pilih Kecamatan');
+      resetSelect('#SubDistrict', 'Pilih Kelurahan');
+      if (code) await getData(`${baseUrl}/api/region/district/${code}`, '#District');
     });
 
-    $('#District').change(function(e) {
-      var code = $(this).val();
-      getData(`${baseUrl}/api/region/sub_district/${code}`, `#SubDistrict`);
+    $('#District').change(async function() {
+      const code = $(this).val();
+      resetSelect('#SubDistrict', 'Pilih Kelurahan');
+      if (code) await getData(`${baseUrl}/api/region/sub_district/${code}`, '#SubDistrict');
     });
 
     getData(`${baseUrl}/api/region/province`, `#ProvinceNow`);
 
-    $('#ProvinceNow').change(function(e) {
-      var code = $(this).val();
-      getData(`${baseUrl}/api/region/city/${code}`, `#CityNow`);
+    $('#ProvinceNow').change(async function() {
+      const code = $(this).val();
+      resetSelect('#CityNow', 'Pilih Kota');
+      resetSelect('#DistrictNow', 'Pilih Kecamatan');
+      resetSelect('#SubDistrictNow', 'Pilih Kelurahan');
+      if (code) await getData(`${baseUrl}/api/region/city/${code}`, '#CityNow');
     });
 
-    $('#CityNow').change(function(e) {
-      var code = $(this).val();
-      getData(`${baseUrl}/api/region/district/${code}`, `#DistrictNow`);
+    $('#CityNow').change(async function() {
+      const code = $(this).val();
+      resetSelect('#DistrictNow', 'Pilih Kecamatan');
+      resetSelect('#SubDistrictNow', 'Pilih Kelurahan');
+      if (code) await getData(`${baseUrl}/api/region/district/${code}`, '#DistrictNow');
     });
 
-    $('#DistrictNow').change(function(e) {
-      var code = $(this).val();
-      getData(`${baseUrl}/api/region/sub_district/${code}`, `#SubDistrictNow`);
+    $('#DistrictNow').change(async function() {
+      const code = $(this).val();
+      resetSelect('#SubDistrictNow', 'Pilih Kelurahan');
+      if (code) await getData(`${baseUrl}/api/region/sub_district/${code}`, '#SubDistrictNow');
     });
 
     // Copy address functionality
-    $("#check_copy").change(function(e) {
+    $("#check_copy").change(async function() {
       if (this.checked) {
-        var Address = $('#Address').val();
-        var Province = $('#Province').val();
-        var City = $('#City').val();
-        var District = $('#District').val();
-        var SubDistrict = $('#SubDistrict').val();
+        const Address = $('#Address').val();
+        const Province = $('#Province').val();
+        const City = $('#City').val();
+        const District = $('#District').val();
+        const SubDistrict = $('#SubDistrict').val();
 
         $('#AddressNow').val(Address);
-        getData(`${baseUrl}/api/region/province`, `#ProvinceNow`, Province);
-        getData(`${baseUrl}/api/region/city/${Province}`, `#CityNow`, City);
-        getData(`${baseUrl}/api/region/district/${City}`, `#DistrictNow`, District);
-        getData(`${baseUrl}/api/region/sub_district/${District}`, `#SubDistrictNow`, SubDistrict);
+        resetSelect('#CityNow', 'Pilih Kota');
+        resetSelect('#DistrictNow', 'Pilih Kecamatan');
+        resetSelect('#SubDistrictNow', 'Pilih Kelurahan');
+        await getData(`${baseUrl}/api/region/province`, '#ProvinceNow', Province);
+        if (Province) await getData(`${baseUrl}/api/region/city/${Province}`, '#CityNow', City);
+        if (City) await getData(`${baseUrl}/api/region/district/${City}`, '#DistrictNow', District);
+        if (District) await getData(`${baseUrl}/api/region/sub_district/${District}`, '#SubDistrictNow', SubDistrict);
       } else {
         $('#AddressNow').val('');
-        $('#ProvinceNow').empty();
-        $('#CityNow').empty();
-        $('#DistrictNow').empty();
-        $('#SubDistrictNow').empty();
+        resetSelect('#CityNow', 'Pilih Kota');
+        resetSelect('#DistrictNow', 'Pilih Kecamatan');
+        resetSelect('#SubDistrictNow', 'Pilih Kelurahan');
+        await getData(`${baseUrl}/api/region/province`, '#ProvinceNow');
       }
+    });
+
+    $('#Address, #Province, #City, #District, #SubDistrict').on('input change', function() {
+      if ($('#check_copy').is(':checked')) {
+        $('#check_copy').prop('checked', false).trigger('change');
+      }
+    });
+
+    function resetVerificationState() {
+      isIdentityVerified = false;
+      verifiedIdentityNo = '';
+      verifiedEmail = '';
+      $('#btnCheck')
+        .prop('disabled', false)
+        .removeClass('btn-success')
+        .addClass('btn-outline-primary')
+        .html('<i class="fas fa-search me-2"></i>Verifikasi Data');
+      updateProgress(33);
+    }
+
+    $('#IdentityNo, #Email').on('input', function() {
+      if (isIdentityVerified) resetVerificationState();
     });
 
     // Check button
     $("#btnCheck").click(function() {
-      var url = `${baseUrl}/api/member/check`;
-      var data_post = 'email=' + $("#Email").val() + '&username=' + $("#IdentityNo").val();
+      const identityInput = document.getElementById('IdentityNo');
+      const emailInput = document.getElementById('Email');
+      if (!identityInput.checkValidity() || !emailInput.checkValidity()) {
+        identityInput.reportValidity();
+        emailInput.reportValidity();
+        return false;
+      }
+
+      const identityNo = identityInput.value.trim();
+      const email = emailInput.value.trim();
+      const url = `${baseUrl}/api/member/check`;
+      const data_post = { email: email, username: identityNo };
 
       $("#btnCheck").html('<i class="fa fa-spinner fa-spin loading"></i> Mohon menunggu...');
       $("#btnCheck").attr('disabled', true);
@@ -672,17 +788,22 @@
         })
         .done(function(res) {
           if (res.error == false) {
+            isIdentityVerified = true;
+            verifiedIdentityNo = identityNo;
+            verifiedEmail = email;
+            $('#btnCheck')
+              .prop('disabled', true)
+              .html('<i class="fas fa-check me-2"></i>Terverifikasi')
+              .removeClass('btn-outline-primary')
+              .addClass('btn-success');
+            updateProgress(66);
+
             Swal.fire({
               title: 'Yeay',
               html: res.message,
               icon: 'success',
               showConfirmButton: false,
               timer: 5000,
-            }).then(() => {
-              $("#btnCheck").attr('disabled', false);
-              $("#btnCheck").html('<i class="fas fa-check me-2"></i>Terverifikasi');
-              $("#btnCheck").removeClass('btn-outline-primary').addClass('btn-success');
-              updateProgress(66);
             });
           } else {
             formError();
@@ -717,11 +838,21 @@
     $("#frm_register").on("submit", function(event) {
       event.preventDefault();
 
-      if (!$('#check_agree').is(':checked')) {
+      const formElement = this;
+      if (!formElement.checkValidity()) {
+        formElement.classList.add('was-validated');
+        formElement.reportValidity();
+        formError();
+        return false;
+      }
+
+      if (!isIdentityVerified ||
+          verifiedIdentityNo !== $('#IdentityNo').val().trim() ||
+          verifiedEmail !== $('#Email').val().trim()) {
         formError();
         Swal.fire({
-          title: 'Peringatan',
-          text: 'Anda harus menyetujui pernyataan terlebih dahulu',
+          title: 'Verifikasi diperlukan',
+          text: 'Silakan verifikasi Nomor Identitas dan Email sebelum mendaftar.',
           icon: 'warning',
           showConfirmButton: true,
         });
@@ -749,12 +880,23 @@
             updateProgress(100);
             Swal.fire({
               title: 'Berhasil',
-              html: 'Pendaftaran berhasil.<br>Silakan cek email Anda untuk verifikasi akun!',
+              html: res.message || 'Pendaftaran berhasil. Silakan cek email Anda untuk verifikasi akun!',
               icon: 'success',
               showConfirmButton: true,
               confirmButtonText: 'OK',
             }).then(() => {
               $('#frm_register')[0].reset();
+              $('#frm_register').removeClass('was-validated');
+              $('#frm_register').find('.is-valid, .is-invalid').removeClass('is-valid is-invalid');
+              resetVerificationState();
+              resetSelect('#City', 'Pilih Kota');
+              resetSelect('#District', 'Pilih Kecamatan');
+              resetSelect('#SubDistrict', 'Pilih Kelurahan');
+              resetSelect('#CityNow', 'Pilih Kota');
+              resetSelect('#DistrictNow', 'Pilih Kecamatan');
+              resetSelect('#SubDistrictNow', 'Pilih Kelurahan');
+              getData(`${baseUrl}/api/region/province`, '#Province');
+              getData(`${baseUrl}/api/region/province`, '#ProvinceNow');
               updateProgress(33);
               $('#btnSubmit').attr('disabled', false);
               $('#btnSubmit').html('<i class="fas fa-user-plus me-2"></i>Daftar Sebagai Anggota');
@@ -808,7 +950,7 @@
     }
 
     // Real-time validation
-    $('input[required]:not(input[type=checkbox], select[required], textarea[required]').on('blur', function(e) {
+    $('input[required]:not([type=checkbox]), select[required], textarea[required]').on('blur change', function(e) {
       if ($(this).val()) {
         if (e.target.type === 'email') {
           const email = $(this).val();
@@ -835,7 +977,7 @@
     });
 
     $('input[type=tel]').on('input', function() {
-      this.value = this.value.replace(/[^0-9.]/g, '');
+      this.value = this.value.replace(/\D/g, '');
     });
 </script>
 <?= $this->endSection() ?>

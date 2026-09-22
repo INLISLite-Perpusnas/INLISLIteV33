@@ -24,7 +24,7 @@
                                             </option>
 
                                             <?php foreach (get_ref_table('jenis_anggota', 'id, jenisanggota, MasaBerlakuAnggota', null, 'data') as $row) : ?>
-                                                <option data-date="<?= $row->MasaBerlakuAnggota ?>" value="<?= $row->id ?>" <?= set_select('JenisAnggota_id', $row->id) ?>><?= $row->jenisanggota ?></option>
+                                                <option data-date="<?= esc($row->MasaBerlakuAnggota, 'attr') ?>" value="<?= esc($row->id, 'attr') ?>" <?= set_select('JenisAnggota_id', $row->id) ?>><?= esc($row->jenisanggota) ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
@@ -54,7 +54,7 @@
                                             Status Anggota
                                         </option>
                                         <?php foreach (get_ref_table('status_anggota', 'id, Nama', null, 'data') as $row) : ?>
-                                            <option value="<?= $row->id ?>" <?= set_select('StatusAnggota_id', $row->id) ?>><?= $row->Nama ?></option>
+                                            <option value="<?= esc($row->id, 'attr') ?>" <?= set_select('StatusAnggota_id', $row->id) ?>><?= esc($row->Nama) ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
@@ -66,7 +66,7 @@
                                         <select class="form-control select2" name="CategoryLoan_id[]" multiple="multiple" style="width:100%" required>
                                             <option value="">-Pilih-</option>
                                             <?php foreach (get_ref_table('collectioncategorys', 'id, Name', null, 'data') as $row) : ?>
-                                                <option value="<?= $row->id ?>" <?= set_select('CategoryLoan_id[]', $row->id) ?>><?= $row->Name ?></option>
+                                                <option value="<?= esc($row->id, 'attr') ?>" <?= set_select('CategoryLoan_id[]', $row->id) ?>><?= esc($row->Name) ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
@@ -79,7 +79,7 @@
                                         <select class="form-control select2" name="LocationLoan_id[]" multiple="multiple" style="width:100%" required>
                                             <option value="">-Pilih-</option>
                                             <?php foreach (get_ref_table('location_library', 'ID, Name') as $row) : ?>
-                                                <option value="<?= $row->ID ?>" <?= set_select('LocationLoan_id[]', $row->ID) ?>><?= $row->Name ?></option>
+                                                <option value="<?= esc($row->ID, 'attr') ?>" <?= set_select('LocationLoan_id[]', $row->ID) ?>><?= esc($row->Name) ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>

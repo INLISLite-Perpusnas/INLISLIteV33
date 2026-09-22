@@ -1,6 +1,9 @@
 <?= $this->extend('App\Views\layout\opac\layout'); ?>
 
 <?= $this->section('style') ?>
+<?php if (!empty($banners[0]->file_cover)): ?>
+<link rel="preload" as="image" href="<?= base_url('uploads/banner/' . rawurlencode($banners[0]->file_cover)) ?>" fetchpriority="high">
+<?php endif; ?>
 <style>
     /* Hero Section (Murni Gambar) */
     /* Menjadi: */
@@ -9,13 +12,14 @@
         position: relative;
         overflow: hidden;
         background-color: #e2e8f0;
+        aspect-ratio: 3229 / 937;
     }
 
     .hero-bg {
         width: 100%;
-        height: auto;
+        height: 100%;
         display: block;
-        object-fit: contain;
+        object-fit: cover;
     }
 
     /* Overlapping Search Box */
@@ -63,11 +67,13 @@
 
     /* Image Utils */
     .book-cover {
-        height: 240px;
-        object-fit: contain;
-        width: 100%;
-        background-color: #e2e8f0;
-    }
+    aspect-ratio: 2 / 3;      /* kunci rasio portrait sesuai cover buku */
+    height: auto;
+    object-fit: cover;         /* crop rapi tanpa letterbox, ukuran seragam */
+    object-position: center;
+    width: 100%;
+    background-color: #e2e8f0;
+}
 
     .news-cover {
         height: 100px;
@@ -184,10 +190,7 @@
     .popular-highlight-bg {
         position: absolute;
         inset: 0;
-        background-size: cover;
-        background-position: center;
-        filter: blur(20px) brightness(0.65) saturate(1.2);
-        transform: scale(1.15);
+        background: linear-gradient(135deg, #1b3878, #0f172a);
     }
 
     .popular-highlight-cover {
@@ -217,6 +220,23 @@
     .section-tone-2 {
         background-color: var(--slate-100);
     }
+
+    .search-suggestions {
+        max-height: 250px;
+        overflow-y: auto;
+        top: 100%;
+        border-radius: 1rem;
+    }
+
+    .suggestion-item {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .suggestion-item:hover,
+    .suggestion-item:focus {
+        background-color: var(--slate-100);
+    }
 </style>
 <?= $this->endSection() ?>
 
@@ -224,32 +244,36 @@
 
 <section class="hero-section">
     <?php if (!empty($banners)): ?>
-        <div id="heroBannerCarousel" class="carousel slide h-100" data-bs-ride="carousel" data-bs-interval="4000">
+        <div id="heroBannerCarousel" class="carousel slide h-100">
             <div class="carousel-inner h-100">
                 <?php foreach ($banners as $i => $b): ?>
                     <div class="carousel-item h-100 <?= $i === 0 ? 'active' : '' ?>">
                         <img src="<?= base_url('uploads/banner/' . esc($b->file_cover)) ?>"
                             alt="Banner <?= $i + 1 ?>"
-                            class="hero-bg">
+                            class="hero-bg"
+                            width="1600"
+                            height="465"
+                            decoding="async"
+                            <?= $i === 0 ? 'fetchpriority="high"' : 'loading="lazy"' ?>>
                     </div>
                 <?php endforeach; ?>
             </div>
             <?php if (count($banners) > 1): ?>
-                <button class="carousel-control-prev" type="button" data-bs-target="#heroBannerCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon"></span>
+                <button class="carousel-control-prev" type="button" data-bs-target="#heroBannerCarousel" data-bs-slide="prev" aria-label="Banner sebelumnya">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                 </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#heroBannerCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon"></span>
+                <button class="carousel-control-next" type="button" data-bs-target="#heroBannerCarousel" data-bs-slide="next" aria-label="Banner berikutnya">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
                 </button>
                 <div class="carousel-indicators">
                     <?php foreach ($banners as $i => $b): ?>
-                        <button type="button" data-bs-target="#heroBannerCarousel" data-bs-slide-to="<?= $i ?>" <?= $i === 0 ? 'class="active"' : '' ?>></button>
+                        <button type="button" data-bs-target="#heroBannerCarousel" data-bs-slide-to="<?= $i ?>" aria-label="Tampilkan banner <?= $i + 1 ?>" <?= $i === 0 ? 'class="active" aria-current="true"' : '' ?>></button>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
         </div>
     <?php else: ?>
-        <img src="<?= base_url('assets/img/default-banner.jpg') ?>" alt="Banner Perpustakaan" class="hero-bg">
+        <img src="<?= base_url('assets/img/Logo-Inlislite.webp') ?>" alt="Banner Perpustakaan" class="hero-bg" width="1600" height="465" fetchpriority="high" decoding="async">
     <?php endif; ?>
 </section>
 
@@ -261,6 +285,7 @@
                     <form id="searchForm" action="<?= base_url('opac') ?>" method="GET" class="row g-2">
                         <div class="col-md-9 position-relative search-input-group">
                             <i class="fa-solid fa-search"></i>
+                            <label for="searchInput" class="visually-hidden">Cari koleksi perpustakaan</label>
                             <input type="text" id="searchInput" name="search" class="form-control form-control-lg py-3" placeholder="Cari judul buku, penulis, atau penerbit..." autocomplete="off">
                         </div>
                         <div class="col-md-3">
@@ -339,11 +364,15 @@
             <div class="row g-4">
                 <div class="col-lg-6">
                     <a href="<?= base_url('opac/detail/' . $highlightBook->ID) ?>" class="card border-0 rounded-2xl overflow-hidden text-decoration-none shadow-sm hover-card position-relative text-white h-100 popular-highlight-card">
-                        <div class="popular-highlight-bg" style="background-image: url('<?= $highlightThumb ?>');"></div>
+                        <div class="popular-highlight-bg"></div>
                         <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
                             <img src="<?= $highlightThumb ?>"
                                  class="popular-highlight-cover"
                                  alt="<?= esc($highlightBook->Title) ?>"
+                                 width="400"
+                                 height="600"
+                                 loading="lazy"
+                                 decoding="async"
                                  onerror="this.onerror=null; this.src='<?= $defaultCover ?>';">
                         </div>
                         <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(to top, rgba(15,23,42,0.9) 0%, rgba(15,23,42,0.15) 55%, rgba(15,23,42,0.35) 100%); z-index: 1;"></div>
@@ -364,11 +393,11 @@
                         ?>
                             <a href="<?= base_url('opac/detail/' . $book->ID) ?>" class="d-flex gap-3 text-decoration-none text-dark hover-card p-3 rounded-xl border border-light mb-3 bg-white shadow-sm h-100 align-items-center">
                                 <div class="flex-shrink-0">
-                                    <img src="<?= $thumbUrl ?>" onerror="this.onerror=null; this.src='<?= $defaultCover ?>';" class="popular-list-cover">
+                                    <img src="<?= $thumbUrl ?>" onerror="this.onerror=null; this.src='<?= $defaultCover ?>';" class="popular-list-cover" alt="Sampul <?= esc($book->Title) ?>" width="90" height="120" loading="lazy" decoding="async">
                                 </div>
                                 <div>
                                     <span class="badge bg-danger-subtle text-danger fw-semibold small mb-1"><i class="fa-solid fa-fire me-1"></i>Populer</span>
-                                    <h6 class="fw-bold mb-1 line-clamp-2 text-dark" style="line-height: 1.4;"><?= esc($book->Title) ?></h6>
+                                    <h4 class="fs-6 fw-bold mb-1 line-clamp-2 text-dark" style="line-height: 1.4;"><?= esc($book->Title) ?></h4>
                                     <span class="text-secondary small d-block"><?= esc($book->Author ?: 'Anonim') ?></span>
                                 </div>
                             </a>
@@ -412,9 +441,10 @@
                                      width="200"
                                      height="340"
                                      loading="lazy"
+                                     decoding="async"
                                      onerror="this.onerror=null; this.src='<?= $defaultCover ?>';">
                                 <div class="card-body d-flex flex-column p-3">
-                                    <h6 class="card-title fw-bold fs-6 mb-1 line-clamp-2" title="<?= esc($book->Title) ?>"><?= esc($book->Title) ?></h6>
+                                    <h4 class="card-title fw-bold fs-6 mb-1 line-clamp-2" title="<?= esc($book->Title) ?>"><?= esc($book->Title) ?></h4>
                                     <p class="card-text text-secondary small mb-3 text-truncate" title="<?= esc($book->Author) ?>">
                                         <?= esc($book->Author ?: 'Anonim') ?>
                                     </p>
@@ -465,9 +495,10 @@
                                      width="200"
                                      height="340"
                                      loading="lazy"
+                                     decoding="async"
                                      onerror="this.onerror=null; this.src='<?= $defaultCover ?>';">
                                 <div class="card-body d-flex flex-column p-3">
-                                    <h6 class="card-title fw-bold fs-6 mb-1 line-clamp-2" title="<?= esc($book->Title) ?>"><?= esc($book->Title) ?></h6>
+                                    <h4 class="card-title fw-bold fs-6 mb-1 line-clamp-2" title="<?= esc($book->Title) ?>"><?= esc($book->Title) ?></h4>
                                     <p class="card-text text-secondary small mb-3 text-truncate" title="<?= esc($book->Author) ?>">
                                         <?= esc($book->Author ?: 'Anonim') ?>
                                     </p>
@@ -509,10 +540,11 @@
                                  alt="<?= esc($book->Title) ?>"
                                  width="200"
                                  height="340"
-                                 <?= $i > 0 ? 'loading="lazy"' : 'fetchpriority="high"' ?>
+                                 loading="lazy"
+                                 decoding="async"
                                  onerror="this.onerror=null; this.src='<?= $defaultCover ?>';">
                             <div class="card-body d-flex flex-column p-3">
-                                <h6 class="card-title fw-bold fs-6 mb-1 line-clamp-2" title="<?= esc($book->Title) ?>"><?= esc($book->Title) ?></h6>
+                                <h4 class="card-title fw-bold fs-6 mb-1 line-clamp-2" title="<?= esc($book->Title) ?>"><?= esc($book->Title) ?></h4>
                                 <p class="card-text text-secondary small mb-3 text-truncate" title="<?= esc($book->Author) ?>">
                                     <?= esc($book->Author ?: 'Anonim') ?>
                                 </p>
@@ -549,10 +581,14 @@
                 <div class="col-lg-6">
                     <?php
                     $highlight = $news[0];
-                    $highlightImg = base_url('uploads/berita/' . ($highlight['file_cover'] ?: 'default.jpg'));
+                    $newsFallback = base_url('assets/img/default-cover.webp');
+                    $highlightCover = basename((string) ($highlight['file_cover'] ?? ''));
+                    $highlightImg = $highlightCover !== '' && is_file(FCPATH . 'uploads/berita/' . $highlightCover)
+                        ? base_url('uploads/berita/' . $highlightCover)
+                        : $newsFallback;
                     ?>
                     <a href="<?= base_url('news/detail/' . $highlight['id'] . '/' . $highlight['slug']) ?>" class="card border-0 rounded-2xl overflow-hidden text-decoration-none shadow-sm hover-card position-relative text-white h-100">
-                        <img src="<?= $highlightImg ?>" onerror="this.src='https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=1350&q=80'" class="news-main-cover">
+                        <img src="<?= $highlightImg ?>" onerror="this.onerror=null;this.src='<?= $newsFallback ?>'" class="news-main-cover" alt="<?= esc($highlight['title']) ?>" width="700" height="380" loading="lazy" decoding="async">
                         <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(to top, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.4) 50%, transparent 100%);"></div>
 
                         <div class="position-absolute bottom-0 start-0 p-4 w-100">
@@ -567,15 +603,18 @@
                     <div class="d-flex flex-column h-100 justify-content-between">
                         <?php for ($i = 1; $i < count($news) && $i <= 3; $i++):
                             $article = $news[$i];
-                            $imgFile = base_url('uploads/berita/' . ($article['file_cover'] ?: 'default.jpg'));
+                            $articleCover = basename((string) ($article['file_cover'] ?? ''));
+                            $imgFile = $articleCover !== '' && is_file(FCPATH . 'uploads/berita/' . $articleCover)
+                                ? base_url('uploads/berita/' . $articleCover)
+                                : $newsFallback;
                         ?>
                             <a href="<?= base_url('news/detail/' . $article['id'] . '/' . $article['slug']) ?>" class="d-flex gap-3 text-decoration-none text-dark hover-card p-3 rounded-xl border border-light mb-3 bg-white shadow-sm h-100 align-items-center">
                                 <div class="flex-shrink-0" style="width: 120px;">
-                                    <img src="<?= $imgFile ?>" onerror="this.src='https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=500&q=60'" class="news-cover">
+                                    <img src="<?= $imgFile ?>" onerror="this.onerror=null;this.src='<?= $newsFallback ?>'" class="news-cover" alt="<?= esc($article['title']) ?>" width="120" height="100" loading="lazy" decoding="async">
                                 </div>
                                 <div>
                                     <small class="text-secondary fw-semibold d-block mb-1"><i class="fa-regular fa-calendar me-1"></i> <?= date('d M Y', strtotime($article['created_at'])) ?></small>
-                                    <h6 class="fw-bold mb-1 line-clamp-2 text-dark" style="line-height: 1.4;"><?= esc($article['title']) ?></h6>
+                                    <h4 class="fs-6 fw-bold mb-1 line-clamp-2 text-dark" style="line-height: 1.4;"><?= esc($article['title']) ?></h4>
                                     <span class="text-brand small fw-bold mt-2 d-inline-block">Baca Selengkapnya</span>
                                 </div>
                             </a>
@@ -601,11 +640,7 @@
 
 <?= $this->section('script') ?>
 <script>
-    $(document).ready(function() {
-
-        // Setup generik untuk slider kartu buku (dipakai oleh Sering Dipinjam
-        // dan Sering Dibaca di Tempat). Koleksi Populer kini pakai layout
-        // highlight + list statis seperti section Berita, tanpa slider.
+    (() => {
         function initCardSlider(sliderId, prevId, nextId) {
             const slider = document.getElementById(sliderId);
             const prev = document.getElementById(prevId);
@@ -615,18 +650,12 @@
 
             const scrollStep = () => (slider.querySelector('.popular-card-item')?.offsetWidth || 200) * 2;
 
-            prev.addEventListener('click', function() {
-                slider.scrollBy({
-                    left: -scrollStep(),
-                    behavior: 'smooth'
-                });
+            prev.addEventListener('click', () => {
+                slider.scrollBy({ left: -scrollStep(), behavior: 'smooth' });
             });
 
-            next.addEventListener('click', function() {
-                slider.scrollBy({
-                    left: scrollStep(),
-                    behavior: 'smooth'
-                });
+            next.addEventListener('click', () => {
+                slider.scrollBy({ left: scrollStep(), behavior: 'smooth' });
             });
 
             const toggleNavButtons = () => {
@@ -639,36 +668,29 @@
             window.addEventListener('resize', toggleNavButtons);
         }
 
-        // Slider Sering Dipinjam
         initCardSlider('seringDipinjamSlider', 'seringDipinjamSliderPrev', 'seringDipinjamSliderNext');
-
-        // Slider Sering Dibaca di Tempat
         initCardSlider('seringDibacaSlider', 'seringDibacaSliderPrev', 'seringDibacaSliderNext');
 
-        // Counter Animation for Statistics
         function animateCounters() {
-            $('.stat-number').each(function() {
-                const $this = $(this);
-                const textVal = $this.text().replace(/[,.]/g, '');
-                const target = parseInt(textVal);
+            document.querySelectorAll('.stat-number').forEach((element) => {
+                const target = Number.parseInt(element.textContent.replace(/[,.]/g, ''), 10);
 
-                if (isNaN(target) || target === 0) return;
+                if (Number.isNaN(target) || target === 0) return;
 
                 const increment = Math.ceil(target / 40);
                 let current = 0;
 
-                const timer = setInterval(function() {
+                const timer = window.setInterval(() => {
                     current += increment;
                     if (current >= target) {
                         current = target;
-                        clearInterval(timer);
+                        window.clearInterval(timer);
                     }
-                    $this.text(current.toLocaleString('id-ID'));
+                    element.textContent = current.toLocaleString('id-ID');
                 }, 40);
             });
         }
 
-        // Trigger animasi angka jika box statistik masuk ke layar viewport
         if ('IntersectionObserver' in window) {
             const statsObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
@@ -687,73 +709,88 @@
             animateCounters();
         }
 
-        // --- Live Search Auto Suggestion ---
+        const searchInput = document.getElementById('searchInput');
+        const searchForm = document.getElementById('searchForm');
+        const searchGroup = document.querySelector('.search-input-group');
         let searchTimeout;
-        $('#searchInput').on('input', function() {
-            const query = $(this).val().trim();
-            clearTimeout(searchTimeout);
+        let searchRequest;
+
+        const removeSuggestions = () => {
+            document.querySelector('.search-suggestions')?.remove();
+        };
+
+        searchInput?.addEventListener('input', () => {
+            const query = searchInput.value.trim();
+            window.clearTimeout(searchTimeout);
 
             if (query.length >= 3) {
-                searchTimeout = setTimeout(function() {
-                    performAutoComplete(query);
-                }, 300);
+                searchTimeout = window.setTimeout(() => performAutoComplete(query), 300);
             } else {
-                $('.search-suggestions').remove();
+                searchRequest?.abort();
+                removeSuggestions();
             }
         });
 
-        function performAutoComplete(query) {
-            $.ajax({
-                url: '<?= base_url('opac/searchBooks') ?>',
-                method: 'GET',
-                data: {
-                    q: query
-                },
-                dataType: 'json',
-                success: function(response) {
-                    if (response.status === 'success') {
-                        showSearchSuggestions(response.data);
-                    }
+        async function performAutoComplete(query) {
+            searchRequest?.abort();
+            searchRequest = new AbortController();
+
+            try {
+                const url = new URL('<?= base_url('opac/searchBooks') ?>');
+                url.searchParams.set('q', query);
+                const response = await fetch(url, {
+                    signal: searchRequest.signal,
+                    headers: { Accept: 'application/json' }
+                });
+                if (!response.ok) return;
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    showSearchSuggestions(result.data || []);
                 }
-            });
+            } catch (error) {
+                if (error.name !== 'AbortError') console.error(error);
+            }
         }
 
         function showSearchSuggestions(books) {
-            $('.search-suggestions').remove();
-            if (books.length > 0) {
-                let suggestionsHtml = '<div class="search-suggestions position-absolute w-100 bg-white border rounded shadow-lg z-3 mt-1" style="max-height: 250px; overflow-y: auto; top: 100%; border-radius: 1rem;">';
+            removeSuggestions();
+            if (!books.length || !searchGroup) return;
 
-                books.forEach(function(book) {
-                    suggestionsHtml += `
-                        <div class="suggestion-item p-3 border-bottom" style="cursor: pointer; transition: background 0.2s;">
-                            <div class="fw-bold small text-dark">${book.Title}</div>
-                            <div class="text-muted" style="font-size: 0.75rem;">${book.Author || 'Penulis tidak diketahui'}</div>
-                        </div>
-                    `;
+            const list = document.createElement('div');
+            list.className = 'search-suggestions position-absolute w-100 bg-white border shadow-lg z-3 mt-1';
+            list.setAttribute('role', 'listbox');
+
+            books.forEach((book) => {
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'suggestion-item d-block w-100 p-3 border-0 border-bottom text-start bg-white';
+                item.setAttribute('role', 'option');
+
+                const title = document.createElement('span');
+                title.className = 'd-block fw-bold small text-dark';
+                title.textContent = book.Title || 'Tanpa judul';
+
+                const author = document.createElement('span');
+                author.className = 'd-block text-muted';
+                author.style.fontSize = '0.75rem';
+                author.textContent = book.Author || 'Penulis tidak diketahui';
+
+                item.append(title, author);
+                item.addEventListener('click', () => {
+                    searchInput.value = book.Title || '';
+                    removeSuggestions();
+                    searchForm?.requestSubmit();
                 });
-                suggestionsHtml += '</div>';
+                list.appendChild(item);
+            });
 
-                // Append di container search input
-                $('.search-input-group').append(suggestionsHtml);
-
-                $('.suggestion-item').hover(function() {
-                    $(this).addClass('bg-light');
-                }, function() {
-                    $(this).removeClass('bg-light');
-                }).on('click', function() {
-                    $('#searchInput').val($(this).find('.fw-bold').text());
-                    $('.search-suggestions').remove();
-                    $('#searchForm').submit();
-                });
-            }
+            searchGroup.appendChild(list);
         }
 
-        // Menutup autocomplete jika klik di luar area input
-        $(document).on('click', function(e) {
-            if (!$(e.target).closest('.search-input-group').length) {
-                $('.search-suggestions').remove();
-            }
+        document.addEventListener('click', (event) => {
+            if (!event.target.closest('.search-input-group')) removeSuggestions();
         });
-    });
+    })();
 </script>
 <?= $this->endSection() ?>

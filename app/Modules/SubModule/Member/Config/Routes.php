@@ -28,10 +28,10 @@ $routes->group(
         $subroutes->add('datatable', 'Member::datatable');
         $subroutes->add('datatable/(:any)', 'Member::datatable/$1');
         $subroutes->add('upload_file', 'Member::upload_file');
-        $subroutes->add('register', 'Member::register');
+        $subroutes->post('register', 'Member::register');
         $subroutes->add('login', 'Member::login');
         $subroutes->add('resend_email', 'Member::resend_email');
         $subroutes->add('reset_email', 'Member::reset_email');
-        $subroutes->add('check', 'Member::check');
+        $subroutes->post('check', 'Member::check');
     }
 );

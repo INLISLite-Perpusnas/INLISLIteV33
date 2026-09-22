@@ -1,7 +1,9 @@
 <?= $this->extend('App\Views\layout\opac\layout'); ?>
 
 <?= $this->section('style') ?>
-<link rel="stylesheet" href="<?= base_url('assets/css/opac_style.css') ?>">
+<?php if (!empty($opac_banners)): ?>
+    <link rel="preload" as="image" href="<?= base_url('uploads/banner/' . rawurlencode($opac_banners[0]->file_cover)) ?>" fetchpriority="high">
+<?php endif; ?>
 <style>
     /* Global Styles */
     body {
@@ -221,6 +223,43 @@
         z-index: 10;
         box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
     }
+
+    .content-section .text-muted,
+    .content-section .text-secondary,
+    .book-meta {
+        color: #495057 !important;
+    }
+
+    .pagination li a,
+    .pagination li span {
+        color: #075ab3;
+        border: 1px solid #075ab3;
+        padding: 5px 10px;
+        margin: 2px;
+        text-decoration: none;
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    .pagination li a:hover,
+    .pagination li.active span,
+    .pagination li.active a {
+        background-color: #075ab3;
+        border-color: #075ab3;
+        color: #fff;
+    }
+
+    @media (max-width: 991px) {
+        .sidebar-container { position: static !important; margin-top: 30px; }
+    }
+
+    @media (max-width: 768px) {
+        .catalog-card .row { flex-direction: column; }
+        .catalog-card .col-4,
+        .catalog-card .col-8 { flex: 0 0 100%; max-width: 100%; }
+        .catalog-card .col-8 { padding-left: 0 !important; padding-top: 1rem; }
+        .book-cover { max-width: 120px; margin-inline: auto; }
+    }
 </style>
 <?= $this->endSection() ?>
 
@@ -228,19 +267,21 @@
 
 <section class="hero-section">
     <?php if (!empty($opac_banners)): ?>
-        <div id="opacBannerCarousel" class="carousel slide hero-bg-carousel" data-bs-ride="carousel" data-bs-interval="4000">
+        <div id="opacBannerCarousel" class="carousel slide hero-bg-carousel" aria-label="Banner informasi perpustakaan">
             <div class="carousel-inner">
                 <?php foreach ($opac_banners as $i => $b): ?>
                     <div class="carousel-item <?= $i === 0 ? 'active' : '' ?>">
-                        <img src="<?= base_url('uploads/banner/' . esc($b->file_cover)) ?>" alt="Banner <?= $i + 1 ?>">
+                        <img src="<?= base_url('uploads/banner/' . rawurlencode($b->file_cover)) ?>" alt=""
+                            width="1600" height="600" decoding="async"
+                            <?= $i === 0 ? 'fetchpriority="high"' : 'loading="lazy" fetchpriority="low"' ?>>
                     </div>
                 <?php endforeach; ?>
             </div>
             <?php if (count($opac_banners) > 1): ?>
-                <button class="carousel-control-prev" type="button" data-bs-target="#opacBannerCarousel" data-bs-slide="prev">
+                <button class="carousel-control-prev" type="button" data-bs-target="#opacBannerCarousel" data-bs-slide="prev" aria-label="Banner sebelumnya">
                     <span class="carousel-control-prev-icon"></span>
                 </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#opacBannerCarousel" data-bs-slide="next">
+                <button class="carousel-control-next" type="button" data-bs-target="#opacBannerCarousel" data-bs-slide="next" aria-label="Banner berikutnya">
                     <span class="carousel-control-next-icon"></span>
                 </button>
             <?php endif; ?>
@@ -265,7 +306,8 @@
                         <?= csrf_field() ?>
                         <div class="row g-3 mb-3">
                             <div class="col-md-3">
-                                <select class="form-select custom-input" name="search_by">
+                                <label class="visually-hidden" for="opac-search-by">Cari berdasarkan</label>
+                                <select class="form-select custom-input" name="search_by" id="opac-search-by">
                                     <option value="" <?= ($search_by ?? '') == '' ? 'selected' : '' ?>>Semua Kriteria</option>
                                     <option value="Title" <?= ($search_by ?? '') == 'Title' ? 'selected' : '' ?>>Judul</option>
                                     <option value="Author" <?= ($search_by ?? '') == 'Author' ? 'selected' : '' ?>>Pengarang</option>
@@ -275,7 +317,8 @@
                                 </select>
                             </div>
                             <div class="col-md-7">
-                                <input type="text" class="form-control custom-input" name="search"
+                                <label class="visually-hidden" for="opac-search">Kata kunci pencarian</label>
+                                <input type="search" class="form-control custom-input" name="search" id="opac-search"
                                     placeholder="Masukkan kata kunci pencarian..." value="<?= esc($search ?? '') ?>">
                             </div>
                             <div class="col-md-2">
@@ -286,19 +329,24 @@
                         </div>
                         <div class="row g-2">
                             <div class="col-md-3">
-                                <input type="text" class="form-control custom-input form-control-sm" name="Author" placeholder="Filter Pengarang..." value="<?= esc(request()->getVar('Author')) ?>">
+                                <label class="visually-hidden" for="opac-author">Filter pengarang</label>
+                                <input type="text" class="form-control custom-input form-control-sm" name="Author" id="opac-author" placeholder="Filter Pengarang..." value="<?= esc(request()->getVar('Author')) ?>">
                             </div>
                             <div class="col-md-3">
-                                <input type="text" class="form-control custom-input form-control-sm" name="Publisher" placeholder="Filter Penerbit..." value="<?= esc(request()->getVar('Publisher')) ?>">
+                                <label class="visually-hidden" for="opac-publisher">Filter penerbit</label>
+                                <input type="text" class="form-control custom-input form-control-sm" name="Publisher" id="opac-publisher" placeholder="Filter Penerbit..." value="<?= esc(request()->getVar('Publisher')) ?>">
                             </div>
                             <div class="col-md-3">
-                                <input type="text" class="form-control custom-input form-control-sm" name="Subject" placeholder="Filter Subjek..." value="<?= esc(request()->getVar('Subject')) ?>">
+                                <label class="visually-hidden" for="opac-subject">Filter subjek</label>
+                                <input type="text" class="form-control custom-input form-control-sm" name="Subject" id="opac-subject" placeholder="Filter Subjek..." value="<?= esc(request()->getVar('Subject')) ?>">
                             </div>
                             <div class="col-md-3">
-                                <input type="text" class="form-control custom-input form-control-sm" name="PublishYear" placeholder="Filter Tahun..." value="<?= esc(request()->getVar('PublishYear')) ?>">
+                                <label class="visually-hidden" for="opac-year">Filter tahun terbit</label>
+                                <input type="text" inputmode="numeric" class="form-control custom-input form-control-sm" name="PublishYear" id="opac-year" placeholder="Filter Tahun..." value="<?= esc(request()->getVar('PublishYear')) ?>">
                             </div>
                             <div class="col-md-3">
-                                <select class="form-select custom-input form-select-sm" name="Worksheet_id">
+                                <label class="visually-hidden" for="opac-worksheet">Jenis bahan</label>
+                                <select class="form-select custom-input form-select-sm" name="Worksheet_id" id="opac-worksheet">
                                     <option value="">Semua Jenis Bahan</option>
                                     <?php foreach (($worksheets ?? []) as $ws) : ?>
                                         <option value="<?= esc($ws->ID) ?>" <?= (string) ($worksheet_id ?? '') === (string) $ws->ID ? 'selected' : '' ?>>
@@ -323,7 +371,7 @@
 
                     <div class="card sidebar-card">
                         <div class="card-header d-flex align-items-center">
-                            <h5 class="card-title mb-0"><i class="fas fa-chart-pie me-2"></i>Statistik Koleksi</h5>
+                            <h2 class="card-title mb-0"><i class="fas fa-chart-pie me-2"></i>Statistik Koleksi</h2>
                         </div>
                         <div class="card-body">
                             <div class="d-flex align-items-center p-3 bg-light rounded">
@@ -331,7 +379,7 @@
                                     <i class="fas fa-books fa-2x text-primary"></i>
                                 </div>
                                 <div>
-                                    <h4 class="mb-0 fw-bold text-dark"><?= isset($total_records) ? number_format($total_records) : '0' ?></h4>
+                                    <p class="mb-0 fs-4 fw-bold text-dark"><?= isset($total_records) ? number_format($total_records) : '0' ?></p>
                                     <small class="text-muted">Total Katalog</small>
                                 </div>
                             </div>
@@ -341,7 +389,7 @@
                     <?php if (isset($publisher_counts) && !empty($publisher_counts)): ?>
                         <div class="card sidebar-card">
                             <div class="card-header">
-                                <h5 class="card-title mb-0"><i class="fas fa-building me-2"></i>Penerbit Teratas</h5>
+                                <h2 class="card-title mb-0"><i class="fas fa-building me-2"></i>Penerbit Teratas</h2>
                             </div>
                             <div class="card-body pt-2">
                                 <div class="stat-list">
@@ -369,7 +417,7 @@
                     <?php if (isset($author_counts) && !empty($author_counts)): ?>
                         <div class="card sidebar-card">
                             <div class="card-header">
-                                <h5 class="card-title mb-0"><i class="fas fa-user-edit me-2"></i>Pengarang Teratas</h5>
+                                <h2 class="card-title mb-0"><i class="fas fa-user-edit me-2"></i>Pengarang Teratas</h2>
                             </div>
                             <div class="card-body pt-2">
                                 <div class="stat-list">
@@ -397,7 +445,7 @@
                     <?php if (isset($subject_counts) && !empty($subject_counts)): ?>
                         <div class="card sidebar-card">
                             <div class="card-header">
-                                <h5 class="card-title mb-0"><i class="fas fa-tags me-2"></i>Subjek Populer</h5>
+                                <h2 class="card-title mb-0"><i class="fas fa-tags me-2"></i>Subjek Populer</h2>
                             </div>
                             <div class="card-body pt-2">
                                 <div class="stat-list">
@@ -424,7 +472,7 @@
                     <?php if (isset($year_counts) && !empty($year_counts)): ?>
                         <div class="card sidebar-card">
                             <div class="card-header">
-                                <h5 class="card-title mb-0"><i class="fas fa-calendar-alt me-2"></i>Tahun Terbit</h5>
+                                <h2 class="card-title mb-0"><i class="fas fa-calendar-alt me-2"></i>Tahun Terbit</h2>
                             </div>
                             <div class="card-body pt-2">
                                 <div class="stat-list">
@@ -452,7 +500,7 @@
                     <?php if (isset($publish_location_counts) && !empty($publish_location_counts)): ?>
                         <div class="card sidebar-card">
                             <div class="card-header">
-                                <h5 class="card-title mb-0"><i class="fas fa-map-marker-alt me-2"></i>Kota Terbit</h5>
+                                <h2 class="card-title mb-0"><i class="fas fa-map-marker-alt me-2"></i>Kota Terbit</h2>
                             </div>
                             <div class="card-body pt-2">
                                 <div class="stat-list">
@@ -481,9 +529,9 @@
 
             <div class="col-lg-9 catalog-section">
                 <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-                    <h4 class="mb-0 fw-bold text-dark">
+                    <h2 class="mb-0 fs-4 fw-bold text-dark">
                         <?= !empty($member_no) ? '<i class="fas fa-star text-warning me-2"></i>Rekomendasi Untuk Anda' : '<i class="fas fa-stream text-primary me-2"></i>Koleksi Terbaru' ?>
-                    </h4>
+                    </h2>
                 </div>
 
                 <div class="row g-4">
@@ -513,10 +561,16 @@
                                                 <?php
                                                 $coverURL = !empty($member_no) ? ($catalog['CoverURL'] ?? '') : ($catalog->CoverURL ?? '');
                                                 $title = !empty($member_no) ? ($catalog['Title'] ?? 'Book') : ($catalog->Title ?? 'Book');
-                                                $coverPath = base_url('uploads/katalog/' . ($coverURL ?: 'default-cover.jpg'));
-                                                $defaultCover = base_url('assets/img/default-cover.png');
+                                                $coverFileName = basename((string) $coverURL);
+                                                $hasCover = $coverFileName !== '' && is_file(FCPATH . 'uploads/katalog/' . $coverFileName);
+                                                $defaultCover = base_url('assets/img/default-cover.webp');
+                                                $coverPath = $hasCover
+                                                    ? base_url('uploads/katalog/' . rawurlencode($coverFileName))
+                                                    : $defaultCover;
                                                 ?>
-                                                <img src="<?= $coverPath ?>" alt="Cover <?= esc($title) ?>" class="book-cover" onerror="this.src='<?= $defaultCover ?>'">
+                                                <img src="<?= $coverPath ?>" alt="Sampul <?= esc($title) ?>" class="book-cover"
+                                                    width="120" height="180" loading="lazy" decoding="async"
+                                                    onerror="this.onerror=null;this.src='<?= $defaultCover ?>'">
                                                 <div class="book-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
                                                     <?php $bookID = !empty($member_no) ? ($catalog['ID'] ?? 0) : ($catalog->ID ?? 0); ?>
                                                     <a href="<?= base_url('opac/detail/' . $bookID) ?>" class="btn btn-light btn-sm rounded-pill fw-bold">
@@ -543,11 +597,11 @@
                                             }
                                             ?>
 
-                                            <h5 class="card-title text-dark fw-bold mb-2" style="font-size: 1.05rem; line-height: 1.4;">
+                                            <h3 class="card-title text-dark fw-bold mb-2" style="font-size: 1.05rem; line-height: 1.4;">
                                                 <a href="<?= base_url('opac/detail/' . $bookID) ?>" class="text-decoration-none text-dark">
                                                     <?= esc(substr($bookTitle, 0, 65)) ?><?= strlen($bookTitle) > 65 ? '...' : '' ?>
                                                 </a>
-                                            </h5>
+                                            </h3>
 
                                             <div class="book-meta mt-1">
                                                 <span class="d-block mb-1 text-truncate" title="<?= esc($bookAuthor) ?>">
@@ -581,7 +635,7 @@
                                 <div class="mb-4">
                                     <i class="fas fa-search-minus fa-4x text-muted opacity-50"></i>
                                 </div>
-                                <h4 class="text-dark fw-bold">
+                                <h3 class="text-dark fw-bold">
                                     <?php if (!empty($member_no)): ?>
                                         Tidak ada rekomendasi untuk anggota ini
                                     <?php elseif (isset($search) && $search): ?>
@@ -589,7 +643,7 @@
                                     <?php else: ?>
                                         Mulai temukan koleksi
                                     <?php endif; ?>
-                                </h4>
+                                </h3>
                                 <p class="text-muted mb-4 px-3">
                                     <?php if (!empty($member_no)): ?>
                                         Anggota mungkin belum memiliki riwayat peminjaman yang cukup untuk menampilkan rekomendasi personal.
@@ -641,12 +695,4 @@
     </div>
 </section>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const searchInput = document.querySelector('input[name="search"]');
-        if (searchInput && !searchInput.value) {
-            searchInput.focus();
-        }
-    });
-</script>
 <?= $this->endSection() ?>

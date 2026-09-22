@@ -83,21 +83,12 @@
 
                  
                     <div class="position-relative form-group">
-                        <label>Role*</label>
-                        <div>
+                        <label for="frm_create_groups">Role*</label>
+                        <select class="form-control" name="groups" id="frm_create_groups" style="width: 100%;" required>
                             <?php foreach ($groups as $group) : ?>
-                                <div class="custom-checkbox custom-control custom-control-inline">
-                                    <input type="checkbox"
-                                           id="create_groups<?= $group->id ?>"
-                                           name="groups[]"
-                                           value="<?= $group->id ?>"
-                                           class="custom-control-input">
-                                    <label class="custom-control-label" for="create_groups<?= $group->id ?>">
-                                        <?= $group->name ?>
-                                    </label>
-                                </div>
+                                <option value="<?= $group->id ?>"><?= $group->name ?></option>
                             <?php endforeach; ?>
-                        </div>
+                        </select>
                     </div>
 
                   
@@ -130,12 +121,21 @@
                     dropdownParent: $('#modal_create')
                 });
             }
+            if (!$('#frm_create_groups').hasClass('select2-hidden-accessible')) {
+                $('#frm_create_groups').select2({
+                    placeholder: "Pilih role",
+                    dropdownParent: $('#modal_create')
+                });
+            }
         });
 
         $('#modal_create').on('hidden.bs.modal', function() {
             $(this).find('form').trigger('reset');
             if ($('#frm_create_LocationLibrary_id').hasClass('select2-hidden-accessible')) {
                 $('#frm_create_LocationLibrary_id').select2('destroy');
+            }
+            if ($('#frm_create_groups').hasClass('select2-hidden-accessible')) {
+                $('#frm_create_groups').select2('destroy');
             }
             $('#frm_create_message').html('');
         });

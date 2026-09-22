@@ -2,16 +2,19 @@
 	$routes = \Config\Services::routes(true);
 }
 $routes->group('buku-tamu', ['namespace' => 'GuestBook\Controllers'], function ($subroutes) {
-	$subroutes->add('', 'GuestBook::index');
-	$subroutes->add('index', 'GuestBook::index');
-	$subroutes->add('lokasi', 'GuestBook::lokasi');
-	$subroutes->add('non_anggota', 'GuestBook::non_anggota');
-	$subroutes->add('rombongan', 'GuestBook::rombongan');
+	$subroutes->get('', 'GuestBook::index');
+	$subroutes->get('index', 'GuestBook::index');
+	$subroutes->get('lokasi', 'GuestBook::lokasi');
+	$subroutes->post('lokasi', 'GuestBook::lokasi', ['filter' => 'csrf']);
+	$subroutes->get('non_anggota', 'GuestBook::non_anggota');
+	$subroutes->post('non_anggota', 'GuestBook::non_anggota', ['filter' => 'csrf']);
+	$subroutes->get('rombongan', 'GuestBook::rombongan');
+	$subroutes->post('rombongan', 'GuestBook::rombongan', ['filter' => 'csrf']);
 	$subroutes->add('browse', 'GuestBook::browse');
 	$subroutes->add('detail/(:any)', 'GuestBook::detail/$1');
 	$subroutes->add('visitor_export', 'GuestBook::visitor_export');
 	$subroutes->add('member', 'GuestBook::member');
-	$subroutes->post('store_anggota', 'GuestBook::store_anggota');
+	$subroutes->post('store_anggota', 'GuestBook::store_anggota', ['filter' => 'csrf']);
 	$subroutes->add('member_export', 'GuestBook::member_export');
 });
 

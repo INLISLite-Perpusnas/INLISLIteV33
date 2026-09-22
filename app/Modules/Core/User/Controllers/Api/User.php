@@ -63,7 +63,12 @@ class User extends \Base\Controllers\BaseResourceController
 		if ($slug === 'semua') {
 			// no filter — show all users
 		} elseif (!empty($slug)) {
-			$builder->like('a.category', $slug);
+			// Filter by the same role membership used by the role badges.
+			$members = $db->table('auth_groups_users as membership')
+				->select('membership.user_id')
+				->join('auth_groups as role', 'role.id = membership.group_id')
+				->where('role.name', $slug);
+			$builder->whereIn('a.id', $members);
 		} else {
 			$builder->where('id <', 0);
 		}
@@ -224,12 +229,13 @@ public function create()
     // Ambil ID user yang baru saja dibuat
     $new_user_id = $users->getInsertID();
 
-    // Assign groups yang dipilih via checkbox
-    $group_ids = $this->request->getPost('groups');
-    if (!empty($group_ids)) {
-        foreach ($group_ids as $group_id) {
-            $this->authorize->addUserToGroup($new_user_id, $group_id);
-        }
+    // Satu user hanya boleh memiliki satu role.
+    $group_id = $this->request->getPost('groups');
+    if (is_array($group_id)) {
+        $group_id = reset($group_id);
+    }
+    if (!empty($group_id)) {
+        $this->authorize->addUserToGroup($new_user_id, $group_id);
     }
 
     // Update data tambahan
@@ -261,8 +267,8 @@ public function create()
 
     $update_data['first_name'] = $first_name;
     $update_data['last_name']  = $last_name;
-    // category diisi dari group pertama yang dipilih
-    $update_data['category']   = !empty($group_ids) ? $this->authorize->group($group_ids[0])->name : null;
+    $selected_group = !empty($group_id) ? $this->authorize->group($group_id) : null;
+    $update_data['category']   = $selected_group ? $selected_group->name : null;
     $update_data['is_branch']  = $is_branch;
 
     // Simpan akses lokasi perpustakaan
@@ -318,6 +324,16 @@ public function create()
             'location_ids' => $location_ids_str
         );
 
+        $group_id = null;
+        if (is_member('admin')) {
+            $group_id = $this->request->getPost('groups');
+            if (is_array($group_id)) {
+                $group_id = reset($group_id);
+            }
+            $selected_group = !empty($group_id) ? $this->authorize->group($group_id) : null;
+            $update_data['category'] = $selected_group ? $selected_group->name : null;
+        }
+
         if ($this->request->getPost('password')) {
             $update_data['password_hash'] = $this->password->hash($this->request->getPost('password'));
             $update_data['reset_hash'] = null;
@@ -334,8 +350,8 @@ public function create()
                     $this->authorize->removeUserFromGroup($id, $group->id);
                 }
 
-                $group_ids = $this->request->getPost('groups');
-                foreach ($group_ids as $group_id) {
+                // Semua role lama sudah dilepas di atas; tambahkan satu role yang dipilih.
+                if (!empty($group_id)) {
                     $this->authorize->addUserToGroup($id, $group_id);
                 }
             }

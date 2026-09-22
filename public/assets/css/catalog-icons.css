@@ -1,0 +1,126 @@
+/* Subset ikon untuk daftar Katalog; sumber glyph: Font Awesome Pro 5 lokal. */
+@font-face {
+    font-family: "Font Awesome 5 Pro";
+    src: url("../fonts/catalog/fa-solid-subset.woff2") format("woff2");
+    font-style: normal;
+    font-weight: 900;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Font Awesome 5 Pro";
+    src: url("../fonts/catalog/fa-regular-subset.woff2") format("woff2");
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Font Awesome 5 Brands";
+    src: url("../fonts/catalog/fa-brands-subset.woff2") format("woff2");
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+.fa, .fas, .far, .fab {
+    display: inline-block;
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+}
+.fa, .fas { font-family: "Font Awesome 5 Pro"; font-weight: 900; }
+.far { font-family: "Font Awesome 5 Pro"; font-weight: 400; }
+.fab { font-family: "Font Awesome 5 Brands"; font-weight: 400; }
+.fa-fw { width: 1.25em; text-align: center; }
+.fa-2x { font-size: 2em; }
+.fa-spin { animation: fa-spin 2s infinite linear; }
+@keyframes fa-spin { to { transform: rotate(360deg); } }
+.fa-address-book::before { content: "\f2b9"; }
+.fa-address-card::before { content: "\f2bb"; }
+.fa-angle-double-right::before { content: "\f101"; }
+.fa-archive::before { content: "\f187"; }
+.fa-arrow-alt-circle-right::before { content: "\f35a"; }
+.fa-bars::before { content: "\f0c9"; }
+.fa-book::before { content: "\f02d"; }
+.fa-book-open::before { content: "\f518"; }
+.fa-book-reader::before { content: "\f5da"; }
+.fa-building::before { content: "\f1ad"; }
+.fa-calendar-check::before { content: "\f274"; }
+.fa-calendar-times::before { content: "\f273"; }
+.fa-camera::before { content: "\f030"; }
+.fa-chalkboard::before { content: "\f51b"; }
+.fa-chalkboard-teacher::before { content: "\f51c"; }
+.fa-check-square::before { content: "\f14a"; }
+.fa-check::before { content: "\f00c"; }
+.fa-chevron-left::before { content: "\f053"; }
+.fa-chevron-right::before { content: "\f054"; }
+.fa-chevron-double-left::before { content: "\f323"; }
+.fa-chevron-double-right::before { content: "\f324"; }
+.fa-chevron-down::before { content: "\f078"; }
+.fa-child::before { content: "\f1ae"; }
+.fa-clipboard::before { content: "\f328"; }
+.fa-clipboard-list::before { content: "\f46d"; }
+.fa-clock::before { content: "\f017"; }
+.fa-clone::before { content: "\f24d"; }
+.fa-cogs::before { content: "\f085"; }
+.fa-confluence::before { content: "\f78d"; }
+.fa-credit-card::before { content: "\f09d"; }
+.fa-copy::before { content: "\f0c5"; }
+.fa-cube::before { content: "\f1b2"; }
+.fa-door-closed::before { content: "\f52a"; }
+.fa-door-open::before { content: "\f52b"; }
+.fa-envelope::before { content: "\f0e0"; }
+.fa-exclamation-circle::before { content: "\f06a"; }
+.fa-exclamation-triangle::before { content: "\f071"; }
+.fa-file-alt::before { content: "\f15c"; }
+.fa-file-code::before { content: "\f1c9"; }
+.fa-file-excel::before { content: "\f1c3"; }
+.fa-file-signature::before { content: "\f573"; }
+.fa-filter::before { content: "\f0b0"; }
+.fa-folder::before { content: "\f07b"; }
+.fa-folder-open::before { content: "\f07c"; }
+.fa-globe::before { content: "\f0ac"; }
+.fa-graduation-cap::before { content: "\f19d"; }
+.fa-home::before { content: "\f015"; }
+.fa-hospital::before { content: "\f0f8"; }
+.fa-hotel::before { content: "\f594"; }
+.fa-id-badge::before { content: "\f2c1"; }
+.fa-id-card::before { content: "\f2c2"; }
+.fa-id-card-alt::before { content: "\f47f"; }
+.fa-images::before { content: "\f302"; }
+.fa-info-circle::before { content: "\f05a"; }
+.fa-keyboard::before { content: "\f11c"; }
+.fa-laptop-code::before { content: "\f5fc"; }
+.fa-layer-group::before { content: "\f5fd"; }
+.fa-list::before { content: "\f03a"; }
+.fa-mail-bulk::before { content: "\f674"; }
+.fa-money-check-alt::before { content: "\f53d"; }
+.fa-map-marker-alt::before { content: "\f3c5"; }
+.fa-newspaper::before { content: "\f1ea"; }
+.fa-paste::before { content: "\f0ea"; }
+.fa-pen-square::before { content: "\f14b"; }
+.fa-plus::before { content: "\f067"; }
+.fa-print::before { content: "\f02f"; }
+.fa-readme::before { content: "\f4d5"; }
+.fa-restroom::before { content: "\f7bd"; }
+.fa-school::before { content: "\f549"; }
+.fa-scroll::before { content: "\f70e"; }
+.fa-search::before { content: "\f002"; }
+.fa-share-square::before { content: "\f14d"; }
+.fa-shopping-cart::before { content: "\f07a"; }
+.fa-sync::before { content: "\f021"; }
+.fa-sync-alt::before { content: "\f2f1"; }
+.fa-theater-masks::before { content: "\f630"; }
+.fa-tv::before { content: "\f26c"; }
+.fa-undo::before { content: "\f0e2"; }
+.fa-user::before { content: "\f007"; }
+.fa-user-circle::before { content: "\f2bd"; }
+.fa-user-friends::before { content: "\f500"; }
+.fa-user-lock::before { content: "\f502"; }
+.fa-user-plus::before { content: "\f234"; }
+.fa-upload::before { content: "\f093"; }
+.fa-users::before { content: "\f0c0"; }
+.fa-venus::before { content: "\f221"; }
+.fa-venus-mars::before { content: "\f228"; }
+.fa-window-restore::before { content: "\f2d2"; }
+.fa-wrench::before { content: "\f0ad"; }

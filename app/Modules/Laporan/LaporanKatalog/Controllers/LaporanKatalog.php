@@ -395,10 +395,12 @@ class LaporanKatalog extends \Base\Controllers\BaseController
             $query->where('catalogs.UpdateBy', $updateBy);
         }
 
-        // Filter berdasarkan Klas DDC
-        $masterkelasbesarId = $this->request->getPost('masterkelasbesar_id');
-        if ($masterkelasbesarId) {
-            $query->like('catalogs.DeweyNo', $masterkelasbesarId);
+        // Dropdown menampilkan kelas utama tiga digit (mis. 200), tetapi
+        // pencocokan memakai digit pertama DeweyNo. Jadi 200 mencakup 218,
+        // 297, 297.8, dan seluruh klasifikasi yang diawali angka 2.
+        $masterkelasbesarId = trim((string) $this->request->getPost('masterkelasbesar_id'));
+        if (preg_match('/^([0-9])/', $masterkelasbesarId, $matches)) {
+            $query->like('catalogs.DeweyNo', $matches[1], 'after');
         }
     }
 

@@ -1,9 +1,9 @@
-<div class="modal fade" id="modal_upload" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="modal_upload" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="modalUploadTitle" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Upload Foto
+                <h5 class="modal-title" id="modalUploadTitle">
+                    <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate" aria-hidden="true"> </i> Upload Foto
                 </h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -15,7 +15,7 @@
                     <div class="form-row">
                         <div class="col-md-12">
                             <div class="position-relative form-group">
-                                <label for="file_pendukung" class="">File Foto <span id="upload_title_span2"></span>*</label>
+                                <label for="file_pendukung_input" class="form-label">Pilih foto anggota</label>
                                 <input type="file" name="file_pendukung" id="file_pendukung_input" class="form-control" accept="image/png, image/jpeg, image/jpg">
                                 <div class="mt-3 text-center">
                                     <img id="file_preview" src="" alt="Preview" style="max-width: 100%; max-height: 250px; display: none; margin: 0 auto; border: 1px solid #ddd; padding: 5px; border-radius: 5px;">
@@ -43,7 +43,9 @@
 
 <?=$this->section('script');?>
 <script>
-	Dropzone.autoDiscover = false;
+	if (window.Dropzone) {
+		Dropzone.autoDiscover = false;
+	}
 	$(document).ready(function() {
 		$('#form_upload').submit(function(e) {
 			e.preventDefault()
@@ -61,7 +63,6 @@
 					contentType: false,
 				})
 				.done(function(res) {
-					console.log(res)
 					if (res.status === 201) {
 						$('#modal_upload').modal('hide');
 						Swal.fire({
@@ -78,8 +79,7 @@
 					}
 				})
 				.fail(function(res) {
-					console.log(res)
-					// $('#form_upload_message').html(res.responseJSON.messages.error)
+					$('#form_upload_message').html('Foto gagal disimpan. Silakan coba lagi.');
 				})
 				.always(function() {
 					$('.loading').hide()

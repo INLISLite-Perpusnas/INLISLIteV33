@@ -46,7 +46,7 @@
                                         <select class="form-control" name="IdentityType_id" id="IdentityType_id" placeholder="Jenis identitas">
                                             <option value="" disabled selected>Jenis identitas</option>
                                             <?php foreach (get_table('master_jenis_identitas', 'id, Nama', null, 'data') as $row) : ?>
-                                                <option value="<?= $row->id ?>" <?= set_select('IdentityType_id', $row->id) ?>><?= $row->Nama ?></option>
+                                                <option value="<?= esc($row->id, 'attr') ?>" <?= set_select('IdentityType_id', $row->id) ?>><?= esc($row->Nama) ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
@@ -89,7 +89,7 @@
                                     <label>Status Perkawinan</label>
                                     <select class="form-control" name="MaritalStatus_id" id="MaritalStatus_id">
                                         <?php foreach (get_table('master_status_perkawinan', 'id, Nama', null, 'data') as $row) : ?>
-                                            <option value="<?= $row->id ?>" <?= set_select('MaritalStatus_id', $row->id) ?>><?= $row->Nama ?></option>
+                                                <option value="<?= esc($row->id, 'attr') ?>" <?= set_select('MaritalStatus_id', $row->id) ?>><?= esc($row->Nama) ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
@@ -102,7 +102,7 @@
                                     <label>Agama</label>
                                     <select class="form-control" name="Agama_id" id="Agama_id">
                                         <?php foreach (get_table('agama', 'ID, Name', null, 'data') as $row) : ?>
-                                            <option value="<?= $row->ID ?>" <?= set_select('Agama_id', $row->ID) ?>><?= $row->Name ?></option>
+                                                <option value="<?= esc($row->ID, 'attr') ?>" <?= set_select('Agama_id', $row->ID) ?>><?= esc($row->Name) ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
@@ -114,7 +114,7 @@
                                     <label>Jenis Kelamin</label>
                                     <select class="form-control" name="Sex_id" id="Sex_id" placeholder="Jenis kelamin">
                                         <?php foreach (get_table('jenis_kelamin', 'ID, Name', null, 'data') as $row) : ?>
-                                            <option value="<?= $row->ID ?>" <?= set_select('Sex_id', $row->ID) ?>><?= $row->Name ?></option>
+                                                <option value="<?= esc($row->ID, 'attr') ?>" <?= set_select('Sex_id', $row->ID) ?>><?= esc($row->Name) ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>

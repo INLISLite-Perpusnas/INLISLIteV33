@@ -24,8 +24,13 @@ class KatalogController extends \Base\Controllers\BaseController
 
     public function index()
     {
-        $data['title']      = 'Daftar Katalog';
-        $data['worksheets'] = $this->worksheetModel->orderBy('NoUrut')->findAll();
+        $data['title']                = 'Daftar Katalog';
+        $data['meta_description']     = 'Daftar dan pengelolaan katalog perpustakaan.';
+        $data['is_catalog_list_page'] = true;
+        $data['worksheets']           = $this->worksheetModel
+            ->select('ID, Name')
+            ->orderBy('NoUrut')
+            ->findAll();
         echo view('Katalog\Views\list', $data);
     }
 

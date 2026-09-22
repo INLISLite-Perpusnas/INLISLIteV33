@@ -1,7 +1,9 @@
 <?php
 $request = service('request');
 
+$allowedSlugs = ['keanggotaan', 'pelanggaran', 'peminjaman', 'perpanjangan', 'sumbangan'];
 $slug = $request->getGet('slug') ?? 'keanggotaan';
+$slug = in_array($slug, $allowedSlugs, true) ? $slug : 'keanggotaan';
 $member_id = $request->getGet('member_id') ?? 0;
 
 $member = get_ref_single('members', 'ID=' . $anggota->ID, 'data');
@@ -390,6 +392,9 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 
 	Dropzone.autoDiscover = false;
 	var file_image = setDropzone('file_image', 'anggota', '.jpg,.jpeg,.png', 1, 10);
+	file_image.on('sending', function(file, xhr, formData) {
+		formData.append('<?= csrf_token() ?>', $('input[name="<?= csrf_token() ?>"]').val());
+	});
 
 	// ========================================
 	// SELECT2 INITIALIZATION
@@ -417,18 +422,18 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 
 		// Load region data untuk Alamat KTP (gunakan nama karena DB menyimpan nama, bukan kode)
 		loadRegionDataByName('Province', 'City', 'District', 'SubDistrict',
-			'<?= $anggota->Province ?? '' ?>',
-			'<?= $anggota->City ?? '' ?>',
-			'<?= $anggota->Kecamatan ?? '' ?>',
-			'<?= $anggota->Kelurahan ?? '' ?>'
+			<?= json_encode($anggota->Province ?? '') ?>,
+			<?= json_encode($anggota->City ?? '') ?>,
+			<?= json_encode($anggota->Kecamatan ?? '') ?>,
+			<?= json_encode($anggota->Kelurahan ?? '') ?>
 		);
 
 		// Load region data untuk Alamat Domisili
 		loadRegionDataByName('ProvinceNow', 'CityNow', 'DistrictNow', 'SubDistrictNow',
-			'<?= $anggota->ProvinceNow ?? '' ?>',
-			'<?= $anggota->CityNow ?? '' ?>',
-			'<?= $anggota->KecamatanNow ?? '' ?>',
-			'<?= $anggota->KelurahanNow ?? '' ?>'
+			<?= json_encode($anggota->ProvinceNow ?? '') ?>,
+			<?= json_encode($anggota->CityNow ?? '') ?>,
+			<?= json_encode($anggota->KecamatanNow ?? '') ?>,
+			<?= json_encode($anggota->KelurahanNow ?? '') ?>
 		);
 
 		// Setup change handlers
@@ -469,7 +474,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 			provResp.data.forEach(function(item) {
 				var sel = (provName && item.name.toUpperCase() === provName.toUpperCase());
 				if (sel) provCode = item.code;
-				provOutput += '<option value="' + item.code + '"' + (sel ? ' selected' : '') + '>' + item.name.toUpperCase() + '</option>';
+				provOutput += $('<option>', { value: item.code, text: item.name.toUpperCase(), selected: sel }).prop('outerHTML');
 			});
 			$('#' + provinceId).html(provOutput).trigger('change.select2');
 
@@ -482,7 +487,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 			cityResp.data.forEach(function(item) {
 				var sel = (item.name.toUpperCase() === cityName.toUpperCase());
 				if (sel) cityCode = item.code;
-				cityOutput += '<option value="' + item.code + '"' + (sel ? ' selected' : '') + '>' + item.name.toUpperCase() + '</option>';
+				cityOutput += $('<option>', { value: item.code, text: item.name.toUpperCase(), selected: sel }).prop('outerHTML');
 			});
 			$('#' + cityId).html(cityOutput).trigger('change.select2');
 
@@ -495,7 +500,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 			distResp.data.forEach(function(item) {
 				var sel = (item.name.toUpperCase() === distName.toUpperCase());
 				if (sel) distCode = item.code;
-				distOutput += '<option value="' + item.code + '"' + (sel ? ' selected' : '') + '>' + item.name.toUpperCase() + '</option>';
+				distOutput += $('<option>', { value: item.code, text: item.name.toUpperCase(), selected: sel }).prop('outerHTML');
 			});
 			$('#' + districtId).html(distOutput).trigger('change.select2');
 
@@ -506,7 +511,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 			var subdistOutput = '<option value="">Pilih Kelurahan</option>';
 			subdistResp.data.forEach(function(item) {
 				var sel = (item.name.toUpperCase() === subdistName.toUpperCase());
-				subdistOutput += '<option value="' + item.code + '"' + (sel ? ' selected' : '') + '>' + item.name.toUpperCase() + '</option>';
+				subdistOutput += $('<option>', { value: item.code, text: item.name.toUpperCase(), selected: sel }).prop('outerHTML');
 			});
 			$('#' + subdistrictId).html(subdistOutput).trigger('change.select2');
 		} catch(err) {
@@ -600,9 +605,10 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 					success: function(response) {
 						if (response.success && response.data) {
 							$.each(response.data, function(key, jurusan) {
-								$jurusanSelect.append(
-									`<option value="${jurusan.id}">${jurusan.Nama}</option>`
-								);
+								$jurusanSelect.append($('<option>', {
+									value: jurusan.id,
+									text: jurusan.Nama
+								}));
 							});
 						}
 					},

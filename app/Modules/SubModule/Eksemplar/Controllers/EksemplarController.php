@@ -29,6 +29,8 @@ class EksemplarController extends \Base\Controllers\BaseController
             return redirect()->to('eksemplar');
         }
         $this->data['title'] = 'Eksemplar';
+        $this->data['meta_description'] = 'Daftar dan pengelolaan eksemplar perpustakaan.';
+        $this->data['is_exemplar_list_page'] = true;
         echo view('Eksemplar\Views\list', $this->data);
     }
 

@@ -300,9 +300,7 @@ class EksemplarFormController extends \Base\Controllers\BaseController
      */
     private function generateNomorBarcode($collectionData = [], $increment = 1)
     {
-        $db    = db_connect();
-        $query = $db->table('collections')->select('MAX(RIGHT(NomorBarcode,5)) as no')->get();
-        $no    = $query->getRow()->no;
+        $db = $this->db;
 
         $formatResult = $db->table('settingparameters')
             ->select('Value')
@@ -316,16 +314,7 @@ class EksemplarFormController extends \Base\Controllers\BaseController
 
         if (strpos($formatString, '|') === false) {
             $format2 = str_replace('{yyyy}', date('Y'), $formatString);
-            $format3 = str_replace('{99999}', '', $format2);
-
-            if (empty($no)) {
-                $no = $increment;
-            } else {
-                $no = intval($no) + $increment;
-                $no = str_pad($no, 5, "0", STR_PAD_LEFT);
-            }
-
-            return $format3 . $no;
+            return $this->nextBarcodeNumber($format2, $increment);
         }
 
         $formatArray = explode('|', $formatString);
@@ -387,15 +376,30 @@ class EksemplarFormController extends \Base\Controllers\BaseController
             }
         }
 
-        $result = str_replace('{99999}', '', $result);
+        return $this->nextBarcodeNumber($result, $increment);
+    }
 
-        if (empty($no)) {
-            $no = $increment;
-        } else {
-            $no = intval($no) + $increment;
-            $no = str_pad($no, 5, "0", STR_PAD_LEFT);
+    private function nextBarcodeNumber($format, $increment)
+    {
+        $parts = explode('{99999}', $format, 2);
+        $prefix = $parts[0];
+        $suffix = $parts[1] ?? '';
+
+        // Only compare numeric sequences within the same barcode format.
+        // Legacy alphanumeric barcodes must not reset the sequence to zero.
+        $sequence = 'SUBSTRING(NomorBarcode, CHAR_LENGTH(' . $this->db->escape($prefix)
+            . ') + 1, CHAR_LENGTH(NomorBarcode) - CHAR_LENGTH('
+            . $this->db->escape($prefix) . ') - CHAR_LENGTH('
+            . $this->db->escape($suffix) . '))';
+        $builder = $this->db->table('collections')
+            ->select('MAX(CAST(' . $sequence . ' AS UNSIGNED)) AS no', false)
+            ->like('NomorBarcode', $prefix, 'after')
+            ->where($sequence . " REGEXP '^[0-9]+$'", null, false);
+        if ($suffix !== '') {
+            $builder->like('NomorBarcode', $suffix, 'before');
         }
+        $lastNumber = (int) ($builder->get()->getRow()->no ?? 0);
 
-        return $result . $no;
+        return $prefix . str_pad($lastNumber + $increment, 5, '0', STR_PAD_LEFT) . $suffix;
     }
 }

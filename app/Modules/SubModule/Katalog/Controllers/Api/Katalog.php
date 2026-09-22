@@ -38,14 +38,92 @@ class Katalog extends \Base\Controllers\BaseResourceController
 		}
 	}
 
+	/**
+	 * Endpoint ringan khusus daftar katalog. Menghindari payload dan pemrosesan
+	 * DataTables sekaligus tetap melakukan pagination dan pencarian di server.
+	 */
+	public function listLite()
+	{
+		$db = db_connect('data');
+		$page = max(1, (int) ($this->request->getPost('page') ?? 1));
+		$length = (int) ($this->request->getPost('length') ?? 10);
+		$length = in_array($length, [10, 25, 50, 100], true) ? $length : 10;
+		$worksheetId = max(0, (int) ($this->request->getPost('worksheet_id') ?? 0));
+		$search = trim((string) ($this->request->getPost('search') ?? ''));
+
+		$total = $db->table('catalogs')
+			->where('IsQUARANTINE', 0)
+			->countAllResults();
+
+		$applyFilters = static function ($builder) use ($worksheetId, $search) {
+			$builder->where('a.IsQUARANTINE', 0);
+			if ($worksheetId > 0) {
+				$builder->where('a.Worksheet_id', $worksheetId);
+			}
+			if ($search !== '') {
+				$builder->groupStart()
+					->like('a.BIBID', $search)
+					->orLike('a.Title', $search)
+					->orLike('a.Publisher', $search)
+					->orLike('a.CallNumber', $search)
+					->groupEnd();
+			}
+			return $builder;
+		};
+
+		if ($worksheetId > 0 || $search !== '') {
+			$filtered = $applyFilters($db->table('catalogs as a'))->countAllResults();
+		} else {
+			$filtered = $total;
+		}
+
+		$pages = max(1, (int) ceil($filtered / $length));
+		$page = min($page, $pages);
+		$offset = ($page - 1) * $length;
+
+		$builder = $db->table('catalogs as a')
+			->select('a.ID, a.BIBID, a.Title, a.Edition, a.Publisher, a.PhysicalDescription, a.CallNumber, a.IsOPAC, a.ISPopuler, a.IsRDA')
+			->select('w.Name AS WorksheetName')
+			->select('(SELECT COUNT(*) FROM collections c WHERE c.Catalog_id = a.ID) AS Eksemplar', false)
+			->join('worksheets w', 'w.ID = a.Worksheet_id', 'left');
+
+		$rows = $applyFilters($builder)
+			->orderBy('a.ID', 'DESC')
+			->limit($length, $offset)
+			->get()
+			->getResultArray();
+
+		foreach ($rows as &$row) {
+			$id = (int) $row['ID'];
+			$row['ID'] = $id;
+			$row['IsOPAC'] = (int) $row['IsOPAC'];
+			$row['ISPopuler'] = (int) $row['ISPopuler'];
+			$row['IsRDA'] = (int) $row['IsRDA'];
+			$row['Eksemplar'] = (int) $row['Eksemplar'];
+			$row['editUrl'] = base_url('katalog/edit/' . $id . '?rda=' . $row['IsRDA']);
+			$row['switchUrl'] = base_url('api/katalog/switch/' . $id);
+		}
+		unset($row);
+
+		return $this->respond([
+			'rows' => $rows,
+			'total' => $total,
+			'filtered' => $filtered,
+			'page' => $page,
+			'offset' => $offset,
+			'length' => $length,
+			'pages' => $pages,
+		]);
+	}
+
 	public function datatable($IsQUARANTINE = 0)
 	{
 		$db = db_connect('data');
 
 		$builder = $db->table('catalogs as a')
 			->select('a.ID, a.ID as action')
-			->select('a.ControlNumber, a.BIBID,a.CallNumber, a.Title, a.Author, a.Edition, a.Publisher, a.PublishLocation, a.PublishYear, a.Publikasi, a.Subject, a.PhysicalDescription, a.ISBN, a.CallNumber, a.Note, a.Languages, a.DeweyNo, a.ApproveDateOPAC, a.IsOPAC, a.ISPopuler, a.IsBNI, a.IsKIN, a.IsRDA, a.CoverURL, a.Worksheet_id, a.CreateBy, a.CreateDate, a.CreateTerminal, a.UpdateBy, a.UpdateDate, a.UpdateTerminal, a.MARC_LOC, a.PRESERVASI_ID, a.QUARANTINEDBY, a.QUARANTINEDDATE, a.QUARANTINEDTERMINAL, a.Member_id, a.KIILastUploadDate')
-			->select('0 as Eksemplar')
+			->select('a.BIBID, a.CallNumber, a.Title, a.Edition, a.Publisher, a.PhysicalDescription, a.IsOPAC, a.ISPopuler, a.IsRDA, a.Worksheet_id')
+			->select('(SELECT COUNT(*) FROM collections c WHERE c.Catalog_id = a.ID) AS Eksemplar', false)
 			->select('w.Name as WorksheetName')
 			->join('worksheets w', 'w.ID = a.Worksheet_id', 'left')
 			->where('a.IsQUARANTINE', $IsQUARANTINE)
@@ -60,23 +138,15 @@ class Katalog extends \Base\Controllers\BaseResourceController
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
 			->edit('ID', function ($row) {
-				return '<input type="checkbox" class="check" name="ID[]" value="' . $row->ID . '">';
+				return '<input type="checkbox" class="check" name="ID[]" value="' . (int) $row->ID . '" aria-label="Pilih katalog ' . esc($row->BIBID ?: $row->ID) . '">';
 			})
 			->edit('BIBID', function ($row) {
-				helper('reference');
-				$html  = $row->BIBID . '<br>';
-
-
-				return $html;
+				return esc($row->BIBID);
 			})
 			->edit('WorksheetName', function ($row) {
 				return !empty($row->WorksheetName)
 					? '<span class="badge badge-secondary">' . esc($row->WorksheetName) . '</span>'
 					: '<span class="text-muted">-</span>';
-			})
-			->edit('Eksemplar', function ($row) {
-				helper('eksemplar');
-				return count_collections($row->ID);
 			})
 			->edit('IsRDA', function ($row) {
 				return $row->IsRDA == 1
@@ -85,17 +155,17 @@ class Katalog extends \Base\Controllers\BaseResourceController
 			})
 			->edit('IsOPAC', function ($row) {
 				$checked = $row->IsOPAC == 1 ? 'checked' : '';
-				return '<input type="checkbox" class="apply-status" data-href="' . base_url('api/katalog/switch/' . $row->ID) . '" data-checked="' . $checked . '" data-field="IsOPAC" ' . $checked . ' data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="mini">';
+				return '<input type="checkbox" class="apply-status catalog-switch" data-href="' . base_url('api/katalog/switch/' . $row->ID) . '" data-field="IsOPAC" ' . $checked . ' aria-label="Tampilkan katalog ' . esc($row->BIBID ?: $row->ID) . ' di OPAC">';
 			})
 			->edit('ISPopuler', function ($row) {
 				$checked = $row->ISPopuler == 1 ? 'checked' : '';
-				return '<input type="checkbox" class="apply-status" data-href="' . base_url('api/katalog/switch/' . $row->ID) . '" data-checked="' . $checked . '" data-field="ISPopuler" ' . $checked . ' data-toggle="toggle" data-onstyle="warning" data-on="Ya" data-off="Tdk" data-size="mini">';
+				return '<input type="checkbox" class="apply-status catalog-switch" data-href="' . base_url('api/katalog/switch/' . $row->ID) . '" data-field="ISPopuler" ' . $checked . ' aria-label="Tandai katalog ' . esc($row->BIBID ?: $row->ID) . ' sebagai populer">';
 			})
 			->edit('action', function ($row) use ($IsQUARANTINE) {
 				if ($row->IsRDA == 0) {
-					$edit = '<a href="' . base_url('katalog/edit/' . $row->ID . '?rda=0') . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
+					$edit = '<a href="' . base_url('katalog/edit/' . $row->ID . '?rda=0') . '" title="Ubah katalog" aria-label="Ubah katalog ' . esc($row->BIBID ?: $row->ID) . '" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold" aria-hidden="true"></i></a>';
 				} else {
-					$edit = '<a href="' . base_url('katalog/edit/' . $row->ID . '?rda=1') . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
+					$edit = '<a href="' . base_url('katalog/edit/' . $row->ID . '?rda=1') . '" title="Ubah katalog" aria-label="Ubah katalog ' . esc($row->BIBID ?: $row->ID) . '" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold" aria-hidden="true"></i></a>';
 				}
 
 

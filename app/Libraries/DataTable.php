@@ -238,7 +238,7 @@ class DataTable
 			}
 		}
 
-		$rowNumber = 1;
+		$rowNumber = ((int) $start) + 1;
 		$queryResult = [];
 		foreach ($this->queryBuilder->get()->getResult() as $row) {
 			$data = [];
@@ -541,7 +541,7 @@ class DataTable
 			throw $e;
 		}
 
-		$rowNumber   = 1;
+		$rowNumber   = ((int) $start) + 1;
 		$queryResult = [];
 		foreach ($results as $row) {
 			$data = [];

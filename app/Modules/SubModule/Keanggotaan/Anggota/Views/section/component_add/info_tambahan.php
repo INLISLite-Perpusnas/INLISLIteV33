@@ -27,7 +27,7 @@
                                             tabindex="-1" aria-hidden="true">
                                             <option value="" <?= empty($anggota->Job_id) ? 'selected' : '' ?>> Pilih Pekerjaan </option>
                                             <?php foreach (get_ref_table('master_pekerjaan', 'id,Pekerjaan',null,'data') as $row): ?>
-								            <option value="<?=$row->id?>" <?=set_select('Job_id',$row->id)?>> <?=$row->Pekerjaan?></option>
+                                            <option value="<?= esc($row->id, 'attr') ?>" <?=set_select('Job_id',$row->id)?>> <?=esc($row->Pekerjaan)?></option>
 							        <?php endforeach;?>
                                         </select>
                                     </div>
@@ -85,7 +85,7 @@
                                             tabindex="-1" aria-hidden="true">
                                             <option value="">Pilih Jenjang Pendidikan</option>
                                             <?php foreach (get_ref_table('master_pendidikan', 'id, Nama',null,'data') as $row): ?>
-								           <option value="<?=$row->id?>" <?=set_select('JenjangPendidikan_id',$row->id)?>><?=$row->Nama?></option>
+                                        <option value="<?= esc($row->id, 'attr') ?>" <?=set_select('JenjangPendidikan_id',$row->id)?>><?=esc($row->Nama)?></option>
 							                <?php endforeach;?>
                                         </select>
                                     </div>
@@ -100,7 +100,7 @@
                                         <select class="form-control" name="Fakultas_id" id="Fakultas_id">
                                             <option value="">Pilih Fakultas</option>
                                             <?php foreach (get_ref_table('master_fakultas', 'id,Nama',null,'data') as $row): ?>
-								            <option value="<?=$row->id?>" <?=set_select('Fakultas_id',$row->id)?>><?=$row->Nama?></option>
+                                            <option value="<?= esc($row->id, 'attr') ?>" <?=set_select('Fakultas_id',$row->id)?>><?=esc($row->Nama)?></option>
 							            <?php endforeach;?>
                                         </select>
                                     </div>
@@ -115,7 +115,7 @@
                                         <select class="form-control" name="Kelas_id" id="Kelas_id">
                                             <option value="">Pilih Kelas</option>
                                             <?php foreach (get_ref_table('kelas_siswa', 'id, namakelassiswa',null,'data') as $row): ?>
-								            <option value="<?=$row->id?>" <?=set_select('Kelas_id',$row->id)?>><?=$row->namakelassiswa?></option>
+                                            <option value="<?= esc($row->id, 'attr') ?>" <?=set_select('Kelas_id',$row->id)?>><?=esc($row->namakelassiswa)?></option>
 							            <?php endforeach;?>
                                         </select>
                                     </div>

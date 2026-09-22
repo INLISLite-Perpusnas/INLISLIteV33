@@ -14,9 +14,9 @@ $request = service('request');
         <div class="page-title-wrapper">
             <div class="page-title-heading">
                 <div class="page-title-icon">
-                    <i class="pe-7s-id icon-gradient bg-strong-bliss"></i>
+                    <i class="pe-7s-id icon-gradient bg-strong-bliss" aria-hidden="true"></i>
                 </div>
-                <div>Anggota
+                <div><h1 class="h5 mb-0">Anggota</h1>
                     <div class="page-title-subheading">Daftar semua Anggota
                     </div>
                 </div>
@@ -24,7 +24,7 @@ $request = service('request');
             <div class="page-title-actions">
                 <nav class="" aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i></a></li>
+                        <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>" aria-label="Beranda"><i class="fa fa-home" aria-hidden="true"></i><span class="visually-hidden">Beranda</span></a></li>
                         <li class="breadcrumb-item">Keanggotaan</li>
                         <li class="breadcrumb-item ">Daftar Anggota</li>
                     </ol>
@@ -34,9 +34,9 @@ $request = service('request');
     </div>
 
     <div class="main-card mb-3 card">
-        <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Anggota
+        <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate" aria-hidden="true"> </i>Tabel Anggota
             <div class="btn-actions-pane-right actions-icon-btn">
-                <a href="<?= base_url('anggota/create') ?>" class=" btn btn-success" title=""><i class="fa fa-plus"></i>
+                <a href="<?= base_url('anggota/create') ?>" class="btn btn-success"><i class="fa fa-plus" aria-hidden="true"></i>
                     Tambah Anggota
                 </a>
             </div>
@@ -46,11 +46,11 @@ $request = service('request');
             <form name="form_items" id="form_items">
                 
                 <div class="d-block mb-3 pb-3 border-bottom">
-                    <button type="button" id="proses_keranjang" class="btn btn-warning" data-toggle="tooltip" data-placement="top" title="Semua anggota yang terpilih"><i class="fa fa-shopping-cart"></i> Pindahkan ke Keranjang</button>
-                    <button type="button" id="print_kartu" class="btn btn-primary ml-2" data-toggle="tooltip" data-placement="top" title="Print kartu anggota yang terpilih"><i class="fa fa-print"></i> Print Kartu</button>
-                    <button type="button" id="aktifkan_online" class="btn btn-success ml-2" data-toggle="tooltip" data-placement="top" title="Aktifkan akses online untuk anggota yang terpilih"><i class="fa fa-globe"></i> Aktifkan Online</button>
+                    <button type="button" id="proses_keranjang" class="btn btn-warning" data-toggle="tooltip" data-placement="top" title="Semua anggota yang terpilih"><i class="fa fa-shopping-cart" aria-hidden="true"></i> Pindahkan ke Keranjang</button>
+                    <button type="button" id="print_kartu" class="btn btn-primary ml-2" data-toggle="tooltip" data-placement="top" title="Print kartu anggota yang terpilih"><i class="fa fa-print" aria-hidden="true"></i> Print Kartu</button>
+                    <button type="button" id="aktifkan_online" class="btn btn-success ml-2" data-toggle="tooltip" data-placement="top" title="Aktifkan akses online untuk anggota yang terpilih"><i class="fa fa-globe" aria-hidden="true"></i> Aktifkan Online</button>
                     <?php if ($is_sekolah) : ?>
-                        <button type="button" id="update_kelas" class="btn btn-info ml-2" data-toggle="tooltip" data-placement="top" title="Update kelas anggota yang terpilih secara batch"><i class="fa fa-graduation-cap"></i> Update Batch Kelas</button>
+                        <button type="button" id="update_kelas" class="btn btn-info ml-2" data-toggle="tooltip" data-placement="top" title="Update kelas anggota yang terpilih secara batch"><i class="fa fa-graduation-cap" aria-hidden="true"></i> Update Batch Kelas</button>
                     <?php endif; ?>
                 </div>
 
@@ -59,9 +59,9 @@ $request = service('request');
                     <div class="d-flex align-items-center flex-wrap mb-3" style="gap:6px;">
                         <div class="input-group" style="width:280px; flex-shrink:0;">
                             <div class="input-group-prepend">
-                                <span class="btn btn-secondary"><i class="fa fa-filter"></i> Kelas</span>
+                                <span class="btn btn-secondary"><i class="fa fa-filter" aria-hidden="true"></i> Kelas</span>
                             </div>
-                            <select class="form-control" id="filter_kelas_id">
+                            <select class="form-control" id="filter_kelas_id" aria-label="Filter kelas">
                                 <option value="">-- Semua Kelas --</option>
                                 <?php foreach ($kelas_list as $row) : ?>
                                     <option value="<?= $row->id ?>"><?= esc($row->namakelassiswa) ?></option>
@@ -70,7 +70,7 @@ $request = service('request');
                         </div>
 
                         <button class="btn btn-outline-secondary" id="btnResetFilterKelas" type="button" style="height:38px; flex-shrink:0;">
-                            <i class="fa fa-undo"></i> Reset Filter
+                            <i class="fa fa-undo" aria-hidden="true"></i> Reset Filter
                         </button>
                     </div>
                 <?php endif; ?>
@@ -80,9 +80,9 @@ $request = service('request');
                     <div class="d-flex align-items-center flex-wrap mb-3" style="gap:6px;">
                         <div class="input-group" style="width:280px; flex-shrink:0;">
                             <div class="input-group-prepend">
-                                <span class="btn btn-secondary"><i class="fa fa-filter"></i> Fakultas</span>
+                                <span class="btn btn-secondary"><i class="fa fa-filter" aria-hidden="true"></i> Fakultas</span>
                             </div>
-                            <select class="form-control" id="filter_fakultas_id">
+                            <select class="form-control" id="filter_fakultas_id" aria-label="Filter fakultas">
                                 <option value="">-- Semua Fakultas --</option>
                                 <?php foreach ($fakultas_list as $row) : ?>
                                     <option value="<?= $row->id ?>"><?= esc($row->Nama) ?></option>
@@ -92,9 +92,9 @@ $request = service('request');
 
                         <div class="input-group" style="width:280px; flex-shrink:0;">
                             <div class="input-group-prepend">
-                                <span class="btn btn-secondary"><i class="fa fa-filter"></i> Jurusan</span>
+                                <span class="btn btn-secondary"><i class="fa fa-filter" aria-hidden="true"></i> Jurusan</span>
                             </div>
-                            <select class="form-control" id="filter_jurusan_id">
+                            <select class="form-control" id="filter_jurusan_id" aria-label="Filter jurusan">
                                 <option value="">-- Semua Jurusan --</option>
                                 <?php foreach ($jurusan_list as $row) : ?>
                                     <option value="<?= $row->id ?>"><?= esc($row->Nama) ?></option>
@@ -103,31 +103,32 @@ $request = service('request');
                         </div>
 
                         <button class="btn btn-outline-secondary" id="btnResetFilterFakultasJurusan" type="button" style="height:38px; flex-shrink:0;">
-                            <i class="fa fa-undo"></i> Reset Filter
+                            <i class="fa fa-undo" aria-hidden="true"></i> Reset Filter
                         </button>
                     </div>
                 <?php endif; ?>
 
                 <table style="width: 100%;" id="tbl_data" class="table table-hover table-striped table-bordered">
+                    <caption class="visually-hidden">Daftar seluruh anggota perpustakaan</caption>
                     <thead>
                         <tr>
-                            <th class="text-center" width="35">No</th>
-                            <th class="text-center" width="35">
-                                <input type="checkbox" class="check_data" title="Pilih Semua">
+                            <th class="text-center" width="35" scope="col">No</th>
+                            <th class="text-center" width="35" scope="col">
+                                <input type="checkbox" class="check_data" title="Pilih Semua" aria-label="Pilih semua anggota">
                             </th>
-                            <th>Nama Anggota</th>
-                            <th>No. Anggota</th>
-                            <th width="100">Tgl. Register</th>
-                            <th width="100">Tgl. Berakhir</th>
-                            <th width="130">Status Anggota</th>
+                            <th scope="col">Nama Anggota</th>
+                            <th scope="col">No. Anggota</th>
+                            <th width="100" scope="col">Tgl. Register</th>
+                            <th width="100" scope="col">Tgl. Berakhir</th>
+                            <th width="130" scope="col">Status Anggota</th>
                             <?php if ($is_sekolah) : ?>
-                                <th width="120">Kelas</th>
+                                <th width="120" scope="col">Kelas</th>
                             <?php endif; ?>
                             <?php if ($is_perguruan_tinggi) : ?>
-                                <th width="150">Fakultas</th>
-                                <th width="150">Jurusan</th>
+                                <th width="150" scope="col">Fakultas</th>
+                                <th width="150" scope="col">Jurusan</th>
                             <?php endif; ?>
-                            <th style="min-width: 150px;">Aksi</th>
+                            <th style="min-width: 150px;" scope="col">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -164,6 +165,8 @@ $request = service('request');
         t = $('#tbl_data').DataTable({
             "processing": true,
             "serverSide": true,
+            "deferRender": true,
+            "searchDelay": 350,
             "scrollX": true,
             "scrollCollapse": true,
             "ajax": {
@@ -185,13 +188,13 @@ $request = service('request');
             
             "pagingType": "full_numbers",
             "oLanguage": {
-                "sSearch": "<i class='fa fa-search'></i> _INPUT_",
+                "sSearch": "<i class='fa fa-search' aria-hidden='true'></i> _INPUT_",
                 "sLengthMenu": "_MENU_",
                 "oPaginate": {
-                    "sNext": "<i class='fa fa-chevron-right'></i>",
-                    "sPrevious": "<i class='fa fa-chevron-left'></i>",
-                    "sLast": "<i class='fa fa-chevron-double-right'></i>",
-                    "sFirst": "<i class='fa fa-chevron-double-left'></i>",
+                    "sNext": "<i class='fa fa-chevron-right' aria-hidden='true'></i><span class='visually-hidden'>Berikutnya</span>",
+                    "sPrevious": "<i class='fa fa-chevron-left' aria-hidden='true'></i><span class='visually-hidden'>Sebelumnya</span>",
+                    "sLast": "<i class='fa fa-chevron-double-right' aria-hidden='true'></i><span class='visually-hidden'>Terakhir</span>",
+                    "sFirst": "<i class='fa fa-chevron-double-left' aria-hidden='true'></i><span class='visually-hidden'>Pertama</span>",
                 }
             },
             "columns": [{
@@ -255,8 +258,9 @@ $request = service('request');
                 }
 
             ],
+            <?php $createDateColumnIndex = 8 + ($is_sekolah ? 1 : 0) + ($is_perguruan_tinggi ? 2 : 0); ?>
             "order": [
-                [<?= 8 + ($is_sekolah ? 1 : 0) + ($is_perguruan_tinggi ? 2 : 0) ?>, "desc"]
+                [<?= $createDateColumnIndex ?>, "desc"]
             ],
             "drawCallback": function(data, type, full, meta) {
                 var api = this.api();
@@ -264,7 +268,7 @@ $request = service('request');
 
                 $('.apply-status').bootstrapToggle();
 
-                $(".apply-status").on('change', function() {
+                $(".apply-status").off('change.member').on('change.member', function() {
                     var url = $(this).attr('data-href');
                     var field = $(this).attr('data-field');
                     var value = $(this).is(':checked') == true ? 1 : 0;
@@ -273,7 +277,7 @@ $request = service('request');
                     ajax_post(url, data_post);
                 });
 
-                $(".apply-select").on('change', function() {
+                $(".apply-select").off('change.member').on('change.member', function() {
                     var url = $(this).attr('data-href');
                     var field = $(this).attr('data-field');
                     var value = $(this).val();
@@ -282,16 +286,13 @@ $request = service('request');
                     ajax_post(url, data_post);
                 });
 
-                $.each(data, function(i, row) {
-                    $("#lazy" + row.id).Lazy();
-                });
-
                 $('.image-link').magnificPopup({
                     type: 'image'
                 });
             },
             "initComplete": function(settings, json) {
-
+                $('#tbl_data_filter input').attr('aria-label', 'Cari anggota').attr('placeholder', 'Cari anggota...');
+                $('#tbl_data_length select').attr('aria-label', 'Jumlah anggota per halaman');
             }
         });
     });
@@ -425,9 +426,6 @@ $request = service('request');
         var form = $('#form_items');
         var serialize_bulk = form.serialize();
         var url = "<?= base_url('anggota/proses_keranjang') ?>" + '?' + serialize_bulk;
-        console.log(serialize_bulk);
-        console.log(url);
-
         Swal.fire({
             title: 'Anda yakin?',
             html: "Semua anggota yang terpilih akan dipindahkan ke keranjang",
@@ -447,14 +445,8 @@ $request = service('request');
 
     // Event handler untuk tombol Print Kartu
     $('#print_kartu').click(function() {
-        // Debug: cek semua checkbox yang ada
-        console.log('All checkboxes in table:', $('#tbl_data input[type="checkbox"]'));
-
         // Coba beberapa selector berbeda untuk menangkap checkbox
         var checkedBoxes = $('#tbl_data input[type="checkbox"]:checked').not('.check_data');
-
-        console.log('Checked boxes found:', checkedBoxes.length);
-        console.log('Checked boxes:', checkedBoxes);
 
         if (checkedBoxes.length === 0) {
             Swal.fire({
@@ -474,14 +466,10 @@ $request = service('request');
             var checkboxName = $(this).attr('name');
             var checkboxId = $(this).attr('id');
 
-            console.log('Checkbox - Value:', checkboxValue, 'Name:', checkboxName, 'ID:', checkboxId);
-
             if (checkboxValue && checkboxValue !== 'on') {
                 selectedIds.push(checkboxValue);
             }
         });
-
-        console.log('Selected IDs:', selectedIds);
 
         // Konfirmasi sebelum print
         Swal.fire({
@@ -519,9 +507,6 @@ $request = service('request');
         var form = $('#form_items');
         var serialize_bulk = form.serialize();
         var url = "<?= base_url('anggota/hapus_permanen') ?>" + '?' + serialize_bulk;
-        console.log(serialize_bulk);
-        console.log(url);
-
         Swal.fire({
             title: 'Anda yakin?',
             html: "Semua anggota yang terpilih akan dihapus secara permanen",
@@ -568,7 +553,6 @@ $request = service('request');
 
     $("body").on("click", ".remove-data", function() {
         var url = $(this).attr('data-href');
-        console.log(url);
         Swal.fire({
             title: '<?= lang('App.swal.are_you_sure') ?>',
             text: "<?= lang('App.swal.can_not_be_restored') ?>",
@@ -593,8 +577,6 @@ $request = service('request');
                 data: data_post,
             })
             .done(function(res) {
-                console.log(res)
-
                 if (res.error == false) {
                     Swal.fire({
                         title: 'Berhasil',
@@ -614,8 +596,6 @@ $request = service('request');
                 }
             })
             .fail(function(res) {
-                console.log(res);
-
                 Swal.fire({
                     title: 'Oups',
                     text: 'Maaf, terjadi kesalahan. Coba beberapa saat lagi atau hubungi Admin',
@@ -629,8 +609,6 @@ $request = service('request');
     // Event handler untuk tombol Aktifkan Online
     $('#aktifkan_online').click(function() {
         var checkedBoxes = $('#tbl_data input[type="checkbox"]:checked').not('.check_data');
-        
-        console.log('Checked boxes found:', checkedBoxes.length);
         
         if (checkedBoxes.length === 0) {
             Swal.fire({
@@ -651,8 +629,6 @@ $request = service('request');
                 selectedIds.push(checkboxValue);
             }
         });
-        
-        console.log('Selected IDs for online activation:', selectedIds);
         
         // Konfirmasi sebelum aktifkan
         Swal.fire({
@@ -699,8 +675,6 @@ $request = service('request');
             dataType: 'json'
         })
         .done(function(response) {
-            console.log('Response:', response);
-            
             if (response.error === false) {
                 Swal.fire({
                     title: 'Berhasil!',
@@ -723,9 +697,6 @@ $request = service('request');
             }
         })
         .fail(function(jqXHR, textStatus, errorThrown) {
-            console.log('Error:', textStatus, errorThrown);
-            console.log('Response:', jqXHR.responseText);
-            
             Swal.fire({
                 title: 'Oops!',
                 text: 'Terjadi kesalahan saat memproses data. Silakan coba lagi.',
@@ -785,7 +756,7 @@ $request = service('request');
                 video.play();
             })
             .catch(function(err) {
-                console.log("An error occurred: " + err);
+                $('#form_capture_message').html('Kamera tidak dapat diakses. Periksa izin kamera browser.');
                 Swal.fire({
                     title: 'Error',
                     text: 'Tidak dapat mengakses kamera: ' + err,
