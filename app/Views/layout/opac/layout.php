@@ -441,7 +441,7 @@ $pageDescription = isset($meta_description)
                             </li>
                             <li>
                                 <a class="dropdown-item" href="<?= base_url('opac/statistics_kunjungan') ?>">
-                                    <i class="fa-solid fa-chart-line fa-fw text-secondary me-2"></i>Statistik Kunjungan
+                                    <i class="fa-solid fa-person-walking fa-fw text-secondary me-2"></i>Statistik Kunjungan
                                 </a>
                             </li>
                         </ul>

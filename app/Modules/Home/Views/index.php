@@ -533,7 +533,7 @@
                     $defaultCover = base_url('assets/img/default-cover.webp');
                     $thumbUrl     = get_catalog_thumb_url($book->CoverURL ?: '', 200, 340);
                     ?>
-                    <div class="col-6 col-md-4 col-lg-2-4" style="width: 20%; min-width: 160px;">
+                    <div class="col-6 col-md-4 col-lg">
                         <div class="card h-100 border-0 shadow-sm hover-card rounded-xl overflow-hidden bg-white">
                             <img src="<?= $thumbUrl ?>"
                                  class="card-img-top book-cover"
