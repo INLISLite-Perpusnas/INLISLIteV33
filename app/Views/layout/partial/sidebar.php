@@ -3,6 +3,25 @@ $request = service('request');
 helper('menu');
 $user = user();
 $group = isset($user->category) ? $user->category : 'admin';
+
+// View partial dirender dalam scope tersendiri oleh CodeIgniter, sehingga
+// variabel lokal dari layout utama tidak selalu tersedia di sini.
+$sidebarSettingsRows = db_connect()->table('settingparameters')
+    ->select('Name, Value')
+    ->whereIn('Name', ['Logo', 'NamaPerpustakaan'])
+    ->get()
+    ->getResultArray();
+$sidebarSettings = array_column($sidebarSettingsRows, 'Value', 'Name');
+$nama_perpustakaan = $sidebarSettings['NamaPerpustakaan'] ?? 'Perpustakaan';
+$sidebarLogoFile = !empty($sidebarSettings['Logo']) ? basename((string) $sidebarSettings['Logo']) : '';
+$sidebarLogoRelativePath = $sidebarLogoFile !== '' && is_file(FCPATH . 'uploads/branch/' . $sidebarLogoFile)
+    ? 'uploads/branch/' . $sidebarLogoFile
+    : 'assets/img/default-perpus.png';
+$sidebarLogoVersion = is_file(FCPATH . $sidebarLogoRelativePath)
+    ? (string) filemtime(FCPATH . $sidebarLogoRelativePath)
+    : '1';
+$sidebarLogoUrl = base_url($sidebarLogoRelativePath) . '?v=' . rawurlencode($sidebarLogoVersion);
+
 $menuHtml = null;
 if (!empty($isLightweightBackendPage)) {
     $menuCacheKey = 'dashboard_menu_' . hash('sha256', $group . ':' . $request->getUri()->getPath());
@@ -325,7 +344,7 @@ if (!is_string($menuHtml)) {
         </button>
         
         <div>
-            <img src="<?= esc($sidebarLogoUrl ?? (!empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png'))) ?>"
+            <img src="<?= esc($sidebarLogoUrl) ?>"
                 alt="Logo <?= esc($nama_perpustakaan ?? 'perpustakaan') ?>" width="80" height="80"
                 style="width:80px;height:80px;object-fit:contain;border-radius:16px;margin-bottom:20px;" fetchpriority="high">
         </div>

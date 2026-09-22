@@ -69,6 +69,7 @@ class GuestBook extends \App\Controllers\BaseController
 		$this->data['data'] = $location;
 		$this->data['member'] = $member;
 		$this->data['tujuan_kunjungan'] = get_ref_table('tujuan_kunjungan', 'ID, TujuanKunjungan', 'Member=1', 'data');
+		$this->data['visit_autosave_seconds'] = 30;
 		$this->data['message'] = $this->validation->getErrors()
 			? $this->validation->listErrors()
 			: $this->session->getFlashdata('message');

@@ -452,7 +452,7 @@
 				
 				</p> 
 				<p style="text-align:center; color: #e74c3c; font-size: 1rem;">
-					Otomatis tersimpan dalam <strong><span id="countdown">10</span></strong> detik...
+					Otomatis tersimpan dalam <strong><span id="countdown"><?= (int) ($visit_autosave_seconds ?? 30) ?></span></strong> detik...
 				</p>
 			</div>
 
@@ -524,7 +524,7 @@
 
 <?php if (!empty($member)) : ?>
 <script>
-    let countdown = 10;
+    let countdown = <?= (int) ($visit_autosave_seconds ?? 30) ?>;
     let timer;
 
     const countdownEl = document.getElementById('countdown');

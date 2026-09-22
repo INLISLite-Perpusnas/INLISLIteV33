@@ -20,13 +20,20 @@ $settings = array_column($settingRows, 'Value', 'Name');
 $logo = $settings['Logo'] ?? '';
 $nama_perpustakaan = $settings['NamaPerpustakaan'] ?? 'Perpustakaan';
 $npp_perpustakaan = $settings['NPPPerpustakaan'] ?? 'NPP Perpustakaan Mitra';
+
+// Semua halaman backend harus memakai sumber logo yang sama dengan halaman
+// Pengaturan Nama Perpustakaan. Versi file mencegah browser menampilkan logo
+// lama setelah administrator menggantinya.
+$logoFile = $logo !== '' ? basename((string) $logo) : '';
+$logoRelativePath = $logoFile !== '' && is_file(FCPATH . 'uploads/branch/' . $logoFile)
+    ? 'uploads/branch/' . $logoFile
+    : 'assets/img/default-perpus.png';
+$logoVersion = is_file(FCPATH . $logoRelativePath) ? (string) filemtime(FCPATH . $logoRelativePath) : '1';
+$sidebarLogoUrl = base_url($logoRelativePath) . '?v=' . rawurlencode($logoVersion);
+
 $isDashboardPage = !empty($is_dashboard_page);
 $isCatalogListPage = !empty($is_catalog_list_page);
 $isExemplarListPage = !empty($is_exemplar_list_page);
-if ($isExemplarListPage) {
-    helper('backend_logo');
-    $sidebarLogoUrl = backend_logo_url((string) $logo);
-}
 $isMemberListPage = !empty($is_member_list_page);
 $isLightweightBackendPage = $isDashboardPage || $isCatalogListPage || $isExemplarListPage || $isMemberListPage;
 
@@ -45,7 +52,7 @@ $page_title = ucfirst($segment2 ?: $segment1);
     <title><?= esc($title ?? $page_title . ' - ' . $nama_perpustakaan) ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="<?= esc($meta_description ?? 'Sistem manajemen perpustakaan ' . $nama_perpustakaan) ?>">
-    <link rel="icon" href="<?= esc($sidebarLogoUrl ?? (!empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/logo-inlislite-icon.png'))) ?>">
+    <link rel="icon" href="<?= esc($sidebarLogoUrl) ?>">
     <?php if ($isExemplarListPage): ?>
         <link rel="stylesheet" href="<?= base_url('assets/css/bootstrap.min.css') ?>">
         <link rel="preload" href="<?= base_url('assets/fonts/catalog/fa-solid-subset.woff2') ?>" as="font" type="font/woff2" crossorigin>
