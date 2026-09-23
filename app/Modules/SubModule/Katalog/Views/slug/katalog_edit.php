@@ -146,7 +146,7 @@ $rda = $request->getGet('rda') ?? 1;
 						<div class="col-md-12 terbitanBerkala" style="display: block;">
 							<div class="form-group">
 								<label for="judulSeragam">Judul Seragam</label>
-								<input type="text" class="form-control" name="judulSeragam" id="judulSeragam" placeholder="" value="<?= $str_240 ?? "" ?>" />
+								<input type="text" class="form-control" name="judulSeragam" id="judulSeragam" placeholder="" value="<?= $str_240['a'] ?? "" ?>" />
 							</div>
 						</div>
 					<?php endif; ?>
