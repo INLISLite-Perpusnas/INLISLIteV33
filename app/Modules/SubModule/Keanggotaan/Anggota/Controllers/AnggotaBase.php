@@ -25,19 +25,21 @@ trait AnggotaBase
     public $regionModel;
     public $settingModel;
     public $password;
+    public $jenisKelaminModel;
 
     protected function initAnggotaBase(): void
     {
-        $this->anggotaModel              = new \Anggota\Models\AnggotaModel();
-        $this->lokasiperpustakaanModel   = new \LokasiPerpustakaan\Models\LokasiPerpustakaanModel();
-        $this->anggotahakaksesModel      = new \Anggota\Models\Anggotahakakses();
-        $this->AksesKoleksiModel         = new \Anggota\Models\Hak_akses_koleksi();
-        $this->regionModel               = new \Region\Models\RegionModel();
-        $this->jenisanggotaModel         = new \JenisAnggota\Models\JenisAnggotaModel();
-        $this->templateKartuModel        = new \KartuAnggota\Models\KartuAnggotaModel();
-        $this->kartuanggotaModel         = new \KartuAnggota\Models\KartuAnggotaModel();
-        $this->settingModel              = new \PenomoranKoleksi\Models\PenomoranKoleksiModel();
-        $this->password                  = new \Myth\Auth\Password();
+        $this->anggotaModel = new \Anggota\Models\AnggotaModel();
+        $this->lokasiperpustakaanModel = new \LokasiPerpustakaan\Models\LokasiPerpustakaanModel();
+        $this->anggotahakaksesModel = new \Anggota\Models\Anggotahakakses();
+        $this->AksesKoleksiModel = new \Anggota\Models\Hak_akses_koleksi();
+        $this->regionModel = new \Region\Models\RegionModel();
+        $this->jenisanggotaModel = new \JenisAnggota\Models\JenisAnggotaModel();
+        $this->templateKartuModel = new \KartuAnggota\Models\KartuAnggotaModel();
+        $this->kartuanggotaModel = new \KartuAnggota\Models\KartuAnggotaModel();
+        $this->settingModel = new \PenomoranKoleksi\Models\PenomoranKoleksiModel();
+        $this->password = new \Myth\Auth\Password();
+        $this->jenisKelaminModel = new \Anggota\Models\JenisKelaminModel();
 
         $this->uploadPath = ROOTPATH . 'public/uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/anggota/';
@@ -49,7 +51,7 @@ trait AnggotaBase
             mkdir($this->modulePath);
         }
 
-        $this->auth      = \Myth\Auth\Config\Services::authentication();
+        $this->auth = \Myth\Auth\Config\Services::authentication();
         $this->authorize = \Myth\Auth\Config\Services::authorization();
 
         helper('adminigniter');
