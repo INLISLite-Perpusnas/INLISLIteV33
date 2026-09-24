@@ -356,7 +356,8 @@
 		<div class="page-header">
 			<div class="library-info">
 				<h1><?= $data->Name ?? 'Perpustakaan' ?></h1>
-				<div class="library-location"><?= $data->LocationLibrary_name ?? 'Dinas Perpustakaan dan Kearsipan' ?></div>
+				<div class="library-location"><?= $data->LocationLibrary_name ?? 'Dinas Perpustakaan dan Kearsipan' ?>
+				</div>
 				<nav class="breadcrumb-custom">
 					<a href="<?= base_url() ?>"><i class="fas fa-home"></i> Beranda</a>
 					<span>/</span>
@@ -365,7 +366,8 @@
 					<span class="active">Anggota</span>
 				</nav>
 			</div><br>
-			<h2 style="background-color: #1b3878; color: #fff; padding: 10px; border-radius: 5px;">Total Kunjungan Hari ini <?= $totalKunjungan ?? '0' ?></h2>
+			<h2 style="background-color: #1b3878; color: #fff; padding: 10px; border-radius: 5px;">Total Kunjungan Hari
+				ini <?= $totalKunjungan ?? '0' ?></h2>
 		</div>
 
 		<!-- Navigation Tabs -->
@@ -384,7 +386,7 @@
 			</a>
 		</div>
 
-		<?php if (empty($member)) : ?>
+		<?php if (empty($member)): ?>
 			<!-- Search Section -->
 			<div class="search-section">
 				<h2 class="search-title">Cari Anggota Perpustakaan</h2>
@@ -392,12 +394,8 @@
 
 				<form method="get" action="<?= base_url('buku-tamu') ?>" class="search-form">
 					<div class="search-input-group">
-						<input type="text"
-							class="search-input"
-							name="member_no"
-							id="member_no"
-							placeholder="Masukkan nomor anggota..."
-							required>
+						<input type="text" class="search-input" name="member_no" id="member_no"
+							placeholder="Masukkan nomor anggota..." required>
 						<button class="search-btn" type="submit">
 							<i class="fas fa-search"></i>
 							Cari Anggota
@@ -418,28 +416,31 @@
 				</button>
 			</div>
 
-		<?php else : ?>
-			
+		<?php else: ?>
+
 			<!-- Action Section -->
 			<div class="action-section">
 				<form id="frm_store_anggota" method="post" action="<?php echo base_url('buku-tamu/store_anggota'); ?>">
 					<?= csrf_field() ?>
 					<input type="hidden" name="member_no" value="<?= $member->MemberNo ?>">
 
-					<?php if ($SettingBukuTamu == 1) : ?>
+					<?php if ($SettingBukuTamu == 1): ?>
 
 						<?php // PERBAIKAN: Menambahkan tanda kutip pembuka pada class 
-						?>
+								?>
 						<div class="form-group">
 							<div class="col-md-12" style="padding-left: 0; text-align: center; !important;">
 								<div class="position-relative form-group">
 									<label for="TujuanKunjungan_id">Tujuan Kunjungan</label>
-									<select class="form-control" name="TujuanKunjungan_id" id="TujuanKunjungan_id" style="width: 50%; text-align: center; margin-top: 10px; margin-left: 270px; !important;">
+									<select class="form-control" name="TujuanKunjungan_id" id="TujuanKunjungan_id"
+										style="width: 50%; text-align: center; margin-top: 10px; margin-left: 270px; !important;">
 										<option value="" disabled selected> ----- Pilih ----- </option>
-										  <?php foreach ($tujuan_kunjungan as $row) : ?>
+										<?php foreach ($tujuan_kunjungan as $row): ?>
 											<?php // PERBAIKAN: Menyamakan ID dengan id 
-											?>
-											<option value="<?= $row->ID ?>" <?= set_select('TujuanKunjungan_id', $row->ID) ?>><?= $row->TujuanKunjungan ?></option>
+														?>
+											<option value="<?= $row->ID ?>" <?= set_select('TujuanKunjungan_id', $row->ID) ?>>
+												<?= $row->TujuanKunjungan ?>
+											</option>
 										<?php endforeach; ?>
 									</select>
 								</div>
@@ -447,12 +448,13 @@
 						</div><br>
 					<?php endif; ?>
 
-			
+
 				</form>
-				
-				</p> 
+
+				</p>
 				<p style="text-align:center; color: #e74c3c; font-size: 1rem;">
-					Otomatis tersimpan dalam <strong><span id="countdown"><?= (int) ($visit_autosave_seconds ?? 30) ?></span></strong> detik...
+					Otomatis tersimpan dalam <strong><span
+							id="countdown"><?= (int) ($visit_autosave_seconds ?? 30) ?></span></strong> detik...
 				</p>
 			</div>
 
@@ -472,7 +474,7 @@
 
 <script>
 	// Auto-focus pada input search
-	document.addEventListener('DOMContentLoaded', function() {
+	document.addEventListener('DOMContentLoaded', function () {
 		const searchInput = document.getElementById('member_no');
 		if (searchInput) {
 			searchInput.focus();
@@ -480,7 +482,7 @@
 	});
 
 	// Enter key untuk submit form
-	document.getElementById('member_no')?.addEventListener('keypress', function(e) {
+	document.getElementById('member_no')?.addEventListener('keypress', function (e) {
 		if (e.key === 'Enter') {
 			e.preventDefault();
 			this.closest('form').submit();
@@ -489,7 +491,7 @@
 
 	// Animasi untuk alerts
 	document.querySelectorAll('.alert-close').forEach(button => {
-		button.addEventListener('click', function() {
+		button.addEventListener('click', function () {
 			const alert = this.parentElement;
 			alert.style.animation = 'fadeOut 0.3s ease forwards';
 			setTimeout(() => {
@@ -508,9 +510,9 @@
 `;
 	document.head.appendChild(style);
 </script>
-<?php if (session()->getFlashdata('success')) : ?>
+<?php if (session()->getFlashdata('success')): ?>
 	<script>
-		document.addEventListener('DOMContentLoaded', function() {
+		document.addEventListener('DOMContentLoaded', function () {
 			Swal.fire({
 				icon: 'success',
 				title: 'Berhasil!',
@@ -522,40 +524,40 @@
 	</script>
 <?php endif; ?>
 
-<?php if (!empty($member)) : ?>
-<script>
-    let countdown = <?= (int) ($visit_autosave_seconds ?? 30) ?>;
-    let timer;
+<?php if (!empty($member)): ?>
+	<script>
+		let countdown = <?= (int) ($visit_autosave_seconds ?? 30) ?>;
+		let timer;
 
-    const countdownEl = document.getElementById('countdown');
-    const storeForm   = document.getElementById('frm_store_anggota');
+		const countdownEl = document.getElementById('countdown');
+		const storeForm = document.getElementById('frm_store_anggota');
 
-    function startTimer() {
-        timer = setInterval(() => {
-            countdown--;
-            if (countdownEl) countdownEl.textContent = countdown;
+		function startTimer() {
+			timer = setInterval(() => {
+				countdown--;
+				if (countdownEl) countdownEl.textContent = countdown;
 
-            if (countdown <= 0) {
-                clearInterval(timer);
-                const select = document.getElementById('TujuanKunjungan_id');
-                if (select && !select.value) {
-                    select.value = '<?= $tujuan_kunjungan[0]->ID ?? '' ?>';
-                }
-                if (storeForm) storeForm.submit();
-            }
-        }, 1000);
-    }
+				if (countdown <= 0) {
+					clearInterval(timer);
+					const select = document.getElementById('TujuanKunjungan_id');
+					if (select && !select.value) {
+						select.value = '<?= $tujuan_kunjungan[0]->ID ?? '' ?>';
+					}
+					if (storeForm) storeForm.submit();
+				}
+			}, 1000);
+		}
 
-    const selectEl = document.getElementById('TujuanKunjungan_id');
-    if (selectEl) {
-        selectEl.addEventListener('change', function() {
-            clearInterval(timer);
-            if (storeForm) storeForm.submit();
-        });
-    }
+		const selectEl = document.getElementById('TujuanKunjungan_id');
+		if (selectEl) {
+			selectEl.addEventListener('change', function () {
+				clearInterval(timer);
+				if (storeForm) storeForm.submit();
+			});
+		}
 
-    startTimer();
-</script>
+		startTimer();
+	</script>
 <?php endif; ?>
 
 <?= $this->endsection() ?>
