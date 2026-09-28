@@ -10,6 +10,7 @@ class Hak_akses_koleksi extends \App\Models\BaseModel
     protected $primaryKey 			= 'DataID';
     protected $returnType     		= 'object';
     protected $useSoftDeletes 		= false;
+    
     protected $protectFields 		= false;
     // protected $allowedFields = [
     //     'id', 'slug', 'name','MemberNo','IdentityNo','PlaceOfBirth','DateOfBirth','Address','AddressNow','Phone','InstitutionName','InstitutionAddress','InstitutionPhone','MotherName','Email','LoanReturnLateCount','', 'NoHp','Provincy','City','ProvincyNow','CityNow','Kecamatan','KecamatanNow','Kelurahan','KelurahanNow','RT','RTNow','RW','RWNow','Tahunajaran','KeteranganLain','IsLunasBiayaPendaftaran','BiayaPendaftaran','TanggalBebasPustaka', 'RegisterDate','EndDate' ,'description', 'sort',  'active', 'created_by', 'updated_by'
