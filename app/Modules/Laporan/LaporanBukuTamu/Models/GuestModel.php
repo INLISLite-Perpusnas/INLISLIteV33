@@ -94,10 +94,18 @@ class GuestModel extends \App\Models\BaseModel
        ";
        $builder = $this->db->table("($subquery) as pengunjung");
 
-       // filter date kalau ada
-       if ($startDate && $endDate) {
-              $builder->where('periode >=', $startDate)
-                     ->where('periode <=', $endDate);
+       // Gunakan batas akhir eksklusif agar seluruh hari akhir ikut terhitung.
+       if ($startDate) {
+              $start = \DateTimeImmutable::createFromFormat('!Y-m-d', $startDate);
+              if ($start && $start->format('Y-m-d') === $startDate) {
+                     $builder->where('periode >=', $start->format('Y-m-d 00:00:00'));
+              }
+       }
+       if ($endDate) {
+              $end = \DateTimeImmutable::createFromFormat('!Y-m-d', $endDate);
+              if ($end && $end->format('Y-m-d') === $endDate) {
+                     $builder->where('periode <', $end->modify('+1 day')->format('Y-m-d 00:00:00'));
+              }
        }
 
        // order & limit
