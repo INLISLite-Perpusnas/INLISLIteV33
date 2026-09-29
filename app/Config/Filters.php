@@ -19,15 +19,15 @@ class Filters extends BaseConfig
      * @phpstan-var array<string, class-string>
      */
     public array $aliases = [
-        'csrf'          => CSRF::class,
-        'toolbar'       => DebugToolbar::class,
-        'honeypot'      => Honeypot::class,
-        'invalidchars'  => InvalidChars::class,
+        'csrf' => CSRF::class,
+        'toolbar' => DebugToolbar::class,
+        'honeypot' => Honeypot::class,
+        'invalidchars' => InvalidChars::class,
         'secureheaders' => SecureHeaders::class,
-        'auth'             => \App\Filters\AuthFilter::class,
-        'cors'             => \App\Filters\Cors::class,
-        'permissions'     => \App\Filters\Permissions::class,
-        'session'         => \Myth\Auth\Filters\LoginFilter::class,
+        'auth' => \App\Filters\AuthFilter::class,
+        'cors' => \App\Filters\Cors::class,
+        'permissions' => \App\Filters\Permissions::class,
+        'session' => \Myth\Auth\Filters\LoginFilter::class,
     ];
 
     /**
@@ -42,87 +42,93 @@ class Filters extends BaseConfig
             // 'honeypot',
             // 'csrf',
             // 'invalidchars',
-            'session' => ['except' => [
-                '', 
-                'logout*', 
-                'login*',
-                'news*', 
-                'home*', 
-                'auth/a/*', 
-                'api/katalog/*', 
-                'api/eksemplar/*',
-                'api/sirkulasi-peminjaman/*',
-                'api/sirkulasi-pengembalian/*',
-                'buku-tamu*',
-                'api-lokasi-ruang/check*',
-                'baca-ditempat*',
-                'peminjaman-mandiri*',
-                'pengembalian-mandiri*',
-                'oai*',
-                'api/region/*',
-                'api/member/*',
-                
-                // --- PENGECUALIAN UNTUK CONTROLLER OPAC ---
-                'opac',                     // method: index
-                'opac/index',               // method: index
-                'opac/detail/*',            // method: detail
-                'opac/search',              // method: search
-                'opac/browse',              // method: browse
-                'opac/export',              // method: export
-                'opac/statistics',          // method: statistics
-                'opac/statistics_anggota',  // method: statistics_anggota
-                'opac/statistics_kunjungan', // method: statistics_kunjungan
-                'opac/downloadMarc*',       // method: semua downloadMarc (Utf8, Xml, Mods, dll)
-                'opac/member-login',        // method: memberLogin (login anggota via modal)
-                // 'opac/bacaDigital/*' TIDAK DIMASUKKAN agar terkena filter session (wajib login)
+            'session' => [
+                'except' => [
+                    '',
+                    'logout*',
+                    'login*',
+                    'news*',
+                    'home*',
+                    'auth/a/*',
+                    'api/katalog/*',
+                    'api/eksemplar/*',
+                    'api/sirkulasi-peminjaman/*',
+                    'api/sirkulasi-pengembalian/*',
+                    'buku-tamu*',
+                    'api-lokasi-ruang/check*',
+                    'baca-ditempat*',
+                    'peminjaman-mandiri*',
+                    'pengembalian-mandiri*',
+                    'oai*',
+                    'api/region/*',
+                    'api/member/*',
 
-                // --- PENGECUALIAN UNTUK MODUL ARTIKEL (publik, gaya OPAC) ---
-                'artikel*',                                // seluruh modul Artikel (index & detail)
-                'katalog/view_decrypted_article/*',        // viewer PDF artikel (dipakai juga oleh panel admin)
-                'katalog/get_decrypted_content_article/*', // stream konten PDF artikel yang sudah didekripsi
-            ]],
+                    // --- PENGECUALIAN UNTUK CONTROLLER OPAC ---
+                    'opac',                     // method: index
+                    'opac/index',               // method: index
+                    'opac/detail/*',            // method: detail
+                    'opac/search',              // method: search
+                    'opac/browse',              // method: browse
+                    'opac/export',              // method: export
+                    'opac/statistics',          // method: statistics
+                    'opac/statistics_anggota',  // method: statistics_anggota
+                    'opac/statistics_kunjungan', // method: statistics_kunjungan
+                    'opac/downloadMarc*',       // method: semua downloadMarc (Utf8, Xml, Mods, dll)
+                    'opac/member-login',        // method: memberLogin (login anggota via modal)
+                    // 'opac/bacaDigital/*' TIDAK DIMASUKKAN agar terkena filter session (wajib login)
+
+                    // --- PENGECUALIAN UNTUK MODUL ARTIKEL (publik, gaya OPAC) ---
+                    'artikel*',                                // seluruh modul Artikel (index & detail)
+                    'katalog/view_decrypted_article/*',        // viewer PDF artikel (dipakai juga oleh panel admin)
+                    'katalog/get_decrypted_content_article/*', // stream konten PDF artikel yang sudah didekripsi
+                    'profil',
+
+                ]
+            ],
             'cors',
-            'permissions' => ['except' => [
-                '',
-                'logout*',
-                'oai*',
-                'login*',
-                'peminjaman-mandiri*',
-                'pengembalian-mandiri*',
-                'api-lokasi-ruang/check*',
-                'buku-tamu*',
-                'baca-ditempat*',
-                'home*',
-                'news*',
-                'apply_status*',
-                // 'api/*',
-                'cetak-kartu/*',
-                'template/*',
-                'api/template/*',
-                'api/region/*',
-                'api/master-template/*',
-                'master-template/*',
-                'api/member/*',
-                
-                // --- PENGECUALIAN UNTUK CONTROLLER OPAC ---
-                'opac',
-                'opac/index',
-                'opac/detail/*',
-                'opac/search',
-                'opac/browse',
-                'opac/export',
-                'opac/statistics',
-                'opac/statistics_anggota',
-                'opac/statistics_kunjungan',
-                'opac/downloadMarc*',
-                'opac/member-login',
+            'permissions' => [
+                'except' => [
+                    '',
+                    'logout*',
+                    'oai*',
+                    'login*',
+                    'peminjaman-mandiri*',
+                    'pengembalian-mandiri*',
+                    'api-lokasi-ruang/check*',
+                    'buku-tamu*',
+                    'baca-ditempat*',
+                    'home*',
+                    'news*',
+                    'apply_status*',
+                    // 'api/*',
+                    'cetak-kartu/*',
+                    'template/*',
+                    'api/template/*',
+                    'api/region/*',
+                    'api/master-template/*',
+                    'master-template/*',
+                    'api/member/*',
 
-                // --- PENGECUALIAN UNTUK MODUL ARTIKEL (publik, gaya OPAC) ---
-                'artikel*',
-                'katalog/view_decrypted_article/*',
-                'katalog/get_decrypted_content_article/*',
+                    // --- PENGECUALIAN UNTUK CONTROLLER OPAC ---
+                    'opac',
+                    'opac/index',
+                    'opac/detail/*',
+                    'opac/search',
+                    'opac/browse',
+                    'opac/export',
+                    'opac/statistics',
+                    'opac/statistics_anggota',
+                    'opac/statistics_kunjungan',
+                    'opac/downloadMarc*',
+                    'opac/member-login',
 
-            ]],
+                    // --- PENGECUALIAN UNTUK MODUL ARTIKEL (publik, gaya OPAC) ---
+                    'artikel*',
+                    'katalog/view_decrypted_article/*',
+                    'katalog/get_decrypted_content_article/*',
+                    'profil'
+                ]
+            ],
         ],
         'after' => [
             // 'toolbar',
