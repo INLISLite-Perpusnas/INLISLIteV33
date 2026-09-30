@@ -32,6 +32,7 @@ $routes->group('anggota', ['namespace' => 'Anggota\Controllers'], function ($sub
     $subroutes->add('detail/(:any)',          'AnggotaController::detail/$1');
     $subroutes->get('create',                 'AnggotaController::create');
     $subroutes->post('create',                'AnggotaController::create', ['filter' => 'csrf']);
+    $subroutes->get('csrf_token',             'AnggotaController::csrfToken');
     $subroutes->post('do_upload',             'AnggotaController::do_upload', ['filter' => 'csrf']);
     $subroutes->add('do_delete',              'AnggotaController::do_delete');
     $subroutes->put('edit',                   'AnggotaController::edit');

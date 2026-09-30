@@ -100,8 +100,53 @@ $request = service('request');
 <script>
   Dropzone.autoDiscover = false;
   var file_image = setDropzone('file_image', 'anggota', '.jpg,.jpeg,.png', 1, 10);
+  file_image.on('addedfile', function() {
+    $('#btn-submit').prop('disabled', true);
+  });
   file_image.on('sending', function(file, xhr, formData) {
     formData.append('<?= csrf_token() ?>', $('input[name="<?= csrf_token() ?>"]').val());
+  });
+  file_image.on('success', function(file, response) {
+    if (response && response.csrfHash) {
+      $('input[name="<?= csrf_token() ?>"]').val(response.csrfHash);
+    }
+  });
+  function updateMemberSubmitState() {
+    const hasPendingUploads = file_image.getQueuedFiles().length > 0 || file_image.getUploadingFiles().length > 0;
+    $('#btn-submit').prop('disabled', hasPendingUploads);
+  }
+  file_image.on('complete', updateMemberSubmitState);
+  file_image.on('removedfile', updateMemberSubmitState);
+
+  let refreshingCsrfToken = false;
+  $('#myform').on('submit', function(event) {
+    if (refreshingCsrfToken) {
+      refreshingCsrfToken = false;
+      return;
+    }
+
+    event.preventDefault();
+    if (file_image.getQueuedFiles().length > 0 || file_image.getUploadingFiles().length > 0) {
+      return;
+    }
+
+    const form = this;
+    $('#btn-submit').prop('disabled', true);
+    $.getJSON('<?= base_url('anggota/csrf_token') ?>')
+      .done(function(response) {
+        if (!response.success || !response.csrfHash) {
+          $('#btn-submit').prop('disabled', false);
+          return;
+        }
+
+        $('input[name="<?= csrf_token() ?>"]').val(response.csrfHash);
+        refreshingCsrfToken = true;
+        form.requestSubmit();
+      })
+      .fail(function() {
+        $('#btn-submit').prop('disabled', false);
+        alert('Token keamanan gagal diperbarui. Muat ulang halaman, lalu coba lagi.');
+      });
   });
 </script>
 
