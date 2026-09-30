@@ -13,6 +13,7 @@ class Profil extends \Base\Controllers\BaseController
 
     public function __construct()
     {
+        helper(['image']);
         $this->profilModel  = new ProfilModel();
         $this->layananModel = new LayananModel();
         $this->lokasiModel  = new \LokasiRuang\Models\LokasiRuangModel();
@@ -39,19 +40,17 @@ class Profil extends \Base\Controllers\BaseController
 
         $image = $this->request->getFile('image');
         if ($image && $image->isValid() && !$image->hasMoved()) {
-            $newName = $image->getRandomName();
             $uploadPath = FCPATH . 'uploads/profil';
-            if (!is_dir($uploadPath)) {
-                mkdir($uploadPath, 0777, true);
-            }
+            $uploadedFilename = upload_and_convert_webp($image, $uploadPath);
 
-            // Hapus gambar profil utama lama dari disk jika ada
-            if ($profil && !empty($profil['image']) && file_exists(FCPATH . 'uploads/profil/' . $profil['image'])) {
-                @unlink(FCPATH . 'uploads/profil/' . $profil['image']);
-            }
+            if ($uploadedFilename) {
+                // Hapus gambar profil utama lama dari disk jika ada
+                if ($profil && !empty($profil['image']) && file_exists($uploadPath . '/' . $profil['image'])) {
+                    @unlink($uploadPath . '/' . $profil['image']);
+                }
 
-            $image->move($uploadPath, $newName);
-            $data['image'] = $newName;
+                $data['image'] = $uploadedFilename;
+            }
         }
 
         if ($profil) {
@@ -157,22 +156,20 @@ class Profil extends \Base\Controllers\BaseController
 
         $foto = $this->request->getFile('foto');
         if ($foto && $foto->isValid() && !$foto->hasMoved()) {
-            $newName = $foto->getRandomName();
             $uploadPath = FCPATH . 'uploads/layanan';
-            if (!is_dir($uploadPath)) {
-                mkdir($uploadPath, 0777, true);
-            }
+            $uploadedFilename = upload_and_convert_webp($foto, $uploadPath);
 
-            // Jika edit dan ada foto baru, hapus foto lama dari disk
-            if (!empty($id)) {
-                $oldData = $this->layananModel->find($id);
-                if (!empty($oldData['foto']) && file_exists(FCPATH . 'uploads/layanan/' . $oldData['foto'])) {
-                    @unlink(FCPATH . 'uploads/layanan/' . $oldData['foto']);
+            if ($uploadedFilename) {
+                // Jika edit dan ada foto baru, hapus foto lama dari disk
+                if (!empty($id)) {
+                    $oldData = $this->layananModel->find($id);
+                    if (!empty($oldData['foto']) && file_exists($uploadPath . '/' . $oldData['foto'])) {
+                        @unlink($uploadPath . '/' . $oldData['foto']);
+                    }
                 }
-            }
 
-            $foto->move($uploadPath, $newName);
-            $data['foto'] = $newName;
+                $data['foto'] = $uploadedFilename;
+            }
         }
 
         if (!empty($id)) {

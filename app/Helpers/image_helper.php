@@ -209,3 +209,53 @@ if (!function_exists('get_webp_filename')) {
         return preg_replace('/\.(jpg|jpeg|png|gif)$/i', '.webp', $filename) ?: $filename . '.webp';
     }
 }
+
+if (!function_exists('upload_and_convert_webp')) {
+    /**
+     * Mengunggah file gambar dan mengonversinya ke format WebP.
+     *
+     * @param \CodeIgniter\HTTP\Files\UploadedFile $file Object file dari request ($this->request->getFile('...'))
+     * @param string $uploadPath Path direktori tujuan penyiapan file
+     * @param int $quality Kualitas WebP (1-100), default 80
+     * @return string|false Mengembalikan nama file webp baru jika sukses, atau false jika gagal
+     */
+    function upload_and_convert_webp($file, string $uploadPath, int $quality = 80)
+    {
+        if (!$file || !$file->isValid() || $file->hasMoved()) {
+            return false;
+        }
+
+        if (!is_dir($uploadPath)) {
+            mkdir($uploadPath, 0777, true);
+        }
+
+        $webpName = pathinfo($file->getRandomName(), PATHINFO_FILENAME) . '.webp';
+        $destination = rtrim($uploadPath, '/\\') . DIRECTORY_SEPARATOR . $webpName;
+
+        try {
+            \Config\Services::image()
+                ->withFile($file->getTempName())
+                ->convert(IMAGETYPE_WEBP)
+                ->save($destination, $quality);
+
+            return $webpName;
+        } catch (\Throwable $e) {
+            // Fallback jika CI4 Image service gagal: coba konversi dengan helper GD atau move biasa
+            $tempPath = $file->getTempName();
+            if (function_exists('convert_to_webp')) {
+                $converted = convert_to_webp($tempPath, $quality, false);
+                if ($converted && file_exists($converted)) {
+                    rename($converted, $destination);
+                    return $webpName;
+                }
+            }
+
+            // Fallback akhir: move file original
+            $fallbackName = $file->getRandomName();
+            if ($file->move($uploadPath, $fallbackName)) {
+                return $fallbackName;
+            }
+            return false;
+        }
+    }
+}
