@@ -73,6 +73,12 @@ class CreateProfilAndLayananTables extends Migration
                 'constraint' => 11,
                 'null'       => true,
             ],
+            'urutan' => [
+                'type'       => 'INT',
+                'constraint' => 11,
+                'null'       => true,
+                'default'    => 0,
+            ],
             'jam_layanan' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 255,

@@ -8,8 +8,28 @@
     #modal_layanan {
         z-index: 1055 !important;
     }
+
     .modal-backdrop {
         z-index: 1050 !important;
+    }
+
+    #tbl_layanan tbody tr,
+    #tbl_layanan tbody td,
+    .ui-sortable-helper,
+    .ui-sortable-helper td {
+        transition: none !important;
+    }
+
+    .ui-sortable-helper {
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+        display: table;
+        /* jaga lebar tetap */
+    }
+
+    .ui-state-highlight td {
+        background: #fff3cd !important;
+        height: 50px;
     }
 </style>
 <?= $this->endSection('style'); ?>
@@ -123,11 +143,13 @@
                             placeholder="Contoh: Layanan Sirkulasi">
                     </div>
                     <div class="form-group">
-                        <label for="foto">Foto Layanan <span class="text-danger" id="foto_required_mark">*</span></label>
+                        <label for="foto">Foto Layanan <span class="text-danger"
+                                id="foto_required_mark">*</span></label>
                         <div id="container_preview_foto" class="mb-2" style="display: none;">
                             <img src="" id="preview_foto" class="img-thumbnail" style="max-height: 120px;">
                         </div>
-                        <input type="file" name="foto" id="layanan_foto" class="form-control-file" accept="image/*" required>
+                        <input type="file" name="foto" id="layanan_foto" class="form-control-file" accept="image/*"
+                            required>
                     </div>
                     <div class="form-group">
                         <label for="layanan_deskripsi">Deskripsi <span class="text-danger">*</span></label>
@@ -159,7 +181,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                        data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Simpan Data</button>
                 </div>
             </form>
@@ -178,8 +201,9 @@
     }
 </script>
 
-<!-- 2. Baru panggil Library Summernote Lite -->
+<!-- 2. Baru panggil Library Summernote Lite & jQuery UI Sortable -->
 <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 
 <script>
     var tblLayanan;
@@ -202,7 +226,6 @@
                 height: 430,
                 minHeight: null,
                 maxHeight: null,
-                focus: true,
                 toolbar: [
                     ['style', ['style', 'undo', 'redo', 'codeview']],
                     ['font', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
@@ -233,18 +256,102 @@
         tblLayanan = $('#tbl_layanan').DataTable({
             "processing": true,
             "serverSide": true,
+            "ordering": false,
             "ajax": {
                 "url": "<?= base_url('cms/profil/layanan/datatable') ?>"
             },
+            "createdRow": function (row, data, dataIndex) {
+                if (data && data.item_raw) {
+                    $(row).attr('data-id', data.item_raw.id);
+                }
+                $(row).css('cursor', 'grab');
+            },
             "columns": [
-                { data: 'no', orderable: false },
+                {
+                    data: 'no',
+                    orderable: false,
+                    render: function (data, type, row) {
+                        return '<i class="fa fa-bars text-muted mr-2 handle" style="cursor: grab;" title="Geser untuk mengubah urutan"></i> ' + data;
+                    }
+                },
                 { data: 'foto', orderable: false },
                 { data: 'nama_layanan' },
                 { data: 'deskripsi' },
                 { data: 'lokasi' },
                 { data: 'jam_layanan' },
                 { data: 'action', orderable: false }
-            ]
+            ],
+            "drawCallback": function () {
+                var tbody = $('#tbl_layanan tbody');
+
+                if (!tbody.hasClass('ui-sortable')) {
+                    tbody.sortable({
+                        axis: 'y',
+                        cursor: 'grabbing',
+                        tolerance: 'pointer',
+                        forcePlaceholderSize: true,
+                        placeholder: 'ui-state-highlight',
+                        helper: function (e, tr) {
+                            var $originals = tr.children();
+                            var $helper = tr.clone();
+                            $helper.children().each(function (index) {
+                                $(this).width($originals.eq(index).width());
+                            });
+                            return $helper;
+                        },
+                        start: function (event, ui) {
+                            ui.placeholder.height(ui.item.height());
+                        },
+                        stop: function (event, ui) {
+                            var orderIds = [];
+                            $('#tbl_layanan tbody tr').each(function () {
+                                var id = $(this).attr('data-id');
+                                if (id) {
+                                    orderIds.push(id);
+                                }
+                            });
+
+                            // Update penomoran kolom No. secara lokal instan
+                            var info = tblLayanan.page.info();
+                            var startNo = info.start + 1;
+                            $('#tbl_layanan tbody tr').each(function (idx) {
+                                var newNo = startNo + idx;
+                                var handleHtml = '<i class="fa fa-bars text-muted mr-2 handle" style="cursor: grab;" title="Geser untuk mengubah urutan"></i> ';
+                                $(this).find('td:first').html(handleHtml + newNo);
+                            });
+
+                            if (orderIds.length > 0) {
+                                $.ajax({
+                                    url: "<?= base_url('cms/profil/layanan/update-order') ?>",
+                                    type: "POST",
+                                    data: {
+                                        order: orderIds,
+                                        "<?= csrf_token() ?>": "<?= csrf_hash() ?>"
+                                    },
+                                    dataType: "JSON",
+                                    success: function (res) {
+                                        if (res.status && typeof Swal !== 'undefined') {
+                                            const Toast = Swal.mixin({
+                                                toast: true,
+                                                position: 'top-end',
+                                                showConfirmButton: false,
+                                                timer: 1500,
+                                                timerProgressBar: true
+                                            });
+                                            Toast.fire({
+                                                icon: 'success',
+                                                title: 'Urutan layanan berhasil diperbarui'
+                                            });
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    });
+                } else {
+                    tbody.sortable('refresh');
+                }
+            }
         });
 
         // Pindahkan modal ke body di awal sekali agar instant dan bebas dari z-index stacking context
