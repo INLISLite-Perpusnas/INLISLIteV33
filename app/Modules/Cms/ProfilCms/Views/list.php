@@ -112,7 +112,7 @@
                 <input type="hidden" name="id" id="layanan_id">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalLayananLabel">Form Layanan Perpustakaan</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -123,22 +123,22 @@
                             placeholder="Contoh: Layanan Sirkulasi">
                     </div>
                     <div class="form-group">
-                        <label for="foto">Foto Layanan</label>
+                        <label for="foto">Foto Layanan <span class="text-danger" id="foto_required_mark">*</span></label>
                         <div id="container_preview_foto" class="mb-2" style="display: none;">
                             <img src="" id="preview_foto" class="img-thumbnail" style="max-height: 120px;">
                         </div>
-                        <input type="file" name="foto" id="layanan_foto" class="form-control-file" accept="image/*">
+                        <input type="file" name="foto" id="layanan_foto" class="form-control-file" accept="image/*" required>
                     </div>
                     <div class="form-group">
-                        <label for="layanan_deskripsi">Deskripsi</label>
-                        <textarea name="deskripsi" id="layanan_deskripsi" class="form-control" rows="3"
+                        <label for="layanan_deskripsi">Deskripsi <span class="text-danger">*</span></label>
+                        <textarea name="deskripsi" id="layanan_deskripsi" class="form-control" rows="3" required
                             placeholder="Deskripsi singkat mengenai layanan ini..."></textarea>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="location_id">Lokasi Ruang</label>
-                                <select name="location_id" id="layanan_location_id" class="form-control">
+                                <label for="location_id">Lokasi Ruang <span class="text-danger">*</span></label>
+                                <select name="location_id" id="layanan_location_id" class="form-control" required>
                                     <option value="">-- Pilih Lokasi Ruang --</option>
                                     <?php if (!empty($lokasiList)): ?>
                                         <?php foreach ($lokasiList as $lok): ?>
@@ -151,15 +151,15 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="layanan_jam">Jam Layanan</label>
-                                <input type="text" name="jam_layanan" id="layanan_jam" class="form-control"
+                                <label for="layanan_jam">Jam Layanan <span class="text-danger">*</span></label>
+                                <input type="text" name="jam_layanan" id="layanan_jam" class="form-control" required
                                     placeholder="Contoh: Senin - Jumat: 08.00 - 16.00">
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Simpan Data</button>
                 </div>
             </form>
@@ -250,42 +250,62 @@
         // Pindahkan modal ke body di awal sekali agar instant dan bebas dari z-index stacking context
         $('#modal_layanan').appendTo("body");
 
+        // Handler penutup modal secara eksplisit (kompatibel Bootstrap 4 & 5)
+        $('#modal_layanan').on('click', '[data-dismiss="modal"], [data-bs-dismiss="modal"], .close', function () {
+            $('#modal_layanan').modal('hide');
+        });
+
         $('#btn_tambah_layanan').click(function () {
             $('#form_layanan')[0].reset();
+            $('#form_layanan').find('button[type="submit"]').prop('disabled', false).html('<i class="fa fa-save"></i> Simpan Data');
+            $('#form_layanan').find('button[data-dismiss="modal"], button[data-bs-dismiss="modal"]').prop('disabled', false);
             $('#layanan_id').val('');
             $('#layanan_location_id').val('');
             $('#container_preview_foto').hide();
+            $('#layanan_foto').prop('required', true);
+            $('#foto_required_mark').show();
             $('#modalLayananLabel').text('Tambah Layanan Perpustakaan');
             $('#modal_layanan').modal('show');
         });
 
         $('body').on('click', '.edit-layanan', function () {
-            var id = $(this).data('id');
-            $.ajax({
-                url: "<?= base_url('cms/profil/layanan/get/') ?>" + id,
-                type: "GET",
-                dataType: "JSON",
-                success: function (res) {
-                    if (res.status) {
-                        var d = res.data;
-                        $('#layanan_id').val(d.id);
-                        $('#layanan_nama').val(d.nama_layanan);
-                        $('#layanan_deskripsi').val(d.deskripsi);
-                        $('#layanan_location_id').val(d.location_id || '');
-                        $('#layanan_jam').val(d.jam_layanan);
+            var tr = $(this).closest('tr');
+            var rowData = tblLayanan.row(tr).data();
 
-                        if (d.foto) {
-                            $('#preview_foto').attr('src', "<?= base_url('uploads/layanan/') ?>/" + d.foto);
-                            $('#container_preview_foto').show();
-                        } else {
-                            $('#container_preview_foto').hide();
-                        }
+            if (rowData && rowData.item_raw) {
+                var d = rowData.item_raw;
+                $('#form_layanan').find('button[type="submit"]').prop('disabled', false).html('<i class="fa fa-save"></i> Simpan Data');
+                $('#form_layanan').find('button[data-dismiss="modal"], button[data-bs-dismiss="modal"]').prop('disabled', false);
+                $('#layanan_id').val(d.id);
+                $('#layanan_nama').val(d.nama_layanan);
+                $('#layanan_deskripsi').val(d.deskripsi);
+                $('#layanan_location_id').val(d.location_id || '');
+                $('#layanan_jam').val(d.jam_layanan);
 
-                        $('#modalLayananLabel').text('Edit Layanan Perpustakaan');
-                        $('#modal_layanan').modal('show');
-                    }
+                $('#layanan_foto').prop('required', false);
+                $('#foto_required_mark').hide();
+
+                if (d.foto) {
+                    $('#preview_foto').attr('src', "<?= base_url('uploads/layanan/') ?>/" + d.foto);
+                    $('#container_preview_foto').show();
+                } else {
+                    $('#container_preview_foto').hide();
                 }
-            });
+
+                $('#modalLayananLabel').text('Edit Layanan Perpustakaan');
+                $('#modal_layanan').modal('show');
+            }
+        });
+
+        $('#form_layanan').on('submit', function () {
+            var $btn = $(this).find('button[type="submit"]');
+            $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Menyimpan...');
+            $(this).find('button[data-dismiss="modal"], button[data-bs-dismiss="modal"]').prop('disabled', true);
+        });
+
+        $('form[action*="cms/profil/update"]').on('submit', function () {
+            var $btn = $(this).find('button[type="submit"]');
+            $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Menyimpan Perubahan...');
         });
 
         $("body").on("click", ".remove-data", function (e) {

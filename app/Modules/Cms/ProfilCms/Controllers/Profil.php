@@ -117,7 +117,8 @@ class Profil extends \Base\Controllers\BaseController
                 'deskripsi'    => esc($item['deskripsi']),
                 'lokasi'       => $lokasiText,
                 'jam_layanan'  => esc($item['jam_layanan']),
-                'action'       => $action
+                'action'       => $action,
+                'item_raw'     => $item
             ];
         }
 
