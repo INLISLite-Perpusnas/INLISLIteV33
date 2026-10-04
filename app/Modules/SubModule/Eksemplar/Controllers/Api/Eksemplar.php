@@ -630,12 +630,21 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
 
 	public function get_eksemplar_number($count = 1)
 	{
+		$db = \Config\Database::connect('data');
+		$barcodeSetting = $db->table('settingparameters')->select('Value')->where('Name', 'FormatNomorBarcode')->get()->getRow();
+		$rfidSetting = $db->table('settingparameters')->select('Value')->where('Name', 'FormatNomorRFID')->get()->getRow();
+		$lastCollectionId = (int) ($db->table('collections')->selectMax('ID', 'last_id')->get()->getRow()->last_id ?? 0);
+		$barcodeUsesItemId = $barcodeSetting && $barcodeSetting->Value === 'Item ID';
+		$rfidUsesItemId = $rfidSetting && $rfidSetting->Value === 'Item ID';
+
 		$eksemplar_number = [];
 		for ($i = 1; $i <= $count; $i++) {
+			$itemId = str_pad((string) ($lastCollectionId + $i), 11, '0', STR_PAD_LEFT);
+			$noInduk = gen_no_induk($i);
 			$data = [
-				'NomorBarcode' => gen_no_barcode($i),
-				'NoInduk' => gen_no_induk($i),
-				'RFID' => gen_no_rfid($i),
+				'NomorBarcode' => $barcodeUsesItemId ? $itemId : $noInduk,
+				'NoInduk' => $noInduk,
+				'RFID' => $rfidUsesItemId ? $itemId : $noInduk,
 			];
 			array_push($eksemplar_number, $data);
 		}

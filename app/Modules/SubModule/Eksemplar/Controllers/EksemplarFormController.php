@@ -30,6 +30,7 @@ class EksemplarFormController extends \Base\Controllers\BaseController
 
         $this->validation->setRules([
             'Catalog_id'          => ['label' => 'Judul Katalog',       'rules' => 'required'],
+            'ISDRM'               => ['label' => 'Jenis DRM',             'rules' => 'required|in_list[0,1]'],
             'Location_Library_id' => ['label' => 'Lokasi Perpustakaan', 'rules' => 'required'],
             'Location_id'         => ['label' => 'Lokasi Ruang',        'rules' => 'required'],
             'Source_id'           => ['label' => 'Sumber Pengadaan',    'rules' => 'required'],
@@ -61,6 +62,11 @@ class EksemplarFormController extends \Base\Controllers\BaseController
                                          ->get()->getRow();
                 $worksheet_id = (!empty($catalogRow) && isset($catalogRow->Worksheet_id)) ? $catalogRow->Worksheet_id : '';
 
+                $barcodeSource = $this->getNumberSource('FormatNomorBarcode');
+                $rfidSource    = $this->getNumberSource('FormatNomorRFID');
+                $lastCollectionId = (int) ($this->db->table('collections')
+                    ->selectMax('ID', 'last_id')->get()->getRow()->last_id ?? 0);
+
                 for ($i = 1; $i <= $total; $i++) {
                     if ($NomorInduk == "Manual") {
                         $idx          = $i - 1;
@@ -75,10 +81,13 @@ class EksemplarFormController extends \Base\Controllers\BaseController
                             'source_id'    => isset($post['Source_id']) ? $post['Source_id'] : null,
                             'partner_id'   => isset($post['Partner_id']) ? $post['Partner_id'] : null,
                         ];
-                        $nomorBarcode = $this->generateNomorBarcode($collectionData, $i);
-                        $noInduk      = $nomorBarcode;
-                        $rfid         = $nomorBarcode;
+                        $noInduk = $this->generateNomorBarcode($collectionData, $i);
                     }
+
+                    // Sumber barcode dan RFID dapat dipilih secara terpisah.
+                    $itemId = str_pad((string) ($lastCollectionId + $i), 11, '0', STR_PAD_LEFT);
+                    $nomorBarcode = ($barcodeSource === 'Item ID') ? $itemId : $noInduk;
+                    $rfid         = ($rfidSource === 'Item ID') ? $itemId : $noInduk;
 
                     $save = [
                         'Catalog_id'          => $post['Catalog_id'],
@@ -208,6 +217,7 @@ class EksemplarFormController extends \Base\Controllers\BaseController
 
         $this->validation->setRules([
             'Catalog_id'          => ['label' => 'Judul Katalog',       'rules' => 'required'],
+            'ISDRM'               => ['label' => 'Jenis DRM',             'rules' => 'required|in_list[0,1]'],
             'Location_Library_id' => ['label' => 'Lokasi Perpustakaan', 'rules' => 'required'],
             'Location_id'         => ['label' => 'Lokasi Ruang',        'rules' => 'required'],
             'Source_id'           => ['label' => 'Sumber Pengadaan',    'rules' => 'required'],
@@ -223,13 +233,20 @@ class EksemplarFormController extends \Base\Controllers\BaseController
                 $post     = $this->request->getPost();
                 $redirect = isset($post['redirect']) ? $post['redirect'] : '';
 
+                $noInduk = isset($post['NoInduk0']) ? $post['NoInduk0'] : (isset($post['NoInduk']) ? $post['NoInduk'] : $eksemplar->NoInduk);
+                $itemId = str_pad((string) $eksemplar->ID, 11, '0', STR_PAD_LEFT);
+
                 $update = [
                     'Location_Library_id' => $post['Location_Library_id'],
                     'Location_id'         => $post['Location_id'],
                     'ISDRM'               => $post['ISDRM'],
-                    'NomorBarcode'        => isset($post['NomorBarcode0']) ? $post['NomorBarcode0'] : (isset($post['NomorBarcode']) ? $post['NomorBarcode'] : ''),
-                    'NoInduk'             => isset($post['NoInduk0']) ? $post['NoInduk0'] : (isset($post['NoInduk']) ? $post['NoInduk'] : ''),
-                    'RFID'                => isset($post['RFID0']) ? $post['RFID0'] : (isset($post['RFID']) ? $post['RFID'] : ''),
+                    'NomorBarcode'        => $this->getNumberSource('FormatNomorBarcode') === 'Item ID'
+                        ? $itemId
+                        : $noInduk,
+                    'NoInduk'             => $noInduk,
+                    'RFID'                => $this->getNumberSource('FormatNomorRFID') === 'Item ID'
+                        ? $itemId
+                        : $noInduk,
                     'UpdateBy'            => user_id(),
                     'UpdateDate'          => date("Y-m-d H:i:s"),
                 ];
@@ -293,6 +310,14 @@ class EksemplarFormController extends \Base\Controllers\BaseController
     // ----------------------------------------------------------------
     // PRIVATE HELPERS
     // ----------------------------------------------------------------
+
+    private function getNumberSource($settingName)
+    {
+        $setting = $this->db->table('settingparameters')
+            ->select('Value')->where('Name', $settingName)->get()->getRow();
+
+        return ($setting && $setting->Value === 'Item ID') ? 'Item ID' : 'No. Induk';
+    }
 
     /**
      * Generate nomor barcode otomatis.
