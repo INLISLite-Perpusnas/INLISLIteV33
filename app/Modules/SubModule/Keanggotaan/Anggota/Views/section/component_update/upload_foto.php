@@ -78,10 +78,13 @@
 							<div class="col-md-6 is_upload">
 								<div class="position-relative form-group">
 									<label for="file_image" class="">File Foto</label>
+									<?php if (!empty($anggota->PhotoUrl)): ?>
+										<img src="<?= esc(base_url('uploads/anggota/' . $anggota->PhotoUrl)) ?>" alt="Foto anggota saat ini" class="d-block mb-2" style="max-width: 160px; max-height: 160px; object-fit: cover;">
+									<?php endif; ?>
 									<div id="file_image" class="dropzone"></div>
 									<div id="file_image_listed"></div>
 									<div>
-										<small class="info help-block text-muted">Format (JPG|PNG).Max 10 MB</small>
+										<small class="info help-block text-muted">Format (JPG|PNG).Max 2 MB</small>
 									</div>
 								</div>
 							</div>

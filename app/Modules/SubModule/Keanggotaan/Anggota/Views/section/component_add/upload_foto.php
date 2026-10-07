@@ -77,7 +77,7 @@
 									<div>
 										<small class="info help-block text-muted">Format
 											(JPG|PNG).
-											Max 10 MB</small>
+											Max 2 MB</small>
 									</div>
 								</div>
 							</div>

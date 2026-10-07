@@ -365,6 +365,13 @@ $pageDescription = isset($meta_description)
                     </li>
 
                     <li class="nav-item">
+                        <a class="nav-link<?= in_array(uri_string(), ['profil', 'profil/index'], true) ? ' active' : '' ?>"
+                            href="<?= base_url('profil') ?>">
+                            <i class="fa-solid fa-building me-1"></i>Profil
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
                         <a class="nav-link" href="<?= base_url('opac') ?>">
                             <i class="fa-solid fa-magnifying-glass me-1"></i>OPAC
                         </a>

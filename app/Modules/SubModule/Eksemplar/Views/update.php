@@ -501,6 +501,16 @@ $tanggal_pengadaan = date('Y-m-d', strtotime($eksemplar->TanggalPengadaan));
 	});
 
 	$(document).ready(function() {
+		<?php if ($nomorIndukManual) : ?>
+		var itemId = <?= json_encode(str_pad((string) $eksemplar->ID, 11, '0', STR_PAD_LEFT)) ?>;
+		var barcodeUsesItemId = <?= $barcodeUsesItemId ? 'true' : 'false' ?>;
+		var rfidUsesItemId = <?= $rfidUsesItemId ? 'true' : 'false' ?>;
+		$('#NomorBarcode_0, #RFID_0').prop('readonly', true);
+		$('#NoInduk_0').on('input', function() {
+			$('#NomorBarcode_0').val(barcodeUsesItemId ? itemId : this.value);
+			$('#RFID_0').val(rfidUsesItemId ? itemId : this.value);
+		}).trigger('input');
+		<?php endif; ?>
 
 		// Enable tombol edit partner jika ada pilihan
 		$('#Partner_id').on('change', function() {

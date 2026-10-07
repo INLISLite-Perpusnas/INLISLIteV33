@@ -2,6 +2,16 @@
 
 <?= $this->section('style'); ?>
 <style>
+    .profil-page {
+        padding-top: 9rem;
+    }
+
+    @media (max-width: 991.98px) {
+        .profil-page {
+            padding-top: 7.5rem;
+        }
+    }
+
     .profil-hero {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         color: #ffffff;
@@ -79,8 +89,7 @@
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('content'); ?>
-<!-- Tambahan pt-5 mt-4 untuk memberi space dari navbar/header -->
-<div class="container pt-5 mt-4 mb-5">
+<div class="container profil-page mb-5">
 
     <!-- Profil Section (Vertikal Layout) -->
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">

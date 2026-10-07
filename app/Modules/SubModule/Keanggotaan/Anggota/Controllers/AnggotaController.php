@@ -15,6 +15,8 @@ class AnggotaController extends \Base\Controllers\BaseController
 {
     use AnggotaBase;
 
+    private const MAX_PHOTO_SIZE = 2 * 1024 * 1024;
+
     function __construct()
     {
         $this->initAnggotaBase();
@@ -22,7 +24,7 @@ class AnggotaController extends \Base\Controllers\BaseController
 
     public function csrfToken()
     {
-        if (!is_allowed('anggota/create')) {
+        if (!is_allowed('anggota/create') && !is_allowed('anggota/edit')) {
             return $this->response->setStatusCode(403)->setJSON([
                 'success' => false,
                 'message' => 'Maaf, Anda tidak memiliki akses',
@@ -38,7 +40,6 @@ class AnggotaController extends \Base\Controllers\BaseController
     public function do_upload()
     {
         $file = $this->request->getFile('file');
-        $allowedMimes = ['image/jpeg', 'image/png'];
 
         if (!$file || !$file->isValid() || $file->hasMoved()) {
             return $this->response->setStatusCode(400)->setJSON([
@@ -48,15 +49,17 @@ class AnggotaController extends \Base\Controllers\BaseController
             ]);
         }
 
-        if ($file->getSize() > 10 * 1024 * 1024 || !in_array($file->getMimeType(), $allowedMimes, true)) {
+        $extension = $this->photoExtension($file->getTempName());
+        $mimeType = $file->getMimeType();
+        if ($extension === null || !in_array($mimeType, ['image/jpeg', 'image/png'], true)) {
             return $this->response->setStatusCode(415)->setJSON([
                 'success' => false,
                 'csrfHash' => csrf_hash(),
-                'msg' => 'Foto harus berupa JPG atau PNG dengan ukuran maksimal 10 MB.',
+                'msg' => 'Foto harus berupa JPG atau PNG dengan ukuran maksimal 2 MB.',
             ]);
         }
 
-        $newFileName = $file->getRandomName();
+        $newFileName = bin2hex(random_bytes(16)) . '.' . $extension;
         $file->move($this->uploadPath, $newFileName);
 
         return $this->response->setJSON([
@@ -64,10 +67,49 @@ class AnggotaController extends \Base\Controllers\BaseController
             'csrfHash' => csrf_hash(),
             'data' => [
                 'name' => $newFileName,
-                'type' => $file->getMimeType(),
+                'type' => $mimeType,
             ],
             'msg' => 'Foto berhasil diunggah.',
         ]);
+    }
+
+    private function photoExtension(string $path): ?string
+    {
+        if (!is_file($path)) {
+            return null;
+        }
+
+        $size = filesize($path);
+        if ($size === false || $size === 0 || $size > self::MAX_PHOTO_SIZE) {
+            return null;
+        }
+
+        $imageInfo = @getimagesize($path);
+        if ($imageInfo === false || !in_array($imageInfo['mime'], ['image/jpeg', 'image/png'], true)
+            || (new File($path))->getMimeType() !== $imageInfo['mime']) {
+            return null;
+        }
+
+        return $imageInfo['mime'] === 'image/png' ? 'png' : 'jpg';
+    }
+
+    private function moveStagedPhoto($name): ?string
+    {
+        if (!is_string($name) || $name === '' || basename($name) !== $name) {
+            return null;
+        }
+
+        $path = $this->uploadPath . $name;
+        $extension = $this->photoExtension($path);
+        if ($extension === null || strtolower(pathinfo($name, PATHINFO_EXTENSION)) !== $extension) {
+            return null;
+        }
+
+        $file = new File($path);
+        $newFileName = bin2hex(random_bytes(16)) . '.' . $extension;
+        $file->move($this->modulePath, $newFileName);
+
+        return $newFileName;
     }
 
     private function validReferenceIds($values, string $table, string $column): bool
@@ -88,13 +130,13 @@ class AnggotaController extends \Base\Controllers\BaseController
 
     private function storeCameraImage(string $dataUri)
     {
-        if (strlen($dataUri) > 14 * 1024 * 1024 || !preg_match('/^data:image\/(jpeg|jpg|png);base64,/i', $dataUri, $matches)) {
+        if (strlen($dataUri) > 3 * 1024 * 1024 || !preg_match('/^data:image\/(jpeg|jpg|png);base64,/i', $dataUri, $matches)) {
             return false;
         }
 
         $encoded = substr($dataUri, strpos($dataUri, ',') + 1);
         $binary = base64_decode($encoded, true);
-        if ($binary === false || strlen($binary) > 10 * 1024 * 1024) {
+        if ($binary === false || strlen($binary) > self::MAX_PHOTO_SIZE) {
             return false;
         }
 
@@ -392,25 +434,22 @@ class AnggotaController extends \Base\Controllers\BaseController
                 $save_data['KelurahanNow'] = $region->name ?? null;
             }
 
-            $files = (array) $this->request->getPost('PhotoUrl');
-            if (count($files)) {
-                $listed_file = [];
-                foreach ($files as $uuid => $name) {
-                    if (is_string($name) && basename($name) === $name && is_file($this->uploadPath . $name)) {
-                        $file = new File($this->uploadPath . $name);
-                        $newFileName = $file->getRandomName();
-                        $file->move($this->modulePath, $newFileName);
-                        $listed_file[] = $newFileName;
-                    }
+            $files = $this->request->getPost('file_image');
+            if ($files !== null) {
+                $newFileName = is_array($files) && count($files) === 1 ? $this->moveStagedPhoto(reset($files)) : null;
+                if ($newFileName === null) {
+                    $this->session->setFlashdata('message', 'Foto harus berupa JPG atau PNG dengan ukuran maksimal 2 MB.');
+                    echo view('Anggota\Views\add', $this->data);
+                    return;
                 }
-                $save_data['PhotoUrl'] = implode(',', $listed_file);
+                $save_data['PhotoUrl'] = $newFileName;
             }
 
             $base64_string = $this->request->getPost('camera_image');
             if (!empty($base64_string)) {
                 $newFileName = $this->storeCameraImage($base64_string);
                 if ($newFileName === false) {
-                    $this->session->setFlashdata('message', 'Foto kamera tidak valid. Gunakan JPG atau PNG maksimal 10 MB.');
+                    $this->session->setFlashdata('message', 'Foto kamera tidak valid. Gunakan JPG atau PNG maksimal 2 MB.');
                     echo view('Anggota\Views\add', $this->data);
                     return;
                 }
@@ -470,15 +509,13 @@ class AnggotaController extends \Base\Controllers\BaseController
     public function camera()
     {
         $file = $this->request->getFile('file_image');
-        if (
-            !$file || !$file->isValid() || $file->hasMoved()
-            || $file->getSize() > 10 * 1024 * 1024
-            || !in_array($file->getMimeType(), ['image/jpeg', 'image/png'], true)
-        ) {
+        $extension = $file && $file->isValid() && !$file->hasMoved()
+            ? $this->photoExtension($file->getTempName()) : null;
+        if ($extension === null) {
             return $this->response->setStatusCode(415)->setBody('Foto tidak valid.');
         }
 
-        $filename = $file->getRandomName();
+        $filename = bin2hex(random_bytes(16)) . '.' . $extension;
         $file->move($this->modulePath, $filename);
         return $this->response->setBody(base_url('uploads/anggota/' . $filename));
     }
@@ -685,26 +722,21 @@ class AnggotaController extends \Base\Controllers\BaseController
                         $newFileName = $this->storeCameraImage($base64_string);
                         if ($newFileName === false) {
                             return $this->request->isAJAX()
-                                ? $this->response->setJSON(['success' => false, 'message' => 'Foto kamera tidak valid. Gunakan JPG atau PNG maksimal 10 MB.'])
-                                : redirect()->back()->with('message', 'Foto kamera tidak valid. Gunakan JPG atau PNG maksimal 10 MB.');
+                                ? $this->response->setJSON(['success' => false, 'message' => 'Foto kamera tidak valid. Gunakan JPG atau PNG maksimal 2 MB.'])
+                                : redirect()->back()->with('message', 'Foto kamera tidak valid. Gunakan JPG atau PNG maksimal 2 MB.');
                         }
                         $update_data['PhotoUrl'] = $newFileName;
                     }
                 } else {
-                    $files = (array) $this->request->getPost('file_image');
-                    if (count($files)) {
-                        $listed_file = [];
-                        foreach ($files as $uuid => $name) {
-                            if (is_string($name) && basename($name) === $name && is_file($this->modulePath . $name)) {
-                                $listed_file[] = $name;
-                            } elseif (is_string($name) && basename($name) === $name && is_file($this->uploadPath . $name)) {
-                                $file = new File($this->uploadPath . $name);
-                                $newFileName = $file->getRandomName();
-                                $file->move($this->modulePath, $newFileName);
-                                $listed_file[] = $newFileName;
-                            }
+                    $files = $this->request->getPost('file_image');
+                    if ($files !== null) {
+                        $newFileName = is_array($files) && count($files) === 1 ? $this->moveStagedPhoto(reset($files)) : null;
+                        if ($newFileName === null) {
+                            return $this->request->isAJAX()
+                                ? $this->response->setJSON(['success' => false, 'message' => 'Foto harus berupa JPG atau PNG dengan ukuran maksimal 2 MB.'])
+                                : redirect()->back()->with('message', 'Foto harus berupa JPG atau PNG dengan ukuran maksimal 2 MB.');
                         }
-                        $update_data['PhotoUrl'] = implode(',', $listed_file);
+                        $update_data['PhotoUrl'] = $newFileName;
                     }
                 }
 

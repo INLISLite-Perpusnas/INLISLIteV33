@@ -1,41 +1,39 @@
-<?php $pager->setSurroundCount(2) ?>
+<?php
+$pager->setSurroundCount(2);
+$links = $pager->links();
+$firstVisible = $links[0]['title'] ?? 1;
+$lastVisible = $links[count($links) - 1]['title'] ?? 1;
+$pageCount = $pager->getPageCount();
+?>
 
-<nav aria-label="Page navigation">
+<nav aria-label="Navigasi halaman">
     <ul class="pagination justify-content-center flex-wrap gap-1 mb-0">
 
-        <?php if ($pager->hasPrevious()): ?>
+        <?php if ($firstVisible > 1): ?>
             <li class="page-item">
-                <a class="page-link rounded-pill px-3" href="<?= $pager->getFirst() ?>" aria-label="First">
-                    <i class="fas fa-angle-double-left"></i>
-                </a>
+                <a class="page-link rounded-pill px-3 fw-semibold" href="<?= esc($pager->getFirst(), 'attr') ?>">1</a>
             </li>
-            <li class="page-item">
-                <a class="page-link rounded-pill px-3" href="<?= $pager->getPrevious() ?>" aria-label="Previous">
-                    <i class="fas fa-angle-left"></i>
-                </a>
-            </li>
-        <?php endif ?>
+            <?php if ($firstVisible > 2): ?>
+                <li class="page-item text-muted px-2 align-self-center" aria-hidden="true">&hellip;</li>
+            <?php endif; ?>
+        <?php endif; ?>
 
-        <?php foreach ($pager->links() as $link): ?>
+        <?php foreach ($links as $link): ?>
             <li class="page-item <?= $link['active'] ? 'active' : '' ?>">
-                <a class="page-link rounded-pill px-3 fw-semibold" href="<?= $link['uri'] ?>">
+                <a class="page-link rounded-pill px-3 fw-semibold" href="<?= esc($link['uri'], 'attr') ?>"<?= $link['active'] ? ' aria-current="page"' : '' ?>>
                     <?= $link['title'] ?>
                 </a>
             </li>
-        <?php endforeach ?>
+        <?php endforeach; ?>
 
-        <?php if ($pager->hasNext()): ?>
+        <?php if ($lastVisible < $pageCount): ?>
+            <?php if ($lastVisible < $pageCount - 1): ?>
+                <li class="page-item text-muted px-2 align-self-center" aria-hidden="true">&hellip;</li>
+            <?php endif; ?>
             <li class="page-item">
-                <a class="page-link rounded-pill px-3" href="<?= $pager->getNext() ?>" aria-label="Next">
-                    <i class="fas fa-angle-right"></i>
-                </a>
+                <a class="page-link rounded-pill px-3 fw-semibold" href="<?= esc($pager->getLast(), 'attr') ?>"><?= $pageCount ?></a>
             </li>
-            <li class="page-item">
-                <a class="page-link rounded-pill px-3" href="<?= $pager->getLast() ?>" aria-label="Last">
-                    <i class="fas fa-angle-double-right"></i>
-                </a>
-            </li>
-        <?php endif ?>
+        <?php endif; ?>
 
     </ul>
 </nav>

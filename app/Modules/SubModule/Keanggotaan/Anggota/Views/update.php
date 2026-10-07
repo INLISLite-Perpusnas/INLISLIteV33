@@ -398,9 +398,14 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 	// ========================================
 
 	Dropzone.autoDiscover = false;
-	var file_image = setDropzone('file_image', 'anggota', '.jpg,.jpeg,.png', 1, 10);
+	var file_image = setDropzone('file_image', 'anggota', '.jpg,.jpeg,.png', 1, 2);
 	file_image.on('sending', function (file, xhr, formData) {
 		formData.append('<?= csrf_token() ?>', $('input[name="<?= csrf_token() ?>"]').val());
+	});
+	file_image.on('success', function (file, response) {
+		if (response && response.csrfHash) {
+			$('input[name="<?= csrf_token() ?>"]').val(response.csrfHash);
+		}
 	});
 
 	// ========================================
@@ -670,6 +675,13 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 
 		$('#frm').on('submit', function (e) {
 			e.preventDefault(); // Always prevent default
+			if (file_image.getQueuedFiles().length > 0 || file_image.getUploadingFiles().length > 0) {
+				return false;
+			}
+			if (file_image.files.length > 0 && $('#file_image_listed input[type="hidden"]').length === 0) {
+				Swal.fire('Gagal', 'Upload foto belum berhasil. Ulangi upload sebelum menyimpan.', 'error');
+				return false;
+			}
 
 			// Jika sedang proses, abaikan
 			if (isValidating || isSubmitting) {
@@ -790,6 +802,23 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 					console.log(pair[0] + ': ' + pair[1]);
 				}
 
+				$.ajax({
+					url: '<?= base_url('anggota/csrf_token') ?>',
+					type: 'GET',
+					dataType: 'json',
+					cache: false
+				}).done(function (tokenResponse) {
+					if (!tokenResponse.success || !tokenResponse.csrfHash) {
+						$('#form-loading-overlay').removeClass('active');
+						$('#btn-submit').prop('disabled', false).html('<i class="fa fa-save"></i> Simpan');
+						isSubmitting = false;
+						Swal.fire('Gagal', tokenResponse.message || 'Token keamanan gagal diperbarui. Muat ulang halaman.', 'error');
+						return;
+					}
+
+					$form.find('input[name="<?= csrf_token() ?>"]').val(tokenResponse.csrfHash);
+					formData.set('<?= csrf_token() ?>', tokenResponse.csrfHash);
+
 				// Submit via AJAX
 				$.ajax({
 					url: $form.attr('action'),
@@ -848,7 +877,9 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 						isSubmitting = false;
 
 						// ✅ TAMPILKAN pesan error yang lebih detail
-						let errorMessage = 'Terjadi kesalahan saat menyimpan data';
+						let errorMessage = xhr.status === 403
+							? 'Akses ditolak atau token keamanan tidak valid. Muat ulang halaman, lalu coba lagi.'
+							: 'Terjadi kesalahan saat menyimpan data';
 
 						// Coba parse response jika ada
 						try {
@@ -867,6 +898,12 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 							confirmButtonText: 'OK'
 						});
 					}
+				});
+				}).fail(function (xhr) {
+					$('#form-loading-overlay').removeClass('active');
+					$('#btn-submit').prop('disabled', false).html('<i class="fa fa-save"></i> Simpan');
+					isSubmitting = false;
+					Swal.fire('Gagal', xhr.responseJSON?.message || 'Token keamanan gagal diperbarui. Muat ulang halaman.', 'error');
 				});
 
 			}, 400); // Delay 400ms untuk accordion animation

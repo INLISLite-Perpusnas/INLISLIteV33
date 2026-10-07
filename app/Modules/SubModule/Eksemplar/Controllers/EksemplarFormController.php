@@ -27,6 +27,8 @@ class EksemplarFormController extends \Base\Controllers\BaseController
         $NomorInduk = $this->db->table('settingparameters')->where('Name', 'NomorInduk')->get()->getRow()->Value ?: "Otomatis";
 
         $this->data['NomorInduk'] = ($NomorInduk == "Manual") ? "True" : "False";
+        $this->data['barcodeUsesItemId'] = $this->getNumberSource('FormatNomorBarcode') === 'Item ID';
+        $this->data['rfidUsesItemId'] = $this->getNumberSource('FormatNomorRFID') === 'Item ID';
 
         $this->validation->setRules([
             'Catalog_id'          => ['label' => 'Judul Katalog',       'rules' => 'required'],
@@ -38,6 +40,7 @@ class EksemplarFormController extends \Base\Controllers\BaseController
             'Media_id'            => ['label' => 'Bentuk Fisik',        'rules' => 'required'],
             'Category_id'         => ['label' => 'Kategori Koleksi',    'rules' => 'required'],
             'TanggalPengadaan'    => ['label' => 'Tanggal Pengadaan',   'rules' => 'required'],
+            'JumlahEksemplar'     => ['label' => 'Jumlah Eksemplar',    'rules' => 'required|is_natural_no_zero'],
         ]);
 
         if ($this->request->getPost()) {
@@ -46,7 +49,6 @@ class EksemplarFormController extends \Base\Controllers\BaseController
                 $post     = $this->request->getPost();
                 $redirect = isset($post['redirect']) ? $post['redirect'] : '';
 
-                $collections = [];
                 $total       = $post['JumlahEksemplar'];
                 $Catalog_id  = isset($post['Catalog_id']) ? $post['Catalog_id'] : null;
 
@@ -64,111 +66,135 @@ class EksemplarFormController extends \Base\Controllers\BaseController
 
                 $barcodeSource = $this->getNumberSource('FormatNomorBarcode');
                 $rfidSource    = $this->getNumberSource('FormatNomorRFID');
-                $lastCollectionId = (int) ($this->db->table('collections')
-                    ->selectMax('ID', 'last_id')->get()->getRow()->last_id ?? 0);
 
-                for ($i = 1; $i <= $total; $i++) {
-                    if ($NomorInduk == "Manual") {
-                        $idx          = $i - 1;
-                        $noInduk      = isset($post['NoInduk' . $idx]) ? $post['NoInduk' . $idx] : '';
-                        $nomorBarcode = isset($post['NomorBarcode' . $idx]) ? $post['NomorBarcode' . $idx] : '';
-                        $rfid         = isset($post['RFID' . $idx]) ? $post['RFID' . $idx] : '';
-                    } else {
-                        $collectionData = [
-                            'worksheet_id' => $worksheet_id,
-                            'category_id'  => isset($post['Category_id']) ? $post['Category_id'] : null,
-                            'media_id'     => isset($post['Media_id']) ? $post['Media_id'] : null,
-                            'source_id'    => isset($post['Source_id']) ? $post['Source_id'] : null,
-                            'partner_id'   => isset($post['Partner_id']) ? $post['Partner_id'] : null,
-                        ];
-                        $noInduk = $this->generateNomorBarcode($collectionData, $i);
+                $lockName = 'collections_numbering_' . substr(sha1($this->db->getDatabase()), 0, 16);
+                $lockAcquired = false;
+
+                try {
+                    $lock = $this->db->query('SELECT GET_LOCK(?, 30) AS acquired', [$lockName])->getRow();
+                    if ((int) ($lock->acquired ?? 0) !== 1) {
+                        throw new \RuntimeException('Penomoran koleksi sedang digunakan. Silakan coba lagi.');
+                    }
+                    $lockAcquired = true;
+
+                    for ($attempt = 1; $attempt <= 3; $attempt++) {
+                        if (!$this->db->transBegin()) {
+                            throw new \RuntimeException('Transaksi penambahan eksemplar gagal dimulai.');
+                        }
+
+                        try {
+                            for ($i = 1; $i <= $total; $i++) {
+                                if ($NomorInduk == "Manual") {
+                                    $idx     = $i - 1;
+                                    $noInduk = isset($post['NoInduk' . $idx]) ? $post['NoInduk' . $idx] : '';
+                                } else {
+                                    $collectionData = [
+                                        'worksheet_id' => $worksheet_id,
+                                        'category_id'  => isset($post['Category_id']) ? $post['Category_id'] : null,
+                                        'media_id'     => isset($post['Media_id']) ? $post['Media_id'] : null,
+                                        'source_id'    => isset($post['Source_id']) ? $post['Source_id'] : null,
+                                        'partner_id'   => isset($post['Partner_id']) ? $post['Partner_id'] : null,
+                                    ];
+                                    $noInduk = $this->generateNomorBarcode($collectionData, 1);
+                                }
+
+                                $save = [
+                                    'Catalog_id'          => $post['Catalog_id'],
+                                    'ISDRM'               => $post['ISDRM'],
+                                    'Location_Library_id' => $post['Location_Library_id'],
+                                    'Location_id'         => $post['Location_id'],
+                                    'NomorBarcode'        => 'pending-' . bin2hex(random_bytes(16)),
+                                    'NoInduk'             => $noInduk,
+                                    'RFID'                => null,
+                                    'CallNumber'          => isset($post['CallNumber']) ? $post['CallNumber'] : '',
+                                    'IsQUARANTINE'        => '0',
+                                    'CreateBy'            => user_id(),
+                                    'CreateDate'          => date("Y-m-d H:i:s"),
+                                    'UpdateBy'            => user_id(),
+                                    'UpdateDate'          => date("Y-m-d H:i:s"),
+                                ];
+
+                                if (!empty($post['TanggalPengadaan'])) $save['TanggalPengadaan'] = $post['TanggalPengadaan'];
+                                if (!empty($post['Rule_id']))          $save['Rule_id']           = $post['Rule_id'];
+                                if (!empty($post['Category_id']))      $save['Category_id']       = $post['Category_id'];
+                                if (!empty($post['Currency']))         $save['Currency']          = $post['Currency'];
+                                if (!empty($post['Media_id']))         $save['Media_id']          = $post['Media_id'];
+                                if (!empty($post['Source_id']))        $save['Source_id']         = $post['Source_id'];
+                                if (!empty($post['Status_id']))        $save['Status_id']         = $post['Status_id'];
+                                if (!empty($post['Partner_id']))       $save['Partner_id']        = $post['Partner_id'];
+                                if (!empty($post['Price']))            $save['Price']             = $post['Price'];
+                                if (!empty($post['PriceType']))        $save['PriceType']         = $post['PriceType'];
+
+                                if (!empty($post['EDISISERIAL']))                 $save['EDISISERIAL']                 = $post['EDISISERIAL'];
+                                if (!empty($post['TANGGAL_TERBIT_EDISI_SERIAL'])) $save['TANGGAL_TERBIT_EDISI_SERIAL'] = $post['TANGGAL_TERBIT_EDISI_SERIAL'];
+
+                                $save['ISOPAC'] = !empty($post['ISOPAC']) ? 1 : 0;
+
+                                if (!$this->db->table('collections')->insert($save)) {
+                                    $error = $this->db->error();
+                                    throw new \RuntimeException($error['message'] ?: 'Gagal menyimpan eksemplar.', (int) $error['code']);
+                                }
+
+                                $itemId = $this->db->insertID();
+                                $itemNumber = str_pad((string) $itemId, 11, '0', STR_PAD_LEFT);
+                                $nomorBarcode = ($barcodeSource === 'Item ID') ? $itemNumber : $noInduk;
+                                $rfid = ($rfidSource === 'Item ID') ? $itemNumber : $noInduk;
+
+                                if (!$this->db->table('collections')->where('ID', $itemId)->update([
+                                    'NomorBarcode' => $nomorBarcode,
+                                    'RFID' => $rfid,
+                                ])) {
+                                    $error = $this->db->error();
+                                    throw new \RuntimeException($error['message'] ?: 'Gagal menyimpan nomor barcode dan RFID.', (int) $error['code']);
+                                }
+                            }
+
+                            if (!$this->db->transStatus() || !$this->db->transCommit()) {
+                                throw new \RuntimeException('Transaksi penambahan eksemplar gagal.');
+                            }
+                            break;
+                        } catch (\Throwable $e) {
+                            $this->db->transRollback();
+                            if ($NomorInduk === 'Manual' || $attempt === 3
+                                || ((int) $e->getCode() !== 1062 && !str_contains($e->getMessage(), 'Duplicate entry'))) {
+                                throw $e;
+                            }
+                            $this->db->resetTransStatus();
+                        }
                     }
 
-                    // Sumber barcode dan RFID dapat dipilih secara terpisah.
-                    $itemId = str_pad((string) ($lastCollectionId + $i), 11, '0', STR_PAD_LEFT);
-                    $nomorBarcode = ($barcodeSource === 'Item ID') ? $itemId : $noInduk;
-                    $rfid         = ($rfidSource === 'Item ID') ? $itemId : $noInduk;
+                    $this->session->setFlashdata('swal_icon', 'success');
+                    $this->session->setFlashdata('swal_title', 'Berhasil');
+                    $this->session->setFlashdata('swal_text', 'Eksemplar berhasil ditambah');
 
-                    $save = [
-                        'Catalog_id'          => $post['Catalog_id'],
-                        'ISDRM'               => $post['ISDRM'],
-                        'Location_Library_id' => $post['Location_Library_id'],
-                        'Location_id'         => $post['Location_id'],
-                        'NomorBarcode'        => $nomorBarcode,
-                        'NoInduk'             => $noInduk,
-                        'RFID'                => $rfid,
-                        'CallNumber'          => isset($post['CallNumber']) ? $post['CallNumber'] : '',
-                        'IsQUARANTINE'        => '0',
-                        'CreateBy'            => user_id(),
-                        'CreateDate'          => date("Y-m-d H:i:s"),
-                        'UpdateBy'            => user_id(),
-                        'UpdateDate'          => date("Y-m-d H:i:s"),
-                    ];
+                    if ($this->request->getPost('IsRedirect') == 1) {
+                        return !empty($redirect)
+                            ? redirect()->to($redirect)
+                            : redirect()->to('eksemplar');
+                    }
+                    return redirect()->back();
+                } catch (\Throwable $e) {
+                    $errorMessage = $e->getMessage();
 
-                    if (!empty($post['TanggalPengadaan'])) $save['TanggalPengadaan'] = $post['TanggalPengadaan'];
-                    if (!empty($post['Rule_id']))          $save['Rule_id']           = $post['Rule_id'];
-                    if (!empty($post['Category_id']))      $save['Category_id']       = $post['Category_id'];
-                    if (!empty($post['Currency']))         $save['Currency']          = $post['Currency'];
-                    if (!empty($post['Media_id']))         $save['Media_id']          = $post['Media_id'];
-                    if (!empty($post['Source_id']))        $save['Source_id']         = $post['Source_id'];
-                    if (!empty($post['Status_id']))        $save['Status_id']         = $post['Status_id'];
-                    if (!empty($post['Partner_id']))       $save['Partner_id']        = $post['Partner_id'];
-                    if (!empty($post['Price']))            $save['Price']             = $post['Price'];
-                    if (!empty($post['PriceType']))        $save['PriceType']         = $post['PriceType'];
+                    if (str_contains($errorMessage, 'Duplicate entry')) {
+                        preg_match("/Duplicate entry '(.+?)' for key/", $errorMessage, $m);
+                        $dupValue = isset($m[1]) ? $m[1] : '';
+                        $friendlyMsg = 'Nomor Barcode <strong>' . esc($dupValue) . '</strong> sudah terdaftar di sistem. Gunakan nomor barcode yang berbeda.';
+                    } elseif (str_contains($errorMessage, 'Penomoran koleksi sedang digunakan')) {
+                        $friendlyMsg = $errorMessage;
+                    } else {
+                        $friendlyMsg = 'Eksemplar gagal ditambah. Silakan coba lagi atau hubungi administrator.';
+                    }
 
-                    // Khusus terbitan berkala (Worksheet_id == 4)
-                    if (!empty($post['EDISISERIAL']))                   $save['EDISISERIAL']                   = $post['EDISISERIAL'];
-                    if (!empty($post['TANGGAL_TERBIT_EDISI_SERIAL']))   $save['TANGGAL_TERBIT_EDISI_SERIAL']   = $post['TANGGAL_TERBIT_EDISI_SERIAL'];
+                    $this->session->setFlashdata('swal_icon', 'error');
+                    $this->session->setFlashdata('swal_title', 'Gagal Menyimpan');
+                    $this->session->setFlashdata('swal_html', $friendlyMsg);
 
-                    $save['ISOPAC'] = !empty($post['ISOPAC']) ? 1 : 0;
-
-                    array_push($collections, $save);
-                }
-
-                if (!empty($collections)) {
-                    try {
-                        $insert = $this->eksemplarModel->insertBatch($collections);
-
-                        if ($insert === false) {
-                            $modelErrors = $this->eksemplarModel->errors();
-                            $errorString = !empty($modelErrors) ? implode(', ', $modelErrors) : 'Unknown Model Validation Error';
-
-                            $this->session->setFlashdata('swal_icon',  'error');
-                            $this->session->setFlashdata('swal_title', 'Validasi Model Gagal');
-                            $this->session->setFlashdata('swal_text',  'Eksemplar gagal ditambah. Penyebab: ' . $errorString);
-                            return redirect()->back()->withInput();
-                        }
-
-                        $this->session->setFlashdata('swal_icon',  'success');
-                        $this->session->setFlashdata('swal_title', 'Berhasil');
-                        $this->session->setFlashdata('swal_text',  'Eksemplar berhasil ditambah');
-
-                        $IsRedirect = $this->request->getPost('IsRedirect');
-                        if ($IsRedirect == 1) {
-                            return !empty($redirect)
-                                ? redirect()->to($redirect)
-                                : redirect()->to('eksemplar');
-                        } else {
-                            return redirect()->back();
-                        }
-
-                    } catch (\Throwable $e) {
-                        $errorMessage = $e->getMessage();
-
-                        if (str_contains($errorMessage, 'Duplicate entry')) {
-                            preg_match("/Duplicate entry '(.+?)' for key/", $errorMessage, $m);
-                            $dupValue    = isset($m[1]) ? $m[1] : '';
-                            $friendlyMsg = "Nomor Barcode <strong>{$dupValue}</strong> sudah terdaftar di sistem. Gunakan nomor barcode yang berbeda.";
-                        } else {
-                            $friendlyMsg = 'Eksemplar gagal ditambah. Silakan coba lagi atau hubungi administrator.';
-                        }
-
-                        $this->session->setFlashdata('swal_icon',  'error');
-                        $this->session->setFlashdata('swal_title', 'Gagal Menyimpan');
-                        $this->session->setFlashdata('swal_html',  $friendlyMsg);
-
-                        log_message('error', '[Eksemplar Create DB Error] ' . $errorMessage);
-                        return redirect()->back()->withInput();
+                    log_message('error', '[Eksemplar Create DB Error] ' . $errorMessage);
+                    return redirect()->back()->withInput();
+                } finally {
+                    if ($lockAcquired) {
+                        $this->db->query('SELECT RELEASE_LOCK(?)', [$lockName]);
                     }
                 }
 
@@ -198,6 +224,10 @@ class EksemplarFormController extends \Base\Controllers\BaseController
     public function edit($id)
     {
         $this->data['title'] = 'Ubah Eksemplar';
+        $NomorInduk = $this->db->table('settingparameters')->where('Name', 'NomorInduk')->get()->getRow()->Value ?? 'Otomatis';
+        $this->data['nomorIndukManual'] = $NomorInduk === 'Manual';
+        $this->data['barcodeUsesItemId'] = $this->getNumberSource('FormatNomorBarcode') === 'Item ID';
+        $this->data['rfidUsesItemId'] = $this->getNumberSource('FormatNomorRFID') === 'Item ID';
 
         $eksemplar = $this->eksemplarModel->find($id);
         $this->data['eksemplar'] = $eksemplar;
@@ -235,18 +265,16 @@ class EksemplarFormController extends \Base\Controllers\BaseController
 
                 $noInduk = isset($post['NoInduk0']) ? $post['NoInduk0'] : (isset($post['NoInduk']) ? $post['NoInduk'] : $eksemplar->NoInduk);
                 $itemId = str_pad((string) $eksemplar->ID, 11, '0', STR_PAD_LEFT);
+                $nomorBarcode = $this->data['barcodeUsesItemId'] ? $itemId : $noInduk;
+                $rfid = $this->data['rfidUsesItemId'] ? $itemId : $noInduk;
 
                 $update = [
                     'Location_Library_id' => $post['Location_Library_id'],
                     'Location_id'         => $post['Location_id'],
                     'ISDRM'               => $post['ISDRM'],
-                    'NomorBarcode'        => $this->getNumberSource('FormatNomorBarcode') === 'Item ID'
-                        ? $itemId
-                        : $noInduk,
+                    'NomorBarcode'        => $nomorBarcode,
                     'NoInduk'             => $noInduk,
-                    'RFID'                => $this->getNumberSource('FormatNomorRFID') === 'Item ID'
-                        ? $itemId
-                        : $noInduk,
+                    'RFID'                => $rfid,
                     'UpdateBy'            => user_id(),
                     'UpdateDate'          => date("Y-m-d H:i:s"),
                 ];
@@ -410,18 +438,18 @@ class EksemplarFormController extends \Base\Controllers\BaseController
         $prefix = $parts[0];
         $suffix = $parts[1] ?? '';
 
-        // Only compare numeric sequences within the same barcode format.
-        // Legacy alphanumeric barcodes must not reset the sequence to zero.
-        $sequence = 'SUBSTRING(NomorBarcode, CHAR_LENGTH(' . $this->db->escape($prefix)
-            . ') + 1, CHAR_LENGTH(NomorBarcode) - CHAR_LENGTH('
+        // Only compare numeric sequences within the same No. Induk format.
+        // Legacy alphanumeric numbers must not reset the sequence to zero.
+        $sequence = 'SUBSTRING(NoInduk, CHAR_LENGTH(' . $this->db->escape($prefix)
+            . ') + 1, CHAR_LENGTH(NoInduk) - CHAR_LENGTH('
             . $this->db->escape($prefix) . ') - CHAR_LENGTH('
             . $this->db->escape($suffix) . '))';
         $builder = $this->db->table('collections')
             ->select('MAX(CAST(' . $sequence . ' AS UNSIGNED)) AS no', false)
-            ->like('NomorBarcode', $prefix, 'after')
+            ->like('NoInduk', $prefix, 'after')
             ->where($sequence . " REGEXP '^[0-9]+$'", null, false);
         if ($suffix !== '') {
-            $builder->like('NomorBarcode', $suffix, 'before');
+            $builder->like('NoInduk', $suffix, 'before');
         }
         $lastNumber = (int) ($builder->get()->getRow()->no ?? 0);
 

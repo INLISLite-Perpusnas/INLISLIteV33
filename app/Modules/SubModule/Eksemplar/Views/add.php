@@ -552,6 +552,8 @@ $catalog = get_catalog($catalog_id);
         // Ambil mode dari PHP
         // =====================================================
         var isManual = <?= $NomorInduk == 'True' ? 'true' : 'false'; ?>;
+        var barcodeUsesItemId = <?= $barcodeUsesItemId ? 'true' : 'false'; ?>;
+        var rfidUsesItemId = <?= $rfidUsesItemId ? 'true' : 'false'; ?>;
 
         // =====================================================
         // Fungsi render input MANUAL
@@ -576,19 +578,25 @@ $catalog = get_catalog($catalog_id);
                             </div>
                             <input type="text" class="form-control"
                                 name="NomorBarcode${i}" id="NomorBarcode_${i}"
-                                placeholder="No. Barcode" value="" />
+                                placeholder="${barcodeUsesItemId ? 'Dibuat saat disimpan' : 'No. Barcode'}" readonly />
                             <div class="input-group-prepend">
                                 <span class="input-group-text">No. RFID</span>
                             </div>
                             <input type="text" class="form-control"
                                 name="RFID${i}" id="RFID_${i}"
-                                placeholder="No. RFID" value="" />
+                                placeholder="${rfidUsesItemId ? 'Dibuat saat disimpan' : 'No. RFID'}" readonly />
                         </div>
                     </div>
                 `;
             }
             $('#eksemplar-container').html(html);
         }
+
+        $('#eksemplar-container').on('input', 'input[name^="NoInduk"]', function() {
+            var row = $(this).closest('[id^="eksemplar-row-"]');
+            if (!barcodeUsesItemId) row.find('input[name^="NomorBarcode"]').val(this.value);
+            if (!rfidUsesItemId) row.find('input[name^="RFID"]').val(this.value);
+        });
 
         // =====================================================
         // Fungsi render input OTOMATIS (generate dari API)

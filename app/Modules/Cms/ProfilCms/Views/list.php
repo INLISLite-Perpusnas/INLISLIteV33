@@ -2,7 +2,7 @@
 
 <?= $this->section('style'); ?>
 <!-- Summernote Lite CSS (Compatible dengan Bootstrap 5) -->
-<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.css" rel="stylesheet">
+<link href="<?= base_url('assets/vendors/summernote/0.8.20/summernote-lite.min.css') ?>" rel="stylesheet">
 <style>
     /* Perbaikan Modal Overlay (Backdrop) di template AdminIgniter */
     #modal_layanan {
@@ -52,7 +52,7 @@
                         <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i>
                                 Beranda</a></li>
                         <li class="breadcrumb-item">CMS</li>
-                        <li class="active breadcrumb-item" aria-current="page">Profil Layanan</li>
+                        <li class="breadcrumb-item" aria-current="page">Profil Layanan</li>
                     </ol>
                 </nav>
             </div>
@@ -202,7 +202,7 @@
 </script>
 
 <!-- 2. Baru panggil Library Summernote Lite & jQuery UI Sortable -->
-<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.js"></script>
+<script src="<?= base_url('assets/vendors/summernote/0.8.20/summernote-lite.min.js') ?>"></script>
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 
 <script>

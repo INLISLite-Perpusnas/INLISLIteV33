@@ -99,7 +99,7 @@ $request = service('request');
 <!-- end scropt mengambil select2 -->
 <script>
   Dropzone.autoDiscover = false;
-  var file_image = setDropzone('file_image', 'anggota', '.jpg,.jpeg,.png', 1, 10);
+  var file_image = setDropzone('file_image', 'anggota', '.jpg,.jpeg,.png', 1, 2);
   file_image.on('addedfile', function() {
     $('#btn-submit').prop('disabled', true);
   });
@@ -127,6 +127,11 @@ $request = service('request');
 
     event.preventDefault();
     if (file_image.getQueuedFiles().length > 0 || file_image.getUploadingFiles().length > 0) {
+      return;
+    }
+
+    if (file_image.files.length > 0 && $('#file_image_listed input[type="hidden"]').length === 0) {
+      alert('Upload foto belum berhasil. Ulangi upload sebelum menyimpan.');
       return;
     }
 

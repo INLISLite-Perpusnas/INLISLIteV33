@@ -201,6 +201,7 @@ $slug = $request->getGet('slug') ?? 'katalog_add';
                             </div>
                         </div>
                     </div>
+                </div>
 
                     <!-- Sumber Nomor Barcode -->
                     <div class="row mb-3">
@@ -227,7 +228,6 @@ $slug = $request->getGet('slug') ?? 'katalog_add';
                             </div>
                         </div>
                     </div>
-                </div>
 
                 <!-- Submit Button -->
                 <div class="row">
@@ -255,7 +255,6 @@ $slug = $request->getGet('slug') ?? 'katalog_add';
 
         const select = document.getElementById('NomorInduk');
         const inputSection = document.getElementById('inputSection');
-        const allInputs = inputSection.querySelectorAll('input, select, textarea');
 
         function updateManualInputFields() {
             formatSelects.forEach((select, index) => {
@@ -332,9 +331,6 @@ $slug = $request->getGet('slug') ?? 'katalog_add';
 
             inputSection.style.display = isManual ? 'none' : 'block';
 
-            // allInputs.forEach(el => {
-            //     el.disabled = isManual;
-            // });
         }
         toggleInputSection();
 
@@ -366,19 +362,6 @@ $slug = $request->getGet('slug') ?? 'katalog_add';
                 hiddenFormatNomorInduk.value = '';
                 form.appendChild(hiddenFormatNomorInduk);
 
-                // FormatNomorBarcode null
-                const hiddenFormatNomorBarcode = document.createElement('input');
-                hiddenFormatNomorBarcode.type = 'hidden';
-                hiddenFormatNomorBarcode.name = 'FormatNomorBarcode';
-                hiddenFormatNomorBarcode.value = '';
-                form.appendChild(hiddenFormatNomorBarcode);
-
-                // FormatNomorRFID null
-                const hiddenFormatNomorRFID = document.createElement('input');
-                hiddenFormatNomorRFID.type = 'hidden';
-                hiddenFormatNomorRFID.name = 'FormatNomorRFID';
-                hiddenFormatNomorRFID.value = '';
-                form.appendChild(hiddenFormatNomorRFID);
             }
         });
 
