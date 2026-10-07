@@ -325,25 +325,27 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 					<i class="pe-7s-id icon-gradient bg-strong-bliss"></i>
 				</div>
 				<div>
-					<?php if (!$is_anggota) : ?>
-						<?= lang('Anggota.action.update') ?> <?= lang('Anggota.module') ?>
+					<?php if (!$is_anggota): ?>
+						<?= lang('Anggota.action.update') ?> 	<?= lang('Anggota.module') ?>
 						<div class="page-title-subheading"><?= lang('Anggota.form.complete_the_data') ?>.</div>
-					<?php else : ?>
+					<?php else: ?>
 						Profil <?= lang('Anggota.module') ?>
 						<div class="page-title-subheading"><?= lang('Anggota.form.complete_the_data') ?>.</div>
 					<?php endif; ?>
 				</div>
 			</div>
 			<div class="page-title-actions">
-				<?php if (!$is_anggota) : ?>
+				<?php if (!$is_anggota): ?>
 					<nav class="" aria-label="breadcrumb">
 						<ol class="breadcrumb">
 							<li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i>
 									<?= lang('Anggota.label.home') ?></a></li>
-							<li class="breadcrumb-item"><a href="<?= base_url('anggota') ?>"><?= lang('Anggota.module') ?></a>
+							<li class="breadcrumb-item"><a
+									href="<?= base_url('anggota') ?>"><?= lang('Anggota.module') ?></a>
 							</li>
 							<li class="breadcrumb-item" aria-current="page"><?= lang('Anggota.action.update') ?>
-								<?= lang('Anggota.module') ?></li>
+								<?= lang('Anggota.module') ?>
+							</li>
 						</ol>
 					</nav>
 				<?php endif; ?>
@@ -353,7 +355,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 
 	<div class="row">
 		<div class="col-lg-12">
-			<?= view('Member\Views\member_profile', array('member' => $member ?? '', 'jenis_anggota' => $jenis_anggota ?? [])) ?>
+			<?= view('Member\Views\member_profile', array('member' => $member ?? '', 'jenis_anggota' => $jenis_anggota ?? [], 'jenis_kelamin' => $jenis_kelamin ?? [])) ?>
 		</div>
 	</div>
 
@@ -363,13 +365,18 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 				<i class="header-icon lnr-layers icon-gradient bg-plum-plate"> </i>
 				Informasi
 			</div>
-			<?php if (!$is_anggota) : ?>
+			<?php if (!$is_anggota): ?>
 				<ul class="nav">
-					<li class="nav-item"><a href="<?= base_url('anggota/edit/' . $anggota->ID . '?slug=keanggotaan') ?>" class="nav-link show <?= ($slug == 'keanggotaan') ? 'active' : '' ?>">Keanggotaan</a></li>
-					<li class="nav-item"><a href="<?= base_url('anggota/edit/' . $anggota->ID . '?slug=pelanggaran') ?>" class="nav-link show <?= ($slug == 'pelanggaran') ? 'active' : '' ?>">Pelanggaran</a></li>
-					<li class="nav-item"><a href="<?= base_url('anggota/edit/' . $anggota->ID . '?slug=peminjaman') ?>" class="nav-link show <?= ($slug == 'peminjaman') ? 'active' : '' ?>">Peminjaman</a></li>
-					<li class="nav-item"><a href="<?= base_url('anggota/edit/' . $anggota->ID . '?slug=perpanjangan') ?>" class="nav-link show <?= ($slug == 'perpanjangan') ? 'active' : '' ?>">Perpanjangan</a></li>
-					<li class="nav-item"><a href="<?= base_url('anggota/edit/' . $anggota->ID . '?slug=sumbangan') ?>" class="nav-link show <?= ($slug == 'sumbangan') ? 'active' : '' ?>">Sumbangan</a></li>
+					<li class="nav-item"><a href="<?= base_url('anggota/edit/' . $anggota->ID . '?slug=keanggotaan') ?>"
+							class="nav-link show <?= ($slug == 'keanggotaan') ? 'active' : '' ?>">Keanggotaan</a></li>
+					<li class="nav-item"><a href="<?= base_url('anggota/edit/' . $anggota->ID . '?slug=pelanggaran') ?>"
+							class="nav-link show <?= ($slug == 'pelanggaran') ? 'active' : '' ?>">Pelanggaran</a></li>
+					<li class="nav-item"><a href="<?= base_url('anggota/edit/' . $anggota->ID . '?slug=peminjaman') ?>"
+							class="nav-link show <?= ($slug == 'peminjaman') ? 'active' : '' ?>">Peminjaman</a></li>
+					<li class="nav-item"><a href="<?= base_url('anggota/edit/' . $anggota->ID . '?slug=perpanjangan') ?>"
+							class="nav-link show <?= ($slug == 'perpanjangan') ? 'active' : '' ?>">Perpanjangan</a></li>
+					<li class="nav-item"><a href="<?= base_url('anggota/edit/' . $anggota->ID . '?slug=sumbangan') ?>"
+							class="nav-link show <?= ($slug == 'sumbangan') ? 'active' : '' ?>">Sumbangan</a></li>
 				</ul>
 			<?php endif; ?>
 		</div>
@@ -392,7 +399,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 
 	Dropzone.autoDiscover = false;
 	var file_image = setDropzone('file_image', 'anggota', '.jpg,.jpeg,.png', 1, 10);
-	file_image.on('sending', function(file, xhr, formData) {
+	file_image.on('sending', function (file, xhr, formData) {
 		formData.append('<?= csrf_token() ?>', $('input[name="<?= csrf_token() ?>"]').val());
 	});
 
@@ -400,7 +407,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 	// SELECT2 INITIALIZATION
 	// ========================================
 
-	$(document).ready(function() {
+	$(document).ready(function () {
 		// Initialize ALL Select2 - PENTING: Ini harus dilakukan SEBELUM load data
 		$('#Province, #City, #District, #SubDistrict').select2({
 			placeholder: 'Pilih...',
@@ -447,13 +454,13 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 
 	function loadRegionData(provinceId, cityId, districtId, subdistrictId, provCode, cityCode, distCode, subdistCode) {
 		// Load Province first
-		getData(`<?= base_url('api/region/province') ?>`, `#${provinceId}`, provCode, function() {
+		getData(`<?= base_url('api/region/province') ?>`, `#${provinceId}`, provCode, function () {
 			// After province loaded, load city if exists
 			if (provCode && cityCode) {
-				getData(`<?= base_url('api/region/city') ?>/${provCode}`, `#${cityId}`, cityCode, function() {
+				getData(`<?= base_url('api/region/city') ?>/${provCode}`, `#${cityId}`, cityCode, function () {
 					// After city loaded, load district if exists
 					if (distCode) {
-						getData(`<?= base_url('api/region/district') ?>/${cityCode}`, `#${districtId}`, distCode, function() {
+						getData(`<?= base_url('api/region/district') ?>/${cityCode}`, `#${districtId}`, distCode, function () {
 							// After district loaded, load subdistrict if exists
 							if (subdistCode) {
 								getData(`<?= base_url('api/region/sub_district') ?>/${distCode}`, `#${subdistrictId}`, subdistCode);
@@ -471,7 +478,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 			const provResp = await axios.get(`<?= base_url('api/region/province') ?>`);
 			var provCode = '';
 			var provOutput = '<option value="">Pilih Provinsi</option>';
-			provResp.data.forEach(function(item) {
+			provResp.data.forEach(function (item) {
 				var sel = (provName && item.name.toUpperCase() === provName.toUpperCase());
 				if (sel) provCode = item.code;
 				provOutput += $('<option>', { value: item.code, text: item.name.toUpperCase(), selected: sel }).prop('outerHTML');
@@ -484,7 +491,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 			const cityResp = await axios.get(`<?= base_url('api/region/city') ?>/` + provCode);
 			var cityCode = '';
 			var cityOutput = '<option value="">Pilih Kota</option>';
-			cityResp.data.forEach(function(item) {
+			cityResp.data.forEach(function (item) {
 				var sel = (item.name.toUpperCase() === cityName.toUpperCase());
 				if (sel) cityCode = item.code;
 				cityOutput += $('<option>', { value: item.code, text: item.name.toUpperCase(), selected: sel }).prop('outerHTML');
@@ -497,7 +504,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 			const distResp = await axios.get(`<?= base_url('api/region/district') ?>/` + cityCode);
 			var distCode = '';
 			var distOutput = '<option value="">Pilih Kecamatan</option>';
-			distResp.data.forEach(function(item) {
+			distResp.data.forEach(function (item) {
 				var sel = (item.name.toUpperCase() === distName.toUpperCase());
 				if (sel) distCode = item.code;
 				distOutput += $('<option>', { value: item.code, text: item.name.toUpperCase(), selected: sel }).prop('outerHTML');
@@ -509,18 +516,18 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 			// --- KELURAHAN ---
 			const subdistResp = await axios.get(`<?= base_url('api/region/sub_district') ?>/` + distCode);
 			var subdistOutput = '<option value="">Pilih Kelurahan</option>';
-			subdistResp.data.forEach(function(item) {
+			subdistResp.data.forEach(function (item) {
 				var sel = (item.name.toUpperCase() === subdistName.toUpperCase());
 				subdistOutput += $('<option>', { value: item.code, text: item.name.toUpperCase(), selected: sel }).prop('outerHTML');
 			});
 			$('#' + subdistrictId).html(subdistOutput).trigger('change.select2');
-		} catch(err) {
+		} catch (err) {
 			console.error('Error loading region data:', err);
 		}
 	}
 
 	function setupRegionHandlers(provinceId, cityId, districtId, subdistrictId) {
-		$(`#${provinceId}`).on('change', function() {
+		$(`#${provinceId}`).on('change', function () {
 			var code = $(this).val();
 			$(`#${cityId}, #${districtId}, #${subdistrictId}`).empty().trigger('change');
 			if (code) {
@@ -528,7 +535,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 			}
 		});
 
-		$(`#${cityId}`).on('change', function() {
+		$(`#${cityId}`).on('change', function () {
 			var code = $(this).val();
 			$(`#${districtId}, #${subdistrictId}`).empty().trigger('change');
 			if (code) {
@@ -536,7 +543,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 			}
 		});
 
-		$(`#${districtId}`).on('change', function() {
+		$(`#${districtId}`).on('change', function () {
 			var code = $(this).val();
 			$(`#${subdistrictId}`).empty().trigger('change');
 			if (code) {
@@ -549,8 +556,8 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 	// ALAMAT SAMA CHECKBOX
 	// ========================================
 
-	$(document).ready(function() {
-		$("#is_similar").on('change', function() {
+	$(document).ready(function () {
+		$("#is_similar").on('change', function () {
 			if ($(this).is(":checked")) {
 				// Copy values
 				$('#AddressNow').val($('#Address').val());
@@ -590,8 +597,8 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 	// FAKULTAS & JURUSAN
 	// ========================================
 
-	$(document).ready(function() {
-		$('#Fakultas_id').on('change', function() {
+	$(document).ready(function () {
+		$('#Fakultas_id').on('change', function () {
 			var fakultasId = $(this).val();
 			var $jurusanSelect = $('#Jurusan_id');
 
@@ -602,9 +609,9 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 					url: `<?= base_url('api/jurusan/getjurusan') ?>/${fakultasId}`,
 					type: 'GET',
 					dataType: 'json',
-					success: function(response) {
+					success: function (response) {
 						if (response.success && response.data) {
-							$.each(response.data, function(key, jurusan) {
+							$.each(response.data, function (key, jurusan) {
 								$jurusanSelect.append($('<option>', {
 									value: jurusan.id,
 									text: jurusan.Nama
@@ -612,7 +619,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 							});
 						}
 					},
-					error: function(xhr, status, error) {
+					error: function (xhr, status, error) {
 						console.error('Error loading jurusan:', error);
 					}
 				});
@@ -624,7 +631,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 	// DATEPICKER
 	// ========================================
 
-	$(function() {
+	$(function () {
 		$(".datepicker").datepicker({
 			format: 'yyyy-mm-dd',
 			autoclose: true,
@@ -645,7 +652,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 	// FORM SUBMISSION WITH PROPER VALIDATION FLOW
 	// ========================================
 
-	$(document).ready(function() {
+	$(document).ready(function () {
 		var isValidating = false;
 		var isSubmitting = false;
 
@@ -661,7 +668,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 		`);
 		}
 
-		$('#frm').on('submit', function(e) {
+		$('#frm').on('submit', function (e) {
 			e.preventDefault(); // Always prevent default
 
 			// Jika sedang proses, abaikan
@@ -682,7 +689,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 			$('.collapse').collapse('show');
 
 			// Tunggu accordion fully expanded
-			setTimeout(function() {
+			setTimeout(function () {
 				console.log('Validating form fields...');
 
 				// Validasi manual
@@ -690,7 +697,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 				var firstErrorField = null;
 
 				// Cek field required yang visible
-				$form.find('[required]').each(function() {
+				$form.find('[required]').each(function () {
 					var $field = $(this);
 					var fieldName = $field.attr('name') || $field.attr('id');
 					var fieldLabel = $field.closest('.form-group').find('label').first().text() || fieldName;
@@ -794,7 +801,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 					headers: {
 						'X-Requested-With': 'XMLHttpRequest' // ✅ TAMBAHKAN INI
 					},
-					success: function(response) {
+					success: function (response) {
 						console.log('✅ Submit success:', response);
 
 						// Hide loading
@@ -827,7 +834,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 							isSubmitting = false;
 						}
 					},
-					error: function(xhr, status, error) {
+					error: function (xhr, status, error) {
 						console.error('❌ Submit error:', error);
 						console.error('Response:', xhr.responseText);
 
@@ -878,7 +885,7 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 	}
 
 	// Reset button jika ada error dari server
-	$(document).ready(function() {
+	$(document).ready(function () {
 		<?php if (session()->getFlashdata('errors') || session()->getFlashdata('error')): ?>
 			resetSubmitButton();
 		<?php endif; ?>
@@ -888,13 +895,13 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 	// PRINT HANDLERS
 	// ========================================
 
-	$("body").on("click", ".remove-data", function(e) {
+	$("body").on("click", ".remove-data", function (e) {
 		e.preventDefault();
 		var url = $(this).attr('data-href');
 		window.open(url, '_blank');
 	});
 
-	$("body").on("click", ".cetak-kartu", function(e) {
+	$("body").on("click", ".cetak-kartu", function (e) {
 		e.preventDefault();
 		var url = $(this).attr('data-href');
 		window.open(url, '_blank');

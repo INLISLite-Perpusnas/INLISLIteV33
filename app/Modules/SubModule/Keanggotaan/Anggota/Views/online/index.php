@@ -64,7 +64,7 @@ if ($slug == 'extend') {
 
 	<div class="row">
 		<div class="col-lg-3 d-none d-lg-block">
-			<?= view('Anggota\Views\online\member_profile', array('member' => $member)) ?>
+			<?= view('Anggota\Views\online\member_profile', array('member' => $member, 'jenis_kelamin' => $jenis_kelamin ?? [])) ?>
 		</div>
 		<div class="col-lg-9">
 			<?= view('Anggota\Views\online\section\\' . $slug, array('anggota' => $member, 'is_anggota' => true, 'member' => $member, 'member_no' => $member_no, 'slug' => $slug, 'slug_title' => $slug_title, 'label' => $label, 'label_title' => $label_title, 'jenis_perpustakaan_id' => $jenis_perpustakaan_id)) ?>

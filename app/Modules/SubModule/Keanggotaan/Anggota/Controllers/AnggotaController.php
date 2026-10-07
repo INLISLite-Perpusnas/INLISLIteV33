@@ -163,11 +163,11 @@ class AnggotaController extends \Base\Controllers\BaseController
     public function update_batch_kelas()
     {
         $memberIds = $this->request->getPost('member_ids');
-        $kelasId   = $this->request->getPost('Kelas_id');
+        $kelasId = $this->request->getPost('Kelas_id');
 
         if (empty($memberIds) || empty($kelasId)) {
             return $this->response->setJSON([
-                'error'   => true,
+                'error' => true,
                 'message' => 'Pilih anggota dan kelas tujuan terlebih dahulu',
             ]);
         }
@@ -177,7 +177,7 @@ class AnggotaController extends \Base\Controllers\BaseController
 
         if (empty($memberIds)) {
             return $this->response->setJSON([
-                'error'   => true,
+                'error' => true,
                 'message' => 'Pilih anggota yang akan diperbarui kelasnya terlebih dahulu',
             ]);
         }
@@ -185,7 +185,7 @@ class AnggotaController extends \Base\Controllers\BaseController
         $updateData = [];
         foreach ($memberIds as $id) {
             $updateData[] = [
-                'ID'       => $id,
+                'ID' => $id,
                 'Kelas_id' => $kelasId,
                 'UpdateBy' => login_id(),
             ];
@@ -194,7 +194,7 @@ class AnggotaController extends \Base\Controllers\BaseController
         $this->anggotaModel->updateBatch($updateData, 'ID');
 
         return $this->response->setJSON([
-            'error'   => false,
+            'error' => false,
             'message' => count($memberIds) . ' anggota berhasil diperbarui kelasnya',
         ]);
     }
@@ -256,27 +256,27 @@ class AnggotaController extends \Base\Controllers\BaseController
 
         $this->validation->setRules([
             'Fullname' => [
-                'label'  => 'Fullname',
-                'rules'  => 'required',
+                'label' => 'Fullname',
+                'rules' => 'required',
                 'errors' => ['required' => 'Nama Tidak boleh kosong'],
             ],
             'Email' => [
-                'label'  => 'Email',
-                'rules'  => 'required|valid_email|is_unique[users.Email]',
+                'label' => 'Email',
+                'rules' => 'required|valid_email|is_unique[users.Email]',
                 'errors' => [
                     'valid_email' => 'Masukan email yang benar',
-                    'required'    => 'Email Tidak boleh Kosong',
-                    'is_unique'   => 'Email ini sudah terdaftar.',
+                    'required' => 'Email Tidak boleh Kosong',
+                    'is_unique' => 'Email ini sudah terdaftar.',
                 ],
             ],
             'JenisAnggota_id' => [
-                'label'  => 'Jenis Anggota',
-                'rules'  => 'required',
+                'label' => 'Jenis Anggota',
+                'rules' => 'required',
                 'errors' => ['required' => 'Jenis Anggota tidak boleh kosong'],
             ],
             'StatusAnggota_id' => [
-                'label'  => 'Status Anggota',
-                'rules'  => 'required',
+                'label' => 'Status Anggota',
+                'rules' => 'required',
                 'errors' => ['required' => 'Status Anggota tidak boleh kosong'],
             ],
         ]);
@@ -284,8 +284,10 @@ class AnggotaController extends \Base\Controllers\BaseController
         if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
             $Koleksi = $this->request->getPost('CategoryLoan_id');
             $Locations = $this->request->getPost('LocationLoan_id');
-            if (!$this->validReferenceIds($Koleksi, 'collectioncategorys', 'id')
-                || !$this->validReferenceIds($Locations, 'location_library', 'ID')) {
+            if (
+                !$this->validReferenceIds($Koleksi, 'collectioncategorys', 'id')
+                || !$this->validReferenceIds($Locations, 'location_library', 'ID')
+            ) {
                 $this->session->setFlashdata('message', 'Koleksi dan lokasi perpustakaan wajib dipilih dengan benar.');
                 echo view('Anggota\Views\add', $this->data);
                 return;
@@ -305,41 +307,41 @@ class AnggotaController extends \Base\Controllers\BaseController
             }
 
             $save_data = [
-                'Fullname'           => $this->request->getPost('Fullname'),
-                'MemberNo'           => $MemberNo,
-                'IdentityNo'         => $this->request->getPost('IdentityNo'),
-                'PlaceOfBirth'       => $this->request->getPost('PlaceOfBirth'),
-                'DateOfBirth'        => $this->request->getPost('DateOfBirth'),
-                'Address'            => $this->request->getPost('Address'),
-                'AddressNow'         => $this->request->getPost('AddressNow'),
-                'Phone'              => $this->request->getPost('Phone'),
-                'InstitutionName'    => $this->request->getPost('InstitutionName'),
+                'Fullname' => $this->request->getPost('Fullname'),
+                'MemberNo' => $MemberNo,
+                'IdentityNo' => $this->request->getPost('IdentityNo'),
+                'PlaceOfBirth' => $this->request->getPost('PlaceOfBirth'),
+                'DateOfBirth' => $this->request->getPost('DateOfBirth'),
+                'Address' => $this->request->getPost('Address'),
+                'AddressNow' => $this->request->getPost('AddressNow'),
+                'Phone' => $this->request->getPost('Phone'),
+                'InstitutionName' => $this->request->getPost('InstitutionName'),
                 'InstitutionAddress' => $this->request->getPost('InstitutionAddress'),
-                'InstitutionPhone'   => $this->request->getPost('InstitutionPhone'),
-                'MotherMaidenName'   => $this->request->getPost('MotherMaidenName'),
-                'Email'              => $this->request->getPost('Email'),
-                'RT'                 => $this->request->getPost('RT'),
-                'RTNow'              => $this->request->getPost('RTNow'),
-                'RWNow'              => $this->request->getPost('RWNow'),
-                'RW'                 => $this->request->getPost('RW'),
-                'TahunAjaran'        => $this->request->getPost('TahunAjaran'),
-                'IdentityType_id'    => $this->request->getPost('IdentityType_id'),
-                'MaritalStatus_id'   => $this->request->getPost('MaritalStatus_id'),
-                'Sex_id'             => $this->request->getPost('Sex_id'),
+                'InstitutionPhone' => $this->request->getPost('InstitutionPhone'),
+                'MotherMaidenName' => $this->request->getPost('MotherMaidenName'),
+                'Email' => $this->request->getPost('Email'),
+                'RT' => $this->request->getPost('RT'),
+                'RTNow' => $this->request->getPost('RTNow'),
+                'RWNow' => $this->request->getPost('RWNow'),
+                'RW' => $this->request->getPost('RW'),
+                'TahunAjaran' => $this->request->getPost('TahunAjaran'),
+                'IdentityType_id' => $this->request->getPost('IdentityType_id'),
+                'MaritalStatus_id' => $this->request->getPost('MaritalStatus_id'),
+                'Sex_id' => $this->request->getPost('Sex_id'),
                 'JenjangPendidikan_id' => $this->request->getPost('JenjangPendidikan_id'),
-                'Job_id'             => $this->request->getPost('Job_id'),
-                'JenisAnggota_id'    => $this->request->getPost('JenisAnggota_id'),
-                'Agama_id'           => $this->request->getPost('Agama_id'),
-                'UnitKerja_id'       => $this->request->getPost('UnitKerja_id'),
-                'Fakultas_id'        => $this->request->getPost('Fakultas_id'),
-                'Kelas_id'           => $this->request->getPost('Kelas_id'),
-                'Jurusan_id'         => $this->request->getPost('Jurusan_id'),
-                'IsKeranjang'        => 0,
-                'StatusAnggota_id'   => $this->request->getPost('StatusAnggota_id'),
-                'RegisterDate'       => date("Y-m-d H:i:s"),
-                'EndDate'            => $this->request->getPost('EndDate'),
-                'CreateBy'           => login_id(),
-                'Branch_id'          => branch_id(),
+                'Job_id' => $this->request->getPost('Job_id'),
+                'JenisAnggota_id' => $this->request->getPost('JenisAnggota_id'),
+                'Agama_id' => $this->request->getPost('Agama_id'),
+                'UnitKerja_id' => $this->request->getPost('UnitKerja_id'),
+                'Fakultas_id' => $this->request->getPost('Fakultas_id'),
+                'Kelas_id' => $this->request->getPost('Kelas_id'),
+                'Jurusan_id' => $this->request->getPost('Jurusan_id'),
+                'IsKeranjang' => 0,
+                'StatusAnggota_id' => $this->request->getPost('StatusAnggota_id'),
+                'RegisterDate' => date("Y-m-d H:i:s"),
+                'EndDate' => $this->request->getPost('EndDate'),
+                'CreateBy' => login_id(),
+                'Branch_id' => branch_id(),
             ];
 
             $province = $this->request->getPost('Province');
@@ -424,7 +426,7 @@ class AnggotaController extends \Base\Controllers\BaseController
                     $save_akses_koleksi = [];
                     for ($x = 0; $x < count($Koleksi); $x++) {
                         $save_akses_koleksi[] = [
-                            'Member_id'       => $newAnggotaId,
+                            'Member_id' => $newAnggotaId,
                             'CategoryLoan_id' => $Koleksi[$x],
                         ];
                     }
@@ -436,7 +438,7 @@ class AnggotaController extends \Base\Controllers\BaseController
                 $save_akses_lokasi = [];
                 for ($x = 0; $x < count($Locations); $x++) {
                     $save_akses_lokasi[] = [
-                        'Member_id'      => $newAnggotaId,
+                        'Member_id' => $newAnggotaId,
                         'LocationLoan_id' => $Locations[$x],
                     ];
                 }
@@ -468,9 +470,11 @@ class AnggotaController extends \Base\Controllers\BaseController
     public function camera()
     {
         $file = $this->request->getFile('file_image');
-        if (!$file || !$file->isValid() || $file->hasMoved()
+        if (
+            !$file || !$file->isValid() || $file->hasMoved()
             || $file->getSize() > 10 * 1024 * 1024
-            || !in_array($file->getMimeType(), ['image/jpeg', 'image/png'], true)) {
+            || !in_array($file->getMimeType(), ['image/jpeg', 'image/png'], true)
+        ) {
             return $this->response->setStatusCode(415)->setBody('Foto tidak valid.');
         }
 
@@ -488,17 +492,17 @@ class AnggotaController extends \Base\Controllers\BaseController
 
     public function edit(int $ID = null, $is_anggota = false)
     {
-    if (!is_allowed('anggota/edit')) {
-        if ($this->request->isAJAX()) {
-            return $this->response->setJSON([
-                'success' => false,
-                'message' => 'Maaf, Anda tidak memiliki akses',
-            ]);
+        if (!is_allowed('anggota/edit')) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Maaf, Anda tidak memiliki akses',
+                ]);
+            }
+            set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
+            set_message('toastr_type', 'error');
+            return redirect()->to('anggota');
         }
-        set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
-        set_message('toastr_type', 'error');
-        return redirect()->to('anggota');
-    }
 
         if (empty($ID)) {
             $encId = $this->request->getVar('ID');
@@ -508,9 +512,9 @@ class AnggotaController extends \Base\Controllers\BaseController
         if (empty($ID)) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
-         $db = db_connect();
+        $db = db_connect();
         $this->data['db'] = $db;
-         $jenisperpustakaan = $db->table('settingparameters')->where('Name', 'JenisPerpustakaan')->get()->getRow()->Value ?: "UMUM";
+        $jenisperpustakaan = $db->table('settingparameters')->where('Name', 'JenisPerpustakaan')->get()->getRow()->Value ?: "UMUM";
 
         if ($jenisperpustakaan == "UMUM") {
             $this->data['jenis_perpustakaan_id'] = 1;
@@ -540,29 +544,34 @@ class AnggotaController extends \Base\Controllers\BaseController
         if (!$anggota) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
-        $this->data['title']               = 'Ubah Anggota';
-        $this->data['anggota']             = $anggota;
-        $this->data['CreateBy']            = get_username($anggota->CreateBy ?? 0);
-        $this->data['UpdateBy']            = get_username($anggota->UpdateBy ?? 0);
-        $this->data['hak_akses_koleksi']   = $hak_akses_koleksi;
+        $this->data['title'] = 'Ubah Anggota';
+        $this->data['anggota'] = $anggota;
+        $this->data['CreateBy'] = get_username($anggota->CreateBy ?? 0);
+        $this->data['UpdateBy'] = get_username($anggota->UpdateBy ?? 0);
+        $this->data['hak_akses_koleksi'] = $hak_akses_koleksi;
         $this->data['arr_hak_akses_koleksi'] = $arr_hak_akses_koleksi;
-        $this->data['hak_akses_lokasi']    = $hak_akses_lokasi;
+        $this->data['hak_akses_lokasi'] = $hak_akses_lokasi;
         $this->data['arr_hak_akses_lokasi'] = $arr_hak_akses_lokasi;
+        $this->data['jenis_kelamin'] = array_column(
+            $this->jenisKelaminModel->select('ID, Name')->findAll(),
+            'Name',
+            'ID'
+        );
 
         $this->validation->setRules([
             'Fullname' => [
-                'label'  => 'Fullname',
-                'rules'  => 'required',
+                'label' => 'Fullname',
+                'rules' => 'required',
                 'errors' => ['required' => 'Nama Tidak boleh kosong'],
             ],
             'JenisAnggota_id' => [
-                'label'  => 'Jenis Anggota',
-                'rules'  => 'required',
+                'label' => 'Jenis Anggota',
+                'rules' => 'required',
                 'errors' => ['required' => 'Jenis Anggota tidak boleh kosong'],
             ],
             'StatusAnggota_id' => [
-                'label'  => 'Status Anggota',
-                'rules'  => 'required',
+                'label' => 'Status Anggota',
+                'rules' => 'required',
                 'errors' => ['required' => 'Status Anggota tidak boleh kosong'],
             ],
         ]);
@@ -571,8 +580,10 @@ class AnggotaController extends \Base\Controllers\BaseController
             if ($this->validation->withRequest($this->request)->run()) {
                 $Koleksi = $this->request->getPost('CategoryLoan_id');
                 $Locations = $this->request->getPost('LocationLoan_id');
-                if (!$this->validReferenceIds($Koleksi, 'collectioncategorys', 'id')
-                    || !$this->validReferenceIds($Locations, 'location_library', 'ID')) {
+                if (
+                    !$this->validReferenceIds($Koleksi, 'collectioncategorys', 'id')
+                    || !$this->validReferenceIds($Locations, 'location_library', 'ID')
+                ) {
                     return $this->request->isAJAX()
                         ? $this->response->setJSON(['success' => false, 'message' => 'Koleksi dan lokasi perpustakaan wajib dipilih dengan benar.'])
                         : redirect()->back()->with('message', 'Koleksi dan lokasi perpustakaan wajib dipilih dengan benar.');
@@ -586,37 +597,37 @@ class AnggotaController extends \Base\Controllers\BaseController
                 }
 
                 $update_data = [
-                    'Fullname'           => $this->request->getPost('Fullname'),
-                    'MemberNo'           => $MemberNo,
-                    'IdentityNo'         => $this->request->getPost('IdentityNo'),
-                    'PlaceOfBirth'       => $this->request->getPost('PlaceOfBirth'),
-                    'DateOfBirth'        => $this->request->getPost('DateOfBirth'),
-                    'Address'            => $this->request->getPost('Address'),
-                    'AddressNow'         => $this->request->getPost('AddressNow'),
-                    'Phone'              => $this->request->getPost('Phone'),
-                    'InstitutionName'    => $this->request->getPost('InstitutionName'),
+                    'Fullname' => $this->request->getPost('Fullname'),
+                    'MemberNo' => $MemberNo,
+                    'IdentityNo' => $this->request->getPost('IdentityNo'),
+                    'PlaceOfBirth' => $this->request->getPost('PlaceOfBirth'),
+                    'DateOfBirth' => $this->request->getPost('DateOfBirth'),
+                    'Address' => $this->request->getPost('Address'),
+                    'AddressNow' => $this->request->getPost('AddressNow'),
+                    'Phone' => $this->request->getPost('Phone'),
+                    'InstitutionName' => $this->request->getPost('InstitutionName'),
                     'InstitutionAddress' => $this->request->getPost('InstitutionAddress'),
-                    'InstitutionPhone'   => $this->request->getPost('InstitutionPhone'),
-                    'MotherMaidenName'   => $this->request->getPost('MotherMaidenName'),
-                    'Email'              => $this->request->getPost('Email'),
-                    'RT'                 => $this->request->getPost('RT'),
-                    'RTNow'              => $this->request->getPost('RTNow'),
-                    'RWNow'              => $this->request->getPost('RWNow'),
-                    'RW'                 => $this->request->getPost('RW'),
-                    'TahunAjaran'        => $this->request->getPost('TahunAjaran'),
-                    'IdentityType_id'    => $this->request->getPost('IdentityType_id'),
-                    'MaritalStatus_id'   => $this->request->getPost('MaritalStatus_id'),
-                    'Sex_id'             => $this->request->getPost('Sex_id'),
+                    'InstitutionPhone' => $this->request->getPost('InstitutionPhone'),
+                    'MotherMaidenName' => $this->request->getPost('MotherMaidenName'),
+                    'Email' => $this->request->getPost('Email'),
+                    'RT' => $this->request->getPost('RT'),
+                    'RTNow' => $this->request->getPost('RTNow'),
+                    'RWNow' => $this->request->getPost('RWNow'),
+                    'RW' => $this->request->getPost('RW'),
+                    'TahunAjaran' => $this->request->getPost('TahunAjaran'),
+                    'IdentityType_id' => $this->request->getPost('IdentityType_id'),
+                    'MaritalStatus_id' => $this->request->getPost('MaritalStatus_id'),
+                    'Sex_id' => $this->request->getPost('Sex_id'),
                     'JenjangPendidikan_id' => $this->request->getPost('JenjangPendidikan_id'),
-                    'Job_id'             => $this->request->getPost('Job_id'),
-                    'JenisAnggota_id'    => $this->request->getPost('JenisAnggota_id'),
-                    'Agama_id'           => $this->request->getPost('Agama_id'),
-                    'UnitKerja_id'       => $this->request->getPost('UnitKerja_id'),
-                    'Fakultas_id'        => $this->request->getPost('Fakultas_id'),
-                    'Kelas_id'           => $this->request->getPost('Kelas_id'),
-                    'Jurusan_id'         => $this->request->getPost('Jurusan_id'),
-                    'StatusAnggota_id'   => $this->request->getPost('StatusAnggota_id'),
-                    'UpdateBy'           => login_id(),
+                    'Job_id' => $this->request->getPost('Job_id'),
+                    'JenisAnggota_id' => $this->request->getPost('JenisAnggota_id'),
+                    'Agama_id' => $this->request->getPost('Agama_id'),
+                    'UnitKerja_id' => $this->request->getPost('UnitKerja_id'),
+                    'Fakultas_id' => $this->request->getPost('Fakultas_id'),
+                    'Kelas_id' => $this->request->getPost('Kelas_id'),
+                    'Jurusan_id' => $this->request->getPost('Jurusan_id'),
+                    'StatusAnggota_id' => $this->request->getPost('StatusAnggota_id'),
+                    'UpdateBy' => login_id(),
                 ];
 
                 $province = $this->request->getPost('Province');
@@ -704,7 +715,7 @@ class AnggotaController extends \Base\Controllers\BaseController
                     $save_akses_koleksi = [];
                     for ($x = 0; $x < count((array) $Koleksi); $x++) {
                         $save_akses_koleksi[] = [
-                            'Member_id'       => $member_id,
+                            'Member_id' => $member_id,
                             'CategoryLoan_id' => $Koleksi[$x],
                         ];
                         if (!empty($save_akses_koleksi)) {
@@ -716,7 +727,7 @@ class AnggotaController extends \Base\Controllers\BaseController
                     $save_akses_lokasi = [];
                     for ($x = 0; $x < count((array) $Locations); $x++) {
                         $save_akses_lokasi[] = [
-                            'Member_id'       => $member_id,
+                            'Member_id' => $member_id,
                             'LocationLoan_id' => $Locations[$x],
                         ];
                     }
@@ -755,14 +766,14 @@ class AnggotaController extends \Base\Controllers\BaseController
                     return $this->response->setJSON([
                         'success' => false,
                         'message' => 'Validasi gagal',
-                        'errors'  => $this->validation->getErrors(),
+                        'errors' => $this->validation->getErrors(),
                     ]);
                 }
             }
         }
 
-        $this->data['redirect']    = base_url('anggota/edit/' . $ID);
-        $this->data['is_anggota']  = $is_anggota;
+        $this->data['redirect'] = base_url('anggota/edit/' . $ID);
+        $this->data['is_anggota'] = $is_anggota;
         echo view('Anggota\Views\update', $this->data);
     }
 
@@ -774,7 +785,7 @@ class AnggotaController extends \Base\Controllers\BaseController
     {
         $anggota = $this->anggotaModel->find($id);
         $this->data['redirect'] = base_url('anggota/detail/' . $id);
-        $this->data['anggota']  = $anggota;
+        $this->data['anggota'] = $anggota;
         echo view('Anggota\Views\detail', $this->data);
     }
 
@@ -783,48 +794,48 @@ class AnggotaController extends \Base\Controllers\BaseController
     // ----------------------------------------------------------------
 
     public function delete(int $id = 0)
-{
-    if (!is_allowed('anggota/delete')) {
-        $this->session->setFlashdata('swal_icon', 'error');
-        $this->session->setFlashdata('swal_title', 'Error');
-        $this->session->setFlashdata('swal_text', 'Maaf, Anda tidak memiliki akses');
-        return redirect()->to('anggota');
-    }
+    {
+        if (!is_allowed('anggota/delete')) {
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Error');
+            $this->session->setFlashdata('swal_text', 'Maaf, Anda tidak memiliki akses');
+            return redirect()->to('anggota');
+        }
 
-    if (!$id) {
-        $this->session->setFlashdata('swal_icon', 'error');
-        $this->session->setFlashdata('swal_title', 'Error');
-        $this->session->setFlashdata('swal_text', 'Sorry you have to provide parameter (id)');
-        return redirect()->to('/anggota');
-    }
+        if (!$id) {
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Error');
+            $this->session->setFlashdata('swal_text', 'Sorry you have to provide parameter (id)');
+            return redirect()->to('/anggota');
+        }
 
-    // Cek apakah anggota masih memiliki pinjaman aktif (LoanStatus = 'Loan')
-    $db = \Config\Database::connect();
-    $masihPinjam = $db->table('collectionloanitems')
-        ->where('member_id', $id)
-        ->where('LoanStatus', 'Loan')
-        ->countAllResults();
+        // Cek apakah anggota masih memiliki pinjaman aktif (LoanStatus = 'Loan')
+        $db = \Config\Database::connect();
+        $masihPinjam = $db->table('collectionloanitems')
+            ->where('member_id', $id)
+            ->where('LoanStatus', 'Loan')
+            ->countAllResults();
 
-    if ($masihPinjam > 0) {
-        $this->session->setFlashdata('swal_icon', 'error');
-        $this->session->setFlashdata('swal_title', 'Gagal Dihapus');
-        $this->session->setFlashdata('swal_text', 'Anggota ini masih memiliki ' . $masihPinjam . ' buku yang belum dikembalikan. Anggota tidak dapat dihapus sebelum pinjaman diselesaikan.');
-        return redirect()->to('/anggota');
-    }
+        if ($masihPinjam > 0) {
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Gagal Dihapus');
+            $this->session->setFlashdata('swal_text', 'Anggota ini masih memiliki ' . $masihPinjam . ' buku yang belum dikembalikan. Anggota tidak dapat dihapus sebelum pinjaman diselesaikan.');
+            return redirect()->to('/anggota');
+        }
 
-    $anggotaDelete = $this->anggotaModel->delete($id);
-    if ($anggotaDelete) {
-        $this->session->setFlashdata('swal_icon', 'success');
-        $this->session->setFlashdata('swal_title', 'Berhasil');
-        $this->session->setFlashdata('swal_text', 'Data Anggota berhasil dihapus');
-        return redirect()->to('/anggota');
-    } else {
-        $this->session->setFlashdata('swal_icon', 'warning');
-        $this->session->setFlashdata('swal_title', 'Peringatan');
-        $this->session->setFlashdata('swal_text', lang('Anggota.info.failed_deleted'));
-        return redirect()->to('/anggota/delete/' . $id);
+        $anggotaDelete = $this->anggotaModel->delete($id);
+        if ($anggotaDelete) {
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', 'Data Anggota berhasil dihapus');
+            return redirect()->to('/anggota');
+        } else {
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', lang('Anggota.info.failed_deleted'));
+            return redirect()->to('/anggota/delete/' . $id);
+        }
     }
-}
 
     // ----------------------------------------------------------------
     // STATUS
@@ -902,52 +913,52 @@ class AnggotaController extends \Base\Controllers\BaseController
     }
 
     public function hapus_permanen()
-{
-    $IDs = $this->request->getVar('ID');
+    {
+        $IDs = $this->request->getVar('ID');
 
-    if (empty($IDs)) {
-        $this->session->setFlashdata('swal_icon', 'warning');
-        $this->session->setFlashdata('swal_title', 'Peringatan');
-        $this->session->setFlashdata('swal_text', 'Pilih Anggota yang akan dihapus permanen terlebih dahulu');
+        if (empty($IDs)) {
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Pilih Anggota yang akan dihapus permanen terlebih dahulu');
+            return redirect()->back();
+        }
+
+        // Normalisasi jadi array, karena $IDs bisa string tunggal atau comma-separated
+        $memberIds = is_array($IDs) ? $IDs : explode(',', $IDs);
+        $memberIds = array_filter(array_map('trim', $memberIds));
+
+        $db = \Config\Database::connect();
+
+        // Cek anggota yang masih punya pinjaman aktif (LoanStatus = 'Loan')
+        $anggotaMasihPinjam = $db->table('collectionloanitems')
+            ->select('collectionloanitems.member_id, member.FullName')
+            ->join('member', 'member.ID = collectionloanitems.member_id', 'left') // sesuaikan nama tabel & kolom member
+            ->whereIn('collectionloanitems.member_id', $memberIds)
+            ->where('collectionloanitems.LoanStatus', 'Loan')
+            ->groupBy('collectionloanitems.member_id')
+            ->get()
+            ->getResultArray();
+
+        if (!empty($anggotaMasihPinjam)) {
+            $namaAnggota = array_column($anggotaMasihPinjam, 'FullName');
+            // Kalau join gagal / nama null, fallback ke ID saja
+            $namaAnggota = array_filter($namaAnggota) ?: array_column($anggotaMasihPinjam, 'member_id');
+
+            $this->session->setFlashdata('swal_icon', 'error');
+            $this->session->setFlashdata('swal_title', 'Gagal Dihapus');
+            $this->session->setFlashdata('swal_html', 'Anggota berikut masih memiliki pinjaman buku yang belum dikembalikan:<br><br>' . implode('<br>', $namaAnggota) . '<br><br>Anggota tidak dapat dihapus sebelum pinjaman diselesaikan.');
+            return redirect()->back();
+        }
+
+        // Kalau semua ID aman (tidak ada pinjaman aktif), lanjut hapus
+        $this->anggotaModel->delete($memberIds);
+
+        $this->session->setFlashdata('swal_icon', 'success');
+        $this->session->setFlashdata('swal_title', 'Berhasil');
+        $this->session->setFlashdata('swal_text', 'Anggota Berhasil dihapus permanen');
+
         return redirect()->back();
     }
-
-    // Normalisasi jadi array, karena $IDs bisa string tunggal atau comma-separated
-    $memberIds = is_array($IDs) ? $IDs : explode(',', $IDs);
-    $memberIds = array_filter(array_map('trim', $memberIds));
-
-    $db = \Config\Database::connect();
-
-    // Cek anggota yang masih punya pinjaman aktif (LoanStatus = 'Loan')
-    $anggotaMasihPinjam = $db->table('collectionloanitems')
-        ->select('collectionloanitems.member_id, member.FullName')
-        ->join('member', 'member.ID = collectionloanitems.member_id', 'left') // sesuaikan nama tabel & kolom member
-        ->whereIn('collectionloanitems.member_id', $memberIds)
-        ->where('collectionloanitems.LoanStatus', 'Loan')
-        ->groupBy('collectionloanitems.member_id')
-        ->get()
-        ->getResultArray();
-
-    if (!empty($anggotaMasihPinjam)) {
-        $namaAnggota = array_column($anggotaMasihPinjam, 'FullName');
-        // Kalau join gagal / nama null, fallback ke ID saja
-        $namaAnggota = array_filter($namaAnggota) ?: array_column($anggotaMasihPinjam, 'member_id');
-
-        $this->session->setFlashdata('swal_icon', 'error');
-        $this->session->setFlashdata('swal_title', 'Gagal Dihapus');
-        $this->session->setFlashdata('swal_html', 'Anggota berikut masih memiliki pinjaman buku yang belum dikembalikan:<br><br>' . implode('<br>', $namaAnggota) . '<br><br>Anggota tidak dapat dihapus sebelum pinjaman diselesaikan.');
-        return redirect()->back();
-    }
-
-    // Kalau semua ID aman (tidak ada pinjaman aktif), lanjut hapus
-    $this->anggotaModel->delete($memberIds);
-
-    $this->session->setFlashdata('swal_icon', 'success');
-    $this->session->setFlashdata('swal_title', 'Berhasil');
-    $this->session->setFlashdata('swal_text', 'Anggota Berhasil dihapus permanen');
-
-    return redirect()->back();
-}
 
     // ----------------------------------------------------------------
     // DEFAULTS (AJAX)
@@ -972,9 +983,9 @@ class AnggotaController extends \Base\Controllers\BaseController
         $locationIds = array_column($locations, 'Location_Library_id');
 
         return $this->response->setJSON([
-            'success'     => true,
+            'success' => true,
             'collections' => $collectionIds,
-            'locations'   => $locationIds,
+            'locations' => $locationIds,
         ]);
     }
 }

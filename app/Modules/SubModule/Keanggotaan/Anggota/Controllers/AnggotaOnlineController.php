@@ -33,10 +33,10 @@ class AnggotaOnlineController extends \Base\Controllers\BaseController
 
         $jenisperpustakaan = $db->table('settingparameters')->where('Name', 'JenisPerpustakaan')->get()->getRow()->Value ?: "UMUM";
         $member_no = user()->username;
-        $member    = get_member($member_no);
+        $member = get_member($member_no);
 
         $this->data['member_no'] = $member_no;
-        $this->data['member']    = $member;
+        $this->data['member'] = $member;
 
         if ($jenisperpustakaan == "UMUM") {
             $this->data['jenis_perpustakaan_id'] = 1;
@@ -61,11 +61,15 @@ class AnggotaOnlineController extends \Base\Controllers\BaseController
             $arr_hak_akses_lokasi[] = $row->LocationLoan_id;
         }
         $this->data['arr_hak_akses_lokasi'] = $arr_hak_akses_lokasi;
-
-        $this->data['peminjaman']  = get_peminjaman($member->ID);
+        $this->data['jenis_kelamin'] = array_column(
+            $this->jenisKelaminModel->select('ID, Name')->findAll(),
+            'Name',
+            'ID'
+        );
+        $this->data['peminjaman'] = get_peminjaman($member->ID);
         $this->data['pelanggaran'] = get_pelanggaran($member->ID);
-        $this->data['CreateBy']    = get_username($member->CreateBy ?? 0);
-        $this->data['UpdateBy']    = get_username($member->UpdateBy ?? 0);
+        $this->data['CreateBy'] = get_username($member->CreateBy ?? 0);
+        $this->data['UpdateBy'] = get_username($member->UpdateBy ?? 0);
 
         return view('Anggota\Views\online\index', $this->data);
     }
@@ -80,10 +84,10 @@ class AnggotaOnlineController extends \Base\Controllers\BaseController
             $member_no = user()->username;
         }
 
-        $member      = get_member($member_no);
+        $member = get_member($member_no);
         $jenis_anggota = db_get_single('m_jenis_anggota', 'id = ' . $member->ref_jenisanggota);
-        $start_date  = $member->EndDate;
-        $end_date    = date('Y-m-d', strtotime($start_date . ' + ' . $jenis_anggota->expiry_days . ' days'));
+        $start_date = $member->EndDate;
+        $end_date = date('Y-m-d', strtotime($start_date . ' + ' . $jenis_anggota->expiry_days . ' days'));
 
         $updateAnggota = $this->anggotaModel->protect(false)->update($member->id, ['EndDate' => $end_date]);
 
@@ -106,7 +110,7 @@ class AnggotaOnlineController extends \Base\Controllers\BaseController
     {
         if (!$this->request->is('post')) {
             return $this->response->setJSON([
-                'error'   => true,
+                'error' => true,
                 'message' => 'Method tidak diizinkan',
             ]);
         }
@@ -115,23 +119,23 @@ class AnggotaOnlineController extends \Base\Controllers\BaseController
 
         if (empty($memberIds) || !is_array($memberIds)) {
             return $this->response->setJSON([
-                'error'   => true,
+                'error' => true,
                 'message' => 'Tidak ada anggota yang dipilih',
             ]);
         }
 
-        $db          = db_connect('default');
+        $db = db_connect('default');
         $memberModel = $this->anggotaModel;
 
-        $successCount  = $failCount = 0;
-        $errors        = [];
+        $successCount = $failCount = 0;
+        $errors = [];
         $activatedList = [];
 
         $members = $memberModel->whereIn('ID', $memberIds)->findAll();
 
         if (empty($members)) {
             return $this->response->setJSON([
-                'error'   => true,
+                'error' => true,
                 'message' => 'Data anggota tidak ditemukan',
             ]);
         }
@@ -162,13 +166,13 @@ class AnggotaOnlineController extends \Base\Controllers\BaseController
             }
 
             $userData = [
-                'username'      => $member->MemberNo,
-                'email'         => $member->Email ?? '',
-                'category'      => 'anggota',
+                'username' => $member->MemberNo,
+                'email' => $member->Email ?? '',
+                'category' => 'anggota',
                 'password_hash' => $this->password->hash($member->MemberNo),
-                'anggota'       => $member->ID,
+                'anggota' => $member->ID,
                 'activate_hash' => bin2hex(random_bytes(16)),
-                'active'        => 1,
+                'active' => 1,
             ];
 
             if ($db->table('users')->insert($userData)) {
@@ -211,9 +215,9 @@ class AnggotaOnlineController extends \Base\Controllers\BaseController
         $message .= "</div>";
 
         return $this->response->setJSON([
-            'error'   => false,
+            'error' => false,
             'message' => $message,
-            'data'    => ['success' => $successCount, 'failed' => $failCount],
+            'data' => ['success' => $successCount, 'failed' => $failCount],
         ]);
     }
 }
