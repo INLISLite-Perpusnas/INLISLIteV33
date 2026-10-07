@@ -15,18 +15,17 @@ class LaporanKatalog extends \Base\Controllers\BaseController
 	public $auth;
 	public $authorize;
 	public $katalogModel;
-    public $masterkelasbesarModel;
-    public $userModel;
 
 	function __construct()
 	{
 		$this->katalogModel = new \Katalog\Models\KatalogModel();
-        $this->masterkelasbesarModel = new \MasterKelasBesar\Models\MasterKelasBesarModel();
-        $this->userModel = new \User\Models\UserModel();
 	}
 
 	public function index()
     {
+        if ($this->request->getGet('criterion_options') === '1') {
+            return $this->criterionOptions();
+        }
         // Definisi kolom yang bisa diekspor
         $columns = [
             'ControlNumber' => 'No. Kontrol',
@@ -54,22 +53,64 @@ class LaporanKatalog extends \Base\Controllers\BaseController
             'UpdateDate' => 'Tanggal Diperbarui'
         ];
 
-        $masterkelasbesarOptions = $this->masterkelasbesarModel->where('active', 1)->findAll();
-        
-        // Ambil data user untuk dropdown filter
-        $userOptions = $this->userModel->select('id, username')
-            ->where('active', 1)
-            ->whereNotIn('category', ['anggota'])
-            ->orderBy('username', 'ASC')
-            ->findAll();
-
         $data = [
             'columns' => $columns,
-            'masterkelasbesarOptions' => $masterkelasbesarOptions,
-            'userOptions' => $userOptions
+            'criteriaLabels' => array_map(function ($definition) {
+                return $definition['label'];
+            }, $this->criterionDefinitions()),
         ];
 
         return view('LaporanKatalog\Views\index', $data);
+    }
+
+    private function criterionDefinitions(): array
+    {
+        return [
+            'title' => ['label' => 'Judul', 'column' => 'catalogs.Title', 'source' => ['catalogs', 'Title', 'Title']],
+            'author' => ['label' => 'Pengarang', 'column' => 'catalogs.Author', 'source' => ['catalogs', 'Author', 'Author']],
+            'publisher' => ['label' => 'Nama Penerbit', 'column' => 'catalogs.Publisher', 'source' => ['catalogs', 'Publisher', 'Publisher']],
+            'publishlocation' => ['label' => 'Kota Terbit', 'column' => 'catalogs.PublishLocation', 'source' => ['catalogs', 'PublishLocation', 'PublishLocation']],
+            'publishyear' => ['label' => 'Tahun Terbit', 'column' => 'catalogs.PublishYear', 'source' => ['catalogs', 'PublishYear', 'PublishYear']],
+            'subject' => ['label' => 'Subjek', 'column' => 'catalogs.Subject', 'source' => ['catalogs', 'Subject', 'Subject']],
+            'languages' => ['label' => 'Bahasa', 'column' => 'catalogs.Languages', 'source' => ['catalogs', 'Languages', 'Languages']],
+            'dewey' => ['label' => 'Klas DDC', 'column' => 'catalogs.DeweyNo', 'source' => ['catalogs', 'DeweyNo', 'DeweyNo']],
+            'masterkelasbesar_id' => ['label' => 'Kelas Utama DDC', 'source' => ['master_kelas_besar', 'kdKelas', 'namakelas']],
+            'isbn' => ['label' => 'ISBN', 'column' => 'catalogs.ISBN', 'source' => ['catalogs', 'ISBN', 'ISBN']],
+            'worksheet_id' => ['label' => 'Jenis Bahan', 'column' => 'catalogs.Worksheet_id', 'source' => ['worksheets', 'ID', 'Name']],
+            'createby' => ['label' => 'Dibuat Oleh', 'column' => 'catalogs.CreateBy', 'source' => ['users', 'id', 'username']],
+            'updateby' => ['label' => 'Diperbarui Oleh', 'column' => 'catalogs.UpdateBy', 'source' => ['users', 'id', 'username']],
+        ];
+    }
+
+    private function criterionOptions()
+    {
+        $field = $this->request->getGet('field');
+        $definitions = $this->criterionDefinitions();
+        if (!is_string($field) || !isset($definitions[$field]['source'])) {
+            return $this->response->setStatusCode(400)->setJSON(['error' => 'Kriteria tidak valid.']);
+        }
+
+        [$table, $idColumn, $labelColumn] = $definitions[$field]['source'];
+        $search = $this->request->getGet('q');
+        $search = is_string($search) ? trim($search) : '';
+        $page = max(1, (int) $this->request->getGet('page'));
+        $builder = \Config\Database::connect('data')->table($table)
+            ->distinct()
+            ->select($idColumn . ' AS id, ' . $labelColumn . ' AS text')
+            ->where($labelColumn . ' IS NOT NULL', null, false)
+            ->where('TRIM(' . $labelColumn . ') !=', '');
+        if ($field === 'masterkelasbesar_id') {
+            $builder->where('active', 1);
+        }
+        if ($search !== '') {
+            $builder->like($labelColumn, $search);
+        }
+        $results = $builder->orderBy($labelColumn)->get(26, ($page - 1) * 25)->getResultArray();
+
+        return $this->response->setJSON([
+            'results' => array_slice($results, 0, 25),
+            'pagination' => ['more' => count($results) > 25],
+        ]);
     }
 
     public function preview()
@@ -337,26 +378,34 @@ class LaporanKatalog extends \Base\Controllers\BaseController
     // Helper function untuk apply multiple filters
     private function applyFilters($query)
     {
-        // Filter berdasarkan tanggal dibuat
-        $startDate = $this->request->getPost('start_date');
-        $endDate = $this->request->getPost('end_date');
-        if ($startDate && $endDate) {
-            $query->where('catalogs.CreateDate >=', $startDate)
-                  ->where('catalogs.CreateDate <=', $endDate);
-        }
-
-        // Filter berdasarkan bulan dan tahun dibuat
-        $month = $this->request->getPost('month');
-        $year = $this->request->getPost('year');
-        if ($month && $year) {
-            $query->where('MONTH(catalogs.CreateDate)', $month)
-                  ->where('YEAR(catalogs.CreateDate)', $year);
-        }
-
-        // Filter berdasarkan tahun saja
-        $yearOnly = $this->request->getPost('year_only');
-        if ($yearOnly && !$month) {
-            $query->where('YEAR(catalogs.CreateDate)', $yearOnly);
+        switch ($this->request->getPost('filter_type') ?? 'date') {
+            case 'date':
+                $startDate = $this->request->getPost('start_date');
+                $endDate = $this->request->getPost('end_date');
+                if ($startDate) {
+                    $query->where('catalogs.CreateDate >=', $startDate);
+                }
+                if ($endDate) {
+                    $end = \DateTimeImmutable::createFromFormat('!Y-m-d', $endDate);
+                    if ($end && $end->format('Y-m-d') === $endDate) {
+                        $query->where('catalogs.CreateDate <', $end->modify('+1 day')->format('Y-m-d'));
+                    }
+                }
+                break;
+            case 'month':
+                $month = $this->request->getPost('month');
+                $year = $this->request->getPost('year');
+                if ($month && $year) {
+                    $query->where('MONTH(catalogs.CreateDate)', $month)
+                        ->where('YEAR(catalogs.CreateDate)', $year);
+                }
+                break;
+            case 'year':
+                $year = $this->request->getPost('year');
+                if ($year) {
+                    $query->where('YEAR(catalogs.CreateDate)', $year);
+                }
+                break;
         }
 
         // Filter berdasarkan pengarang
@@ -401,6 +450,28 @@ class LaporanKatalog extends \Base\Controllers\BaseController
         $masterkelasbesarId = trim((string) $this->request->getPost('masterkelasbesar_id'));
         if (preg_match('/^([0-9])/', $masterkelasbesarId, $matches)) {
             $query->like('catalogs.DeweyNo', $matches[1], 'after');
+        }
+
+        $criteria = json_decode((string) $this->request->getPost('criteria'), true);
+        if (!is_array($criteria)) {
+            return;
+        }
+        $definitions = $this->criterionDefinitions();
+        foreach (array_slice($criteria, 0, 20) as $criterion) {
+            if (!is_array($criterion) || !is_string($criterion['field'] ?? null) || !isset($definitions[$criterion['field']])) {
+                continue;
+            }
+            $value = $criterion['value'] ?? null;
+            if (!is_scalar($value) || (string) $value === '') {
+                continue;
+            }
+            if ($criterion['field'] === 'masterkelasbesar_id') {
+                if (preg_match('/^([0-9])/', (string) $value, $matches)) {
+                    $query->like('catalogs.DeweyNo', $matches[1], 'after');
+                }
+            } else {
+                $query->where($definitions[$criterion['field']]['column'], $value);
+            }
         }
     }
 

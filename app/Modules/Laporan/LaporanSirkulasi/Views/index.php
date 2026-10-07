@@ -461,6 +461,7 @@ $(document).ready(function() {
             url: '<?= base_url('laporan-sirkulasi/preview') ?>',
             type: 'POST',
             data: {
+                '<?= csrf_token() ?>': '<?= csrf_hash() ?>',
                 columns: selectedColumns,
                 ...periodFilters(),
                 loan_status: $('#loan_status').val(),

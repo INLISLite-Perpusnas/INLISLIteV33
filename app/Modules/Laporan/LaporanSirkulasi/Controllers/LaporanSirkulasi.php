@@ -196,6 +196,40 @@ class LaporanSirkulasi extends \Base\Controllers\BaseController
         if ($name) $builder->like('m.Fullname', $name);
     }
 
+    /**
+     * Query dasar yang dipakai bersama oleh preview, Excel, dan PDF.
+     */
+    private function buildBaseLoanQuery()
+    {
+        return $this->db->table('collectionloanitems cli')
+            ->select("
+                cli.ID,
+                m.Fullname AS nama_anggota,
+                m.MemberNo AS MemberNo,
+                col.NomorBarcode AS NomorBarcode,
+                cat.Title AS judul_buku,
+                cat.Publisher AS penerbit,
+                cat.DeweyNo AS kelas_ddc,
+                cat.Subject AS subjek,
+                cli.LoanDate AS tanggal_peminjaman,
+                cli.DueDate AS tanggal_jatuh_tempo,
+                cli.ActualReturn AS tanggal_pengembalian,
+                u_loan.username AS petugas_peminjaman,
+                u_return.username AS petugas_pengembalian,
+                CASE
+                    WHEN m.Sex_id = 1 THEN 'Laki-laki'
+                    WHEN m.Sex_id = 2 THEN 'Perempuan'
+                    ELSE 'Tidak Diketahui'
+                END AS jenis_kelamin,
+                cli.LoanStatus AS status_peminjaman
+            ", false)
+            ->join('members m', 'm.ID = cli.member_id', 'left')
+            ->join('collections col', 'col.ID = cli.Collection_id', 'left')
+            ->join('catalogs cat', 'cat.ID = col.Catalog_id', 'left')
+            ->join('users u_loan', 'u_loan.id = cli.CreateBy', 'left')
+            ->join('users u_return', 'u_return.id = cli.UpdateBy', 'left');
+    }
+
    
     private function getTopBorrowers(): ?array
     {
@@ -289,7 +323,7 @@ class LaporanSirkulasi extends \Base\Controllers\BaseController
         // Mode detail (tanpa filter top borrowers) — seperti patch v1
         $builder = $this->buildBaseLoanQuery();
         $this->applyReportFilters($builder);
-        $builder->orderBy('MAX(cli.LoanDate)', 'DESC', false);
+        $builder->orderBy('cli.LoanDate', 'DESC');
         $builder->limit(100);
  
         $data = $builder->get()->getResultArray();
@@ -332,7 +366,7 @@ class LaporanSirkulasi extends \Base\Controllers\BaseController
         } else {
             $builder = $this->buildBaseLoanQuery();
             $this->applyReportFilters($builder);
-            $builder->orderBy('MAX(cli.LoanDate)', 'DESC', false);
+            $builder->orderBy('cli.LoanDate', 'DESC');
             $data = $builder->get()->getResultArray();
         }
  
@@ -420,7 +454,7 @@ class LaporanSirkulasi extends \Base\Controllers\BaseController
         } else {
             $builder = $this->buildBaseLoanQuery();
             $this->applyReportFilters($builder);
-            $builder->orderBy('MAX(cli.LoanDate)', 'DESC', false);
+            $builder->orderBy('cli.LoanDate', 'DESC');
  
             $totalRecords = (clone $builder)->countAllResults(false);
             $maxRecords = 5000;

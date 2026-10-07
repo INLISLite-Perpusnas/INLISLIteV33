@@ -25,6 +25,10 @@ class LaporanAnggota extends \Base\Controllers\BaseController
 
     public function index()
     {
+        if ($this->request->getGet('criterion_options') === '1') {
+            return $this->criterionOptions();
+        }
+
         // Get all available columns with proper table prefixes
         $columns = [
             'members.MemberNo' => 'Nomor Anggota',
@@ -81,6 +85,42 @@ class LaporanAnggota extends \Base\Controllers\BaseController
         ];
 
         return view('LaporanAnggota\Views\index', $data);
+    }
+
+    private function criterionOptions()
+    {
+        $columns = [
+            'fullname' => 'Fullname',
+            'place_of_birth' => 'PlaceOfBirth',
+            'address' => 'Address',
+            'province' => 'Province',
+            'city' => 'City',
+            'institution_name' => 'InstitutionName',
+            'email' => 'Email',
+        ];
+        $field = $this->request->getGet('field');
+        if (!is_string($field) || !isset($columns[$field])) {
+            return $this->response->setStatusCode(400)->setJSON(['error' => 'Kriteria tidak valid.']);
+        }
+
+        $column = 'members.' . $columns[$field];
+        $search = $this->request->getGet('q');
+        $search = is_string($search) ? trim($search) : '';
+        $page = max(1, (int) $this->request->getGet('page'));
+        $builder = $this->anggotaModel->builder()
+            ->distinct()
+            ->select($column . ' AS id, ' . $column . ' AS text')
+            ->where($column . ' IS NOT NULL', null, false)
+            ->where($column . ' !=', '');
+        if ($search !== '') {
+            $builder->like($column, $search);
+        }
+        $results = $builder->orderBy($column)->get(26, ($page - 1) * 25)->getResultArray();
+
+        return $this->response->setJSON([
+            'results' => array_slice($results, 0, 25),
+            'pagination' => ['more' => count($results) > 25],
+        ]);
     }
 
     public function preview()
@@ -363,26 +403,34 @@ class LaporanAnggota extends \Base\Controllers\BaseController
     // Helper function untuk apply multiple filters
     private function applyFilters($query)
     {
-        // Filter berdasarkan tanggal registrasi (range)
-        $startDate = $this->request->getPost('start_date');
-        $endDate = $this->request->getPost('end_date');
-        if ($startDate && $endDate) {
-            $query->where('members.RegisterDate >=', $startDate)
-                ->where('members.RegisterDate <=', $endDate);
-        }
-
-        // Filter berdasarkan bulan dan tahun registrasi
-        $month = $this->request->getPost('month');
-        $year = $this->request->getPost('year');
-        if ($month && $year) {
-            $query->where('MONTH(members.RegisterDate)', $month)
-                ->where('YEAR(members.RegisterDate)', $year);
-        }
-
-        // Filter berdasarkan tahun registrasi saja
-        $yearOnly = $this->request->getPost('year_only');
-        if ($yearOnly && !$month) {
-            $query->where('YEAR(members.RegisterDate)', $yearOnly);
+        switch ($this->request->getPost('filter_type') ?? 'date') {
+            case 'date':
+                $startDate = $this->request->getPost('start_date');
+                $endDate = $this->request->getPost('end_date');
+                if ($startDate) {
+                    $query->where('members.RegisterDate >=', $startDate);
+                }
+                if ($endDate) {
+                    $end = \DateTimeImmutable::createFromFormat('!Y-m-d', $endDate);
+                    if ($end && $end->format('Y-m-d') === $endDate) {
+                        $query->where('members.RegisterDate <', $end->modify('+1 day')->format('Y-m-d'));
+                    }
+                }
+                break;
+            case 'month':
+                $month = $this->request->getPost('month');
+                $year = $this->request->getPost('year');
+                if ($month && $year) {
+                    $query->where('MONTH(members.RegisterDate)', $month)
+                        ->where('YEAR(members.RegisterDate)', $year);
+                }
+                break;
+            case 'year':
+                $year = $this->request->getPost('year');
+                if ($year) {
+                    $query->where('YEAR(members.RegisterDate)', $year);
+                }
+                break;
         }
 
         // Filter berdasarkan tanggal lahir (range)

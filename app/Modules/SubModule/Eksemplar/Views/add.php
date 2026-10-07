@@ -106,6 +106,7 @@ $catalog = get_catalog($catalog_id);
                                     <div class="form-check">
                                         <input type="radio" class="form-check-input" name="ISDRM" id="is_drm_1"
                                             value="1"
+                                            required
                                             <?= isset($catalog->ISDRM) && $catalog->ISDRM == 1 ? 'checked' : '' ?> />
                                         <label class="form-check-label" for="is_drm_1">Yes</label>
                                     </div>

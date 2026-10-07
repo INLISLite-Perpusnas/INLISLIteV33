@@ -44,11 +44,42 @@ $request = service('request');
     gap: 15px;
     margin-bottom: 20px;
 }
+#filterForm .period-selector,
+#filterForm .period-filter,
+#filterForm .criteria-section {
+    grid-column: 1 / -1;
+}
+#filterForm .criteria-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+#filterForm .criteria-heading h6 { margin: 0; }
+#filterForm .criterion-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 12px;
+    margin-top: 12px;
+}
+#filterForm .criterion-control { min-width: 0; }
+#filterForm .criterion-control .select2-container { width: 100% !important; }
+#filterForm .criterion-control .select2-selection--single { min-height: 38px; border-color: #ced4da; }
+#filterForm .criterion-control .select2-selection__rendered { line-height: 36px; }
+#filterForm .criterion-control .select2-selection__arrow { height: 36px; }
+#filterForm .criterion-dates {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
 
 @media (max-width: 768px) {
     .filters-container {
         grid-template-columns: 1fr;
     }
+    #filterForm .criterion-row { grid-template-columns: minmax(0, 1fr) auto; }
+    #filterForm .criterion-control:first-child { grid-column: 1 / -1; }
 }
 </style>
 <?= $this->endSection('style'); ?>
@@ -93,7 +124,7 @@ $request = service('request');
             </div>
             <?php endif ?>
 
-            <form action="<?= base_url('laporan-eksemplar/export') ?>" method="post">
+            <form id="filterForm" action="<?= base_url('laporan-eksemplar/export') ?>" method="post">
                 <?= csrf_field() ?>
 
                 <!-- Columns Selection -->
@@ -124,8 +155,16 @@ $request = service('request');
 
                 <!-- Multiple Filters Container -->
                 <div class="filters-container">
+                    <div class="form-group period-selector">
+                        <label for="filter_type"><b>Filter Berdasarkan</b></label>
+                        <select class="form-control" name="filter_type" id="filter_type">
+                            <option value="date">Tanggal</option>
+                            <option value="month">Bulan</option>
+                            <option value="year">Tahun</option>
+                        </select>
+                    </div>
                     <!-- Filter Tanggal Dibuat -->
-                    <div class="filter-section">
+                    <div id="date_filter" class="filter-section period-filter">
                         <h6><i class="fas fa-calendar-alt"></i> Filter Berdasarkan Tanggal Dibuat</h6>
                         <div class="row">
                             <div class="col-md-6">
@@ -140,12 +179,12 @@ $request = service('request');
                     </div>
 
                     <!-- Filter Bulan & Tahun Dibuat -->
-                    <div class="filter-section">
+                    <div id="month_filter" class="filter-section period-filter" style="display: none;">
                         <h6><i class="fas fa-calendar-alt"></i> Filter Berdasarkan Bulan & Tahun Dibuat</h6>
                         <div class="row">
                             <div class="col-md-6">
                                 <label>Bulan</label>
-                                <select name="month" class="form-control">
+                                <select name="month" class="form-control" disabled>
                                     <option value="">-- Pilih Bulan --</option>
                                     <?php for ($i = 1; $i <= 12; $i++) : ?>
                                     <option value="<?= $i ?>"><?= date('F', mktime(0, 0, 0, $i, 1)) ?></option>
@@ -154,7 +193,7 @@ $request = service('request');
                             </div>
                             <div class="col-md-6">
                                 <label>Tahun</label>
-                                <select name="year" class="form-control">
+                                <select name="year" id="month_year" class="form-control" disabled>
                                     <option value="">-- Pilih Tahun --</option>
                                     <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
                                     <option value="<?= $i ?>"><?= $i ?></option>
@@ -165,10 +204,10 @@ $request = service('request');
                     </div>
 
                     <!-- Filter Tahun Saja -->
-                    <div class="filter-section">
+                    <div id="year_filter" class="filter-section period-filter" style="display: none;">
                         <h6><i class="fas fa-calendar"></i> Filter Berdasarkan Tahun Dibuat Saja</h6>
                         <label>Tahun</label>
-                        <select name="year_only" class="form-control">
+                        <select name="year" id="year_only" class="form-control" disabled>
                             <option value="">-- Pilih Tahun --</option>
                             <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
                             <option value="<?= $i ?>"><?= $i ?></option>
@@ -176,103 +215,17 @@ $request = service('request');
                         </select>
                     </div>
 
-                    <!-- Filter Tanggal Pengadaan -->
-                    <div class="filter-section">
-                        <h6><i class="fas fa-calendar-plus"></i> Filter Berdasarkan Tanggal Pengadaan</h6>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label>Tanggal Mulai</label>
-                                <input type="date" name="tp_start_date" class="form-control">
-                            </div>
-                            <div class="col-md-6">
-                                <label>Tanggal Akhir</label>
-                                <input type="date" name="tp_end_date" class="form-control">
-                            </div>
+                    <div class="filter-section criteria-section">
+                        <div class="criteria-heading">
+                            <h6><i class="fas fa-filter" aria-hidden="true"></i> Kriteria Eksemplar</h6>
+                            <button type="button" class="btn btn-success" id="addCriterion" title="Tambah kriteria" aria-label="Tambah kriteria">
+                                <i class="fas fa-plus-circle" aria-hidden="true"></i>
+                            </button>
                         </div>
+                        <p class="text-muted mb-0">Pilih kriteria dan nilainya. Semua kriteria yang diisi diterapkan bersama.</p>
+                        <div id="criteria_rows"></div>
                     </div>
-
-                    <!-- Filter Lokasi -->
-                    <div class="filter-section">
-                        <h6><i class="fas fa-map-marker-alt"></i> Filter Berdasarkan Lokasi</h6>
-                        <label>Lokasi Perpustakaan</label>
-                        <div class="select-wrapper mb-3">
-                            <select class="form-control" name="location">
-                                <option value="">-- Pilih Lokasi --</option>
-                                <?php foreach (get_ref_table('location_library', 'ID, Name') as $row) : ?>
-                                <option value="<?= $row->ID ?>"><?= $row->Name ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-
-                        <label>Lokasi Ruang</label>
-                        <div class="select-wrapper">
-                            <select class="form-control" name="location_ruang">
-                                <option value="">-- Pilih Ruang --</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Filter Pengarang -->
-                    <div class="filter-section">
-                        <h6><i class="fas fa-user-edit"></i> Filter Berdasarkan Pengarang</h6>
-                        <label>Pengarang</label>
-                        <input type="text" name="author" class="form-control" placeholder="Masukkan nama pengarang...">
-                    </div>
-
-                    <!-- Filter Tempat Terbit -->
-                    <div class="filter-section">
-                        <h6><i class="fas fa-globe"></i> Filter Berdasarkan Tempat Terbit</h6>
-                        <label>Tempat Terbit</label>
-                        <input type="text" name="publishlocation" class="form-control"
-                            placeholder="Masukkan tempat terbit...">
-                    </div>
-
-                    <!-- Filter Subjek -->
-                    <div class="filter-section">
-                        <h6><i class="fas fa-tags"></i> Filter Berdasarkan Subjek</h6>
-                        <label>Subjek</label>
-                        <input type="text" name="subject" class="form-control" placeholder="Masukkan subjek...">
-                    </div>
-
-                    <!-- Filter Penerbit -->
-                    <div class="filter-section">
-                        <h6><i class="fas fa-building"></i> Filter Berdasarkan Penerbit</h6>
-                        <label>Penerbit</label>
-                        <input type="text" name="publisher" class="form-control"
-                            placeholder="Masukkan nama penerbit...">
-                    </div>
-
-                    <!-- Filter CreateBy -->
-                    <div class="filter-section">
-                        <h6><i class="fas fa-user-plus"></i> Filter Berdasarkan Dibuat Oleh</h6>
-                        <label>Dibuat Oleh</label>
-                        <select name="createby" class="form-control">
-                            <option value="">-- Semua User --</option>
-                            <?php if (isset($userOptions)) : ?>
-                            <?php foreach ($userOptions as $user) : ?>
-                            <option value="<?= $user->id ?>">
-                                <?= $user->username ?>
-                            </option>
-                            <?php endforeach ?>
-                            <?php endif ?>
-                        </select>
-                    </div>
-
-                    <!-- Filter UpdateBy -->
-                    <div class="filter-section">
-                        <h6><i class="fas fa-user-edit"></i> Filter Berdasarkan Diperbarui Oleh</h6>
-                        <label>Diperbarui Oleh</label>
-                        <select name="updateby" class="form-control">
-                            <option value="">-- Semua User --</option>
-                            <?php if (isset($userOptions)) : ?>
-                            <?php foreach ($userOptions as $user) : ?>
-                            <option value="<?= $user->id ?>">
-                                <?= $user->username ?>
-                            </option>
-                            <?php endforeach ?>
-                            <?php endif ?>
-                        </select>
-                    </div>
+                    <input type="hidden" name="criteria" id="criteriaPayload" value="[]">
                 </div>
 
                 <!-- Export Button -->
@@ -285,7 +238,7 @@ $request = service('request');
                         onclick="setExportAction('pdf')">
                         <i class="fas fa-file-pdf"></i> Export PDF
                     </button>
-                    <button type="button" class="btn btn-secondary btn-lg px-5 ml-2" onclick="clearAllFilters()">
+                    <button type="button" class="btn btn-secondary btn-lg px-5 ml-2" id="clearExemplarFilters">
                         <i class="fas fa-eraser"></i> Clear All Filters
                     </button>
                 </div>
@@ -324,6 +277,114 @@ $request = service('request');
 <?= $this->section('script'); ?>
 <script>
 $(document).ready(function() {
+    const criteriaLabels = <?= json_encode($criteriaLabels, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+
+    function criteriaValues() {
+        const criteria = [];
+        $('#criteria_rows .criterion-row').each(function() {
+            const field = $(this).find('.criterion-field').val();
+            if (!field) return;
+            const value = field === 'tp_date'
+                ? {
+                    start: $(this).find('.criterion-start').val(),
+                    end: $(this).find('.criterion-end').val()
+                }
+                : $(this).find('.criterion-value select').val();
+            if (field === 'tp_date' ? (value.start || value.end) : value !== null && value !== '') {
+                criteria.push({ field: field, value: value });
+            }
+        });
+        return JSON.stringify(criteria);
+    }
+
+    function destroyCriterionSelects(container) {
+        if ($.fn.select2) {
+            container.find('select').each(function() {
+                if ($(this).data('select2')) $(this).select2('destroy');
+            });
+        }
+    }
+
+    function addCriterionRow() {
+        if ($('#criteria_rows .criterion-row').length >= Object.keys(criteriaLabels).length) return;
+
+        const row = $('<div>', { class: 'criterion-row' });
+        const field = $('<select>', { class: 'form-control criterion-field', 'aria-label': 'Pilih kriteria eksemplar' });
+        field.append(new Option('-- Pilih Kriteria --', ''));
+        Object.entries(criteriaLabels).forEach(function([key, label]) {
+            field.append(new Option(label, key));
+        });
+        const valueControl = $('<div>', { class: 'criterion-control criterion-value' });
+        const remove = $('<button>', { type: 'button', class: 'btn btn-outline-danger', title: 'Hapus kriteria', 'aria-label': 'Hapus kriteria' })
+            .append($('<i>', { class: 'fas fa-minus', 'aria-hidden': 'true' }));
+        row.append($('<div>', { class: 'criterion-control' }).append(field), valueControl, remove);
+        $('#criteria_rows').append(row);
+        if ($.fn.select2) field.select2({ width: '100%', placeholder: '-- Pilih Kriteria --' });
+
+        field.on('change', function() {
+            destroyCriterionSelects(valueControl);
+            valueControl.empty();
+            const key = field.val();
+            if (!key) {
+                updatePreview();
+                return;
+            }
+            const duplicate = $('#criteria_rows .criterion-field').not(field).filter(function() {
+                return $(this).val() === key;
+            }).length > 0;
+            if (duplicate) {
+                field.val('').trigger('change.select2');
+                alert('Kriteria ini sudah dipilih.');
+                updatePreview();
+                return;
+            }
+
+            if (key === 'tp_date') {
+                const dates = $('<div>', { class: 'criterion-dates' });
+                dates.append(
+                    $('<div>').append($('<small>', { text: 'Mulai' }), $('<input>', { type: 'date', class: 'form-control criterion-start', 'aria-label': 'Tanggal mulai pengadaan' })),
+                    $('<div>').append($('<small>', { text: 'Akhir' }), $('<input>', { type: 'date', class: 'form-control criterion-end', 'aria-label': 'Tanggal akhir pengadaan' }))
+                );
+                valueControl.append(dates);
+            } else {
+                const value = $('<select>', { class: 'form-control', 'aria-label': criteriaLabels[key] })
+                    .append(new Option('-- Semua --', ''));
+                valueControl.append(value);
+                if ($.fn.select2) {
+                    value.select2({
+                        width: '100%', placeholder: '-- Semua --', allowClear: true,
+                        ajax: {
+                            url: <?= json_encode(base_url('laporan-eksemplar')) ?>,
+                            dataType: 'json', delay: 300,
+                            data: function(params) {
+                                return { criterion_options: '1', field: key, q: params.term || '', page: params.page || 1 };
+                            },
+                            processResults: function(data) { return data; }
+                        }
+                    });
+                }
+            }
+            updatePreview();
+        });
+
+        remove.on('click', function() {
+            destroyCriterionSelects(row);
+            row.remove();
+            if (!$('#criteria_rows .criterion-row').length) addCriterionRow();
+            updatePreview();
+        });
+    }
+
+    $('#addCriterion').on('click', addCriterionRow);
+    addCriterionRow();
+
+    function updatePeriodFilter() {
+        $('.period-filter').hide().find('input, select').prop('disabled', true);
+        $('#' + $('#filter_type').val() + '_filter').show().find('input, select').prop('disabled', false);
+    }
+    $('#filter_type').on('change', updatePeriodFilter);
+    updatePeriodFilter();
+
     // Function to update preview table
     function updatePreview() {
         const selectedColumns = [];
@@ -337,25 +398,10 @@ $(document).ready(function() {
             return;
         }
 
-        const formData = new FormData();
-        formData.append('columns', JSON.stringify(selectedColumns));
-
-        // Add all filter values
-        formData.append('start_date', $('input[name="start_date"]').val());
-        formData.append('end_date', $('input[name="end_date"]').val());
-        formData.append('month', $('select[name="month"]').val());
-        formData.append('year', $('select[name="year"]').val());
-        formData.append('year_only', $('select[name="year_only"]').val());
-        formData.append('tp_start_date', $('input[name="tp_start_date"]').val());
-        formData.append('tp_end_date', $('input[name="tp_end_date"]').val());
-        formData.append('location', $('select[name="location"]').val());
-        formData.append('location_ruang', $('select[name="location_ruang"]').val());
-        formData.append('author', $('input[name="author"]').val());
-        formData.append('publishlocation', $('input[name="publishlocation"]').val());
-        formData.append('subject', $('input[name="subject"]').val());
-        formData.append('publisher', $('input[name="publisher"]').val());
-        formData.append('createby', $('select[name="createby"]').val());
-        formData.append('updateby', $('select[name="updateby"]').val());
+        $('#criteriaPayload').val(criteriaValues());
+        const formData = new FormData($('#filterForm')[0]);
+        formData.delete('columns[]');
+        formData.set('columns', JSON.stringify(selectedColumns));
 
         // Show loading indicator
         $('#preview-table').html(
@@ -409,45 +455,28 @@ $(document).ready(function() {
     }
 
     // Event listeners for filter inputs
-    $('input[type="date"], input[type="text"], select').on('change keyup', debounce(updatePreview, 500));
+    $('#filterForm .period-selector, #filterForm .period-filter').on('change keyup', 'input, select', debounce(updatePreview, 500));
+    $('#criteria_rows').on('change input', '.criterion-value input, .criterion-value select', debounce(updatePreview, 500));
+
+    $('#filterForm').on('submit', function() {
+        $('#criteriaPayload').val(criteriaValues());
+    });
+
+    $('#clearExemplarFilters').on('click', function() {
+        if (!confirm('Apakah Anda yakin ingin menghapus semua filter?')) return;
+        $('#filterForm .period-filter input').val('');
+        $('#filterForm .period-filter select').prop('selectedIndex', 0);
+        $('#filter_type').val('date');
+        destroyCriterionSelects($('#criteria_rows'));
+        $('#criteria_rows').empty();
+        addCriterionRow();
+        $('#criteriaPayload').val('[]');
+        $('#filter_type').trigger('change');
+    });
 
     // Initial setup
     updateSelectAllStatus();
     updatePreview();
-
-    // Handle location dropdown change for loading rooms
-    $('select[name="location"]').change(function() {
-        let locationId = $(this).val();
-        let ruangSelect = $('select[name="location_ruang"]');
-
-        // Clear first
-        ruangSelect.html('<option value="">-- Pilih Ruang --</option>');
-
-        if (locationId) {
-            $.ajax({
-                url: "<?= base_url('laporan-eksemplar/get-ruang') ?>",
-                type: "POST",
-                data: {
-                    location_id: locationId
-                },
-                dataType: "json",
-                success: function(data) {
-                    if (data.length > 0) {
-                        $.each(data, function(i, item) {
-                            ruangSelect.append('<option value="' + item.ID + '">' +
-                                item.Name + '</option>');
-                        });
-                    } else {
-                        ruangSelect.append('<option value="">Tidak ada ruang</option>');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error(error);
-                    ruangSelect.append('<option value="">Error loading data</option>');
-                }
-            });
-        }
-    });
 
     // Debounce function to limit API calls
     function debounce(func, wait) {
@@ -473,24 +502,5 @@ function setExportAction(type) {
     }
 }
 
-// Function to clear all filters
-function clearAllFilters() {
-    if (confirm('Apakah Anda yakin ingin menghapus semua filter?')) {
-        // Clear all input fields
-        $('input[type="date"], input[type="text"]').val('');
-        $('select').prop('selectedIndex', 0);
-        $('select[name="location_ruang"]').html('<option value="">-- Pilih Ruang --</option>');
-
-        // Update preview
-        const selectedColumns = [];
-        $('input[name="columns[]"]:checked').each(function() {
-            selectedColumns.push($(this).val());
-        });
-
-        if (selectedColumns.length > 0) {
-            updatePreview();
-        }
-    }
-}
 </script>
 <?= $this->endSection('script'); ?>

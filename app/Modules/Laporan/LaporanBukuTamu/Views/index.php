@@ -344,11 +344,17 @@ $(document).ready(function() {
     // Initial preview load
     updatePreview();
 
-    // Show/hide filter sections
-    $('#filter_type').change(function() {
-        $('.filter-section').hide();
-        $('#' + $(this).val() + '_filter').show();
-    });
+    // Kirim hanya nilai filter yang aktif; field tahun tersembunyi memiliki nama sama.
+    function updateFilterSections() {
+        var activeFilter = '#' + $('#filter_type').val() + '_filter';
+        $('.filter-section').each(function() {
+            var isActive = '#' + this.id === activeFilter;
+            $(this).toggle(isActive).find('input, select').prop('disabled', !isActive);
+        });
+    }
+
+    $('#filter_type').on('change', updateFilterSections);
+    updateFilterSections();
 });
 
 function setExportAction(type) {

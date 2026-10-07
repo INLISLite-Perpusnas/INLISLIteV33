@@ -28,6 +28,17 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
         $this->tujuanKunjunganModel = new \TujuanKunjungan\Models\TujuanKunjunganModel();
 	}
 
+	private function formatVisitDate($value): string
+	{
+		$date = \DateTimeImmutable::createFromFormat(
+			'!Y-m-d',
+			substr((string) $value, 0, 10),
+			new \DateTimeZone('UTC')
+		);
+
+		return $date ? $date->format('d-m-Y') : (string) $value;
+	}
+
 	public function index()
     {
         // Get all available columns
@@ -217,9 +228,21 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
             foreach ($selectedColumns as $column) {
                 $value = $member->$column ?? '';
                 if ($column == 'tgl_kunjungan' && $value) {
-                    $dateTime = \PhpOffice\PhpSpreadsheet\Shared\Date::PHPToExcel(strtotime($value));
-                    $sheet->setCellValue($col . $row, $dateTime);
-                    $sheet->getStyle($col . $row)->getNumberFormat()->setFormatCode('dd-mm-yyyy');
+                    // Pertahankan tanggal kalender tanpa melewati Unix timestamp.
+                    $dateTime = \DateTimeImmutable::createFromFormat(
+                        '!Y-m-d',
+                        substr((string) $value, 0, 10),
+                        new \DateTimeZone('UTC')
+                    );
+                    if ($dateTime) {
+                        $sheet->setCellValue(
+                            $col . $row,
+                            \PhpOffice\PhpSpreadsheet\Shared\Date::PHPToExcel($dateTime)
+                        );
+                        $sheet->getStyle($col . $row)->getNumberFormat()->setFormatCode('dd-mm-yyyy');
+                    } else {
+                        $sheet->setCellValue($col . $row, $this->formatVisitDate($value));
+                    }
                 } else {
                     $sheet->setCellValue($col . $row, $value);
                 }
@@ -274,6 +297,7 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
         $locationlibrary  = $this->request->getPost('location');
         $room             = $this->request->getPost('room');
         $destination      = $this->request->getPost('destination');
+        $kop              = $this->request->getPost('kop');
 
         $query = $this->guestModel->getPengunjung($startDate, $endDate);
 
@@ -307,9 +331,11 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
 
         $members = $query->get()->getResult();
 
-        // Ambil logo kop
+        // Ambil logo hanya jika pengguna memilih kop laporan.
         $db = db_connect();
-        $logokop = $db->table('settingparameters')->where('Name', 'LogoKop')->get()->getRow('Value') ?? '';
+        $logokop = $kop === 'Ya'
+            ? ($db->table('settingparameters')->where('Name', 'LogoKop')->get()->getRow('Value') ?? '')
+            : '';
         $namaPerpustakaan = $db->table('settingparameters')->where('Name', 'NamaPerpustakaan')->get()->getRow('Value') ?? 'Perpustakaan';
 
         $logoBase64 = '';
@@ -372,7 +398,7 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
             foreach ($selectedColumns as $col) {
                 $value = $member->$col ?? '';
                 if ($col === 'tgl_kunjungan' && $value) {
-                    $value = date('d-m-Y', strtotime($value));
+                    $value = $this->formatVisitDate($value);
                 }
                 $html .= '<td>' . esc($value) . '</td>';
             }
@@ -497,7 +523,7 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
             foreach ($columns as $column) {
                 $value = $member->$column;
                 if (in_array($column, ['tgl_kunjungan']) && $value) {
-                    $value = date('d-m-Y', strtotime($value));
+                    $value = $this->formatVisitDate($value);
                 }
                 $html .= '<td>' . esc($value) . '</td>';
             }

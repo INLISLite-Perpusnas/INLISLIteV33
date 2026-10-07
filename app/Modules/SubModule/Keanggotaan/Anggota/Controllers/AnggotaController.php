@@ -20,6 +20,21 @@ class AnggotaController extends \Base\Controllers\BaseController
         $this->initAnggotaBase();
     }
 
+    public function csrfToken()
+    {
+        if (!is_allowed('anggota/create')) {
+            return $this->response->setStatusCode(403)->setJSON([
+                'success' => false,
+                'message' => 'Maaf, Anda tidak memiliki akses',
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'csrfHash' => csrf_hash(),
+        ]);
+    }
+
     public function do_upload()
     {
         $file = $this->request->getFile('file');
@@ -28,6 +43,7 @@ class AnggotaController extends \Base\Controllers\BaseController
         if (!$file || !$file->isValid() || $file->hasMoved()) {
             return $this->response->setStatusCode(400)->setJSON([
                 'success' => false,
+                'csrfHash' => csrf_hash(),
                 'msg' => 'File foto tidak valid.',
             ]);
         }
@@ -35,6 +51,7 @@ class AnggotaController extends \Base\Controllers\BaseController
         if ($file->getSize() > 10 * 1024 * 1024 || !in_array($file->getMimeType(), $allowedMimes, true)) {
             return $this->response->setStatusCode(415)->setJSON([
                 'success' => false,
+                'csrfHash' => csrf_hash(),
                 'msg' => 'Foto harus berupa JPG atau PNG dengan ukuran maksimal 10 MB.',
             ]);
         }
@@ -44,6 +61,7 @@ class AnggotaController extends \Base\Controllers\BaseController
 
         return $this->response->setJSON([
             'success' => true,
+            'csrfHash' => csrf_hash(),
             'data' => [
                 'name' => $newFileName,
                 'type' => $file->getMimeType(),

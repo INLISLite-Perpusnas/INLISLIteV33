@@ -15,17 +15,18 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
 	public $auth;
 	public $authorize;
 	public $eksemplarModel;
-    public $userModel;
 
 	function __construct()
 	{
 		$this->eksemplarModel = new \Eksemplar\Models\EksemplarModel();
-        $this->userModel = new \User\Models\UserModel();
 		helper('reference');
 	}
 
 	public function index()
     {
+        if ($this->request->getGet('criterion_options') === '1') {
+            return $this->criterionOptions();
+        }
         // Definisi kolom yang bisa diekspor
         $columns = [
             'NomorBarcode' => 'No. Barcode',
@@ -62,19 +63,65 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
             'UpdateDate' => 'Tanggal Diperbarui'
         ];
 
-        // Ambil data user untuk dropdown filter
-        $userOptions = $this->userModel->select('id, username')
-            ->where('active', 1)
-            ->whereNotIn('category', ['anggota'])
-            ->orderBy('username', 'ASC')
-            ->findAll();
-
         $data = [
             'columns' => $columns,
-            'userOptions' => $userOptions
+            'criteriaLabels' => array_map(function ($definition) {
+                return $definition['label'];
+            }, $this->criterionDefinitions()),
         ];
 
         return view('LaporanEksemplar\Views\index', $data);
+    }
+
+    private function criterionDefinitions(): array
+    {
+        return [
+            'publishlocation' => ['label' => 'Kota Terbit', 'column' => 'catalogs.PublishLocation', 'source' => ['catalogs', 'PublishLocation', 'PublishLocation']],
+            'publisher' => ['label' => 'Nama Penerbit', 'column' => 'catalogs.Publisher', 'source' => ['catalogs', 'Publisher', 'Publisher']],
+            'publishyear' => ['label' => 'Tahun Terbit', 'column' => 'catalogs.PublishYear', 'source' => ['catalogs', 'PublishYear', 'PublishYear']],
+            'location' => ['label' => 'Lokasi Perpustakaan', 'column' => 'collections.Location_Library_id', 'source' => ['location_library', 'ID', 'Name']],
+            'location_ruang' => ['label' => 'Ruang Perpustakaan', 'column' => 'collections.Location_id', 'source' => ['locations', 'ID', 'Name']],
+            'source_id' => ['label' => 'Jenis Sumber Perolehan', 'column' => 'collections.Source_id', 'source' => ['collectionsources', 'ID', 'Name']],
+            'currency' => ['label' => 'Mata Uang', 'column' => 'collections.Currency', 'source' => ['collections', 'Currency', 'Currency']],
+            'price' => ['label' => 'Harga', 'column' => 'collections.Price', 'source' => ['collections', 'Price', 'Price']],
+            'category_id' => ['label' => 'Kategori', 'column' => 'collections.Category_id', 'source' => ['collectioncategorys', 'ID', 'Name']],
+            'rule_id' => ['label' => 'Jenis Akses', 'column' => 'collections.Rule_id', 'source' => ['collectionrules', 'ID', 'Name']],
+            'worksheet_id' => ['label' => 'Jenis Bahan', 'column' => 'catalogs.Worksheet_id', 'source' => ['worksheets', 'ID', 'Name']],
+            'media_id' => ['label' => 'Jenis Media', 'column' => 'collections.Media_id', 'source' => ['collectionmedias', 'ID', 'Name']],
+            'subject' => ['label' => 'Subjek', 'column' => 'catalogs.Subject', 'source' => ['catalogs', 'Subject', 'Subject']],
+            'author' => ['label' => 'Pengarang', 'column' => 'catalogs.Author', 'source' => ['catalogs', 'Author', 'Author']],
+            'createby' => ['label' => 'Dibuat Oleh', 'column' => 'collections.CreateBy', 'source' => ['users', 'id', 'username']],
+            'updateby' => ['label' => 'Diperbarui Oleh', 'column' => 'collections.UpdateBy', 'source' => ['users', 'id', 'username']],
+            'tp_date' => ['label' => 'Tanggal Pengadaan'],
+        ];
+    }
+
+    private function criterionOptions()
+    {
+        $field = $this->request->getGet('field');
+        $definitions = $this->criterionDefinitions();
+        if (!is_string($field) || !isset($definitions[$field]['source'])) {
+            return $this->response->setStatusCode(400)->setJSON(['error' => 'Kriteria tidak valid.']);
+        }
+
+        [$table, $idColumn, $labelColumn] = $definitions[$field]['source'];
+        $search = $this->request->getGet('q');
+        $search = is_string($search) ? trim($search) : '';
+        $page = max(1, (int) $this->request->getGet('page'));
+        $builder = \Config\Database::connect('data')->table($table)
+            ->distinct()
+            ->select($idColumn . ' AS id, ' . $labelColumn . ' AS text')
+            ->where($labelColumn . ' IS NOT NULL', null, false)
+            ->where('TRIM(' . $labelColumn . ') !=', '');
+        if ($search !== '') {
+            $builder->like($labelColumn, $search);
+        }
+        $results = $builder->orderBy($labelColumn)->get(26, ($page - 1) * 25)->getResultArray();
+
+        return $this->response->setJSON([
+            'results' => array_slice($results, 0, 25),
+            'pagination' => ['more' => count($results) > 25],
+        ]);
     }
 
     public function preview()
@@ -87,9 +134,9 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
 
         // Build query with JOIN to users table
         $query = $this->eksemplarModel
-                ->join('(SELECT ID, Title, Author, Edition, Publisher, PublishLocation, PublishYear, Subject, ISBN, Languages, DeweyNo FROM catalogs) AS catalogs', 'catalogs.ID = collections.Catalog_ID', 'INNER')
+                ->join('(SELECT ID, Title, Author, Edition, Publisher, PublishLocation, PublishYear, Subject, ISBN, Languages, DeweyNo, Worksheet_id FROM catalogs) AS catalogs', 'catalogs.ID = collections.Catalog_ID', 'INNER')
                 ->join('(SELECT ID, Name as JenisSumber FROM collectionsources) AS sources','collections.Source_id = sources.ID', 'LEFT')
-                ->join('(SELECT ID, Name as BentukFisik FROM collectionmedias) AS medias','collections.Source_id = medias.ID', 'LEFT')
+                ->join('(SELECT ID, Name as BentukFisik FROM collectionmedias) AS medias','collections.Media_id = medias.ID', 'LEFT')
                 ->join('(SELECT ID, Name as Kategori FROM collectioncategorys) AS categories','collections.Category_id = categories.ID', 'LEFT')
                 ->join('(SELECT ID, Name as Ketersediaan FROM collectionstatus) AS status','collections.Status_id = status.ID', 'LEFT')
                 ->join('(SELECT ID, Name as Akses FROM collectionrules) AS rules','collections.Rule_id = rules.ID', 'LEFT')
@@ -154,9 +201,9 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
       
         // Build query with JOIN to users table
         $query = $this->eksemplarModel
-                ->join('(SELECT ID, Title, Author, Edition, Publisher, PublishLocation, PublishYear, Subject, ISBN, Languages, DeweyNo FROM catalogs) AS catalogs', 'catalogs.ID = collections.Catalog_ID', 'INNER')
+                ->join('(SELECT ID, Title, Author, Edition, Publisher, PublishLocation, PublishYear, Subject, ISBN, Languages, DeweyNo, Worksheet_id FROM catalogs) AS catalogs', 'catalogs.ID = collections.Catalog_ID', 'INNER')
                 ->join('(SELECT ID, Name as JenisSumber, Code FROM collectionsources) AS sources','collections.Source_id = sources.ID', 'LEFT')
-                ->join('(SELECT ID, Name as BentukFisik, Code FROM collectionmedias) AS medias','collections.Source_id = medias.ID', 'LEFT')
+                ->join('(SELECT ID, Name as BentukFisik, Code FROM collectionmedias) AS medias','collections.Media_id = medias.ID', 'LEFT')
                 ->join('(SELECT ID, Name as Kategori FROM collectioncategorys) AS categories','collections.Category_id = categories.ID', 'LEFT')
                 ->join('(SELECT ID, Name as Ketersediaan FROM collectionstatus) AS status','collections.Status_id = status.ID', 'LEFT')
                 ->join('(SELECT ID, Name as Akses FROM collectionrules) AS rules','collections.Rule_id = rules.ID', 'LEFT')
@@ -222,9 +269,9 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
         $selectedColumns = $this->request->getPost('columns');
 
         $query = $this->eksemplarModel
-            ->join('(SELECT ID, Title, Author, Edition, Publisher, PublishLocation, PublishYear, Subject, ISBN, Languages, DeweyNo FROM catalogs) AS catalogs', 'catalogs.ID = collections.Catalog_ID', 'INNER')
+            ->join('(SELECT ID, Title, Author, Edition, Publisher, PublishLocation, PublishYear, Subject, ISBN, Languages, DeweyNo, Worksheet_id FROM catalogs) AS catalogs', 'catalogs.ID = collections.Catalog_ID', 'INNER')
             ->join('(SELECT ID, Name as JenisSumber FROM collectionsources) AS sources', 'collections.Source_id = sources.ID', 'LEFT')
-            ->join('(SELECT ID, Name as BentukFisik FROM collectionmedias) AS medias', 'collections.Source_id = medias.ID', 'LEFT')
+            ->join('(SELECT ID, Name as BentukFisik FROM collectionmedias) AS medias', 'collections.Media_id = medias.ID', 'LEFT')
             ->join('(SELECT ID, Name as Kategori FROM collectioncategorys) AS categories', 'collections.Category_id = categories.ID', 'LEFT')
             ->join('(SELECT ID, Name as Ketersediaan FROM collectionstatus) AS status', 'collections.Status_id = status.ID', 'LEFT')
             ->join('(SELECT ID, Name as Akses FROM collectionrules) AS rules', 'collections.Rule_id = rules.ID', 'LEFT')
@@ -327,26 +374,34 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
     // Helper function untuk apply multiple filters
     private function applyFilters($query)
     {
-        // Filter berdasarkan tanggal dibuat
-        $startDate = $this->request->getPost('start_date');
-        $endDate = $this->request->getPost('end_date');
-        if ($startDate && $endDate) {
-            $query->where('collections.CreateDate >=', $startDate)
-                  ->where('collections.CreateDate <=', $endDate);
-        }
-
-        // Filter berdasarkan bulan dan tahun dibuat
-        $month = $this->request->getPost('month');
-        $year = $this->request->getPost('year');
-        if ($month && $year) {
-            $query->where('MONTH(collections.CreateDate)', $month)
-                  ->where('YEAR(collections.CreateDate)', $year);
-        }
-
-        // Filter berdasarkan tahun saja (jika tidak ada bulan)
-        $yearOnly = $this->request->getPost('year_only');
-        if ($yearOnly && !$month) {
-            $query->where('YEAR(collections.CreateDate)', $yearOnly);
+        switch ($this->request->getPost('filter_type') ?? 'date') {
+            case 'date':
+                $startDate = $this->request->getPost('start_date');
+                $endDate = $this->request->getPost('end_date');
+                if ($startDate) {
+                    $query->where('collections.CreateDate >=', $startDate);
+                }
+                if ($endDate) {
+                    $end = \DateTimeImmutable::createFromFormat('!Y-m-d', $endDate);
+                    if ($end && $end->format('Y-m-d') === $endDate) {
+                        $query->where('collections.CreateDate <', $end->modify('+1 day')->format('Y-m-d'));
+                    }
+                }
+                break;
+            case 'month':
+                $month = $this->request->getPost('month');
+                $year = $this->request->getPost('year');
+                if ($month && $year) {
+                    $query->where('MONTH(collections.CreateDate)', $month)
+                        ->where('YEAR(collections.CreateDate)', $year);
+                }
+                break;
+            case 'year':
+                $year = $this->request->getPost('year');
+                if ($year) {
+                    $query->where('YEAR(collections.CreateDate)', $year);
+                }
+                break;
         }
 
         // Filter berdasarkan tanggal pengadaan
@@ -397,6 +452,38 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
         $updateBy = $this->request->getPost('updateby');
         if ($updateBy) {
             $query->where('collections.UpdateBy', $updateBy);
+        }
+
+        $criteria = json_decode((string) $this->request->getPost('criteria'), true);
+        if (!is_array($criteria)) {
+            return;
+        }
+        $definitions = $this->criterionDefinitions();
+        foreach (array_slice($criteria, 0, 20) as $criterion) {
+            if (!is_array($criterion) || !is_string($criterion['field'] ?? null) || !isset($definitions[$criterion['field']])) {
+                continue;
+            }
+            if ($criterion['field'] === 'tp_date' && is_array($criterion['value'] ?? null)) {
+                $start = $criterion['value']['start'] ?? null;
+                $end = $criterion['value']['end'] ?? null;
+                if (is_string($start) && $start !== '') {
+                    $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $start);
+                    if ($date && $date->format('Y-m-d') === $start) {
+                        $query->where('collections.TanggalPengadaan >=', $start);
+                    }
+                }
+                if (is_string($end) && $end !== '') {
+                    $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $end);
+                    if ($date && $date->format('Y-m-d') === $end) {
+                        $query->where('collections.TanggalPengadaan <', $date->modify('+1 day')->format('Y-m-d'));
+                    }
+                }
+                continue;
+            }
+            $value = $criterion['value'] ?? null;
+            if (isset($definitions[$criterion['field']]['column']) && is_scalar($value) && (string) $value !== '') {
+                $query->where($definitions[$criterion['field']]['column'], $value);
+            }
         }
     }
 

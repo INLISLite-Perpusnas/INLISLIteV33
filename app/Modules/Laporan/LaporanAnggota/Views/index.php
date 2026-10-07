@@ -39,9 +39,59 @@ $request = service('request');
     gap: 15px;
     margin-bottom: 20px;
 }
+#filterForm .period-selector,
+#filterForm .period-filter {
+    grid-column: 1 / -1;
+}
+#filterForm .criteria-section {
+    grid-column: 1 / -1;
+}
+#filterForm .criteria-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+#filterForm .criteria-heading h6 {
+    margin: 0;
+}
+#filterForm .criterion-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 12px;
+    margin-top: 12px;
+}
+#filterForm .criterion-control {
+    min-width: 0;
+}
+#filterForm .criterion-control .select2-container {
+    width: 100% !important;
+}
+#filterForm .criterion-control .select2-selection--single {
+    min-height: 38px;
+    border-color: #ced4da;
+}
+#filterForm .criterion-control .select2-selection__rendered {
+    line-height: 36px;
+}
+#filterForm .criterion-control .select2-selection__arrow {
+    height: 36px;
+}
+#filterForm .criterion-dates {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
 @media (max-width: 768px) {
     .filters-container {
         grid-template-columns: 1fr;
+    }
+    #filterForm .criterion-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+    #filterForm .criterion-control:first-child {
+        grid-column: 1 / -1;
     }
 }
 </style>
@@ -64,7 +114,7 @@ $request = service('request');
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('auth') ?>"><i class="fa fa-home"></i> Home</a></li>
                         <li class="breadcrumb-item"><a href="#">Laporan</a></li>
-                        <li class="active breadcrumb-item" aria-current="page">Laporan Anggota</li>
+                        <li class="breadcrumb-item" aria-current="page">Laporan Anggota</li>
                     </ol>
                 </nav>
             </div>
@@ -91,7 +141,7 @@ $request = service('request');
                 </div>
             <?php endif ?>
 
-            <form action="<?= base_url('laporan-anggota/export') ?>" method="post">
+            <form id="filterForm" action="<?= base_url('laporan-anggota/export') ?>" method="post">
                 <?= csrf_field() ?>
                 
                 <!-- Columns Selection -->
@@ -121,8 +171,16 @@ $request = service('request');
 
                 <!-- Multiple Filters Container -->
                 <div class="filters-container">
+                    <div class="form-group period-selector">
+                        <label for="filter_type"><b>Filter Berdasarkan</b></label>
+                        <select class="form-control" name="filter_type" id="filter_type">
+                            <option value="date">Tanggal</option>
+                            <option value="month">Bulan</option>
+                            <option value="year">Tahun</option>
+                        </select>
+                    </div>
                     <!-- Filter Tanggal Registrasi -->
-                    <div class="filter-section">
+                    <div id="date_filter" class="filter-section period-filter">
                         <h6><i class="fas fa-calendar-alt"></i> Filter Berdasarkan Tanggal Registrasi</h6>
                         <div class="row">
                             <div class="col-md-6">
@@ -137,12 +195,12 @@ $request = service('request');
                     </div>
 
                     <!-- Filter Bulan & Tahun Registrasi -->
-                    <div class="filter-section">
+                    <div id="month_filter" class="filter-section period-filter" style="display: none;">
                         <h6><i class="fas fa-calendar-alt"></i> Filter Berdasarkan Bulan & Tahun Registrasi</h6>
                         <div class="row">
                             <div class="col-md-6">
                                 <label>Bulan</label>
-                                <select name="month" class="form-control">
+                                <select name="month" class="form-control" disabled>
                                     <option value="">-- Pilih Bulan --</option>
                                     <?php for ($i = 1; $i <= 12; $i++) : ?>
                                         <option value="<?= $i ?>"><?= date('F', mktime(0, 0, 0, $i, 1)) ?></option>
@@ -151,7 +209,7 @@ $request = service('request');
                             </div>
                             <div class="col-md-6">
                                 <label>Tahun</label>
-                                <select name="year" class="form-control">
+                                <select name="year" id="month_year" class="form-control" disabled>
                                     <option value="">-- Pilih Tahun --</option>
                                     <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
                                         <option value="<?= $i ?>"><?= $i ?></option>
@@ -162,10 +220,10 @@ $request = service('request');
                     </div>
 
                     <!-- Filter Tahun Registrasi Saja -->
-                    <div class="filter-section">
+                    <div id="year_filter" class="filter-section period-filter" style="display: none;">
                         <h6><i class="fas fa-calendar"></i> Filter Berdasarkan Tahun Registrasi Saja</h6>
                         <label>Tahun</label>
-                        <select name="year_only" class="form-control">
+                        <select name="year" id="year_only" class="form-control" disabled>
                             <option value="">-- Pilih Tahun --</option>
                             <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
                                 <option value="<?= $i ?>"><?= $i ?></option>
@@ -173,6 +231,18 @@ $request = service('request');
                         </select>
                     </div>
 
+                    <div class="filter-section criteria-section">
+                        <div class="criteria-heading">
+                            <h6><i class="fas fa-filter" aria-hidden="true"></i> Kriteria Anggota</h6>
+                            <button type="button" class="btn btn-success" id="addCriterion" title="Tambah kriteria" aria-label="Tambah kriteria">
+                                <i class="fas fa-plus-circle" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <p class="text-muted mb-0">Pilih kriteria dan isi nilainya. Semua kriteria yang diisi diterapkan bersama.</p>
+                        <div id="criteria_rows"></div>
+                    </div>
+
+                    <fieldset id="criteria-templates" hidden disabled>
                     <!-- Filter Tanggal Lahir -->
                     <div class="filter-section">
                         <h6><i class="fas fa-birthday-cake"></i> Filter Berdasarkan Tanggal Lahir</h6>
@@ -296,6 +366,7 @@ $request = service('request');
                             <?php endif ?>
                         </select>
                     </div>
+                    </fieldset>
                 </div>
 
                 <!-- Export Button -->
@@ -306,7 +377,7 @@ $request = service('request');
                     <button type="submit" class="btn btn-danger btn-lg px-5 ml-2" id="exportPdfBtn" onclick="setExportAction('pdf')">
                         <i class="fas fa-file-pdf"></i> Export PDF
                     </button>
-                    <button type="button" class="btn btn-secondary btn-lg px-5 ml-2" onclick="clearAllFilters()">
+                    <button type="button" class="btn btn-secondary btn-lg px-5 ml-2" id="clearMemberFilters">
                         <i class="fas fa-eraser"></i> Clear All Filters
                     </button>
                 </div>
@@ -339,6 +410,121 @@ $request = service('request');
 <?= $this->section('script'); ?>
 <script>
 $(document).ready(function() {
+    const criterionFields = {
+        birth_date: { label: 'Tanggal Lahir', names: ['birth_start_date', 'birth_end_date'] },
+        gender_id: { label: 'Jenis Kelamin', names: ['gender_id'] },
+        member_type_id: { label: 'Jenis Anggota', names: ['member_type_id'] },
+        fullname: { label: 'Nama Lengkap', names: ['fullname'] },
+        place_of_birth: { label: 'Tempat Lahir', names: ['place_of_birth'] },
+        address: { label: 'Alamat', names: ['address'] },
+        province: { label: 'Provinsi', names: ['province'] },
+        city: { label: 'Kota', names: ['city'] },
+        institution_name: { label: 'Nama Institusi', names: ['institution_name'] },
+        email: { label: 'Email', names: ['email'] },
+        createby: { label: 'Dibuat Oleh', names: ['createby'] },
+        updateby: { label: 'Diperbarui Oleh', names: ['updateby'] }
+    };
+
+    function destroyCriterionSelects(container) {
+        if ($.fn.select2) {
+            container.find('select').each(function() {
+                if ($(this).data('select2')) $(this).select2('destroy');
+            });
+        }
+    }
+
+    function addCriterionRow() {
+        if ($('#criteria_rows .criterion-row').length >= Object.keys(criterionFields).length) return;
+
+        const row = $('<div>', { class: 'criterion-row' });
+        const field = $('<select>', { class: 'form-control criterion-field', 'aria-label': 'Pilih kriteria anggota' });
+        field.append(new Option('-- Pilih Kriteria --', ''));
+        Object.entries(criterionFields).forEach(function([key, definition]) {
+            field.append(new Option(definition.label, key));
+        });
+        const fieldControl = $('<div>', { class: 'criterion-control' }).append(field);
+        const valueControl = $('<div>', { class: 'criterion-control criterion-value' });
+        const remove = $('<button>', { type: 'button', class: 'btn btn-outline-danger', title: 'Hapus kriteria', 'aria-label': 'Hapus kriteria' })
+            .append($('<i>', { class: 'fas fa-minus', 'aria-hidden': 'true' }));
+        row.append(fieldControl, valueControl, remove);
+        $('#criteria_rows').append(row);
+        if ($.fn.select2) field.select2({ width: '100%', placeholder: '-- Pilih Kriteria --' });
+
+        field.on('change', function() {
+            destroyCriterionSelects(valueControl);
+            valueControl.empty();
+            const key = field.val();
+            if (!key) {
+                updatePreview();
+                return;
+            }
+            const duplicate = $('#criteria_rows .criterion-field').not(field).filter(function() {
+                return $(this).val() === key;
+            }).length > 0;
+            if (duplicate) {
+                field.val('').trigger('change.select2');
+                alert('Kriteria ini sudah dipilih.');
+                updatePreview();
+                return;
+            }
+
+            const definition = criterionFields[key];
+            const container = definition.names.length > 1
+                ? $('<div>', { class: 'criterion-dates' }) : valueControl;
+            definition.names.forEach(function(name, index) {
+                let input = $('#criteria-templates [name="' + name + '"]').clone()
+                    .prop('disabled', false).removeAttr('id').val('');
+                const searchable = input.is('input[type="text"], input[type="email"]') && $.fn.select2;
+                if (searchable) {
+                    input = $('<select>', { name: name, class: 'form-control' })
+                        .append(new Option('-- Semua --', ''));
+                }
+                input.attr('aria-label', definition.names.length > 1
+                    ? (index === 0 ? 'Tanggal mulai lahir' : 'Tanggal akhir lahir') : definition.label);
+                if (definition.names.length > 1) {
+                    container.append($('<div>').append($('<small>', { text: index === 0 ? 'Mulai' : 'Akhir' }), input));
+                } else {
+                    container.append(input);
+                }
+                if (input.is('select') && $.fn.select2) {
+                    const selectOptions = { width: '100%', placeholder: '-- Semua --', allowClear: true };
+                    if (searchable) {
+                        selectOptions.ajax = {
+                            url: <?= json_encode(base_url('laporan-anggota')) ?>,
+                            dataType: 'json',
+                            delay: 300,
+                            data: function(params) {
+                                return { criterion_options: '1', field: name, q: params.term || '', page: params.page || 1 };
+                            },
+                            processResults: function(data) { return data; }
+                        };
+                    }
+                    input.select2(selectOptions);
+                }
+            });
+            if (container !== valueControl) valueControl.append(container);
+            updatePreview();
+        });
+
+        remove.on('click', function() {
+            destroyCriterionSelects(row);
+            row.remove();
+            if (!$('#criteria_rows .criterion-row').length) addCriterionRow();
+            updatePreview();
+        });
+    }
+
+    $('#addCriterion').on('click', addCriterionRow);
+    addCriterionRow();
+
+    function updatePeriodFilter() {
+        $('.period-filter').hide().find('input, select').prop('disabled', true);
+        $('#' + $('#filter_type').val() + '_filter').show().find('input, select').prop('disabled', false);
+    }
+
+    $('#filter_type').on('change', updatePeriodFilter);
+    updatePeriodFilter();
+
     // Function to update preview table
     function updatePreview() {
         const selectedColumns = [];
@@ -352,28 +538,9 @@ $(document).ready(function() {
             return;
         }
 
-        const formData = new FormData();
-        formData.append('columns', JSON.stringify(selectedColumns));
-
-        // Add all filter values
-        formData.append('start_date', $('input[name="start_date"]').val());
-        formData.append('end_date', $('input[name="end_date"]').val());
-        formData.append('month', $('select[name="month"]').val());
-        formData.append('year', $('select[name="year"]').val());
-        formData.append('year_only', $('select[name="year_only"]').val());
-        formData.append('birth_start_date', $('input[name="birth_start_date"]').val());
-        formData.append('birth_end_date', $('input[name="birth_end_date"]').val());
-        formData.append('gender_id', $('select[name="gender_id"]').val());
-        formData.append('member_type_id', $('select[name="member_type_id"]').val());
-        formData.append('fullname', $('input[name="fullname"]').val());
-        formData.append('place_of_birth', $('input[name="place_of_birth"]').val());
-        formData.append('address', $('input[name="address"]').val());
-        formData.append('province', $('input[name="province"]').val());
-        formData.append('city', $('input[name="city"]').val());
-        formData.append('institution_name', $('input[name="institution_name"]').val());
-        formData.append('email', $('input[name="email"]').val());
-        formData.append('createby', $('select[name="createby"]').val());
-        formData.append('updateby', $('select[name="updateby"]').val());
+        const formData = new FormData($('#filterForm')[0]);
+        formData.delete('columns[]');
+        formData.set('columns', JSON.stringify(selectedColumns));
 
         // Show loading indicator
         $('#preview-table').html('<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i><p>Memuat preview data...</p></div>');
@@ -429,6 +596,17 @@ $(document).ready(function() {
 
     // Event listeners for filter inputs
     $('input[type="date"], input[type="text"], input[type="email"], select').on('change keyup', debounce(updatePreview, 500));
+    $('#criteria_rows').on('change input keyup', '.criterion-value input, .criterion-value select', debounce(updatePreview, 500));
+
+    $('#clearMemberFilters').on('click', function() {
+        if (!confirm('Apakah Anda yakin ingin menghapus semua filter?')) return;
+        $('#filterForm input[type="date"], #filterForm input[type="text"], #filterForm input[type="email"]').val('');
+        $('#filterForm select').not('.criterion-field').prop('selectedIndex', 0);
+        destroyCriterionSelects($('#criteria_rows'));
+        $('#criteria_rows').empty();
+        addCriterionRow();
+        $('#filter_type').trigger('change');
+    });
 
     // Initial setup
     updateSelectAllStatus();
@@ -458,23 +636,5 @@ function setExportAction(type) {
     }
 }
 
-// Function to clear all filters
-function clearAllFilters() {
-    if (confirm('Apakah Anda yakin ingin menghapus semua filter?')) {
-        // Clear all input fields
-        $('input[type="date"], input[type="text"], input[type="email"]').val('');
-        $('select').prop('selectedIndex', 0);
-        
-        // Update preview
-        const selectedColumns = [];
-        $('input[name="columns[]"]:checked').each(function() {
-            selectedColumns.push($(this).val());
-        });
-        
-        if (selectedColumns.length > 0) {
-            updatePreview();
-        }
-    }
-}
 </script>
 <?= $this->endSection('script'); ?>

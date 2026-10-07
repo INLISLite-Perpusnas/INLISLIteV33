@@ -83,7 +83,7 @@ $tanggal_pengadaan = date('Y-m-d', strtotime($eksemplar->TanggalPengadaan));
 								<label>Is Drm*</label>
 								<div>
 									<div class="form-check">
-										<input type="radio" class="form-check-input" name="ISDRM" id="is_drm_1" value="1"
+							<input type="radio" class="form-check-input" name="ISDRM" id="is_drm_1" value="1" required
 											<?= isset($eksemplar->ISDRM) && $eksemplar->ISDRM == 1 ? 'checked' : '' ?> />
 										<label class="form-check-label" for="is_drm_1">Yes</label>
 									</div>
