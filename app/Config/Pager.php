@@ -21,11 +21,12 @@ class Pager extends BaseConfig
      * @var array<string, string>
      */
     public $templates = [
-        'default_full'   => 'CodeIgniter\Pager\Views\default_full',
+        'default_full' => 'CodeIgniter\Pager\Views\default_full',
         'default_simple' => 'CodeIgniter\Pager\Views\default_simple',
-        'default_head'   => 'CodeIgniter\Pager\Views\default_head',
-		'opac_pagination' => 'App\Views\layout\opac\pager',
-		'custom_pagination' => 'Layout\Views\frontend\template\arduix5\partial\pager',
+        'default_head' => 'CodeIgniter\Pager\Views\default_head',
+        'opac_pagination' => 'App\Views\layout\opac\pager',
+        'custom_pagination' => 'Layout\Views\frontend\template\arduix5\partial\pager',
+        'pusling' => 'App\Views\Pager\pusling_pager',
     ];
 
     /**

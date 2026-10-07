@@ -82,6 +82,7 @@ class Filters extends BaseConfig
                     'katalog/view_decrypted_article/*',        // viewer PDF artikel (dipakai juga oleh panel admin)
                     'katalog/get_decrypted_content_article/*', // stream konten PDF artikel yang sudah didekripsi
                     'profil',
+                    'perpustakaan-keliling*'
 
                 ]
             ],
@@ -126,7 +127,8 @@ class Filters extends BaseConfig
                     'artikel*',
                     'katalog/view_decrypted_article/*',
                     'katalog/get_decrypted_content_article/*',
-                    'profil'
+                    'profil',
+                    'perpustakaan-keliling*',
                 ]
             ],
         ],
