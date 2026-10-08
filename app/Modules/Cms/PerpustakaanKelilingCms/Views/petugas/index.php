@@ -1,7 +1,6 @@
 <?= $this->extend('App\Views\layout\main'); ?>
 
 <?= $this->section('style'); ?>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" />
 <style>
     .select2-container {
         width: 100% !important;
@@ -115,7 +114,6 @@
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
 <script>
     var tablePetugas;
 

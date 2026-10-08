@@ -1,7 +1,7 @@
 <?= $this->extend('App\Views\layout\main'); ?>
 
 <?= $this->section('style'); ?>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="<?= base_url('assets/vendors/leaflet/leaflet.css') ?>" />
 
 <style>
     #mapPicker {
@@ -129,7 +129,7 @@
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="<?= base_url('assets/vendors/leaflet/leaflet.js') ?>"></script>
 <script>
     var tableLokasi;
     var map, marker;
