@@ -629,7 +629,7 @@
                 </div>
             </div>
 
-            <?php if (!empty($roweksemplar) || !empty($roweksemplar_drm) || !empty($marc)): ?>
+            <?php if (!empty($roweksemplar) || !empty($roweksemplar_drm) || !empty($roweksemplar_public) || !empty($marc)): ?>
                 <div class="op-card mb-4">
                     <div class="op-hero-header">
                         <h5 class="mb-0 text-white"><i class="fas fa-book me-2"></i>Informasi Eksemplar & Metadata</h5>
@@ -647,7 +647,7 @@
                                     </li>
                                 <?php endif; ?>
 
-                                <?php if (!empty($roweksemplar_drm)): ?>
+                                <?php if (!empty($roweksemplar_drm) || !empty($roweksemplar_public)): ?>
                                     <li class="nav-item" role="presentation">
                                         <button class="nav-link <?= empty($roweksemplar) ? 'active' : '' ?>" id="digital-tab" data-bs-toggle="tab" data-bs-target="#digital" type="button" role="tab" aria-controls="digital" aria-selected="false">
                                             <i class="fas fa-tablet-alt me-1"></i>Buku Digital
@@ -657,7 +657,7 @@
 
                                 <?php if (!empty($marc)): ?>
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link <?= empty($roweksemplar) && empty($roweksemplar_drm) ? 'active' : '' ?>" id="marc-tab" data-bs-toggle="tab" data-bs-target="#marc" type="button" role="tab" aria-controls="marc" aria-selected="false">
+                                        <button class="nav-link <?= empty($roweksemplar) && empty($roweksemplar_drm) && empty($roweksemplar_public) ? 'active' : '' ?>" id="marc-tab" data-bs-toggle="tab" data-bs-target="#marc" type="button" role="tab" aria-controls="marc" aria-selected="false">
                                             <i class="fas fa-database me-1"></i>MARC
                                         </button>
                                     </li>
@@ -798,7 +798,7 @@
                             <?php endif; ?>
 
                             <!-- Buku Digital -->
-                            <?php if (!empty($roweksemplar_drm)): ?>
+                            <?php if (!empty($roweksemplar_drm) || !empty($roweksemplar_public)): ?>
                                 <div class="tab-pane fade <?= empty($roweksemplar) ? 'show active' : '' ?>" id="digital" role="tabpanel" aria-labelledby="digital-tab">
                                     <div class="op-table-wrap">
                                         <div class="table-responsive">
@@ -814,6 +814,23 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
+                                                    <?php if ($roweksemplar_public): ?>
+                                                        <tr>
+                                                            <td>-</td>
+                                                            <td>-</td>
+                                                            <td><span class="op-status-badge op-status-info">File Katalog</span></td>
+                                                            <td><i class="fas fa-cloud me-1 text-muted"></i>Online</td>
+                                                            <td><span class="op-status-badge op-status-success">Akses publik</span></td>
+                                                            <td>
+                                                                <a href="<?= base_url('opac/konten-digital/' . $catalog['ID']) ?>" target="_blank" rel="noopener" class="btn btn-op-primary btn-sm" style="border-radius:999px;">
+                                                                    <i class="fas fa-file-pdf me-1"></i>Baca PDF
+                                                                </a>
+                                                                <a href="<?= base_url('opac/konten-digital/' . $catalog['ID']) ?>?download=1" class="btn btn-op-soft btn-sm" style="border-radius:999px;">
+                                                                    <i class="fas fa-download me-1"></i>Unduh PDF
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    <?php endif; ?>
                                                     <?php foreach ($roweksemplar_drm as $eksemplar_drm): ?>
                                                         <tr>
                                                             <td><code><?= esc($eksemplar_drm->NomorBarcode) ?></code></td>
@@ -853,7 +870,7 @@
 
                             <!-- MARC -->
                             <?php if (!empty($marc)): ?>
-                                <div class="tab-pane fade <?= empty($roweksemplar) && empty($roweksemplar_drm) ? 'show active' : '' ?>" id="marc" role="tabpanel" aria-labelledby="marc-tab">
+                                <div class="tab-pane fade <?= empty($roweksemplar) && empty($roweksemplar_drm) && empty($roweksemplar_public) ? 'show active' : '' ?>" id="marc" role="tabpanel" aria-labelledby="marc-tab">
                                     <div class="mb-3">
                                         <small class="text-muted">
                                             <i class="fas fa-info-circle me-1"></i>
@@ -1046,7 +1063,7 @@
 </div>
 
 <!-- PDF Modal for Digital Books -->
-<?php if (!empty($roweksemplar_drm)): ?>
+<?php if ($drm_enabled && !empty($roweksemplar_drm)): ?>
     <div class="modal fade" id="pdfModal<?= $catalog['ID'] ?>" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content" style="border-radius: var(--op-radius-md); overflow:hidden; border:none;">
@@ -1072,7 +1089,7 @@
 <?php endif; ?>
 
 <!-- Member Login Modal for Digital Books -->
-<?php if (!empty($roweksemplar_drm) && !logged_in()): ?>
+<?php if ($drm_enabled && !empty($roweksemplar_drm) && !logged_in()): ?>
     <div class="modal fade" id="memberLoginModal" tabindex="-1" aria-labelledby="memberLoginModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content" style="border-radius: var(--op-radius-md); overflow:hidden; border:none;">

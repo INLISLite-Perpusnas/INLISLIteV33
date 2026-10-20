@@ -2,137 +2,96 @@
 
 namespace UsulanKoleksi\Controllers\Api;
 
-use CodeIgniter\RESTful\ResourceController;
+use App\Libraries\DataTable;
 use CodeIgniter\API\ResponseTrait;
-use App\Models\UsulanKoleksiModel;
-use CodeIgniter\Files\File;
 
 class UsulanKoleksi extends \Base\Controllers\BaseResourceController
 {
-	use ResponseTrait;
-	protected $usulankoleksiModel;
-	protected $validation;
-	protected $session;
-	protected $modulePath;
-	protected $uploadPath;
+    use ResponseTrait;
 
-	function __construct()
-	{
-		$this->usulankoleksiModel = new UsulanKoleksi\Models\UsulanKoleksiModel();
-		$this->validation = \Config\Services::validation();
-		$this->session = session();
-		$this->modulePath = ROOTPATH . 'public/uploads/usulankoleksi/';
-		$this->uploadPath = WRITEPATH . 'uploads/';
+    public function datatable()
+    {
+        if (!is_member('admin')) {
+            return $this->response->setStatusCode(403)->setJSON(['message' => 'Akses ditolak.']);
+        }
 
-		if (!file_exists($this->modulePath)) {
-			mkdir($this->modulePath);
-		}
-	}
+        $builder = db_connect('data')->table('requestcatalog a')
+            ->select('a.ID, a.Title, a.Type, a.Author, a.Subject, a.Publisher, a.PublishLocation, a.PublishYear, a.Comments, a.DateRequest, a.CreateDate, a.Status');
 
-	public function index()
-	{
-		$data = $this->usulankoleksiModel->findAll();
-		return $this->respond($data, 200);
-	}
+        return DataTable::of($builder)
+            ->addNumbering('no')
+            ->edit('Title', static function ($row) {
+                return '<strong>' . esc($row->Title) . '</strong><br><small class="text-muted">' . esc($row->Type ?: '-') . '</small>';
+            })
+            ->edit('Author', static function ($row) {
+                return esc($row->Author ?: '-') . '<br><small class="text-muted">' . esc($row->Subject ?: '-') . '</small>';
+            })
+            ->edit('Publisher', static function ($row) {
+                $location = implode(', ', array_filter([$row->PublishLocation, $row->PublishYear]));
+                return esc($row->Publisher ?: '-') . '<br><small class="text-muted">' . esc($location ?: '-') . '</small>';
+            })
+            ->edit('Comments', static function ($row) {
+                return nl2br(esc($row->Comments ?: '-'));
+            })
+            ->edit('DateRequest', static function ($row) {
+                $date = $row->DateRequest ?: $row->CreateDate;
+                return $date ? esc(date('d/m/Y H:i', strtotime($date))) : '-';
+            })
+            ->edit('Status', static function ($row) {
+                $current = (string) ($row->Status ?? '');
+                $options = ['Usulan', 'Diproses', 'Diterima', 'Ditolak'];
+                $html = '<select class="form-control form-control-sm status-usulan" data-id="' . (int) $row->ID
+                    . '" data-previous="' . esc($current, 'attr') . '" aria-label="Status usulan ' . (int) $row->ID . '">';
+                if (!in_array($current, $options, true)) {
+                    $html .= '<option value="' . esc($current, 'attr') . '" selected disabled>'
+                        . esc($current ?: 'Pilih status') . '</option>';
+                }
+                foreach ($options as $option) {
+                    $html .= '<option value="' . $option . '"' . ($current === $option ? ' selected' : '') . '>'
+                        . $option . '</option>';
+                }
 
-	public function detail($id = null)
-	{
-		$data = $this->usulankoleksiModel->find($id);
-		if ($data) {
-			return $this->respond($data);
-		} else {
-			return $this->failNotFound('No Data Found with id ' . $id);
-		}
-	}
+                return $html . '</select>';
+            })
+            ->toJson();
+    }
 
-	public function create()
-	{
-		$this->validation->setRule('name', 'Nama', 'required');
-		if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
-			$slug = url_title($this->request->getPost('name'), '-', TRUE);
-			$save_data = array(
-				'name' => $this->request->getPost('name'),
-				'slug' => $slug,
-				'sort' => $this->request->getPost('sort'),
-				'description' => $this->request->getPost('description'),
-			);
+    public function updateStatus(int $id)
+    {
+        if (!is_member('admin')) {
+            return $this->response->setStatusCode(403)->setJSON(['message' => 'Akses ditolak.']);
+        }
 
-			$newUsulanKoleksiId = $this->usulankoleksiModel->insert($save_data);
-			if ($newUsulanKoleksiId) {
-				$this->session->setFlashdata('toastr_msg', lang('UsulanKoleksi.info.successfully_saved'));
-				$this->session->setFlashdata('toastr_type', 'success');
-				$response = [
-					'status'   => 201,
-					'error'    => null,
-					'messages' => [
-						'success' => lang('UsulanKoleksi.info.successfully_saved')
-					]
-				];
-				return $this->respondCreated($response);
-			} else {
-				$response = [
-					'status'   => 400,
-					'error'    => null,
-					'messages' => [
-						'error' =>  lang('UsulanKoleksi.info.failed_saved')
-					]
-				];
-				return $this->fail($response);
-			}
-		} else {
-			$message = $this->validation->listErrors();
-			return $this->fail($message, 400);
-		}
-	}
+        $status = $this->request->getPost('status');
+        if (!in_array($status, ['Usulan', 'Diproses', 'Diterima', 'Ditolak'], true)) {
+            return $this->response->setStatusCode(422)->setJSON([
+                'message' => 'Status tidak valid.',
+                'csrfHash' => csrf_hash(),
+            ]);
+        }
 
-	public function edit($id = null)
-	{
-		$this->validation->setRule('name', 'Nama', 'required');
-		if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
-			$slug = url_title($this->request->getPost('name'), '-', TRUE);
-			$update_data = array(
-				'name' => $this->request->getPost('name'),
-				'slug' => $slug,
-				'sort' => $this->request->getPost('sort'),
-				'description' => $this->request->getPost('description'),
-			);
+        $model = new \UsulanKoleksi\Models\UsulanKoleksiModel();
+        if (!$model->find($id)) {
+            return $this->response->setStatusCode(404)->setJSON([
+                'message' => 'Usulan koleksi tidak ditemukan.',
+                'csrfHash' => csrf_hash(),
+            ]);
+        }
 
-			$usulankoleksiUpdate = $this->usulankoleksiModel->update($id, $update_data);
-			if ($usulankoleksiUpdate) {
-				$this->session->setFlashdata('toastr_msg', lang('UsulanKoleksi.info.successfully_updated'));
-				$this->session->setFlashdata('toastr_type', 'success');
-				$response = [
-					'status'   => 201,
-					'error'    => null,
-					'messages' => [
-						'success' => lang('UsulanKoleksi.info.successfully_updated')
-					]
-				];
-				return $this->respond($response);
-			} else {
-				return $this->fail('<div class="alert alert-danger fade show" role="alert">' . lang('UsulanKoleksi.info.failed_updated') . '</div>', 400);
-			}
-		} else {
-			$message = $this->validation->listErrors();
-			return $this->fail($message, 400);
-		}
-	}
+        if (!$model->update($id, [
+            'Status' => $status,
+            'UpdateDate' => date('Y-m-d H:i:s'),
+            'UpdateBy' => login_id(),
+        ])) {
+            return $this->response->setStatusCode(500)->setJSON([
+                'message' => 'Gagal memperbarui status.',
+                'csrfHash' => csrf_hash(),
+            ]);
+        }
 
-	public function delete($id = null)
-	{
-		$data = $this->usulankoleksiModel->find($id);
-		if ($data) {
-			$this->usulankoleksiModel->delete($id);
-			$response = [
-				'status'   => 200,
-				'error'    => null,
-				'messages' => [
-					'success' => lang('UsulanKoleksi.info.successfully_deleted')
-				]
-			];
-			return $this->respondDeleted($response);
-		} else {
-			return $this->failNotFound(lang('UsulanKoleksi.info.not_found') . ' ID:' . $id);
-		}
-	}
+        return $this->response->setJSON([
+            'message' => 'Status usulan berhasil diperbarui.',
+            'csrfHash' => csrf_hash(),
+        ]);
+    }
 }

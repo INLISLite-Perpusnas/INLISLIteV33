@@ -27,22 +27,21 @@ class Parameter extends \Base\Controllers\BaseController
     public function detail(int $id)
     {
         $this->data['title'] = 'Detail Parameter';
-        $param = $this->parameterModel->find($id)->first();
+        $param = $this->parameterModel->find($id);
         $this->data['param'] = $param;
         $this->data['auth'] = $this->auth;
-        echo view('Parameter\Views\view', $this->data);
+        return redirect()->to('/parameter');
     }
 
     public function create()
     {
         $this->data['title'] = 'Create Group';
-        $this->validation->setRule('name', 'Nama Parameter', 'required');
-        $this->validation->setRule('value', 'Nilai Parameter', 'trim');
+        $this->validation->setRule('Name', 'Nama Parameter', 'required|max_length[50]');
+        $this->validation->setRule('Value', 'Nilai Parameter', 'trim');
         if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
             $save_data = array(
-                'name' => $this->request->getPost('name'),
-                'value' => $this->request->getPost('value'),
-                'description' => $this->request->getPost('description'),
+                'Name' => $this->request->getPost('Name'),
+                'Value' => $this->request->getPost('Value'),
             );
 
             $newParamId = $this->parameterModel->insert($save_data);
@@ -57,7 +56,7 @@ class Parameter extends \Base\Controllers\BaseController
         } else {
             $message = $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message');
             $this->data['message'] = $message;
-            echo view('Parameter\Views\add', $this->data);
+            return redirect()->to('/parameter');
         }
     }
 
@@ -71,14 +70,13 @@ class Parameter extends \Base\Controllers\BaseController
 
         $this->data['title'] = 'Edit Parameter';
         $param = $this->parameterModel->find($id);
-        $this->validation->setRule('name', 'Nama Parameter', 'required');
-        $this->validation->setRule('value', 'Nilai Parameter', 'trim');
+        $this->validation->setRule('Name', 'Nama Parameter', 'required|max_length[50]');
+        $this->validation->setRule('Value', 'Nilai Parameter', 'trim');
         if ($this->request->getPost()) {
             if ($this->validation->withRequest($this->request)->run()) {
                 $update_data = array(
-                    'name' => $this->request->getPost('name'),
-                    'value' => $this->request->getPost('value'),
-                    'description' => $this->request->getPost('description'),
+                    'Name' => $this->request->getPost('Name'),
+                    'Value' => $this->request->getPost('Value'),
                 );
 
                 $paramUpdate = $this->parameterModel->update($id, $update_data);
@@ -96,7 +94,7 @@ class Parameter extends \Base\Controllers\BaseController
         }
 
         $this->data['param'] = $param;
-        echo view('Parameter\Views\update', $this->data);
+        return redirect()->to('/parameter');
     }
 
     public function delete(int $id = 0)
@@ -134,8 +132,8 @@ class Parameter extends \Base\Controllers\BaseController
         $crud->setCsrfTokenName(csrf_token());
         $crud->setCsrfTokenValue(csrf_hash());
 
-        $crud->setTable('c_parameters');
-        $crud->setSubject('Catalog', 'Catalogs');
+        $crud->setTable('settingparameters');
+        $crud->setSubject('Parameter', 'Parameters');
 
         $output = $crud->render();
 

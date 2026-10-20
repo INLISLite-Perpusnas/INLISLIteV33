@@ -162,11 +162,7 @@ $date_to = $request->getGet('date_to') ?? '';
                             </div>
                             <div class="col-md-6">
                                 <label for="month_year">Tahun</label>
-                                <select name="year" id="month_year" class="form-control" disabled>
-                                    <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
-                                        <option value="<?= $i ?>"><?= $i ?></option>
-                                    <?php endfor ?>
-                                </select>
+                                <input type="number" name="year" id="month_year" class="form-control" disabled min="1000" max="9999" step="1" placeholder="Contoh: 2015" value="<?= date('Y') ?>" required>
                             </div>
                         </div>
                     </div>
@@ -175,11 +171,7 @@ $date_to = $request->getGet('date_to') ?? '';
                     <div id="year_filter" class="filter-section period-filter" style="display: none;">
                         <h6 class="mb-3"><i class="fas fa-calendar-alt" aria-hidden="true"></i> Filter Berdasarkan Tahun</h6>
                         <label for="year_only">Tahun</label>
-                        <select name="year" id="year_only" class="form-control" disabled>
-                            <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
-                                <option value="<?= $i ?>"><?= $i ?></option>
-                            <?php endfor ?>
-                        </select>
+                        <input type="number" name="year" id="year_only" class="form-control" disabled min="1000" max="9999" step="1" placeholder="Contoh: 2015" value="<?= date('Y') ?>" required>
                     </div>
 
                     <!-- Filter Jenis Anggota -->
@@ -245,8 +237,14 @@ $date_to = $request->getGet('date_to') ?? '';
                     </div>
                     
                 </div>
-
-
+              <div class="form-group mx-auto mb-3" style="max-width: 320px;">
+                  <label for="export_mode"><strong>Jenis Laporan</strong></label>
+                  <select class="form-control" name="export_mode" id="export_mode">
+                      <option value="detail">Detail Data</option>
+                      <option value="frekuensi">Frekuensi (Jumlah Data)</option>
+                  </select>
+                    <small class="text-muted">Frekuensi dikelompokkan berdasarkan kolom yang dicentang.</small>
+              </div>
               <div class="text-center mb-4">
                     <button type="submit" class="btn btn-success btn-lg px-5" id="exportBtn" onclick="setExportAction('excel')">
                         <i class="fas fa-file-excel"></i> Export Excel
@@ -402,5 +400,6 @@ function clearAllFilters() {
         $('#filter_type').trigger('change');
     }
 }
+
 </script>
 <?= $this->endSection('script'); ?>

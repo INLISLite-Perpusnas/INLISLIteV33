@@ -52,7 +52,7 @@ class Dashboard extends \Base\Controllers\BaseController
     }else{
         $page = 'index';
 
-        $useCache = env('is_dashboard_cache') == 1;
+        $useCache = setting_enabled('is_dashboard_cache');
         $cacheKey = 'dashboard_stats_data';
         $cacheTTL = 3600; // 1 Jam
 

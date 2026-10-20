@@ -10,7 +10,7 @@ class GuestModel extends \App\Models\BaseModel
     protected $allowedFields    = [];
   
 
-    public function getPengunjung($startDate = null, $endDate = null, $limit = null, $offset = 0)
+    public function getPengunjung($startDate = null, $endDate = null, $limit = null, $offset = 0, $ordered = true)
     {
        $subquery = "
               SELECT 'Anggota' AS ket,
@@ -109,7 +109,9 @@ class GuestModel extends \App\Models\BaseModel
        }
 
        // order & limit
-       $builder->orderBy('tgl_kunjungan', 'DESC');
+       if ($ordered) {
+              $builder->orderBy('tgl_kunjungan', 'DESC');
+       }
        if ($limit !== null) {
               $builder->limit($limit, $offset);
        }

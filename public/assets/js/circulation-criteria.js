@@ -80,7 +80,7 @@
                 $('#' + group + '_criteria_rows .criterion-row').each(function () {
                     const field = $(this).find('.criterion-field').val();
                     const value = $(this).find('.criterion-value').val();
-                    if (field && value !== null && value !== '') criteria.push({ field: field, value: value });
+                    if (field) criteria.push({ field: field, value: value || '' });
                 });
                 filters[group + '_criteria'] = JSON.stringify(criteria);
             });

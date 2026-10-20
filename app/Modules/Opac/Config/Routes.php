@@ -8,9 +8,11 @@ $routes->group('opac', ['namespace' => 'Opac\Controllers'], function ($subroutes
 	$subroutes->add('statistics', 'Opac::statistics');
 	$subroutes->add('statistics_anggota', 'Opac::statistics_anggota');
 	$subroutes->add('statistics_kunjungan', 'Opac::statistics_kunjungan');
+	$subroutes->add('statistics_sirkulasi', 'Opac::statistics_sirkulasi');
 	$subroutes->add('browse', 'Opac::browse');
 	$subroutes->add('detail/(:any)', 'Opac::detail/$1');
 	$subroutes->add('baca-digital/(:num)', 'Opac::bacaDigital/$1');
+	$subroutes->get('konten-digital/(:num)', 'Opac::kontenDigitalPublik/$1');
 	$subroutes->post('member-login', 'Opac::memberLogin');
 	$subroutes->add('visitor_export', 'Opac::visitor_export');
 	$subroutes->add('member', 'Opac::member');

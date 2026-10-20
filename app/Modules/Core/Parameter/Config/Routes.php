@@ -15,7 +15,6 @@ $routes->group('parameter', ['namespace' => 'Parameter\Controllers'], function (
 
 $routes->group('api/parameter', ['namespace' => 'Parameter\Controllers\Api'], function ($subroutes) {
 	$subroutes->add('datatable', 'Parameter::datatable');
-	$subroutes->add('datatable/(:any)', 'Parameter::datatable/$1');
 	$subroutes->add('detail/(:any)', 'Parameter::detail/$1');
 	$subroutes->add('show/(:any)', 'Parameter::show/$1');
 	$subroutes->add('edit/(:any)', 'Parameter::edit/$1');

@@ -196,6 +196,31 @@ if (!function_exists('get_parameter')) {
     }
 }
 
+if (!function_exists('setting_enabled')) {
+    function setting_enabled(string $name): bool
+    {
+        static $values = [];
+
+        if (!array_key_exists($name, $values)) {
+            $row = \Config\Database::connect('data')->table('settingparameters')
+                ->select('Value')
+                ->where('Name', $name)
+                ->get()
+                ->getRow();
+            if (!$row && $name === 'is_keanggotaan_online') {
+                $row = \Config\Database::connect('data')->table('settingparameters')
+                    ->select('Value')
+                    ->where('Name', 'Is_keanggotaan_online')
+                    ->get()
+                    ->getRow();
+            }
+            $values[$name] = (string) ($row->Value ?? '');
+        }
+
+        return $values[$name] === '1';
+    }
+}
+
 if (!function_exists('add_parameter')) {
     function add_parameter($param = null, $value = null)
     {

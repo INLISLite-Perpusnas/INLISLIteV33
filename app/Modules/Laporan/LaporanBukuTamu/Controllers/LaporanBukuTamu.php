@@ -88,10 +88,33 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
         return view('LaporanBukuTamu\Views\index', $data);
     }
 
+    private function frequencyRows(array $selected): array
+    {
+        $query = $this->guestModel->getPengunjung(
+            $this->request->getPost('start_date'),
+            $this->request->getPost('end_date'),
+            null, 0, false
+        );
+        $filterType = $this->request->getPost('filter_type');
+        $month = $this->request->getPost('month');
+        $year = $this->request->getPost('year');
+        if ($filterType === 'month' && $month && $year) {
+            $query->where('MONTH(periode)', $month)->where('YEAR(periode)', $year);
+        } elseif ($filterType === 'year' && $year) {
+            $query->where('YEAR(periode)', $year);
+        }
+        if ($gender = $this->request->getPost('gender_id')) $query->like('gender', $gender);
+        if ($type = $this->request->getPost('visitor_type')) $query->where('ket', $type);
+        if ($location = $this->request->getPost('location')) $query->where('Library_id', $location);
+        if ($room = $this->request->getPost('room')) $query->where('lok_ruang', $room);
+        if ($destination = $this->request->getPost('destination')) $query->where('tujuan', $destination);
+
+        return \App\Libraries\LaporanFrekuensiExport::groupedRows($query, $selected, 'COUNT(*)');
+    }
     public function export()
     {
         // Validasi request
-        if (!$this->validate([
+        if ($this->request->getPost('export_mode') !== 'frekuensi' && !$this->validate([
             'columns' => 'required'
         ])) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
@@ -112,7 +135,7 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
         $kop               = $this->request->getPost('kop');
 
         // Ambil builder
-        $query = $this->guestModel->getPengunjung($startDate, $endDate);
+        $query = $this->guestModel->getPengunjung($startDate, $endDate, null, 0, $this->request->getPost('export_mode') !== 'frekuensi');
 
         // Filter tambahan
         switch ($filterType) {
@@ -134,6 +157,15 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
         if ($locationlibrary) $query->where('Library_id', $locationlibrary);
         if ($room)          $query->where('lok_ruang', $room);
         if ($destination)   $query->where('tujuan', $destination);
+
+        if ($this->request->getPost('export_mode') === 'frekuensi') {
+            $selected = \App\Libraries\LaporanFrekuensiExport::selectedGroups('BukuTamu', $this->request->getPost('columns'));
+            if (!$selected) {
+                return redirect()->back()->with('error', 'Pilih minimal satu kategori frekuensi.');
+            }
+            $rows = $this->frequencyRows($selected);
+            \App\Libraries\LaporanFrekuensiExport::download('Laporan Buku Tamu', $selected, $rows, 'excel');
+        }
 
         $members = $query->get()->getResult();
 
@@ -282,7 +314,7 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
         ini_set('memory_limit', '512M');
         ini_set('max_execution_time', 300);
 
-        if (!$this->validate(['columns' => 'required'])) {
+        if ($this->request->getPost('export_mode') !== 'frekuensi' && !$this->validate(['columns' => 'required'])) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
@@ -299,7 +331,7 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
         $destination      = $this->request->getPost('destination');
         $kop              = $this->request->getPost('kop');
 
-        $query = $this->guestModel->getPengunjung($startDate, $endDate);
+        $query = $this->guestModel->getPengunjung($startDate, $endDate, null, 0, $this->request->getPost('export_mode') !== 'frekuensi');
 
         switch ($filterType) {
             case 'month':
@@ -319,6 +351,17 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
         if ($locationlibrary)  $query->where('Library_id', $locationlibrary);
         if ($room)             $query->where('lok_ruang', $room);
         if ($destination)      $query->where('tujuan', $destination);
+
+        if ($this->request->getPost('export_mode') === 'frekuensi') {
+            $selected = \App\Libraries\LaporanFrekuensiExport::selectedGroups('BukuTamu', $this->request->getPost('columns'));
+            if (!$selected) {
+                return redirect()->back()->with('error', 'Pilih minimal satu kategori frekuensi.');
+            }
+
+
+            $rows = $this->frequencyRows($selected);
+            \App\Libraries\LaporanFrekuensiExport::download('Laporan Buku Tamu', $selected, $rows, 'pdf');
+        }
 
         $totalRecords = (clone $query)->countAllResults(false);
         $maxRecords = 5000;
@@ -441,6 +484,11 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
         
         if (empty($columns)) {
             return '<div class="alert alert-warning">Pilih minimal satu kolom untuk preview data</div>';
+        }
+        if ($this->request->getPost('export_mode') === 'frekuensi') {
+            $selected = \App\Libraries\LaporanFrekuensiExport::selectedGroups('BukuTamu', $columns);
+            $rows = $this->frequencyRows($selected);
+            return \App\Libraries\LaporanFrekuensiExport::previewHtml($selected, $rows);
         }
 
         // ambil builder

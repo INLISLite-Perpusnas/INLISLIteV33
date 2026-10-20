@@ -7,6 +7,8 @@ $routes->group('home', ['namespace' => 'Home\Controllers'], function ($subroutes
 	$subroutes->add('', 'Home::index');
 	$subroutes->add('index', 'Home::index');
 	$subroutes->add('pendaftaran-online', 'Home::pendaftaran_online');
+	$subroutes->get('usulan-koleksi', 'Home::usulanKoleksi');
+	$subroutes->post('usulan-koleksi', 'Home::simpanUsulanKoleksi', ['filter' => 'csrf']);
 
 });
 

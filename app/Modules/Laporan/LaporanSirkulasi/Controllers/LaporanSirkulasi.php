@@ -199,10 +199,16 @@ class LaporanSirkulasi extends \Base\Controllers\BaseController
     /**
      * Query dasar yang dipakai bersama oleh preview, Excel, dan PDF.
      */
-    private function buildBaseLoanQuery()
+    private function buildBaseLoanQuery(bool $detail = true)
     {
-        return $this->db->table('collectionloanitems cli')
-            ->select("
+        $builder = $this->db->table('collectionloanitems cli')
+            ->join('members m', 'm.ID = cli.member_id', 'left')
+            ->join('collections col', 'col.ID = cli.Collection_id', 'left')
+            ->join('catalogs cat', 'cat.ID = col.Catalog_id', 'left')
+            ->join('users u_loan', 'u_loan.id = cli.CreateBy', 'left')
+            ->join('users u_return', 'u_return.id = cli.UpdateBy', 'left');
+        if ($detail) {
+            $builder->select("
                 cli.ID,
                 m.Fullname AS nama_anggota,
                 m.MemberNo AS MemberNo,
@@ -222,12 +228,9 @@ class LaporanSirkulasi extends \Base\Controllers\BaseController
                     ELSE 'Tidak Diketahui'
                 END AS jenis_kelamin,
                 cli.LoanStatus AS status_peminjaman
-            ", false)
-            ->join('members m', 'm.ID = cli.member_id', 'left')
-            ->join('collections col', 'col.ID = cli.Collection_id', 'left')
-            ->join('catalogs cat', 'cat.ID = col.Catalog_id', 'left')
-            ->join('users u_loan', 'u_loan.id = cli.CreateBy', 'left')
-            ->join('users u_return', 'u_return.id = cli.UpdateBy', 'left');
+            ", false);
+        }
+        return $builder;
     }
 
    
@@ -280,17 +283,75 @@ class LaporanSirkulasi extends \Base\Controllers\BaseController
         return ['peringkat', 'nama_anggota', 'MemberNo', 'jenis_kelamin', 'jumlah_peminjaman'];
     }
  
+    private function frequencyGroups($columns): array
+    {
+        $fields = [];
+        foreach (['member', 'catalog'] as $group) {
+            $criteria = json_decode((string) $this->request->getPost($group . '_criteria'), true);
+            if (is_array($criteria)) {
+                foreach ($criteria as $criterion) {
+                    $fields[] = $group . '.' . ($criterion['field'] ?? '');
+                }
+            }
+        }
+        $selected = \App\Libraries\LaporanFrekuensiExport::criteriaGroups('Sirkulasi', [], $fields, [
+            'member.number' => 'MemberNo',
+            'member.name' => 'nama_anggota',
+            'member.sex' => 'jenis_kelamin',
+            'catalog.title' => 'judul_buku',
+            'catalog.publisher' => 'penerbit',
+            'catalog.subject' => 'subjek',
+            'catalog.dewey' => 'kelas_ddc',
+        ]);
+        $extra = [
+            'catalog.author' => ['Pengarang', 'cat.Author'],
+            'catalog.isbn' => ['ISBN', 'cat.ISBN'],
+            'catalog.year' => ['Tahun Terbit', 'cat.PublishYear'],
+            'member.type' => ['Jenis Anggota', '(SELECT jenisanggota FROM jenis_anggota WHERE id = m.JenisAnggota_id)'],
+            'member.job' => ['Pekerjaan', '(SELECT Pekerjaan FROM master_pekerjaan WHERE id = m.Job_id)'],
+            'member.education' => ['Pendidikan', '(SELECT Nama FROM master_pendidikan WHERE id = m.EducationLevel_id)'],
+            'member.age' => ['Kelompok Umur', "CASE WHEN m.DateOfBirth IS NULL OR cli.LoanDate IS NULL OR TIMESTAMPDIFF(YEAR, m.DateOfBirth, cli.LoanDate) < 0 THEN 'Tidak Diketahui' WHEN TIMESTAMPDIFF(YEAR, m.DateOfBirth, cli.LoanDate) <= 5 THEN '0-5' WHEN TIMESTAMPDIFF(YEAR, m.DateOfBirth, cli.LoanDate) <= 11 THEN '6-11' WHEN TIMESTAMPDIFF(YEAR, m.DateOfBirth, cli.LoanDate) <= 17 THEN '12-17' WHEN TIMESTAMPDIFF(YEAR, m.DateOfBirth, cli.LoanDate) <= 25 THEN '18-25' WHEN TIMESTAMPDIFF(YEAR, m.DateOfBirth, cli.LoanDate) <= 35 THEN '26-35' WHEN TIMESTAMPDIFF(YEAR, m.DateOfBirth, cli.LoanDate) <= 45 THEN '36-45' WHEN TIMESTAMPDIFF(YEAR, m.DateOfBirth, cli.LoanDate) <= 55 THEN '46-55' WHEN TIMESTAMPDIFF(YEAR, m.DateOfBirth, cli.LoanDate) <= 65 THEN '56-65' ELSE '66+' END"],
+        ];
+        foreach ($fields as $field) {
+            if (isset($extra[$field])) {
+                $selected[$field] = $extra[$field];
+            }
+        }
+        return $selected ?: \App\Libraries\LaporanFrekuensiExport::selectedGroups('Sirkulasi', $columns);
+    }
+
+    private function frequencyRows(array $selected): array
+    {
+        $builder = $this->buildBaseLoanQuery(false);
+        $this->applyReportFilters($builder);
+        $topBorrowers = $this->getTopBorrowers();
+        if ($topBorrowers !== null) {
+            $ids = array_column($topBorrowers, 'member_id');
+            $builder->whereIn('m.ID', $ids ?: [0]);
+        }
+        return \App\Libraries\LaporanFrekuensiExport::groupedRows($builder, $selected, 'COUNT(DISTINCT cli.ID)');
+    }
     public function preview()
     {
         $columns = $this->request->getPost('columns') ?? [];
  
-        if (empty($columns)) {
+        if (!$columns && ($this->request->getPost('export_mode') !== 'frekuensi' || !$this->frequencyGroups($columns))) {
             return $this->response->setJSON([
                 'status' => 'error',
                 'message' => 'Pilih minimal satu kolom untuk ditampilkan'
             ]);
         }
  
+        if ($this->request->getPost('export_mode') === 'frekuensi') {
+            $selected = $this->frequencyGroups($columns);
+            $rows = $this->frequencyRows($selected);
+            return $this->response->setJSON([
+                'status' => 'success',
+                'html' => \App\Libraries\LaporanFrekuensiExport::previewHtml($selected, $rows),
+                'columns' => array_keys($selected),
+                'total' => count($rows),
+            ]);
+        }
         $topBorrowers = $this->getTopBorrowers();
  
         if ($topBorrowers !== null) {
@@ -349,9 +410,18 @@ class LaporanSirkulasi extends \Base\Controllers\BaseController
  
     public function export()
     {
+        if ($this->request->getPost('export_mode') === 'frekuensi') {
+            $selected = $this->frequencyGroups($this->request->getPost('columns'));
+            if (!$selected) {
+                return redirect()->back()->with('error', 'Pilih minimal satu kategori frekuensi.');
+            }
+            $rows = $this->frequencyRows($selected);
+            \App\Libraries\LaporanFrekuensiExport::download('Laporan Sirkulasi', $selected, $rows, 'excel');
+        }
+
         $columns = $this->request->getPost('columns') ?? [];
  
-        if (empty($columns)) {
+        if (!$columns && ($this->request->getPost('export_mode') !== 'frekuensi' || !$this->frequencyGroups($columns))) {
             return redirect()->back()->with('error', 'Pilih minimal satu kolom untuk diexport');
         }
  
@@ -436,8 +506,17 @@ class LaporanSirkulasi extends \Base\Controllers\BaseController
         ini_set('memory_limit', '512M');
         ini_set('max_execution_time', 300);
  
+        if ($this->request->getPost('export_mode') === 'frekuensi') {
+            $selected = $this->frequencyGroups($this->request->getPost('columns'));
+            if (!$selected) {
+                return redirect()->back()->with('error', 'Pilih minimal satu kategori frekuensi.');
+            }
+            $rows = $this->frequencyRows($selected);
+            \App\Libraries\LaporanFrekuensiExport::download('Laporan Sirkulasi', $selected, $rows, 'pdf');
+        }
+
         $columns = $this->request->getPost('columns') ?? [];
-        if (empty($columns)) {
+        if (!$columns && ($this->request->getPost('export_mode') !== 'frekuensi' || !$this->frequencyGroups($columns))) {
             return redirect()->back()->with('error', 'Pilih minimal satu kolom untuk diexport');
         }
  

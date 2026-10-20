@@ -38,7 +38,15 @@
     .vk-filter { background: #fff; border: 1px solid var(--vk-border); border-radius: var(--vk-radius); padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
     .vk-filter-label { color: var(--vk-ink); font-weight: 700; }
     .vk-filter select { min-width: 220px; border: 1px solid var(--vk-border); border-radius: 10px; padding: .65rem 2.5rem .65rem .85rem; color: var(--vk-ink); background-color: #fff; }
-    @media (max-width: 576px) { .vk-filter { align-items: stretch; flex-direction: column; } .vk-filter select { width: 100%; } }
+    .vk-filter-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .75rem; }
+    .vk-custom-range { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; color: var(--vk-muted); }
+    .vk-custom-range[hidden] { display: none; }
+    .vk-custom-range input { border: 1px solid var(--vk-border); border-radius: 10px; padding: .55rem .75rem; color: var(--vk-ink); }
+    .vk-custom-range .btn { border-radius: 10px; }
+    .vk-chart-wrap { position: relative; height: 320px; }
+    .vk-export { display: flex; gap: .5rem; }
+    .vk-export .btn { border-radius: 10px; }
+    @media (max-width: 576px) { .vk-filter { align-items: stretch; flex-direction: column; } .vk-filter-controls, .vk-custom-range, .vk-export { flex-direction: column; align-items: stretch; } .vk-filter select, .vk-custom-range input { width: 100%; } }
     .vk-heatmap-wrap { overflow-x: auto; }
     .vk-heatmap { min-width: 980px; border-collapse: separate; border-spacing: 4px; width: 100%; }
     .vk-heatmap th { color: var(--vk-muted); font-size: .78rem; font-weight: 700; text-align: center; padding: .35rem .25rem; white-space: nowrap; }
@@ -57,11 +65,23 @@
 
     <form class="vk-filter" method="get" action="<?= base_url('opac/statistics_kunjungan') ?>">
         <label class="vk-filter-label mb-0" for="visit-period"><i class="fas fa-filter me-2 text-primary"></i>Periode Statistik</label>
-        <select id="visit-period" name="period" onchange="this.form.submit()" aria-label="Pilih periode statistik kunjungan">
-            <?php foreach ($periods as $periodKey => $period): ?>
-                <option value="<?= esc($periodKey) ?>" <?= $selected_period === $periodKey ? 'selected' : '' ?>><?= esc($period['label']) ?></option>
-            <?php endforeach; ?>
-        </select>
+        <div class="vk-filter-controls">
+            <select id="visit-period" name="period" aria-label="Pilih periode statistik kunjungan">
+                <?php foreach ($periods as $periodKey => $period): ?>
+                    <option value="<?= esc($periodKey) ?>" <?= $selected_period === (string) $periodKey ? 'selected' : '' ?>><?= esc($period['label']) ?></option>
+                <?php endforeach; ?>
+            </select>
+            <div id="visit-custom-range" class="vk-custom-range" <?= $selected_period === 'custom' ? '' : 'hidden' ?>>
+                <input type="date" name="start_date" id="visit-start" value="<?= esc($start_date) ?>" max="<?= date('Y-m-d') ?>" aria-label="Tanggal mulai" <?= $selected_period === 'custom' ? 'required' : 'disabled' ?>>
+                <span>s/d</span>
+                <input type="date" name="end_date" id="visit-end" value="<?= esc($end_date) ?>" max="<?= date('Y-m-d') ?>" aria-label="Tanggal akhir" <?= $selected_period === 'custom' ? 'required' : 'disabled' ?>>
+                <button type="submit" class="btn btn-primary">Terapkan</button>
+            </div>
+            <div class="vk-export">
+                <button type="button" class="btn btn-success" data-export="excel"><i class="fas fa-file-excel me-1"></i>Excel</button>
+                <button type="button" class="btn btn-danger" data-export="pdf"><i class="fas fa-file-pdf me-1"></i>PDF</button>
+            </div>
+        </div>
     </form>
 
     <div class="row g-4 mb-4">
@@ -114,15 +134,11 @@
 
     <div class="row g-4 mb-4">
         <div class="col-lg-7"><div class="vk-card">
-            <div class="vk-card-header"><i class="fas fa-chart-bar me-2 text-primary"></i>Tren Pengunjung - <?= esc($selected_period_label) ?></div>
+            <div class="vk-card-header"><i class="fas fa-chart-line me-2 text-primary"></i>Tren Pengunjung (<?= esc($trend_granularity) ?>) - <?= esc($selected_period_label) ?></div>
             <div class="vk-card-body">
-                <?php
-                $monthlyVisitorValues = array_map(static fn($row) => (int) $row->visitors, $monthly_visits ?? []);
-                $maxVisitors = max($monthlyVisitorValues ?: [1]);
-                ?>
-                <?php if (!empty($monthly_visits)): foreach ($monthly_visits as $row): ?>
-                    <div class="vk-row"><div class="vk-row-label"><?= esc($row->month_name) ?></div><div class="vk-bar-track"><div class="vk-bar" style="width:<?= ((int) $row->visitors / $maxVisitors) * 100 ?>%"></div></div><div class="vk-row-value"><?= number_format($row->visitors) ?></div></div>
-                <?php endforeach; else: ?><div class="vk-empty">Belum ada data kunjungan.</div><?php endif; ?>
+                <?php if (array_sum($trend['visitors']) > 0): ?>
+                    <div class="vk-chart-wrap"><canvas id="visit-trend-chart" aria-label="Grafik tren pengunjung"></canvas></div>
+                <?php else: ?><div class="vk-empty">Belum ada data kunjungan.</div><?php endif; ?>
             </div>
         </div></div>
         <div class="col-lg-5"><div class="vk-card">
@@ -133,4 +149,117 @@
         </div></div>
     </div>
 </div>
+<?= $this->endSection() ?>
+
+<?= $this->section('script') ?>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js" integrity="sha384-9MhbyIRcBVQiiC7FSd7T38oJNj2Zh+EfxS7/vjhBi4OOT78NlHSnzM31EZRWR1LZ" crossorigin="anonymous"></script>
+<script>
+(function () {
+    const periodSelect = document.getElementById('visit-period');
+    const customRange = document.getElementById('visit-custom-range');
+    const customInputs = customRange.querySelectorAll('input');
+    periodSelect.addEventListener('change', function () {
+        const isCustom = this.value === 'custom';
+        customRange.hidden = !isCustom;
+        customInputs.forEach(function (input) {
+            input.disabled = !isCustom;
+            input.required = isCustom;
+        });
+        if (!isCustom) {
+            this.form.submit();
+        }
+    });
+    document.getElementById('visit-start').addEventListener('change', function () {
+        document.getElementById('visit-end').min = this.value;
+    });
+
+    // Export: kirim POST ke URL yang sama (filter periode ikut di query string) beserta gambar grafik.
+    document.querySelectorAll('[data-export]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const form = document.createElement('form');
+            form.method = 'post';
+            form.action = window.location.href;
+            const fields = { export: this.dataset.export, chart_image: chartImage() };
+            Object.keys(fields).forEach(function (name) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = name;
+                input.value = fields[name];
+                form.appendChild(input);
+            });
+            document.body.appendChild(form);
+            form.submit();
+            form.remove();
+        });
+    });
+    function chartImage() {
+        const source = document.getElementById('visit-trend-chart');
+        if (!source) {
+            return '';
+        }
+        // Latar putih agar grafik tidak transparan di PDF/Excel.
+        const output = document.createElement('canvas');
+        output.width = source.width;
+        output.height = source.height;
+        const ctx = output.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, output.width, output.height);
+        ctx.drawImage(source, 0, 0);
+        return output.toDataURL('image/png');
+    }
+
+    const canvas = document.getElementById('visit-trend-chart');
+    if (!canvas || typeof Chart === 'undefined') {
+        return;
+    }
+    const trend = <?= json_encode($trend) ?>;
+    new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: trend.labels,
+            datasets: [
+                {
+                    label: 'Pengunjung',
+                    data: trend.visitors,
+                    borderColor: '#1e3a8a',
+                    backgroundColor: 'rgba(59, 91, 219, 0.12)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: trend.labels.length > 60 ? 0 : 3,
+                    pointHoverRadius: 5
+                },
+                {
+                    label: 'Kunjungan',
+                    data: trend.visits,
+                    borderColor: '#059669',
+                    backgroundColor: 'transparent',
+                    borderDash: [5, 4],
+                    tension: 0.3,
+                    pointRadius: trend.labels.length > 60 ? 0 : 3,
+                    pointHoverRadius: 5
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: {
+                    callbacks: {
+                        label: function (ctx) {
+                            return ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString('id-ID');
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 12 } },
+                y: { beginAtZero: true, ticks: { precision: 0 } }
+            }
+        }
+    });
+})();
+</script>
 <?= $this->endSection() ?>

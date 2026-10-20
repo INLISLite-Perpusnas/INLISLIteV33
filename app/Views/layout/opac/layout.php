@@ -1,6 +1,6 @@
 <?php
 $db = db_connect();
-$settingNames = ['NamaPerpustakaan', 'NamaLokasiPerpustakaan', 'TentangKami', 'Logo', 'Phone', 'EmailPerpustakaan', 'JamOperasional'];
+$settingNames = ['NamaPerpustakaan', 'NamaLokasiPerpustakaan', 'TentangKami', 'Logo', 'Phone', 'EmailPerpustakaan', 'JamOperasional', 'UsulanKoleksiLKD'];
 $settingRows = $db->table('settingparameters')
     ->select('Name, Value')
     ->whereIn('Name', $settingNames)
@@ -388,6 +388,14 @@ $pageDescription = isset($meta_description)
                             <i class="fa-solid fa-newspaper me-1"></i>Artikel
                         </a>
                     </li>
+                    <?php if (setting_enabled('is_perpustakaan_keliling')): ?>
+                    <li class="nav-item">
+                        <a class="nav-link<?= str_starts_with(uri_string(), 'perpustakaan-keliling') ? ' active' : '' ?>"
+                            href="<?= site_url('perpustakaan-keliling') ?>">
+                            <i class="fa-solid fa-van-shuttle me-1"></i>Perpustakaan Keliling
+                        </a>
+                    </li>
+                    <?php endif; ?>
 
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#"
@@ -419,7 +427,14 @@ $pageDescription = isset($meta_description)
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <?php if (env('Is_keanggotaan_online') == 1): ?>
+                            <?php if (strtoupper(trim((string) ($settings['UsulanKoleksiLKD'] ?? ''))) === 'TRUE'): ?>
+                            <li>
+                                <a class="dropdown-item" href="<?= site_url('home/usulan-koleksi') ?>">
+                                    <i class="fa-solid fa-book-medical fa-fw text-secondary me-2"></i>Usulan Koleksi
+                                </a>
+                            </li>
+                            <?php endif; ?>
+                            <?php if (setting_enabled('is_keanggotaan_online')): ?>
                             <li>
                                 <a class="dropdown-item" href="<?= base_url('home/pendaftaran-online') ?>">
                                     <i class="fa-solid fa-id-card fa-fw text-secondary me-2"></i>Keanggotaan Online
@@ -449,6 +464,11 @@ $pageDescription = isset($meta_description)
                             <li>
                                 <a class="dropdown-item" href="<?= base_url('opac/statistics_kunjungan') ?>">
                                     <i class="fa-solid fa-person-walking fa-fw text-secondary me-2"></i>Statistik Kunjungan
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="<?= base_url('opac/statistics_sirkulasi') ?>">
+                                    <i class="fa-solid fa-arrow-right-arrow-left fa-fw text-secondary me-2"></i>Statistik Sirkulasi
                                 </a>
                             </li>
                         </ul>
@@ -500,7 +520,7 @@ $pageDescription = isset($meta_description)
                 <div class="col-lg-2 col-md-6 mb-4 mb-lg-0 offset-lg-1">
                     <h2 class="footer-title">Layanan</h2>
                     <ul class="footer-links">
-                        <?php if (env('Is_keanggotaan_online') == 1): ?><li><a href="<?= base_url('home/pendaftaran-online') ?>">Keanggotaan Online</a></li><?php endif; ?>
+                        <?php if (setting_enabled('is_keanggotaan_online')): ?><li><a href="<?= base_url('home/pendaftaran-online') ?>">Keanggotaan Online</a></li><?php endif; ?>
                         <li><a href="<?= base_url('peminjaman-mandiri') ?>">Peminjaman Mandiri</a></li>
                         <li><a href="<?= base_url('pengembalian-mandiri') ?>">Pengembalian Mandiri</a></li>
                         <li><a href="<?= base_url('opac') ?>">OPAC</a></li>

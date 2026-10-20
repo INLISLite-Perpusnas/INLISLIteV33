@@ -342,6 +342,18 @@ $slug = $request->getGet('slug') ?? '';
 							</div>
 						</div>
 
+						<h6 class="mt-3 mb-3"><i class="fa fa-toggle-on"></i>&nbsp;Aktifkan / Nonaktifkan Fitur</h6>
+						<div class="form-row">
+							<?php foreach ($feature_toggles as $name => $toggle) : ?>
+							<div class="col-md-3 col-sm-6">
+								<div class="form-group">
+									<label for="toggle_<?= esc($name) ?>"><?= esc($toggle['label']) ?></label><br>
+									<input type="checkbox" id="toggle_<?= esc($name) ?>" name="feature_toggles[<?= esc($name) ?>]" value="1" data-toggle="toggle" data-onstyle="success" data-on="Aktif" data-off="Nonaktif" data-size="normal" <?= $toggle['checked'] ? 'checked' : '' ?>>
+								</div>
+							</div>
+							<?php endforeach ?>
+						</div>
+
 						<div class="form-group">
 							<button type="submit" class="btn btn-primary" name="submit">Simpan</button>
 							<button type="button" class="btn btn-success ml-2" id="btn_daftarkan_inlislite">
@@ -414,12 +426,39 @@ $slug = $request->getGet('slug') ?? '';
 		</div>
 		<?php if (is_member('admin')) : ?>
 			<div class="main-card mb-3 card">
+				<div class="card-header"><i class="fa fa-cogs"></i>&nbsp;Mode Aplikasi</div>
+				<div class="card-body">
+					<p>Mode saat ini: <span class="badge badge-<?= ENVIRONMENT === 'production' ? 'success' : 'warning' ?>"><?= esc(ENVIRONMENT) ?></span></p>
+					<p>Mengubah <code>CI_ENVIRONMENT</code> di file <code>.env</code>. Mode <strong>development</strong> menampilkan detail error dan debug toolbar, jangan dibiarkan aktif di server publik.</p>
+					<form method="post" action="<?= base_url('master-nama-perpustakaan/update-environment') ?>" class="d-inline" onsubmit="return confirm('Aktifkan mode production?');">
+						<?= csrf_field() ?>
+						<input type="hidden" name="environment" value="production">
+						<button type="submit" class="btn btn-success" <?= ENVIRONMENT === 'production' ? 'disabled' : '' ?>><i class="fa fa-shield-alt"></i> Aktifkan Production</button>
+					</form>
+					<form method="post" action="<?= base_url('master-nama-perpustakaan/update-environment') ?>" class="d-inline ml-2" onsubmit="return confirm('Aktifkan mode development? Detail error akan terlihat oleh pengunjung.');">
+						<?= csrf_field() ?>
+						<input type="hidden" name="environment" value="development">
+						<button type="submit" class="btn btn-warning" <?= ENVIRONMENT === 'development' ? 'disabled' : '' ?>><i class="fa fa-bug"></i> Aktifkan Development</button>
+					</form>
+				</div>
+			</div>
+			<div class="main-card mb-3 card">
 				<div class="card-header"><i class="fa fa-code"></i>&nbsp;Update Source Code</div>
 				<div class="card-body">
 					<p>Mengambil pembaruan dari <code>origin/main</code>. Perubahan lokal harus sudah di-commit atau disimpan di luar folder proyek. Migrasi database dan instalasi dependensi tidak dijalankan otomatis.</p>
 					<form method="post" action="<?= base_url('master-nama-perpustakaan/update-source-code') ?>" onsubmit="return confirm('Jalankan git pull origin main? Pastikan perubahan lokal sudah diamankan.');">
 						<?= csrf_field() ?>
 						<button type="submit" class="btn btn-warning"><i class="fa fa-download"></i> Update Source Code</button>
+					</form>
+				</div>
+			</div>
+			<div class="main-card mb-3 card">
+				<div class="card-header"><i class="fa fa-database"></i>&nbsp;Update Database</div>
+				<div class="card-body">
+					<p>Jalankan semua migrasi tertunda, lalu seeder baru atau yang berubah. Cadangkan database sebelum melanjutkan; seeder harus aman dijalankan ulang.</p>
+					<form method="post" action="<?= base_url('master-nama-perpustakaan/update-database') ?>" onsubmit="return confirm('Jalankan migrasi dan seeder baru atau berubah? Pastikan database sudah dicadangkan.');">
+						<?= csrf_field() ?>
+						<button type="submit" class="btn btn-primary"><i class="fa fa-database"></i> Update Database</button>
 					</form>
 				</div>
 			</div>

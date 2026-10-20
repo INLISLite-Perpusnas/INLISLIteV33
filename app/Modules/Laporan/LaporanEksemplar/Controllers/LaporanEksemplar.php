@@ -73,6 +73,34 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
         return view('LaporanEksemplar\Views\index', $data);
     }
 
+    private function frequencyGroups($columns): array
+    {
+        $criteria = json_decode((string) $this->request->getPost('criteria'), true);
+        $fields = is_array($criteria) ? array_column($criteria, 'field') : [];
+        $selected = \App\Libraries\LaporanFrekuensiExport::criteriaGroups('Eksemplar', [], $fields, [
+            'author' => 'Author',
+            'category_id' => 'Kategori',
+            'createby' => 'CreateBy',
+            'currency' => 'Currency',
+            'location' => 'Perpustakaan',
+            'location_ruang' => 'LokasiRuang',
+            'media_id' => 'BentukFisik',
+            'price' => 'Price',
+            'publisher' => 'Publisher',
+            'publishlocation' => 'PublishLocation',
+            'publishyear' => 'PublishYear',
+            'rule_id' => 'Akses',
+            'source_id' => 'JenisSumber',
+            'subject' => 'Subject',
+            'tp_date' => 'TanggalPengadaan',
+            'updateby' => 'UpdateBy',
+        ]);
+        if (in_array('worksheet_id', $fields, true)) {
+            $selected['worksheet_id'] = ['Jenis Bahan', 'frequency_worksheets.Name'];
+        }
+        return $selected ?: \App\Libraries\LaporanFrekuensiExport::selectedGroups('Eksemplar', $columns);
+    }
+
     private function criterionDefinitions(): array
     {
         return [
@@ -128,8 +156,34 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
     {
         $columns = json_decode($this->request->getPost('columns'), true);
         
-        if (empty($columns)) {
+        if ($this->request->getPost('export_mode') === 'frekuensi') {
+            if (!$this->frequencyGroups($columns)) {
+                return '<div class="alert alert-warning">Pilih kriteria yang tersedia sebagai kolom atau centang minimal satu kolom.</div>';
+            }
+        } elseif (empty($columns)) {
             return '<div class="alert alert-warning">Pilih minimal satu kolom untuk preview data</div>';
+        }
+
+        if ($this->request->getPost('export_mode') === 'frekuensi') {
+            $selected = $this->frequencyGroups($columns);
+            $query = $this->eksemplarModel
+                ->join('(SELECT ID, Title, Author, Edition, Publisher, PublishLocation, PublishYear, Subject, ISBN, Languages, DeweyNo, Worksheet_id FROM catalogs) AS catalogs', 'catalogs.ID = collections.Catalog_ID', 'INNER')
+                ->join('(SELECT ID, Name as JenisSumber FROM collectionsources) AS sources', 'collections.Source_id = sources.ID', 'LEFT')
+                ->join('(SELECT ID, Name as BentukFisik FROM collectionmedias) AS medias', 'collections.Media_id = medias.ID', 'LEFT')
+                ->join('(SELECT ID, Name as Kategori FROM collectioncategorys) AS categories', 'collections.Category_id = categories.ID', 'LEFT')
+                ->join('(SELECT ID, Name as Ketersediaan FROM collectionstatus) AS status', 'collections.Status_id = status.ID', 'LEFT')
+                ->join('(SELECT ID, Name as Akses FROM collectionrules) AS rules', 'collections.Rule_id = rules.ID', 'LEFT')
+                ->join('(SELECT ID, Name as NamaSumber FROM partners) AS partners', 'collections.Partner_id = partners.ID', 'LEFT')
+                ->join('(SELECT ID, Name as LokasiRuang FROM locations) AS locations', 'collections.Location_id = locations.ID', 'LEFT')
+                ->join('(SELECT ID, Name as Perpustakaan FROM location_library) AS libraries', 'collections.Location_Library_id = libraries.ID', 'LEFT')
+                ->join('users as creator', 'collections.CreateBy = creator.id', 'left')
+                ->join('users as updater', 'collections.UpdateBy = updater.id', 'left');
+            $this->applyFilters($query);
+            if (isset($selected['worksheet_id'])) {
+                $query->join('worksheets frequency_worksheets', 'frequency_worksheets.ID = catalogs.Worksheet_id', 'left');
+            }
+            $rows = \App\Libraries\LaporanFrekuensiExport::groupedRows($query->builder(), $selected, 'COUNT(DISTINCT collections.ID)');
+            return \App\Libraries\LaporanFrekuensiExport::previewHtml($selected, $rows);
         }
 
         // Build query with JOIN to users table
@@ -191,7 +245,7 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
         ini_set('max_execution_time', 300); // 5 minutes
         
         // Simplified validation - hanya require columns
-        if (!$this->validate([
+        if ($this->request->getPost('export_mode') !== 'frekuensi' && !$this->validate([
             'columns' => 'required',
         ])) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
@@ -211,12 +265,24 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
                 ->join('(SELECT ID, Name as LokasiRuang FROM locations) AS locations','collections.Location_id = locations.ID', 'LEFT')
                 ->join('(SELECT ID, Name as Perpustakaan FROM location_library) AS libraries','collections.Location_Library_id = libraries.ID', 'LEFT')
                 ->join('users as creator', 'collections.CreateBy = creator.id', 'left')
-                ->join('users as updater', 'collections.UpdateBy = updater.id', 'left')
-                ->select($this->buildSelectColumns($selectedColumns));
+                ->join('users as updater', 'collections.UpdateBy = updater.id', 'left');
 
         // Apply multiple filters
         $this->applyFilters($query);
 
+        if ($this->request->getPost('export_mode') === 'frekuensi') {
+            $selected = $this->frequencyGroups($this->request->getPost('columns'));
+            if (!$selected) {
+                return redirect()->back()->with('error', 'Pilih minimal satu kategori frekuensi.');
+            }
+            if (isset($selected['worksheet_id'])) {
+                $query->join('worksheets frequency_worksheets', 'frequency_worksheets.ID = catalogs.Worksheet_id', 'left');
+            }
+            $rows = \App\Libraries\LaporanFrekuensiExport::groupedRows($query->builder(), $selected, 'COUNT(DISTINCT collections.ID)');
+            \App\Libraries\LaporanFrekuensiExport::download('Laporan Eksemplar', $selected, $rows, 'excel');
+        }
+
+        $query->select($this->buildSelectColumns($selectedColumns));
         $eksemplars = $query->findAll();
 
         // Create Excel
@@ -262,7 +328,7 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
         ini_set('memory_limit', '512M');
         ini_set('max_execution_time', 300);
 
-        if (!$this->validate(['columns' => 'required'])) {
+        if ($this->request->getPost('export_mode') !== 'frekuensi' && !$this->validate(['columns' => 'required'])) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
@@ -279,11 +345,22 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
             ->join('(SELECT ID, Name as LokasiRuang FROM locations) AS locations', 'collections.Location_id = locations.ID', 'LEFT')
             ->join('(SELECT ID, Name as Perpustakaan FROM location_library) AS libraries', 'collections.Location_Library_id = libraries.ID', 'LEFT')
             ->join('users as creator', 'collections.CreateBy = creator.id', 'left')
-            ->join('users as updater', 'collections.UpdateBy = updater.id', 'left')
-            ->select($this->buildSelectColumns($selectedColumns));
+            ->join('users as updater', 'collections.UpdateBy = updater.id', 'left');
 
         $this->applyFilters($query);
         $totalRecords = (clone $query)->countAllResults(false);
+
+        if ($this->request->getPost('export_mode') === 'frekuensi') {
+            $selected = $this->frequencyGroups($this->request->getPost('columns'));
+            if (!$selected) {
+                return redirect()->back()->with('error', 'Pilih minimal satu kategori frekuensi.');
+            }
+            if (isset($selected['worksheet_id'])) {
+                $query->join('worksheets frequency_worksheets', 'frequency_worksheets.ID = catalogs.Worksheet_id', 'left');
+            }
+            $rows = \App\Libraries\LaporanFrekuensiExport::groupedRows($query->builder(), $selected, 'COUNT(DISTINCT collections.ID)');
+            \App\Libraries\LaporanFrekuensiExport::download('Laporan Eksemplar', $selected, $rows, 'pdf');
+        }
 
         $maxRecords = 5000;
         if ($totalRecords > $maxRecords) {
@@ -293,6 +370,7 @@ class LaporanEksemplar extends \Base\Controllers\BaseController
             );
         }
 
+        $query->select($this->buildSelectColumns($selectedColumns));
         $eksemplars = $query->find();
 
         // Ambil logo kop dari settingparameters

@@ -18,6 +18,20 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 	public $validation;
 	public $session;
 
+	// Toggle fitur di settingparameters: Name => [label, nilai aktif, nilai nonaktif]
+	private const FEATURE_TOGGLES = [
+		'is_opac_cache'            => ['Cache Halaman OPAC', '1', '0'],
+		'is_dashboard_cache'       => ['Cache Dashboard', '1', '0'],
+		'is_home_cache'            => ['Cache Halaman Beranda', '1', '0'],
+		'isdrm'                    => ['DRM Konten Digital', '1', '0'],
+		'is_keanggotaan_online'    => ['Pendaftaran Keanggotaan Online', '1', '0'],
+		'is_perpustakaan_keliling' => ['Perpustakaan Keliling', '1', '0'],
+		'is_populer'               => ['Koleksi Populer', '1', '0'],
+		'is_sering_dipinjam'       => ['Koleksi Sering Dipinjam', '1', '0'],
+		'is_sering_dibaca'         => ['Koleksi Sering Dibaca', '1', '0'],
+		'UsulanKoleksiLKD'         => ['Usulan Koleksi', 'True', 'False'],
+	];
+
 
 	function __construct()
 	{
@@ -64,6 +78,14 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 		$this->data['jenis_perpustakaan'] = $this->settingModel->where('Name', 'JenisPerpustakaan')->first()->Value ?? '';
 		$this->data['tulisan_banner'] = $this->settingModel->where('Name', 'TulisanBanner')->first()->Value ?? '';
 		$this->data['tentang_kami'] = $this->settingModel->where('Name', 'TentangKami')->first()->Value ?? '';
+		$this->data['feature_toggles'] = [];
+		foreach (self::FEATURE_TOGGLES as $name => [$label, $on]) {
+			$value = $this->settingModel->where('Name', $name)->first()->Value ?? '';
+			$this->data['feature_toggles'][$name] = [
+				'label'   => $label,
+				'checked' => strtoupper(trim((string) $value)) === strtoupper($on),
+			];
+		}
 		$this->data['title'] = 'Nama Perpustakaan';
 
 		echo view('NamaPerpustakaan\Views\update', $this->data);
@@ -267,6 +289,11 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
                 'KelurahanID' => trim($this->request->getPost('kelurahan_id')),
 			];
 
+			$toggles = (array) ($this->request->getPost('feature_toggles') ?? []);
+			foreach (self::FEATURE_TOGGLES as $name => [, $on, $off]) {
+				$dataToUpdate[$name] = !empty($toggles[$name]) ? $on : $off;
+			}
+
 			$success = true;
 			foreach ($dataToUpdate as $name => $value) {
 				$row = $this->settingModel->where('Name', $name)->first();
@@ -300,6 +327,124 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 			$this->session->setFlashdata('swal_title', 'Validasi Gagal');
 			$this->session->setFlashdata('swal_text', $errors);
 			return redirect()->back();
+		}
+	}
+
+	public function updateDatabase()
+	{
+		if (!$this->request->is('post') || trim(str_replace('index.php/', '', uri_string()), '/') !== 'master-nama-perpustakaan/update-database') {
+			return $this->response->setStatusCode(405)->setBody('Metode tidak diizinkan.');
+		}
+
+		return $this->runDatabaseMaintenance(function () {
+			$runner = \Config\Services::migrations();
+			if (!$runner->latest()) {
+				throw new \RuntimeException('Migrasi database gagal.');
+			}
+
+			$db = \Config\Database::connect('data');
+			$seeders = glob(APPPATH . 'Database/Seeds/*Seeder.php');
+			if ($seeders === false) {
+				throw new \RuntimeException('Daftar seeder tidak dapat dibaca.');
+			}
+			sort($seeders, SORT_STRING);
+			$seeder = \Config\Database::seeder('data');
+			$history = $db->table('database_seeder_runs');
+			$completed = 0;
+			foreach ($seeders as $file) {
+				$name = pathinfo($file, PATHINFO_FILENAME);
+				$checksum = hash_file('sha256', $file);
+				if ($checksum === false) {
+					throw new \RuntimeException('Seeder tidak dapat dibaca: ' . $name);
+				}
+				$previous = $history->where('name', $name)->get()->getRow();
+				if ($previous && $previous->checksum === $checksum) {
+					continue;
+				}
+
+				$seeder->call($name);
+				if ($previous) {
+					$saved = $history->where('name', $name)->update(['checksum' => $checksum, 'executed_at' => date('Y-m-d H:i:s')]);
+				} else {
+					$saved = $history->insert(['name' => $name, 'checksum' => $checksum, 'executed_at' => date('Y-m-d H:i:s')]);
+				}
+				if (!$saved) {
+					throw new \RuntimeException('Riwayat seeder gagal disimpan: ' . $name);
+				}
+				$completed++;
+			}
+			return $completed;
+		}, 'Update database selesai.');
+	}
+
+	/**
+	 * Ubah CI_ENVIRONMENT di file .env (production/development). Berlaku mulai request berikutnya.
+	 */
+	public function updateEnvironment()
+	{
+		if (!is_member('admin')) {
+			return $this->response->setStatusCode(403)->setBody('Akses ditolak.');
+		}
+
+		$mode = (string) $this->request->getPost('environment');
+		if (!in_array($mode, ['production', 'development'], true)) {
+			return redirect()->back()->with('swal_icon', 'error')
+				->with('swal_title', 'Gagal')->with('swal_text', 'Mode tidak dikenal.');
+		}
+
+		$envFile = ROOTPATH . '.env';
+		$content = is_file($envFile) ? file_get_contents($envFile) : '';
+		if ($content === false || (is_file($envFile) && !is_writable($envFile))) {
+			return redirect()->back()->with('swal_icon', 'error')
+				->with('swal_title', 'Gagal')->with('swal_text', 'File .env tidak dapat dibaca atau ditulis oleh server.');
+		}
+
+		// Ganti baris CI_ENVIRONMENT yang aktif (bukan komentar); tambahkan bila belum ada.
+		$line = 'CI_ENVIRONMENT = ' . $mode;
+		$updated = preg_replace('/^[ \t]*CI_ENVIRONMENT[ \t]*=.*$/m', $line, $content, 1, $count);
+		if ($count === 0) {
+			$updated = rtrim($content) . PHP_EOL . $line . PHP_EOL;
+		}
+
+		if ($updated !== $content && file_put_contents($envFile, $updated, LOCK_EX) === false) {
+			return redirect()->back()->with('swal_icon', 'error')
+				->with('swal_title', 'Gagal')->with('swal_text', 'File .env gagal disimpan.');
+		}
+
+		log_message('notice', 'CI_ENVIRONMENT diubah ke ' . $mode . ' oleh user ID ' . $this->auth->id());
+		return redirect()->back()->with('swal_icon', 'success')
+			->with('swal_title', 'Berhasil')->with('swal_text', 'Mode aplikasi diubah ke ' . $mode . '.');
+	}
+
+	private function runDatabaseMaintenance(callable $task, string $successMessage)
+	{
+		if (!is_member('admin')) {
+			return $this->response->setStatusCode(403)->setBody('Akses ditolak.');
+		}
+
+		$lock = @fopen(WRITEPATH . 'cache/database-maintenance.lock', 'c');
+		if ($lock === false) {
+			return redirect()->back()->with('swal_icon', 'error')
+				->with('swal_title', 'Gagal')->with('swal_text', 'Tidak dapat membuat kunci pemeliharaan database.');
+		}
+		if (!flock($lock, LOCK_EX | LOCK_NB)) {
+			fclose($lock);
+			return redirect()->back()->with('swal_icon', 'error')
+				->with('swal_title', 'Gagal')->with('swal_text', 'Pemeliharaan database sedang berjalan.');
+		}
+
+		try {
+			$completed = $task();
+			return redirect()->back()->with('swal_icon', 'success')
+				->with('swal_title', 'Berhasil')->with('swal_text', $successMessage . ' Seeder dijalankan: ' . $completed . '.');
+		} catch (\Throwable $exception) {
+			log_message('error', 'Pemeliharaan database gagal: ' . $exception->getMessage());
+			return redirect()->back()->with('swal_icon', 'error')
+				->with('swal_title', 'Gagal')
+				->with('swal_text', 'Proses gagal. Periksa koneksi database dan log aplikasi sebelum mengulang.');
+		} finally {
+			flock($lock, LOCK_UN);
+			fclose($lock);
 		}
 	}
 

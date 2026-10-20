@@ -79,8 +79,7 @@ class Opac extends \Base\Controllers\BaseController
             $this->loadRegularCatalogs();
         }
     } else {
-        $is_opac_cache = env('is_opac_cache', 0);
-        if ($is_opac_cache == 1) {
+        if (setting_enabled('is_opac_cache')) {
             $this->loadRegularCatalogscache();
         } else {
             $this->loadRegularCatalogs();
@@ -282,34 +281,43 @@ private function loadRegularCatalogscache()
             ->findAll();
 
 
+        $drmEnabled = $this->drmEnabled();
+        $roweksemplar_public = !$drmEnabled && (int) $catalog['IsOPAC'] === 1 ? $file : null;
+
         // Get digital books (DRM)
-        $roweksemplar_drm = $EksemplarModel
-            ->select('collections.ID as CollectionID, collections.NomorBarcode, collections.CallNumber, collections.Status_id, collectionrules.Name as RuleName, locations.Name as LocationName, collectionstatus.Name as StatusName')
-            ->join('collectionrules', 'collectionrules.id = collections.Rule_id', 'left')
-            ->join('locations', 'locations.id = collections.Location_id', 'left')
-            ->join('collectionstatus', 'collectionstatus.id = collections.Status_id', 'left')
-            ->where('collections.catalog_id', $id)
-            ->where('collections.ISDRM', 1)
-            ->findAll();
+        $roweksemplar_drm = [];
+        if ($drmEnabled) {
+            $roweksemplar_drm = $EksemplarModel
+                ->select('collections.ID as CollectionID, collections.NomorBarcode, collections.CallNumber, collections.Status_id, collectionrules.Name as RuleName, locations.Name as LocationName, collectionstatus.Name as StatusName')
+                ->join('collectionrules', 'collectionrules.id = collections.Rule_id', 'left')
+                ->join('locations', 'locations.id = collections.Location_id', 'left')
+                ->join('collectionstatus', 'collectionstatus.id = collections.Status_id', 'left')
+                ->where('collections.catalog_id', $id)
+                ->where('collections.ISDRM', 1)
+                ->orderBy('collections.ID', 'ASC')
+                ->findAll();
+        }
 
         // Kumpulkan ID koleksi DRM yang sedang dipinjam oleh anggota yang login
         $member_active_loan_collections = [];
-        try {
-            $nomor_anggota = user()->username;
-            $member        = $this->memberModel->where('MemberNo', $nomor_anggota)->first();
-            if ($member && !empty($roweksemplar_drm)) {
-                $collection_ids = array_column((array) $roweksemplar_drm, 'CollectionID');
-                $active_loans   = $this->db->table('collectionloanitems')
-                    ->whereIn('Collection_id', $collection_ids)
-                    ->where('member_id', $member->ID)
-                    ->where('LoanStatus', 'Loan')
-                    ->where('DueDate >=', date('Y-m-d H:i:s'))
-                    ->get()
-                    ->getResult();
-                $member_active_loan_collections = array_column($active_loans, 'Collection_id');
+        if ($drmEnabled) {
+            try {
+                $nomor_anggota = user()->username;
+                $member        = $this->memberModel->where('MemberNo', $nomor_anggota)->first();
+                if ($member && !empty($roweksemplar_drm)) {
+                    $collection_ids = array_column((array) $roweksemplar_drm, 'CollectionID');
+                    $active_loans   = $this->db->table('collectionloanitems')
+                        ->whereIn('Collection_id', $collection_ids)
+                        ->where('member_id', $member->ID)
+                        ->where('LoanStatus', 'Loan')
+                        ->where('DueDate >=', date('Y-m-d H:i:s'))
+                        ->get()
+                        ->getResult();
+                    $member_active_loan_collections = array_column($active_loans, 'Collection_id');
+                }
+            } catch (\Throwable $e) {
+                // User tidak login atau bukan anggota – abaikan
             }
-        } catch (\Throwable $e) {
-            // User tidak login atau bukan anggota – abaikan
         }
 
         $marc = $this->katalogRuasModel
@@ -323,6 +331,8 @@ private function loadRegularCatalogscache()
         $this->data['catalog']     = $catalog;
         $this->data['roweksemplar']     = $roweksemplar;
         $this->data['roweksemplar_drm'] = $roweksemplar_drm;
+        $this->data['roweksemplar_public'] = $roweksemplar_public;
+        $this->data['drm_enabled'] = $drmEnabled;
         $this->data['member_active_loan_collections'] = $member_active_loan_collections;
         $this->data['hcaptcha_site_key'] = getenv('HCAPTCHA_SITE_KEY');
 
@@ -858,23 +868,8 @@ public function browse()
     {
         $this->data['title'] = 'Statistik Kunjungan';
 
-        $periods = [
-            '30' => ['label' => '30 hari terakhir', 'sql' => 'INTERVAL 30 DAY'],
-            '90' => ['label' => '90 hari terakhir', 'sql' => 'INTERVAL 90 DAY'],
-            '180' => ['label' => '180 hari terakhir', 'sql' => 'INTERVAL 180 DAY'],
-            '6m' => ['label' => '6 bulan terakhir', 'sql' => 'INTERVAL 6 MONTH'],
-            '12m' => ['label' => '12 bulan terakhir', 'sql' => 'INTERVAL 12 MONTH'],
-        ];
-        $selectedPeriod = (string) ($this->request->getGet('period') ?? '30');
-        if (!isset($periods[$selectedPeriod])) {
-            $selectedPeriod = '30';
-        }
-        $periodStart = "DATE_SUB(CURDATE(), {$periods[$selectedPeriod]['sql']})";
-        $periodCondition = "visits.CreateDate >= {$periodStart}";
-
-        $this->data['periods'] = $periods;
-        $this->data['selected_period'] = $selectedPeriod;
-        $this->data['selected_period_label'] = $periods[$selectedPeriod]['label'];
+        [$startDate, $endDate] = $this->resolveStatisticsPeriod();
+        $periodCondition = $this->statisticsPeriodCondition('visits.CreateDate', $startDate, $endDate);
 
         $visitTables = "
             SELECT CreateDate,
@@ -899,10 +894,223 @@ public function browse()
         $this->data['month_visitors'] = $this->db->query("SELECT COALESCE(SUM(visitor_count), 0) AS total FROM ({$visitTables}) visits WHERE {$periodCondition} AND YEAR(visits.CreateDate) = YEAR(CURDATE()) AND MONTH(visits.CreateDate) = MONTH(CURDATE())")->getRow()->total ?? 0;
 
         $this->data['visit_types'] = $this->db->query("SELECT visit_type, COUNT(*) AS visits, COALESCE(SUM(visitor_count), 0) AS visitors FROM ({$visitTables}) visits WHERE {$periodCondition} GROUP BY visit_type ORDER BY visitors DESC")->getResult();
-        $this->data['monthly_visits'] = $this->db->query("SELECT DATE_FORMAT(visits.CreateDate, '%Y-%m') AS month_key, DATE_FORMAT(visits.CreateDate, '%b %Y') AS month_name, COUNT(*) AS visits, COALESCE(SUM(visitor_count), 0) AS visitors FROM ({$visitTables}) visits WHERE {$periodCondition} GROUP BY month_key, month_name ORDER BY month_key ASC")->getResult();
+        $axis = $this->statisticsTrendAxis($startDate, $endDate);
+        $trendRows = $this->db->query("SELECT DATE_FORMAT(visits.CreateDate, '{$axis['sql_format']}') AS bucket, COUNT(*) AS visits, COALESCE(SUM(visitor_count), 0) AS visitors FROM ({$visitTables}) visits WHERE {$periodCondition} GROUP BY bucket ORDER BY bucket ASC")->getResult();
+        $this->data['trend'] = [
+            'labels' => $axis['labels'],
+            'visitors' => $this->statisticsTrendSeries($axis['keys'], $trendRows, 'visitors'),
+            'visits' => $this->statisticsTrendSeries($axis['keys'], $trendRows, 'visits'),
+        ];
+        $this->data['trend_granularity'] = $axis['granularity'];
         $this->data['hourly_visits'] = $this->db->query("SELECT DAYOFWEEK(visits.CreateDate) AS day_number, HOUR(visits.CreateDate) AS visit_hour, COALESCE(SUM(visitor_count), 0) AS visitors FROM ({$visitTables}) visits WHERE {$periodCondition} AND HOUR(visits.CreateDate) BETWEEN 7 AND 20 GROUP BY day_number, visit_hour ORDER BY day_number, visit_hour")->getResult();
 
+        $export = $this->request->getPost('export');
+        if (in_array($export, ['excel', 'pdf'], true)) {
+            $data = $this->data;
+            return \App\Libraries\StatistikExport::download([
+                'title' => 'Statistik Kunjungan',
+                'subtitle' => 'Ringkasan kunjungan anggota dan rombongan perpustakaan',
+                'period_label' => $data['selected_period_label'],
+                'stats' => [
+                    ['Total Pengunjung', $data['total_visitors'], $data['selected_period_label'], '1E3A8A'],
+                    ['Total Kunjungan', $data['total_visits'], $data['selected_period_label'], '059669'],
+                    ['Pengunjung Hari Ini', $data['today_visitors'], date('d M Y'), '0891B2'],
+                    ['Pengunjung Bulan Ini', $data['month_visitors'], date('F Y'), 'D97706'],
+                ],
+                'heatmap' => $this->statisticsHeatmap('Pola Jam Kunjungan', $data['hourly_visits'], 'visit_hour', 'visitors'),
+                'chart' => [
+                    'title' => 'Tren Pengunjung (' . $data['trend_granularity'] . ') - ' . $data['selected_period_label'],
+                    'image' => \App\Libraries\StatistikExport::decodeChartImage($this->request->getPost('chart_image')),
+                    'labels' => $data['trend']['labels'],
+                    'series' => ['Pengunjung' => $data['trend']['visitors'], 'Kunjungan' => $data['trend']['visits']],
+                ],
+                'tables' => [
+                    [
+                        'title' => 'Jenis Kunjungan',
+                        'headers' => ['Jenis', 'Catatan', 'Pengunjung'],
+                        'rows' => array_map(static fn($row) => [(string) $row->visit_type, (int) $row->visits, (int) $row->visitors], $data['visit_types']),
+                    ],
+                ],
+            ], $export, $this->response);
+        }
+
         return view('Opac\Views\statistics_kunjungan', $this->data);
+    }
+
+    public function statistics_sirkulasi()
+    {
+        $this->data['title'] = 'Statistik Sirkulasi';
+
+        [$startDate, $endDate] = $this->resolveStatisticsPeriod();
+        $loanCondition = $this->statisticsPeriodCondition('cli.LoanDate', $startDate, $endDate);
+        $returnCondition = $this->statisticsPeriodCondition('cli.ActualReturn', $startDate, $endDate);
+
+        $this->data['total_loans'] = $this->db->query("SELECT COUNT(*) AS total FROM collectionloanitems cli WHERE {$loanCondition}")->getRow()->total ?? 0;
+        $this->data['total_returns'] = $this->db->query("SELECT COUNT(*) AS total FROM collectionloanitems cli WHERE {$returnCondition}")->getRow()->total ?? 0;
+        $this->data['total_borrowers'] = $this->db->query("SELECT COUNT(DISTINCT cli.member_id) AS total FROM collectionloanitems cli WHERE {$loanCondition}")->getRow()->total ?? 0;
+        $onLoan = $this->db->query("SELECT COUNT(*) AS total, COALESCE(SUM(DATE(cli.DueDate) < CURDATE()), 0) AS overdue FROM collectionloanitems cli WHERE cli.LoanStatus = 'Loan'")->getRow();
+        $this->data['on_loan'] = $onLoan->total ?? 0;
+        $this->data['on_loan_overdue'] = $onLoan->overdue ?? 0;
+
+        $this->data['return_status'] = $this->db->query("SELECT CASE WHEN cli.DueDate IS NOT NULL AND DATE(cli.ActualReturn) > DATE(cli.DueDate) THEN 'Terlambat' ELSE 'Tepat Waktu' END AS return_status, COUNT(*) AS total FROM collectionloanitems cli WHERE {$returnCondition} GROUP BY return_status ORDER BY total DESC")->getResult();
+        $this->data['top_collections'] = $this->db->query("SELECT cat.Title AS title, cat.Author AS author, COUNT(*) AS total FROM collectionloanitems cli INNER JOIN collections col ON col.ID = cli.Collection_id INNER JOIN catalogs cat ON cat.ID = col.Catalog_id WHERE {$loanCondition} GROUP BY cat.ID, cat.Title, cat.Author ORDER BY total DESC LIMIT 10")->getResult();
+        $this->data['hourly_loans'] = $this->db->query("SELECT DAYOFWEEK(cli.LoanDate) AS day_number, HOUR(cli.LoanDate) AS loan_hour, COUNT(*) AS total FROM collectionloanitems cli WHERE {$loanCondition} AND HOUR(cli.LoanDate) BETWEEN 7 AND 20 GROUP BY day_number, loan_hour ORDER BY day_number, loan_hour")->getResult();
+
+        $axis = $this->statisticsTrendAxis($startDate, $endDate);
+        $loanRows = $this->db->query("SELECT DATE_FORMAT(cli.LoanDate, '{$axis['sql_format']}') AS bucket, COUNT(*) AS total FROM collectionloanitems cli WHERE {$loanCondition} GROUP BY bucket")->getResult();
+        $returnRows = $this->db->query("SELECT DATE_FORMAT(cli.ActualReturn, '{$axis['sql_format']}') AS bucket, COUNT(*) AS total FROM collectionloanitems cli WHERE {$returnCondition} GROUP BY bucket")->getResult();
+        $this->data['trend'] = [
+            'labels' => $axis['labels'],
+            'loans' => $this->statisticsTrendSeries($axis['keys'], $loanRows, 'total'),
+            'returns' => $this->statisticsTrendSeries($axis['keys'], $returnRows, 'total'),
+        ];
+        $this->data['trend_granularity'] = $axis['granularity'];
+
+        $export = $this->request->getPost('export');
+        if (in_array($export, ['excel', 'pdf'], true)) {
+            $data = $this->data;
+            $returnTotal = array_sum(array_map(static fn($row) => (int) $row->total, $data['return_status']));
+            return \App\Libraries\StatistikExport::download([
+                'title' => 'Statistik Sirkulasi',
+                'subtitle' => 'Ringkasan peminjaman dan pengembalian koleksi perpustakaan',
+                'period_label' => $data['selected_period_label'],
+                'stats' => [
+                    ['Total Peminjaman', $data['total_loans'], $data['selected_period_label'], '1E3A8A'],
+                    ['Total Pengembalian', $data['total_returns'], $data['selected_period_label'], '059669'],
+                    ['Anggota Peminjam', $data['total_borrowers'], $data['selected_period_label'], '0891B2'],
+                    ['Sedang Dipinjam', $data['on_loan'], number_format($data['on_loan_overdue']) . ' melewati jatuh tempo', 'D97706'],
+                ],
+                'heatmap' => $this->statisticsHeatmap('Pola Jam Peminjaman', $data['hourly_loans'], 'loan_hour', 'total'),
+                'chart' => [
+                    'title' => 'Tren Sirkulasi (' . $data['trend_granularity'] . ') - ' . $data['selected_period_label'],
+                    'image' => \App\Libraries\StatistikExport::decodeChartImage($this->request->getPost('chart_image')),
+                    'labels' => $data['trend']['labels'],
+                    'series' => ['Peminjaman' => $data['trend']['loans'], 'Pengembalian' => $data['trend']['returns']],
+                ],
+                'tables' => [
+                    [
+                        'title' => 'Ketepatan Pengembalian',
+                        'headers' => ['Status', 'Jumlah', '%'],
+                        'rows' => array_map(static fn($row) => [$row->return_status, (int) $row->total, $returnTotal > 0 ? number_format(($row->total / $returnTotal) * 100, 1) . '%' : '0%'], $data['return_status']),
+                    ],
+                    [
+                        'title' => '10 Koleksi Paling Sering Dipinjam - ' . $data['selected_period_label'],
+                        'headers' => ['#', 'Judul', 'Pengarang', 'Dipinjam'],
+                        'widths' => [1, 7, 4, 2],
+                        'rows' => array_map(static fn($row, $i) => [$i + 1, (string) $row->title, (string) ($row->author ?: '-'), (int) $row->total], $data['top_collections'], array_keys($data['top_collections'])),
+                    ],
+                ],
+            ], $export, $this->response);
+        }
+
+        return view('Opac\Views\statistics_sirkulasi', $this->data);
+    }
+
+    /**
+     * Matriks heatmap hari x jam (07-20) untuk export, sama dengan yang dihitung di view.
+     */
+    private function statisticsHeatmap(string $title, array $rows, string $hourField, string $valueField): array
+    {
+        $matrix = [];
+        foreach ($rows as $row) {
+            $matrix[(int) $row->day_number][(int) $row->{$hourField}] = (int) $row->{$valueField};
+        }
+
+        return [
+            'title' => $title,
+            'days' => [1 => 'Minggu', 2 => 'Senin', 3 => 'Selasa', 4 => 'Rabu', 5 => 'Kamis', 6 => 'Jumat', 7 => 'Sabtu'],
+            'hours' => range(7, 20),
+            'matrix' => $matrix,
+        ];
+    }
+
+    /**
+     * Baca filter periode (?period=30|90|180|6m|12m|custom&start_date&end_date) untuk halaman statistik.
+     * Mengisi data view periode dan mengembalikan [tanggal mulai, tanggal akhir].
+     */
+    private function resolveStatisticsPeriod(): array
+    {
+        $periods = [
+            '30' => ['label' => '30 hari terakhir', 'modify' => '-30 days'],
+            '90' => ['label' => '90 hari terakhir', 'modify' => '-90 days'],
+            '180' => ['label' => '180 hari terakhir', 'modify' => '-180 days'],
+            '6m' => ['label' => '6 bulan terakhir', 'modify' => '-6 months'],
+            '12m' => ['label' => '12 bulan terakhir', 'modify' => '-12 months'],
+            'custom' => ['label' => 'Periode kustom', 'modify' => null],
+        ];
+        $selectedPeriod = (string) ($this->request->getGet('period') ?? '30');
+        if (!isset($periods[$selectedPeriod])) {
+            $selectedPeriod = '30';
+        }
+
+        $today = new \DateTimeImmutable('today');
+        $startDate = null;
+        $endDate = $today;
+        if ($selectedPeriod === 'custom') {
+            $parseDate = static function ($value) {
+                $date = \DateTimeImmutable::createFromFormat('!Y-m-d', (string) $value);
+                return ($date && $date->format('Y-m-d') === (string) $value) ? $date : null;
+            };
+            $startDate = $parseDate($this->request->getGet('start_date'));
+            $endDate = $parseDate($this->request->getGet('end_date'));
+            if (!$startDate || !$endDate || $startDate > $endDate) {
+                // Tanggal kustom tidak valid: kembali ke periode bawaan.
+                $selectedPeriod = '30';
+                $startDate = null;
+                $endDate = $today;
+            }
+        }
+        if ($startDate === null) {
+            $startDate = $today->modify($periods[$selectedPeriod]['modify']);
+        }
+
+        $this->data['periods'] = $periods;
+        $this->data['selected_period'] = $selectedPeriod;
+        $this->data['start_date'] = $startDate->format('Y-m-d');
+        $this->data['end_date'] = $endDate->format('Y-m-d');
+        $this->data['selected_period_label'] = $selectedPeriod === 'custom'
+            ? $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y')
+            : $periods[$selectedPeriod]['label'];
+
+        return [$startDate, $endDate];
+    }
+
+    private function statisticsPeriodCondition(string $column, \DateTimeImmutable $startDate, \DateTimeImmutable $endDate): string
+    {
+        return "{$column} >= " . $this->db->escape($startDate->format('Y-m-d'))
+            . " AND {$column} < " . $this->db->escape($endDate->modify('+1 day')->format('Y-m-d'));
+    }
+
+    /**
+     * Sumbu tren: harian untuk rentang <= 92 hari, selain itu bulanan.
+     */
+    private function statisticsTrendAxis(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate): array
+    {
+        $isDaily = $startDate->diff($endDate)->days <= 92;
+        $axis = [
+            'granularity' => $isDaily ? 'Harian' : 'Bulanan',
+            'sql_format' => $isDaily ? '%Y-%m-%d' : '%Y-%m',
+            'keys' => [],
+            'labels' => [],
+        ];
+        $cursor = $isDaily ? $startDate : $startDate->modify('first day of this month');
+        while ($cursor <= $endDate) {
+            $axis['keys'][] = $cursor->format($isDaily ? 'Y-m-d' : 'Y-m');
+            $axis['labels'][] = $cursor->format($isDaily ? 'd M' : 'M Y');
+            $cursor = $cursor->modify($isDaily ? '+1 day' : '+1 month');
+        }
+
+        return $axis;
+    }
+
+    /**
+     * Petakan hasil query (kolom bucket) ke sumbu tren; titik kosong diisi 0 agar garis tidak loncat.
+     */
+    private function statisticsTrendSeries(array $keys, array $rows, string $field): array
+    {
+        $byBucket = array_column($rows, null, 'bucket');
+
+        return array_map(static fn($key) => (int) ($byBucket[$key]->{$field} ?? 0), $keys);
     }
 
         // Anggota peminjam per jenis kelamin
@@ -1767,8 +1975,87 @@ public function browse()
         return implode(' ', $terms);
     }
 
+    private function drmEnabled(): bool
+    {
+        $setting = $this->db->table('settingparameters')->select('Value')->where('Name', 'isdrm')->get()->getRow();
+        return (string) ($setting->Value ?? '1') !== '0';
+    }
+
+    public function kontenDigitalPublik(int $catalog_id)
+    {
+        if ($this->drmEnabled()) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        $catalog = $this->katalogModel->asArray()->find($catalog_id);
+        $file = $this->fileModel->where('Catalog_id', $catalog_id)->first();
+
+        if (!$catalog || (int) $catalog['IsOPAC'] !== 1 || !$file) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        $fileName = (string) $file->FileURL;
+        $directory = realpath(ROOTPATH . 'public/uploads/katalog');
+        $filePath = realpath(ROOTPATH . 'public/uploads/katalog/' . $fileName);
+        if (!$directory || !$filePath || dirname($filePath) !== $directory || !is_file($filePath) || !is_readable($filePath)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        $temporary = null;
+        try {
+            if (str_starts_with($fileName, 'encrypted_')) {
+                $temporary = tempnam(sys_get_temp_dir(), 'opac_pdf_');
+                if ($temporary === false) {
+                    throw new \RuntimeException('Temporary PDF file unavailable');
+                }
+                (new \App\Libraries\Encryption())->decryptFile($filePath, $temporary);
+                $content = file_get_contents($temporary);
+            } else {
+                $content = file_get_contents($filePath);
+            }
+        } finally {
+            if ($temporary !== null && is_file($temporary)) {
+                unlink($temporary);
+            }
+        }
+
+        if (!is_string($content) || !str_starts_with($content, '%PDF-')) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        $download = $this->request->getGet('download') === '1';
+        if ($download) {
+            $branch = $this->db->table('settingparameters')->select('Value')->where('Name', 'Branch_id')->get()->getRow();
+            $branchId = (string) ($branch->Value ?? '');
+            $ip = $this->request->getIPAddress();
+            $logged = $this->db->table('logsdownload')->insert([
+                'User_id' => logged_in() ? (string) login_id() : null,
+                'ip' => filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) ? $ip : null,
+                'catalogfilesID' => (int) $file->ID,
+                'isLKD' => 0,
+                'waktu' => date('Y-m-d H:i:s'),
+                'Branch_id' => ctype_digit($branchId) ? (int) $branchId : null,
+                'active' => 1,
+            ]);
+            if (!$logged) {
+                throw new \RuntimeException('Gagal mencatat unduhan konten digital.');
+            }
+        }
+
+        $disposition = $download ? 'attachment' : 'inline';
+        return $this->response
+            ->setContentType('application/pdf')
+            ->setHeader('Content-Disposition', $disposition . '; filename="katalog-' . $catalog_id . '.pdf"')
+            ->setHeader('X-Content-Type-Options', 'nosniff')
+            ->setHeader('Cache-Control', 'no-store')
+            ->setBody($content);
+    }
+
     public function bacaDigital($catalog_id){
-    
+        if (!$this->drmEnabled()) {
+            return redirect()->to(base_url('opac/konten-digital/' . $catalog_id));
+        }
+
         helper('reference');
 
         $file = $this->fileModel->where('Catalog_id', $catalog_id)->first();

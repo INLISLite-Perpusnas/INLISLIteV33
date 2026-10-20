@@ -127,8 +127,24 @@ class LaporanAnggota extends \Base\Controllers\BaseController
     {
         $columns = json_decode($this->request->getPost('columns'), true);
         
-        if (empty($columns)) {
+        if ($this->request->getPost('export_mode') === 'frekuensi') {
+            if (!$this->frequencyGroups($columns)) {
+                return '<div class="alert alert-warning">Pilih kriteria atau centang kolom untuk preview frekuensi.</div>';
+            }
+        } elseif (empty($columns)) {
             return '<div class="alert alert-warning">Pilih minimal satu kolom untuk preview data</div>';
+        }
+
+        if ($this->request->getPost('export_mode') === 'frekuensi') {
+            $selected = $this->frequencyGroups($columns);
+            $query = $this->anggotaModel
+                ->join('jenis_kelamin', 'jenis_kelamin.ID = members.Sex_id', 'left')
+                ->join('jenis_anggota', 'jenis_anggota.id = members.JenisAnggota_id', 'left')
+                ->join('users as creator', 'members.CreateBy = creator.id', 'left')
+                ->join('users as updater', 'members.UpdateBy = updater.id', 'left');
+            $this->applyFilters($query);
+            $rows = \App\Libraries\LaporanFrekuensiExport::groupedRows($query->builder(), $selected, 'COUNT(DISTINCT members.ID)');
+            return \App\Libraries\LaporanFrekuensiExport::previewHtml($selected, $rows);
         }
 
         // Build query dengan JOIN ke users
@@ -182,7 +198,7 @@ class LaporanAnggota extends \Base\Controllers\BaseController
         ini_set('max_execution_time', 300); // 5 minutes
 
         // Simplified validation - only require columns
-        if (!$this->validate([
+        if ($this->request->getPost('export_mode') !== 'frekuensi' && !$this->validate([
             'columns' => 'required',
         ])) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
@@ -198,7 +214,19 @@ class LaporanAnggota extends \Base\Controllers\BaseController
             ->join('users as updater', 'members.UpdateBy = updater.id', 'left');
 
         $this->applyFilters($countQuery);
+        if ($this->request->getPost('export_mode') === 'frekuensi') {
+            $selected = $this->frequencyGroups($this->request->getPost('columns'));
+            if (!$selected) {
+                return redirect()->back()->with('error', 'Pilih minimal satu kategori frekuensi.');
+            }
+
+            $rows = \App\Libraries\LaporanFrekuensiExport::groupedRows($countQuery->builder(), $selected, 'COUNT(DISTINCT members.ID)');
+            \App\Libraries\LaporanFrekuensiExport::download('Laporan Anggota', $selected, $rows, 'excel');
+        }
+
         $totalRecords = $countQuery->countAllResults();
+
+
 
         // Limit maksimum export untuk mencegah memory issue
         $maxRecords = 50000; // Adjust sesuai kebutuhan server
@@ -295,7 +323,7 @@ class LaporanAnggota extends \Base\Controllers\BaseController
         ini_set('memory_limit', '512M');
         ini_set('max_execution_time', 300);
 
-        if (!$this->validate(['columns' => 'required'])) {
+        if ($this->request->getPost('export_mode') !== 'frekuensi' && !$this->validate(['columns' => 'required'])) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
@@ -307,7 +335,19 @@ class LaporanAnggota extends \Base\Controllers\BaseController
             ->join('users as creator', 'members.CreateBy = creator.id', 'left')
             ->join('users as updater', 'members.UpdateBy = updater.id', 'left');
         $this->applyFilters($countQuery);
+        if ($this->request->getPost('export_mode') === 'frekuensi') {
+            $selected = $this->frequencyGroups($this->request->getPost('columns'));
+            if (!$selected) {
+                return redirect()->back()->with('error', 'Pilih minimal satu kategori frekuensi.');
+            }
+
+            $rows = \App\Libraries\LaporanFrekuensiExport::groupedRows($countQuery->builder(), $selected, 'COUNT(DISTINCT members.ID)');
+            \App\Libraries\LaporanFrekuensiExport::download('Laporan Anggota', $selected, $rows, 'pdf');
+        }
+
         $totalRecords = $countQuery->countAllResults();
+
+
 
         $maxRecords = 5000;
         if ($totalRecords > $maxRecords) {
@@ -398,6 +438,25 @@ class LaporanAnggota extends \Base\Controllers\BaseController
         $fileName = 'Laporan_Anggota_' . date('d-m-Y_His') . '.pdf';
         $dompdf->stream($fileName, ['Attachment' => true]);
         exit();
+    }
+
+    private function frequencyGroups($columns): array
+    {
+        $fields = json_decode((string) $this->request->getPost('frequency_fields'), true);
+        return \App\Libraries\LaporanFrekuensiExport::criteriaGroups('Anggota', $columns, $fields, [
+            'birth_date' => 'members.DateOfBirth',
+            'gender_id' => 'jenis_kelamin.Name',
+            'member_type_id' => 'jenis_anggota.jenisanggota',
+            'fullname' => 'members.Fullname',
+            'place_of_birth' => 'members.PlaceOfBirth',
+            'address' => 'members.Address',
+            'province' => 'members.Province',
+            'city' => 'members.City',
+            'institution_name' => 'members.InstitutionName',
+            'email' => 'members.Email',
+            'createby' => 'CreateBy',
+            'updateby' => 'UpdateBy',
+        ]);
     }
 
     // Helper function untuk apply multiple filters

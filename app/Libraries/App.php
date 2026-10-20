@@ -47,8 +47,8 @@ class App
     {
         if ($this->parameterExists($name) === false) {
             $data = array(
-                'name' => $name,
-                'value' => $value
+                'Name' => $name,
+                'Value' => $value
             );
             $ret = $this->parameterModel->insert($data);
             // $params = $this->parameterModel->findAll();
@@ -63,11 +63,11 @@ class App
         if ($this->parameterExists($name) === false) {
             $this->addParameter($name, $value);
         } else {
-            $param = $this->parameterModel->where('name', $name)->first();
+            $param = $this->parameterModel->where('Name', $name)->first();
             $data = array(
-                'value' => $value
+                'Value' => $value
             );
-            $ret = $this->parameterModel->update($param->id, $data);
+            $ret = $this->parameterModel->update($param->ID, $data);
             // $params = $this->parameterModel->findAll();
             // set_cookie('params', json_encode($params), 3600 * 24 * 1);
             return $ret;
@@ -76,8 +76,8 @@ class App
 
     public function deleteParam($name =  null)
     {
-        $param = $this->parameterModel->where('name', $name)->first();
-        return $this->parameterModel->delete($param->id);
+        $param = $this->parameterModel->where('Name', $name)->first();
+        return $this->parameterModel->delete($param->ID);
     }
 
     public function parameterExists($name =  null)
@@ -93,10 +93,10 @@ class App
         $param = [];
 
         foreach ($params as $row) {
-            $param[$row->name] = $row;
+            $param[$row->Name] = $row;
         }
         if (isset($param[$name])) {
-            return $param[$name]->value;
+            return $param[$name]->Value;
         }
 
         return false;

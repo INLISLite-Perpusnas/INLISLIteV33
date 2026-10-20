@@ -38,7 +38,7 @@ class Home extends \Base\Controllers\BaseController
         $this->data['meta_description'] = 'Cari koleksi perpustakaan, lihat buku populer dan terbaru, serta baca berita dan informasi layanan perpustakaan.';
         $this->data['is_home_page'] = true;
 
-        $useCache = env('is_home_cache') == 1;
+        $useCache = setting_enabled('is_home_cache');
         $cacheKey = 'home_index_data';
 
         if ($useCache && $cached = cache($cacheKey)) {
@@ -82,11 +82,11 @@ class Home extends \Base\Controllers\BaseController
     }
 
     /**
-     * Get popular books from catalog (fitur toggle lewat .env is_populer)
+     * Get popular books from catalog (fitur toggle lewat settingparameters is_populer)
      */
     private function getPopularBooks()
     {
-        if ((int) env('is_populer', 0) !== 1) {
+        if (!setting_enabled('is_populer')) {
             return [];
         }
 
@@ -113,12 +113,12 @@ class Home extends \Base\Controllers\BaseController
     /**
      * Get 6 buku yang paling sering DIPINJAM, dihitung dari riwayat peminjaman
      * (collectionloanitems -> collections -> catalogs), bukan dari flag manual.
-     * Fitur toggle lewat .env is_sering_dipinjam (default 0 / nonaktif).
+     * Fitur toggle lewat settingparameters is_sering_dipinjam (default 0 / nonaktif).
      * Lihat juga: Peminjaman\Controllers\Peminjaman untuk struktur tabel yang sama.
      */
     private function getSeringDipinjamBooks($limit = 6)
     {
-        if ((int) env('is_sering_dipinjam', 0) !== 1) {
+        if (!setting_enabled('is_sering_dipinjam')) {
             return [];
         }
 
@@ -141,11 +141,11 @@ class Home extends \Base\Controllers\BaseController
     /**
      * Get 6 buku yang paling sering DIBACA DI TEMPAT, dihitung dari tabel
      * bacaditempat (BacaDitempat\Models\BacaDitempatModel) -> collections -> catalogs.
-     * Fitur toggle lewat .env is_sering_dibaca (default 0 / nonaktif).
+     * Fitur toggle lewat settingparameters is_sering_dibaca (default 0 / nonaktif).
      */
     private function getSeringDibacaBooks($limit = 6)
     {
-        if ((int) env('is_sering_dibaca', 0) !== 1) {
+        if (!setting_enabled('is_sering_dibaca')) {
             return [];
         }
 
@@ -312,7 +312,7 @@ class Home extends \Base\Controllers\BaseController
                 'link' => base_url('baca-ditempat'),
                 'color' => 'info'
             ],
-            ...(env('Is_keanggotaan_online') == 1 ? [[
+            ...(setting_enabled('is_keanggotaan_online') ? [[
                 'name' => 'Keanggotaan Online',
                 'description' => 'Daftar menjadi anggota perpustakaan',
                 'img' => base_url('assets/img/anggota.png'),
@@ -376,9 +376,77 @@ class Home extends \Base\Controllers\BaseController
         }
     }
 
+    public function usulanKoleksi()
+    {
+        $this->assertUsulanKoleksiActive();
+
+        return view('Home\Views\usulan-koleksi', [
+            'title' => 'Usulan Koleksi',
+            'meta_description' => 'Usulkan koleksi baru untuk perpustakaan.',
+        ]);
+    }
+
+    public function simpanUsulanKoleksi()
+    {
+        $this->assertUsulanKoleksiActive();
+
+        $this->validation->setRules([
+            'Title' => 'required|max_length[255]',
+            'Type' => 'permit_empty|max_length[50]',
+            'Subject' => 'permit_empty|max_length[255]',
+            'Author' => 'permit_empty|max_length[255]',
+            'PublishLocation' => 'permit_empty|max_length[255]',
+            'PublishYear' => 'permit_empty|max_length[50]',
+            'Publisher' => 'permit_empty|max_length[50]',
+            'Comments' => 'permit_empty|max_length[2000]',
+        ]);
+
+        if (!$this->validation->withRequest($this->request)->run()) {
+            return redirect()->to('home/usulan-koleksi')->withInput()
+                ->with('errors', $this->validation->getErrors());
+        }
+
+        $fields = ['Title', 'Type', 'Subject', 'Author', 'PublishLocation', 'PublishYear', 'Publisher', 'Comments'];
+        $payload = [];
+        foreach ($fields as $field) {
+            $value = trim((string) $this->request->getPost($field));
+            $payload[$field] = $value === '' ? null : $value;
+        }
+
+        if ($payload['Title'] === null) {
+            return redirect()->to('home/usulan-koleksi')->withInput()
+                ->with('errors', ['Title' => 'Judul koleksi wajib diisi.']);
+        }
+
+        $payload['Status'] = 'Usulan';
+        $payload['DateRequest'] = date('Y-m-d H:i:s');
+        $payload['CreateDate'] = $payload['DateRequest'];
+
+        try {
+            $branchValue = $this->settingModel->where('Name', 'Branch_id')->first()->Value ?? null;
+            $payload['Branch_id'] = ctype_digit((string) $branchValue) ? (int) $branchValue : null;
+            if (!$this->db->table('requestcatalog')->insert($payload)) {
+                throw new \RuntimeException('Insert requestcatalog failed');
+            }
+        } catch (\Throwable $exception) {
+            log_message('error', 'Gagal menyimpan usulan koleksi: ' . $exception->getMessage());
+            return redirect()->to('home/usulan-koleksi')->withInput()
+                ->with('error', 'Usulan belum tersimpan. Silakan coba lagi.');
+        }
+
+        return redirect()->to('home/usulan-koleksi')->with('success', 'Usulan koleksi berhasil dikirim.');
+    }
+
+    private function assertUsulanKoleksiActive(): void
+    {
+        $setting = $this->settingModel->where('Name', 'UsulanKoleksiLKD')->first();
+        if (strtoupper(trim((string) ($setting->Value ?? ''))) !== 'TRUE') {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+    }
     public function pendaftaran_online()
     {
-        if (env('Is_keanggotaan_online') != 1) {
+        if (!setting_enabled('is_keanggotaan_online')) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
         $this->data['title'] = 'Pendaftaran Online';

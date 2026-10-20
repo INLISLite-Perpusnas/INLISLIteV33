@@ -33,34 +33,23 @@ class Parameter extends \Base\Controllers\BaseResourceController
 		helper(['reference', 'thumbnail']);
 	}
 
-	public function datatable($slug = null)
+	public function datatable()
 	{
-		$db = db_connect();
-		$builder = $db->table('c_parameters as a')
-			->select('a.id, a.id as action, a.name,  a.value, a.description, a.category');
+		$db = db_connect('data');
+		$builder = $db->table('settingparameters as a')
+			->select('a.ID, a.ID as action, a.Name, a.Value, a.Branch_id');
 
-		if(!empty($slug)){
-			$builder->where('category', $slug);
-		}
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
-			->edit('category', function($row){
-				return '<b>'.$row->category.'</b>';
-			})
-			->edit('description', function($row){
-				return character_limiter($row->description??'',100);
-			})
+			->edit('Name', function($row) { return esc($row->Name); })
+			->edit('Value', function($row) { return esc($row->Value ?? ''); })
+			->edit('Branch_id', function($row) { return esc($row->Branch_id ?? ''); })
 			->edit('action', function($row){
-				$edit = '<a href="javascript:void(0);" data-href="'.base_url('api/parameter/show/'.$row->id).'" data-toggle="tooltip" data-placement="top" title="Ubah Parameter" class="btn btn-warning show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-				$delete = '<a href="javascript:void(0);" data-href="'.base_url('parameter/delete/'.$row->id).'" data-toggle="tooltip" data-placement="top" title="Hapus  Profil" class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+				$edit = '<a href="javascript:void(0);" data-href="'.base_url('api/parameter/show/'.$row->ID).'" data-toggle="tooltip" data-placement="top" title="Ubah Parameter" class="btn btn-warning show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
+				$delete = '<a href="javascript:void(0);" data-href="'.base_url('parameter/delete/'.$row->ID).'" data-toggle="tooltip" data-placement="top" title="Hapus Parameter" class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
 				return $edit ." ". $delete;
 			})
-			// ->filter(function ($builder, $request) {
-			// 	if ($request->category){
-			// 		$builder->where('b.slug', $request->category);
-			// 	}
-			// })
 			->toJson();
 
 		return $dataTable;
@@ -68,39 +57,35 @@ class Parameter extends \Base\Controllers\BaseResourceController
 
 	public function create()
 	{
-		$this->validation->setRule('name', 'Nama Parameter', 'required');
-		$this->validation->setRule('value', 'Nilai Parameter', 'required');
+		$this->validation->setRule('Name', 'Nama Parameter', 'required|max_length[50]');
+		$this->validation->setRule('Value', 'Nilai Parameter', 'permit_empty');
 		if ($this->request->getPost()) {
 			if ($this->validation->withRequest($this->request)->run()) {
-				$name = $this->request->getPost('name');
-				$value = $this->request->getPost('value');
+				$name = $this->request->getPost('Name');
 
-				$param = $this->parameterModel->where('name', $name)->first();
+				$param = $this->parameterModel->where('Name', $name)->where('Branch_id', null)->first();
 
 				if ($param) {
 					$update_data = array(
-						'name' => $this->request->getPost('name'),
-						'value' => $this->request->getPost('value'),
-						'description' => $this->request->getPost('description'),
-						'category' => $this->request->getPost('category'),
+						'Name' => $this->request->getPost('Name'),
+						'Value' => $this->request->getPost('Value'),
 					);
 
-					$paramSave = $this->parameterModel->update($param->id, $update_data);
+					$paramSave = $this->parameterModel->update($param->ID, $update_data);
 				} else {
 					$save_data = array(
-						'name' => $this->request->getPost('name'),
-						'value' => $this->request->getPost('value'),
-						'description' => $this->request->getPost('description'),
-						'category' => $this->request->getPost('category'),
+						'Name' => $this->request->getPost('Name'),
+						'Value' => $this->request->getPost('Value'),
 					);
 
+					$save_data['Branch_id'] = null;
 					$paramSave = $this->parameterModel->insert($save_data);
 				}
 
 				if ($paramSave) {
 					$response = [
 						'error'    => false,
-						'messages' => 'Parameter brhasil disimpan'
+						'messages' => 'Parameter berhasil disimpan'
 					];
 					return $this->respond($response);
 				} else {
@@ -129,27 +114,25 @@ class Parameter extends \Base\Controllers\BaseResourceController
 
 	public function edit($id = null)
 	{
-		$this->validation->setRule('name', 'Nama Parameter', 'required');
-		$this->validation->setRule('value', 'Nilai Parameter', 'required');
+		$this->validation->setRule('Name', 'Nama Parameter', 'required|max_length[50]');
+		$this->validation->setRule('Value', 'Nilai Parameter', 'permit_empty');
 		if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
 			$update_data = array(
-				'name' => $this->request->getPost('name'),
-				'value' => $this->request->getPost('value'),
-				'description' => $this->request->getPost('description'),
-				'category' => $this->request->getPost('category'),
+				'Name' => $this->request->getPost('Name'),
+				'Value' => $this->request->getPost('Value'),
 			);
 
 			$parameterUpdate = $this->parameterModel->update($id, $update_data);
 			if ($parameterUpdate) {
 				$response = [
 					'error'    => false,
-					'messages' => 'Reference berhasil diubah'
+					'messages' => 'Parameter berhasil diubah'
 				];
 				return $this->respond($response);
 			} else {
 				$response = [
 					'error'    => true,
-					'messages' => 'Reference gagal diubah'
+					'messages' => 'Parameter gagal diubah'
 				];
 				return $this->respond($response);
 			}
@@ -164,15 +147,15 @@ class Parameter extends \Base\Controllers\BaseResourceController
 		$this->validation->setRule('status', 'Status', 'trim');
 		if ($this->request->getPost()) {
 			if ($this->validation->withRequest($this->request)->run()) {
-				$name = $this->request->getPost('name');
-				$param = $this->parameterModel->where('name', $name)->first();
+				$name = $this->request->getPost('Name');
+				$param = $this->parameterModel->where('Name', $name)->where('Branch_id', null)->first();
 
 				$update_data = array(
-					'name' => $name,
-					'value' => $this->request->getPost('status'),
+					'Name' => $name,
+					'Value' => $this->request->getPost('status'),
 				);
 
-				$paramUpdate = $this->parameterModel->update($param->id, $update_data);
+				$paramUpdate = $this->parameterModel->update($param->ID, $update_data);
 				if ($paramUpdate) {
 					$this->session->setFlashdata('toastr_msg', 'Parameter berhasil diupdate');
 					$this->session->setFlashdata('toastr_type', 'success');
@@ -180,7 +163,7 @@ class Parameter extends \Base\Controllers\BaseResourceController
 						'status'   => 200,
 						'error'    => null,
 						'messages' => [
-							'success' => 'Parameter brhasil diupdate'
+							'success' => 'Parameter berhasil diupdate'
 						]
 					];
 					return $this->respondUpdated($response);

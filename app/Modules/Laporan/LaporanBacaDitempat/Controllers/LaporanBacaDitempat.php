@@ -101,6 +101,20 @@ class LaporanBacaDitempat extends \Base\Controllers\BaseController
             return '<div class="alert alert-warning">Pilih minimal satu kolom untuk preview data</div>';
         }
 
+        if ($this->request->getPost('export_mode') === 'frekuensi') {
+            $selected = \App\Libraries\LaporanFrekuensiExport::selectedGroups('BacaDitempat', $columns);
+            $query = $this->guestModel
+                ->join('collections', 'bacaditempat.Collection_id = collections.ID')
+                ->join('catalogs', 'collections.Catalog_id = catalogs.ID')
+                ->join('worksheets', 'catalogs.Worksheet_id = worksheets.ID')
+                ->join('members', 'bacaditempat.Member_id = members.ID', 'left')
+                ->join('location_library', 'collections.Location_Library_id = location_library.ID', 'left')
+                ->join('locations', 'collections.Location_id = locations.ID', 'left');
+            $this->applyFilters($query);
+            $rows = \App\Libraries\LaporanFrekuensiExport::groupedRows($query->builder(), $selected, 'COUNT(DISTINCT bacaditempat.ID)');
+            return \App\Libraries\LaporanFrekuensiExport::previewHtml($selected, $rows);
+        }
+
         $query=$this->guestModel->select('NoPengunjung as no_pengunjung,
                 location_library.Name AS lokasi, Location_Library_id,
                 locations.Name AS lok_ruang, catalogs.Publisher AS penerbit,
@@ -165,7 +179,7 @@ class LaporanBacaDitempat extends \Base\Controllers\BaseController
         ini_set('max_execution_time', 300); // 5 minutes
 
         // Simplified validation - only require columns
-        if (!$this->validate([
+        if ($this->request->getPost('export_mode') !== 'frekuensi' && !$this->validate([
             'columns' => 'required',
         ])) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
@@ -174,19 +188,7 @@ class LaporanBacaDitempat extends \Base\Controllers\BaseController
         $selectedColumns = $this->request->getPost('columns');
 
         // Check estimated record count first
-        $countQuery=$this->guestModel->select('NoPengunjung as no_pengunjung,
-                location_library.Name AS lokasi, Location_Library_id,
-                locations.Name AS lok_ruang, catalogs.Publisher AS penerbit,
-                catalogs.Title AS judul_katalog, catalogs.Author AS pengarang_katalog,
-                catalogs.Publisher AS penerbit_katalog, catalogs.Subject AS subjek_katalog,
-                catalogs.DeweyNo AS nomor_dewey,
-                NoInduk AS noinduk,
-                members.MemberNo AS noanggota, members.JenisAnggota_id,
-                (CASE WHEN bacaditempat.Member_id IS NULL 
-                      THEN bacaditempat.NoPengunjung 
-                      ELSE members.FullName END) AS nama,
-                bacaditempat.CreateDate AS tgl_kunjungan,
-                bacaditempat.CreateDate AS periode')
+        $countQuery=$this->guestModel
             ->join('collections', 'bacaditempat.Collection_id = collections.ID')
             ->join('catalogs', 'collections.Catalog_id = catalogs.ID')
             ->join('worksheets', 'catalogs.Worksheet_id = worksheets.ID')   
@@ -195,7 +197,18 @@ class LaporanBacaDitempat extends \Base\Controllers\BaseController
             ->join('locations', 'collections.Location_id = locations.ID', 'left');
 
         $this->applyFilters($countQuery);
+        if ($this->request->getPost('export_mode') === 'frekuensi') {
+            $selected = \App\Libraries\LaporanFrekuensiExport::selectedGroups('BacaDitempat', $this->request->getPost('columns'));
+            if (!$selected) {
+                return redirect()->back()->with('error', 'Pilih minimal satu kategori frekuensi.');
+            }
+            $rows = \App\Libraries\LaporanFrekuensiExport::groupedRows($countQuery->builder(), $selected, 'COUNT(DISTINCT bacaditempat.ID)');
+            \App\Libraries\LaporanFrekuensiExport::download('Laporan Baca Ditempat', $selected, $rows, 'excel');
+        }
+
         $totalRecords = $countQuery->countAllResults();
+
+
 
         // Limit maksimum export untuk mencegah memory issue
         $maxRecords = 50000; // Adjust sesuai kebutuhan server
@@ -305,25 +318,13 @@ class LaporanBacaDitempat extends \Base\Controllers\BaseController
         ini_set('memory_limit', '512M');
         ini_set('max_execution_time', 300);
 
-        if (!$this->validate(['columns' => 'required'])) {
+        if ($this->request->getPost('export_mode') !== 'frekuensi' && !$this->validate(['columns' => 'required'])) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
         $selectedColumns = $this->request->getPost('columns');
 
-        $countQuery = $this->guestModel->select('NoPengunjung as no_pengunjung,
-                location_library.Name AS lokasi, Location_Library_id,
-                locations.Name AS lok_ruang, catalogs.Publisher AS penerbit,
-                catalogs.Title AS judul_katalog, catalogs.Author AS pengarang_katalog,
-                catalogs.Publisher AS penerbit_katalog, catalogs.Subject AS subjek_katalog,
-                catalogs.DeweyNo AS nomor_dewey,
-                NoInduk AS noinduk,
-                members.MemberNo AS noanggota, members.JenisAnggota_id,
-                (CASE WHEN bacaditempat.Member_id IS NULL
-                      THEN bacaditempat.NoPengunjung
-                      ELSE members.FullName END) AS nama,
-                bacaditempat.CreateDate AS tgl_kunjungan,
-                bacaditempat.CreateDate AS periode')
+        $countQuery = $this->guestModel
             ->join('collections', 'bacaditempat.Collection_id = collections.ID')
             ->join('catalogs', 'collections.Catalog_id = catalogs.ID')
             ->join('worksheets', 'catalogs.Worksheet_id = worksheets.ID')
@@ -332,7 +333,18 @@ class LaporanBacaDitempat extends \Base\Controllers\BaseController
             ->join('locations', 'collections.Location_id = locations.ID', 'left');
 
         $this->applyFilters($countQuery);
+        if ($this->request->getPost('export_mode') === 'frekuensi') {
+            $selected = \App\Libraries\LaporanFrekuensiExport::selectedGroups('BacaDitempat', $this->request->getPost('columns'));
+            if (!$selected) {
+                return redirect()->back()->with('error', 'Pilih minimal satu kategori frekuensi.');
+            }
+            $rows = \App\Libraries\LaporanFrekuensiExport::groupedRows($countQuery->builder(), $selected, 'COUNT(DISTINCT bacaditempat.ID)');
+            \App\Libraries\LaporanFrekuensiExport::download('Laporan Baca Ditempat', $selected, $rows, 'pdf');
+        }
+
         $totalRecords = $countQuery->countAllResults();
+
+
 
         $maxRecords = 5000;
         if ($totalRecords > $maxRecords) {

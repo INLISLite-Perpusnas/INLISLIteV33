@@ -67,12 +67,14 @@ class Filters extends BaseConfig
                     'opac',                     // method: index
                     'opac/index',               // method: index
                     'opac/detail/*',            // method: detail
+                    'opac/konten-digital/*',    // PDF publik non-DRM
                     'opac/search',              // method: search
                     'opac/browse',              // method: browse
                     'opac/export',              // method: export
                     'opac/statistics',          // method: statistics
                     'opac/statistics_anggota',  // method: statistics_anggota
                     'opac/statistics_kunjungan', // method: statistics_kunjungan
+                    'opac/statistics_sirkulasi', // method: statistics_sirkulasi
                     'opac/downloadMarc*',       // method: semua downloadMarc (Utf8, Xml, Mods, dll)
                     'opac/member-login',        // method: memberLogin (login anggota via modal)
                     // 'opac/bacaDigital/*' TIDAK DIMASUKKAN agar terkena filter session (wajib login)
@@ -108,18 +110,21 @@ class Filters extends BaseConfig
                     'api/region/*',
                     'api/master-template/*',
                     'master-template/*',
+                    'master-nama-perpustakaan/update-database',
                     'api/member/*',
 
                     // --- PENGECUALIAN UNTUK CONTROLLER OPAC ---
                     'opac',
                     'opac/index',
                     'opac/detail/*',
+                    'opac/konten-digital/*',
                     'opac/search',
                     'opac/browse',
                     'opac/export',
                     'opac/statistics',
                     'opac/statistics_anggota',
                     'opac/statistics_kunjungan',
+                    'opac/statistics_sirkulasi',
                     'opac/downloadMarc*',
                     'opac/member-login',
 

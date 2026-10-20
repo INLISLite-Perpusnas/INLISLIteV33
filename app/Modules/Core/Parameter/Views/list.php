@@ -1,8 +1,3 @@
-<?php
-$request = service('request');
-$slug = $request->getGet('slug') ?? '';
-?>
-
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
 <?= $this->endSection('style'); ?>
@@ -25,7 +20,7 @@ $slug = $request->getGet('slug') ?? '';
                         <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i>
                                 Home</a></li>
                         <li class="breadcrumb-item">Setting</li>
-                        <li class="breadcrumb-item" aria-current="page">Paramater</li>
+                        <li class="breadcrumb-item" aria-current="page">Parameter</li>
                     </ol>
                 </nav>
             </div>
@@ -34,24 +29,9 @@ $slug = $request->getGet('slug') ?? '';
 
 
 
-    <ul class="body-tabs body-tabs-layout tabs-animated body-tabs-animated nav">
-        <li class="nav-item">
-            <a class="nav-link <?= ($slug == '') ? 'active' : '' ?>" href="<?= base_url('parameter/?slug=') ?>">
-                <span>Semua</span>
-            </a>
-        </li>
-        <?php foreach (get_ref('ref-parameter', 'slug') as $row): ?>
-            <li class="nav-item">
-                <a class="nav-link <?= ($slug == (slugify($row->name))) ? 'active' : '' ?>"
-                    href="<?= base_url('parameter/?slug=' . slugify(($row->name))) ?>">
-                    <span><?= $row->name ?></span>
-                </a>
-            </li>
-        <?php endforeach; ?>
-    </ul>
 
     <div class="main-card mb-3 card">
-        <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Paramater
+        <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Parameter
             <div class="btn-actions-pane-right actions-icon-btn">
                 <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create"
                     href="javascript:void(0);" class=" btn btn-success" title=""><i class="fa fa-plus"></i> Tambah
@@ -63,10 +43,9 @@ $slug = $request->getGet('slug') ?? '';
                 <thead>
                     <tr>
                         <th class="text-center" width="35">No</th>
-                        <th class="text-center" width="100">Kategori</th>
+                        <th class="text-center" width="100">Branch ID</th>
                         <th class="text-center">Nama Parameter</th>
                         <th class="text-center">Nilai Parameter</th>
-                        <th class="text-center">Keterangan</th>
                         <th class="text-center" width="100">Aksi</th>
                     </tr>
                 </thead>
@@ -87,7 +66,7 @@ $slug = $request->getGet('slug') ?? '';
             "processing": true,
             "serverSide": true,
             "ajax": {
-                "url": '<?php echo site_url('api/parameter/datatable/' . $slug); ?>',
+                "url": '<?php echo site_url('api/parameter/datatable'); ?>',
             },
             "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
                 "<'row'<'col-md-12'tr>>" +
@@ -110,19 +89,15 @@ $slug = $request->getGet('slug') ?? '';
                 className: 'text-center'
             },
             {
-                data: 'category',
+                data: 'Branch_id',
                 className: 'text-left'
             },
             {
-                data: 'name',
+                data: 'Name',
                 className: 'text-left'
             },
             {
-                data: 'value',
-                className: 'text-left'
-            },
-            {
-                data: 'description',
+                data: 'Value',
                 className: 'text-left'
             },
             {
@@ -155,18 +130,6 @@ $slug = $request->getGet('slug') ?? '';
                 });
             }
         });
-    });
-
-    $('#search_name').on('keyup', function (e) {
-        t.columns('name:name').search(this.value).draw();
-    });
-
-    $('#search_value').on('keyup', function () {
-        t.columns('value:name').search(this.value).draw();
-    });
-
-    $('#search_description').on('keyup', function () {
-        t.columns('description:name').search(this.value).draw();
     });
 
     $('#tbl_params').on('click', '.remove-data', function () {

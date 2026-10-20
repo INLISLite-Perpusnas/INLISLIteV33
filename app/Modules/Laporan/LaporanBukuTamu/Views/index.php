@@ -130,11 +130,7 @@ $date_to = $request->getGet('date_to') ?? '';
                         </div>
                         <div class="col-md-6">
                             <label>Tahun</label>
-                            <select name="year" class="form-control">
-                                <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
-                                <option value="<?= $i ?>"><?= $i ?></option>
-                                <?php endfor ?>
-                            </select>
+                            <input type="number" name="year" class="form-control" min="1000" max="9999" step="1" placeholder="Contoh: 2015" value="<?= date('Y') ?>" required>
                         </div>
                     </div>
                 </div>
@@ -142,11 +138,7 @@ $date_to = $request->getGet('date_to') ?? '';
                 <div id="year_filter" class="filter-section mb-3" style="display: none;">
                     <h6 class="mb-3"><i class="fas fa-calendar-alt"></i> Filter Berdasarkan Tahun</h6>
                     <label>Tahun</label>
-                    <select name="year" class="form-control">
-                        <?php for ($i = date('Y'); $i >= 2020; $i--) : ?>
-                        <option value="<?= $i ?>"><?= $i ?></option>
-                        <?php endfor ?>
-                    </select>
+                    <input type="number" name="year" class="form-control" min="1000" max="9999" step="1" placeholder="Contoh: 2015" value="<?= date('Y') ?>" required>
                 </div>
 
                 <div class="row">
@@ -229,7 +221,14 @@ $date_to = $request->getGet('date_to') ?? '';
                         </div>
                     </div>
                 </div>
-
+                <div class="form-group mx-auto mb-3" style="max-width: 320px;">
+                    <label for="export_mode"><strong>Jenis Laporan</strong></label>
+                    <select class="form-control" name="export_mode" id="export_mode">
+                        <option value="detail">Detail Data</option>
+                        <option value="frekuensi">Frekuensi (Jumlah Data)</option>
+                    </select>
+                    <small class="text-muted">Frekuensi dikelompokkan berdasarkan kolom yang dicentang.</small>
+                </div>
                 <div class="text-center mb-3 mt-2">
                     <button type="submit" class="btn btn-success btn-lg" onclick="setExportAction('excel')">
                         <i class="fas fa-file-excel"></i> Export Excel
@@ -282,6 +281,7 @@ $(document).ready(function() {
         const formData = new FormData();
 
         formData.append('columns', JSON.stringify(selectedColumns));
+        formData.append('export_mode', $('#export_mode').val());
         formData.append('filter_type', filterType);
         formData.append('gender_id', genderId); // Add gender filter to form data
         formData.append('visitor_type', visitor_type);
@@ -296,9 +296,9 @@ $(document).ready(function() {
             formData.append('end_date', $('input[name="end_date"]').val());
         } else if (filterType === 'month') {
             formData.append('month', $('select[name="month"]').val());
-            formData.append('year', $('#month_filter select[name="year"]').val());
+            formData.append('year', $('#month_filter input[name="year"]').val());
         } else if (filterType === 'year') {
-            formData.append('year', $('#year_filter select[name="year"]').val());
+            formData.append('year', $('#year_filter input[name="year"]').val());
         }
 
         // Show loading indicator
@@ -336,10 +336,10 @@ $(document).ready(function() {
     });
 
     // Event listeners for form changes
-    $('input[name="columns[]"], #filter_type, #gender_id, #visitor_type, #location, #room, #destination')
+    $('input[name="columns[]"], #filter_type, #gender_id, #visitor_type, #location, #room, #destination, #export_mode')
         .change(updatePreview);
     $('input[name="start_date"], input[name="end_date"]').change(updatePreview);
-    $('select[name="month"], select[name="year"]').change(updatePreview);
+    $('select[name="month"], input[name="year"]').change(updatePreview);
 
     // Initial preview load
     updatePreview();
@@ -365,5 +365,6 @@ function setExportAction(type) {
         form.action = '<?= base_url('laporan-buku-tamu/export') ?>';
     }
 }
+
 </script>
 <?= $this->endSection('script'); ?>

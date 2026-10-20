@@ -21,6 +21,8 @@ class PerpustakaanKeliling extends \App\Controllers\BaseController
 
     public function index()
     {
+        $this->assertFeatureEnabled();
+
         $request = service('request');
         $tab = $request->getGet('tab') ?: 'jadwal-layanan';
         $q = trim((string) $request->getGet('q'));
@@ -57,6 +59,8 @@ class PerpustakaanKeliling extends \App\Controllers\BaseController
 
     public function detail(string $slug)
     {
+        $this->assertFeatureEnabled();
+
         $jadwalRow = $this->jadwalModel->getDetailJadwalBySlug($slug);
 
         if (!$jadwalRow) {
@@ -91,6 +95,13 @@ class PerpustakaanKeliling extends \App\Controllers\BaseController
         ];
 
         return view('PerpustakaanKeliling\Views\detail', $data);
+    }
+
+    private function assertFeatureEnabled(): void
+    {
+        if (!setting_enabled('is_perpustakaan_keliling')) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
     }
 }
 

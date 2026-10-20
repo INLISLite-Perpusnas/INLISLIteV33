@@ -63,6 +63,32 @@ class LaporanKatalog extends \Base\Controllers\BaseController
         return view('LaporanKatalog\Views\index', $data);
     }
 
+    private function frequencyGroups($columns): array
+    {
+        $criteria = json_decode((string) $this->request->getPost('criteria'), true);
+        $fields = is_array($criteria) ? array_column($criteria, 'field') : [];
+        $selected = \App\Libraries\LaporanFrekuensiExport::criteriaGroups('Katalog', [], $fields, [
+            'author' => 'Author',
+            'createby' => 'CreateBy',
+            'dewey' => 'DeweyNo',
+            'isbn' => 'ISBN',
+            'languages' => 'Languages',
+            'publisher' => 'Publisher',
+            'publishlocation' => 'PublishLocation',
+            'publishyear' => 'PublishYear',
+            'subject' => 'Subject',
+            'title' => 'Title',
+            'updateby' => 'UpdateBy',
+        ]);
+        if (in_array('masterkelasbesar_id', $fields, true)) {
+            $selected['masterkelasbesar_id'] = ['Kelas Utama DDC', "CONCAT(LEFT(catalogs.DeweyNo, 1), '00')"];
+        }
+        if (in_array('worksheet_id', $fields, true)) {
+            $selected['worksheet_id'] = ['Jenis Bahan', 'frequency_worksheets.Name'];
+        }
+        return $selected ?: \App\Libraries\LaporanFrekuensiExport::selectedGroups('Katalog', $columns);
+    }
+
     private function criterionDefinitions(): array
     {
         return [
@@ -117,8 +143,25 @@ class LaporanKatalog extends \Base\Controllers\BaseController
     {
         $columns = json_decode($this->request->getPost('columns'), true);
         
-        if (empty($columns)) {
+        if ($this->request->getPost('export_mode') === 'frekuensi') {
+            if (!$this->frequencyGroups($columns)) {
+                return '<div class="alert alert-warning">Pilih kriteria yang tersedia sebagai kolom atau centang minimal satu kolom.</div>';
+            }
+        } elseif (empty($columns)) {
             return '<div class="alert alert-warning">Pilih minimal satu kolom untuk preview data</div>';
+        }
+
+        if ($this->request->getPost('export_mode') === 'frekuensi') {
+            $selected = $this->frequencyGroups($columns);
+            $query = $this->katalogModel
+                ->join('users as creator', 'catalogs.CreateBy = creator.id', 'left')
+                ->join('users as updater', 'catalogs.UpdateBy = updater.id', 'left');
+            $this->applyFilters($query);
+            if (isset($selected['worksheet_id'])) {
+                $query->join('worksheets frequency_worksheets', 'frequency_worksheets.ID = catalogs.Worksheet_id', 'left');
+            }
+            $rows = \App\Libraries\LaporanFrekuensiExport::groupedRows($query->builder(), $selected, 'COUNT(DISTINCT catalogs.ID)');
+            return \App\Libraries\LaporanFrekuensiExport::previewHtml($selected, $rows);
         }
 
         // Build query dengan JOIN ke tabel users
@@ -169,7 +212,7 @@ class LaporanKatalog extends \Base\Controllers\BaseController
         ini_set('max_execution_time', 300);
 
         // Simplified validation - hanya require columns
-        if (!$this->validate([
+        if ($this->request->getPost('export_mode') !== 'frekuensi' && !$this->validate([
             'columns' => 'required',
         ])) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
@@ -183,7 +226,21 @@ class LaporanKatalog extends \Base\Controllers\BaseController
             ->join('users as updater', 'catalogs.UpdateBy = updater.id', 'left');
 
         $this->applyFilters($countQuery);
+        if ($this->request->getPost('export_mode') === 'frekuensi') {
+            $selected = $this->frequencyGroups($this->request->getPost('columns'));
+            if (!$selected) {
+                return redirect()->back()->with('error', 'Pilih minimal satu kategori frekuensi.');
+            }
+            if (isset($selected['worksheet_id'])) {
+                $countQuery->join('worksheets frequency_worksheets', 'frequency_worksheets.ID = catalogs.Worksheet_id', 'left');
+            }
+            $rows = \App\Libraries\LaporanFrekuensiExport::groupedRows($countQuery->builder(), $selected, 'COUNT(DISTINCT catalogs.ID)');
+            \App\Libraries\LaporanFrekuensiExport::download('Laporan Katalog', $selected, $rows, 'excel');
+        }
+
         $totalRecords = $countQuery->countAllResults();
+
+
 
         // Limit maksimum export untuk mencegah memory issue
         $maxRecords = 50000;
@@ -272,7 +329,7 @@ class LaporanKatalog extends \Base\Controllers\BaseController
         ini_set('memory_limit', '512M');
         ini_set('max_execution_time', 300);
 
-        if (!$this->validate(['columns' => 'required'])) {
+        if ($this->request->getPost('export_mode') !== 'frekuensi' && !$this->validate(['columns' => 'required'])) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
@@ -282,7 +339,21 @@ class LaporanKatalog extends \Base\Controllers\BaseController
             ->join('users as creator', 'catalogs.CreateBy = creator.id', 'left')
             ->join('users as updater', 'catalogs.UpdateBy = updater.id', 'left');
         $this->applyFilters($countQuery);
+        if ($this->request->getPost('export_mode') === 'frekuensi') {
+            $selected = $this->frequencyGroups($this->request->getPost('columns'));
+            if (!$selected) {
+                return redirect()->back()->with('error', 'Pilih minimal satu kategori frekuensi.');
+            }
+            if (isset($selected['worksheet_id'])) {
+                $countQuery->join('worksheets frequency_worksheets', 'frequency_worksheets.ID = catalogs.Worksheet_id', 'left');
+            }
+            $rows = \App\Libraries\LaporanFrekuensiExport::groupedRows($countQuery->builder(), $selected, 'COUNT(DISTINCT catalogs.ID)');
+            \App\Libraries\LaporanFrekuensiExport::download('Laporan Katalog', $selected, $rows, 'pdf');
+        }
+
         $totalRecords = $countQuery->countAllResults();
+
+
 
         $maxRecords = 5000;
         if ($totalRecords > $maxRecords) {

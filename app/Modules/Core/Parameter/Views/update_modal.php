@@ -12,40 +12,14 @@
             <form id="frm_edit" method="post" data-action="<?= base_url('api/parameter/edit') ?>" data-id="">
                 <div class="modal-body">
                     <div id="frm_edit_message"></div>
-                    <div class="form-row">
-                        <div class="col-md-6">
-                            <div class="position-relative form-group">
-                                <label for="category">Kategori</label>
-                                <div>
-                                    <select class="form-control" name="category" id="frm_category" tabindex="-1" aria-hidden="true">
-                                        <?php foreach (get_ref('ref-parameter', 'slug') as $row) : ?>
-                                            <option value="<?= $row->name ?>"><?= $row->name ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="position-relative form-group">
-                                <label for="name">Nama Parameter*</label>
-                                <div>
-                                    <input required type="text" class="form-control" id="frm_edit_name" name="name" placeholder="Nama Parameter" value="<?= set_value('name'); ?>" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="form-group">
-                        <label for="value">Nilai Parameter*</label>
-                        <div>
-                            <input required type="text" class="form-control" id="frm_edit_value" name="value" placeholder="Nilai Parameter" value="<?= set_value('value'); ?>" />
-                        </div>
+                        <label for="frm_edit_name">Nama Parameter*</label>
+                        <input required maxlength="50" type="text" class="form-control" id="frm_edit_name" name="Name" placeholder="Nama Parameter" value="<?= set_value('Name'); ?>" />
                     </div>
-
                     <div class="form-group">
-                        <label for="description">Keterangan</label>
+                        <label for="frm_edit_value">Nilai Parameter</label>
                         <div>
-                            <textarea id="frm_edit_description" name="description" placeholder="Keterangan" rows="2" class="form-control autosize-input" style="min-height: 38px;"><?= set_value('description') ?></textarea>
+                            <textarea class="form-control" id="frm_edit_value" name="Value" placeholder="Nilai Parameter" rows="3"><?= set_value('Value'); ?></textarea>
                         </div>
                     </div>
                 </div>
@@ -66,11 +40,9 @@
             type: 'get',
             dataType: 'json',
             success: function(response) {
-                $('#frm_edit').attr("data-id", response.id);
-                $('#frm_edit_name').val(response.name);
-                $('#frm_edit_value').val(response.value);
-                $('#frm_edit_description').val(response.description);
-                $('#frm_category').val(response.category);
+                $('#frm_edit').attr("data-id", response.ID);
+                $('#frm_edit_name').val(response.Name);
+                $('#frm_edit_value').val(response.Value);
 
                 $('#modal_edit').modal('show');
             }
