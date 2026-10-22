@@ -85,7 +85,7 @@ $select2 = select_two();
 					<td>
 						<?php if ($row['Fixed'] != 1) : ?>
 							<div class="input-group">
-								<input type="text" class="form-control" name="Indicator1[<?= $tag ?>]<?= ($row['Repeatable'] == 1) ? '[]' : '' ?>" id="Indicator1_<?= $tag ?>_<?= $index ?>" placeholder="" value="<?= $existing_item['Indicator1'] ?>" />
+								<input type="text" class="form-control" name="Indicator1[<?= $tag ?>]<?= ($row['Repeatable'] == 1) ? '[]' : '' ?>" id="Indicator1_<?= $tag ?>_<?= $index ?>" placeholder="" value="<?= esc($existing_item['Indicator1']) ?>" />
 								<div class="input-group-append">
 									<button class="btn btn bg-primary text-white btn-indicator1" data-id="<?= $row['ID'] ?>" data-field_id="Indicator1_<?= $tag ?>_<?= $index ?>" data-tag="<?= $tag ?>" data-name="<?= $row['Name'] ?>" type="button"><i class="fa fa-list"></i></button>
 								</div>
@@ -95,7 +95,7 @@ $select2 = select_two();
 					<td>
 						<?php if ($row['Fixed'] != 1) : ?>
 							<div class="input-group">
-								<input type="text" class="form-control" name="Indicator2[<?= $tag ?>]<?= ($row['Repeatable'] == 1) ? '[]' : '' ?>" id="Indicator2_<?= $tag ?>_<?= $index ?>" placeholder="" value="<?= $existing_item['Indicator2'] ?>" />
+								<input type="text" class="form-control" name="Indicator2[<?= $tag ?>]<?= ($row['Repeatable'] == 1) ? '[]' : '' ?>" id="Indicator2_<?= $tag ?>_<?= $index ?>" placeholder="" value="<?= esc($existing_item['Indicator2']) ?>" />
 								<div class="input-group-append">
 									<button class="btn btn bg-primary text-white btn-indicator2" data-id="<?= $row['ID'] ?>" data-field_id="Indicator2_<?= $tag ?>_<?= $index ?>" data-tag="<?= $tag ?>" data-name="<?= $row['Name'] ?>" type="button"><i class="fa fa-list"></i></button>
 								</div>

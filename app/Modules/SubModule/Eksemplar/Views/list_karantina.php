@@ -5,6 +5,12 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
+<style>
+	.karantina-filter-label {
+		margin: 0; color: #fff; background: #495057; border: 1px solid #495057;
+		padding: .5rem .75rem; border-radius: .25rem 0 0 .25rem; white-space: nowrap;
+	}
+</style>
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -36,7 +42,61 @@ $slug = $request->getGet('slug') ?? '';
 			<div class="btn-actions-pane-right actions-icon-btn">
 			</div>
 		</div>
+		<!-- Panel Aksi Massal (sama dengan Daftar Eksemplar) -->
+		<div class="card-footer">
+			<div class="d-flex align-items-center flex-wrap" style="gap:6px; padding: 8px 0 4px 0;">
+				<div class="input-group" style="width:320px; flex-shrink:0;">
+					<div class="input-group-prepend">
+						<label class="karantina-filter-label" for="action">Pilih Aksi</label>
+					</div>
+					<select class="form-control" id="action" name="action">
+						<option value="">-- Pilih Aksi --</option>
+						<option value="pulihkan">Pulihkan ke Daftar Eksemplar</option>
+						<option value="hapus">Hapus Permanen</option>
+					</select>
+				</div>
+				<button class="btn btn-primary" id="btnProcess" type="button" style="height:38px; padding: 0 16px; flex-shrink:0;">
+					<i class="fa fa-check" aria-hidden="true"></i> Proses
+				</button>
+			</div>
+		</div>
+
 		<div class="card-body">
+			<!-- Filter: Lokasi Perpustakaan, Lokasi Ruang, Bentuk Fisik -->
+			<div class="d-flex align-items-center flex-wrap mb-3" style="gap:6px;">
+				<div class="input-group" style="width:280px; flex-shrink:0;">
+					<div class="input-group-prepend">
+						<label class="karantina-filter-label" for="filter_location_library"><i class="fa fa-map-marker-alt" aria-hidden="true"></i> Lokasi Perpustakaan</label>
+					</div>
+					<select class="form-control" id="filter_location_library">
+						<option value="">-- Semua Lokasi Perpustakaan --</option>
+					</select>
+				</div>
+
+				<div class="input-group" style="width:280px; flex-shrink:0;">
+					<div class="input-group-prepend">
+						<label class="karantina-filter-label" for="filter_location_id"><i class="fa fa-door-open" aria-hidden="true"></i> Lokasi Ruang</label>
+					</div>
+					<select class="form-control" id="filter_location_id" disabled>
+						<option value="">-- Pilih Lokasi Perpustakaan Dahulu --</option>
+					</select>
+				</div>
+
+				<div class="input-group" style="width:280px; flex-shrink:0;">
+					<div class="input-group-prepend">
+						<label class="karantina-filter-label" for="filter_media_id"><i class="fa fa-cube" aria-hidden="true"></i> Bentuk Fisik</label>
+					</div>
+					<select class="form-control" id="filter_media_id">
+						<option value="">-- Semua Bentuk Fisik --</option>
+					</select>
+				</div>
+
+				<button class="btn btn-outline-secondary" id="btnResetFilter" type="button" style="height:38px; flex-shrink:0;">
+					<i class="fa fa-undo" aria-hidden="true"></i> Reset Filter
+				</button>
+			</div>
+			<p id="karantina_filter_error" class="text-danger" role="status" hidden>Pilihan filter gagal dimuat. Silakan muat ulang halaman.</p>
+
 			<form name="form_items" id="form_items">
 				<table style="width: 100%;" id="tbl_data" class="table table-hover table-striped table-bordered">
 					<thead>
@@ -77,6 +137,11 @@ $slug = $request->getGet('slug') ?? '';
 			"serverSide": true,
 			"ajax": {
 				"url": '<?php echo site_url('api/eksemplar/datatable/1') ?>',
+				"data": function(d) {
+					d.location_library_id = $('#filter_location_library').val();
+					d.location_id = $('#filter_location_id').val();
+					d.media_id = $('#filter_media_id').val();
+				}
 			},
 			 dom: "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
                    "<'row'<'col-md-12'tr>>" +
@@ -200,6 +265,79 @@ $slug = $request->getGet('slug') ?? '';
 
 	$(".check_data").click(function() {
 		$('#tbl_data input:checkbox').not(this).prop('checked', this.checked);
+	});
+
+	// === Filter (sumber opsi sama dengan Daftar Eksemplar) ===
+	function loadFilterOptions($select, url) {
+		return $.getJSON(url).then(function(payload) {
+			var items = payload.data || payload;
+			if (!Array.isArray(items)) {
+				return $.Deferred().reject().promise();
+			}
+			$.each(items, function(_, item) {
+				$select.append(new Option(item.name, item.code));
+			});
+		});
+	}
+
+	function resetRoomFilter() {
+		$('#filter_location_id').empty().append(new Option('-- Pilih Lokasi Perpustakaan Dahulu --', '')).prop('disabled', true);
+	}
+
+	function reloadTable() {
+		if (t) {
+			t.ajax.reload();
+		}
+	}
+
+	$.when(
+		loadFilterOptions($('#filter_location_library'), '<?= site_url('api/eksemplar/locationlibrary') ?>'),
+		loadFilterOptions($('#filter_media_id'), '<?= site_url('api/eksemplar/collectionmedias') ?>')
+	).fail(function() {
+		$('#karantina_filter_error').prop('hidden', false);
+	});
+
+	$('#filter_location_library').on('change', function() {
+		var libraryId = $(this).val();
+		resetRoomFilter();
+		reloadTable();
+		if (!libraryId) {
+			return;
+		}
+		var $room = $('#filter_location_id').empty().append(new Option('-- Semua Lokasi Ruang --', ''));
+		loadFilterOptions($room, '<?= site_url('api/eksemplar/locations') ?>/' + encodeURIComponent(libraryId))
+			.done(function() {
+				if ($('#filter_location_library').val() === libraryId) {
+					$room.prop('disabled', false);
+				}
+			})
+			.fail(function() {
+				$('#karantina_filter_error').prop('hidden', false);
+			});
+	});
+	$('#filter_location_id, #filter_media_id').on('change', reloadTable);
+	$('#btnResetFilter').on('click', function() {
+		$('#filter_location_library').val('');
+		$('#filter_media_id').val('');
+		resetRoomFilter();
+		reloadTable();
+	});
+
+	// === Pilih Aksi + Proses ===
+	$('#btnProcess').on('click', function() {
+		var action = $('#action').val();
+		if (action === 'pulihkan') {
+			$('#pulihkan_eksemplar').trigger('click');
+		} else if (action === 'hapus') {
+			$('#hapus_permanen').trigger('click');
+		} else {
+			Swal.fire({
+				title: 'Peringatan',
+				text: 'Silahkan pilih aksi terlebih dahulu',
+				type: 'warning',
+				showConfirmButton: true
+			});
+		}
 	});
 
 	// Replace the existing button handlers with these

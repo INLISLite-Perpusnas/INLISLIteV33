@@ -162,6 +162,18 @@ class AnggotaController extends \Base\Controllers\BaseController
             ? $this->validation->listErrors()
             : $this->session->getFlashdata('message');
 
+        $this->loadMemberFilterOptions();
+
+        echo view('Anggota\Views\list', $this->data);
+    }
+
+    /**
+     * Opsi filter daftar anggota sesuai jenis perpustakaan:
+     * Kelas (sekolah) atau Fakultas & Jurusan (perguruan tinggi).
+     * Dipakai oleh daftar anggota dan keranjang anggota.
+     */
+    private function loadMemberFilterOptions(): void
+    {
         $jenisPerpustakaan = $this->settingModel->where('Name', 'JenisPerpustakaan')->first()->Value ?? '';
         $jenisPerpustakaan = strtoupper(trim($jenisPerpustakaan));
         $this->data['is_sekolah'] = ($jenisPerpustakaan === 'SEKOLAH');
@@ -194,8 +206,6 @@ class AnggotaController extends \Base\Controllers\BaseController
             $this->data['fakultas_list'] = [];
             $this->data['jurusan_list'] = [];
         }
-
-        echo view('Anggota\Views\list', $this->data);
     }
 
     // ----------------------------------------------------------------
@@ -247,6 +257,7 @@ class AnggotaController extends \Base\Controllers\BaseController
         $this->data['message'] = $this->validation->getErrors()
             ? $this->validation->listErrors()
             : $this->session->getFlashdata('message');
+        $this->loadMemberFilterOptions();
         echo view('Anggota\Views\list_keranjang', $this->data);
     }
 

@@ -35,8 +35,19 @@ class KatalogMarcController extends \Base\Controllers\BaseController
         $this->validation->setRule('Worksheet_id', 'Jenis Bahan', 'required');
 
         if ($this->request->getPost()) {
-            if ($this->validation->withRequest($this->request)->run()) {
+            $valid = $this->validation->withRequest($this->request)->run();
+
+            // Judul (245) wajib diisi; tanpa ini katalog kosong ikut tersimpan.
+            $titleValue = $this->request->getPost('Value')['245'] ?? '';
+            $titleValue = is_array($titleValue) ? implode('', $titleValue) : (string) $titleValue;
+            if ($valid && parse_marc_value($titleValue, 'a') === '') {
+                $this->validation->setError('Value', 'Tag 245 (Pernyataan Judul) subruas $a wajib diisi.');
+                $valid = false;
+            }
+
+            if ($valid) {
                 $catalogsModel = new DataModel('catalogs', null, 'ID');
+                $katalogRuasModel = new DataModel('catalog_ruas', null, 'ID');
                 $save_data = [
                     'Worksheet_id' => $this->request->getPost('Worksheet_id'),
                     'ControlNumber' => get_control_number(),
@@ -48,24 +59,35 @@ class KatalogMarcController extends \Base\Controllers\BaseController
                     $save_data['IsRDA'] = $this->request->getPost('IsRDA') ? 1 : 0;
                 }
 
+                $db = db_connect();
+                $db->transStart();
+
                 $CatalogId = $catalogsModel->insert($save_data);
                 $catalog_ruas_data = $this->_buildRuasData($CatalogId);
 
-                if (!empty($catalog_ruas_data)) {
-                    // Sisipkan Tag 001 di paling awal
-                    array_unshift($catalog_ruas_data, [
-                        'CatalogId' => $CatalogId,
-                        'Tag' => '001',
-                        'Value' => $save_data['ControlNumber'],
-                        'Indicator1' => '',
-                        'Indicator2' => '',
-                    ]);
+                // Tag 001 selalu diisi sistem dengan ControlNumber di paling awal
+                array_unshift($catalog_ruas_data, [
+                    'CatalogId' => $CatalogId,
+                    'Tag' => '001',
+                    'Value' => $save_data['ControlNumber'],
+                    'Indicator1' => '',
+                    'Indicator2' => '',
+                ]);
 
-                    $katalogRuasModel = new DataModel('catalog_ruas', null, 'ID');
-                    $katalogRuasModel->insertBatch($catalog_ruas_data);
+                $katalogRuasModel->insertBatch($catalog_ruas_data);
+                $catalogsModel->update($CatalogId, convert_catalog_ruas($CatalogId));
 
-                    $catalogsModel->update($CatalogId, convert_catalog_ruas($CatalogId));
+                $db->transComplete();
+
+                if ($db->transStatus() === false) {
+                    $this->session->setFlashdata('swal_icon', 'error');
+                    $this->session->setFlashdata('swal_title', 'Gagal');
+                    $this->session->setFlashdata('swal_text', 'Katalog gagal disimpan. Silakan coba lagi.');
+                    return redirect()->back()->withInput();
                 }
+
+                // Bersihkan daftar tag sementara agar form berikutnya kembali ke tag bawaan jenis bahan
+                $this->session->remove(['worksheet_fields', 'worksheet_id']);
 
                 $this->session->setFlashdata('swal_icon', 'success');
                 $this->session->setFlashdata('swal_title', 'Berhasil');
@@ -113,38 +135,51 @@ class KatalogMarcController extends \Base\Controllers\BaseController
         $this->validation->setRule('Worksheet_id', 'Jenis Bahan', 'required');
 
         if ($this->request->getPost()) {
-            if ($this->validation->withRequest($this->request)->run()) {
+            $valid = $this->validation->withRequest($this->request)->run();
+
+            // Judul (245) wajib diisi; tanpa ini semua ruas lama terhapus dan katalog jadi kosong.
+            $titleValue = $this->request->getPost('Value')['245'] ?? '';
+            $titleValue = is_array($titleValue) ? implode('', $titleValue) : (string) $titleValue;
+            if ($valid && parse_marc_value($titleValue, 'a') === '') {
+                $this->validation->setError('Value', 'Tag 245 (Pernyataan Judul) subruas $a wajib diisi.');
+                $valid = false;
+            }
+
+            if ($valid) {
+                $katalogRuasModel = new DataModel('catalog_ruas', null, 'ID');
+                $catalog_ruas_data = $this->_buildRuasData($id);
+
+                // Tag 001 selalu diisi sistem dengan ControlNumber katalog
+                array_unshift($catalog_ruas_data, [
+                    'CatalogId' => $id,
+                    'Tag' => '001',
+                    'Value' => $catalog->ControlNumber,
+                    'Indicator1' => '',
+                    'Indicator2' => '',
+                ]);
+
+                // Hapus lalu sisipkan ulang ruas dalam satu transaksi agar ruas lama tidak hilang bila gagal
+                $db = db_connect();
+                $db->transStart();
+
                 $catalogsModel->update($id, [
                     'Worksheet_id' => $this->request->getPost('Worksheet_id'),
                 ]);
-
-                $katalogRuasModel = new DataModel('catalog_ruas', null, 'ID');
                 $katalogRuasModel->where('CatalogId', $id)->delete();
+                $katalogRuasModel->insertBatch($catalog_ruas_data);
+                $catalogsModel->update($id, convert_catalog_ruas($id));
 
-                $catalog_ruas_data = $this->_buildRuasData($id);
+                $db->transComplete();
 
-                if (!empty($catalog_ruas_data)) {
-                    // Pastikan Tag 001 ada
-                    $has_001 = false;
-                    foreach ($catalog_ruas_data as $item) {
-                        if ($item['Tag'] === '001') {
-                            $has_001 = true;
-                            break;
-                        }
-                    }
-                    if (!$has_001) {
-                        array_unshift($catalog_ruas_data, [
-                            'CatalogId' => $id,
-                            'Tag' => '001',
-                            'Value' => $catalog->ControlNumber,
-                            'Indicator1' => '',
-                            'Indicator2' => '',
-                        ]);
-                    }
-
-                    $katalogRuasModel->insertBatch($catalog_ruas_data);
-                    $catalogsModel->update($id, convert_catalog_ruas($id));
+                if ($db->transStatus() === false) {
+                    $this->session->setFlashdata('swal_icon', 'error');
+                    $this->session->setFlashdata('swal_title', 'Gagal');
+                    $this->session->setFlashdata('swal_text', 'Data katalog gagal diupdate. Silakan coba lagi.');
+                    return redirect()->back()->withInput();
                 }
+
+                // Bersihkan daftar tag sementara agar tidak terbawa ke form katalog lain
+                $this->session->remove(['worksheet_fields', 'worksheet_id']);
 
                 $this->session->setFlashdata('swal_icon', 'success');
                 $this->session->setFlashdata('swal_title', 'Berhasil');
@@ -532,12 +567,11 @@ class KatalogMarcController extends \Base\Controllers\BaseController
             }
         }
 
-        // Filter baris yang hanya berisi '$a' tanpa nilai (kecuali tag kontrol)
-        $catalog_ruas_data = array_values(array_filter($catalog_ruas_data, function ($item) use ($controlTags) {
-            if (in_array($item['Tag'], $controlTags)) {
-                return true; // Jangan filter tag kontrol meskipun tidak ada $a
-            }
-            return trim($item['Value']) !== '$a';
+        // Buang baris yang belum diisi (masih placeholder '$a' atau kosong), termasuk tag kontrol,
+        // supaya '$a' tidak tersimpan sebagai isi 005-008. Tag 001 selalu diisi oleh sistem.
+        $catalog_ruas_data = array_values(array_filter($catalog_ruas_data, function ($item) {
+            $value = trim((string) $item['Value']);
+            return $item['Tag'] !== '001' && $value !== '' && $value !== '$a';
         }));
 
         return $catalog_ruas_data;

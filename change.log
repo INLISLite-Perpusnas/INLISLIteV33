@@ -60,3 +60,25 @@ change.log 19 Agustus 2026
 21. Menambahkan filter kelas dan update bacth kelas untuk perpustakaan sekolah
 22. Menambahakan filter fakultas dan jurusan untuk perpustakaan perguruan Tinggi
 
+change.log 22 Oktober 2026
+1. Memperbaiki bug pada modul edit anggota yang sebelumnya tidak bisa menyimpan data foto anggota
+2. Memperbaiki bug pada modul create anggota yang sebelumnya tidak bisa menyimpan data foto anggota
+3. Menambahkan setting buku populer, pendaftaran online, cahce opac,cache beranda di halaman pengaturan umum nama perpustakaan
+4. Menambahkan fitur laporan berbasis jumlah frekuensi data
+5. Menambahkan modul fitur profi layanan 
+6. Menambahkan fitur jadwal perpustakaan keliling
+7. Menambahkan fitur update source code dan database melalui halaman admin pengaturan umum nama perpustakaan
+8. Menambahkan fitur aksi cetak label punggung buku di halaman daftar eksemplar
+9. Menambahkan fitur filter di keranjang anggota
+10.Memperbaiki bug nomor barcode dan rfid yang sebelumnya nomornya sama dengan no induk sekarang sudah bisa bersarkan item ID
+11.Menambahkan statistik sirkulasi peminjaman dan pengembalian di halaman dashboard admin
+12. Menambahkan fitur export data statistik di halaman frontend
+13. Memperbaiki bug nomor kendali (ControlNumber) katalog yang selalu sama setiap kali menambah katalog baru (form MARC dan form sederhana)
+14. Memperbaiki BIBID katalog yang menjadi kosong ketika tag 035 tidak diisi di form MARC
+15. Menambahkan validasi wajib isi judul (tag 245 subruas $a) pada form tambah dan edit katalog MARC
+16. Memperbaiki error validateForm pada form tambah dan edit katalog MARC, tombol simpan dikunci selama proses agar data tidak tersimpan dobel
+17. Isian tag MARC yang kosong atau hanya berisi $a tidak lagi ikut tersimpan, termasuk tag 005-008; tag 001 selalu diisi otomatis dengan nomor kendali
+18. Proses simpan tambah dan edit katalog MARC menggunakan transaksi database agar data tidak tersimpan setengah atau hilang ketika gagal
+19. Membersihkan daftar tag sementara setelah simpan agar tag dari form sebelumnya tidak terbawa ke form katalog berikutnya
+20. Memperbaiki tampilan nilai indikator pada form edit katalog MARC yang mengandung karakter khusus
+

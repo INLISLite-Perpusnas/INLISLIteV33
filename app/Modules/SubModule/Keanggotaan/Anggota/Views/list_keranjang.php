@@ -37,6 +37,60 @@ $request = service('request'); ?>
 		</div>
 
 		<div class="card-body">
+			<?php if ($is_sekolah) : ?>
+				<!-- Filter: Kelas (khusus perpustakaan sekolah), sama dengan Daftar Anggota -->
+				<div class="d-flex align-items-center flex-wrap mb-3" style="gap:6px;">
+					<div class="input-group" style="width:280px; flex-shrink:0;">
+						<div class="input-group-prepend">
+							<span class="btn btn-secondary"><i class="fa fa-filter" aria-hidden="true"></i> Kelas</span>
+						</div>
+						<select class="form-control" id="filter_kelas_id" aria-label="Filter kelas">
+							<option value="">-- Semua Kelas --</option>
+							<?php foreach ($kelas_list as $row) : ?>
+								<option value="<?= $row->id ?>"><?= esc($row->namakelassiswa) ?></option>
+							<?php endforeach; ?>
+						</select>
+					</div>
+
+					<button class="btn btn-outline-secondary" id="btnResetFilterKelas" type="button" style="height:38px; flex-shrink:0;">
+						<i class="fa fa-undo" aria-hidden="true"></i> Reset Filter
+					</button>
+				</div>
+			<?php endif; ?>
+
+			<?php if ($is_perguruan_tinggi) : ?>
+				<!-- Filter: Fakultas & Jurusan (khusus perguruan tinggi), sama dengan Daftar Anggota -->
+				<div class="d-flex align-items-center flex-wrap mb-3" style="gap:6px;">
+					<div class="input-group" style="width:280px; flex-shrink:0;">
+						<div class="input-group-prepend">
+							<span class="btn btn-secondary"><i class="fa fa-filter" aria-hidden="true"></i> Fakultas</span>
+						</div>
+						<select class="form-control" id="filter_fakultas_id" aria-label="Filter fakultas">
+							<option value="">-- Semua Fakultas --</option>
+							<?php foreach ($fakultas_list as $row) : ?>
+								<option value="<?= $row->id ?>"><?= esc($row->Nama) ?></option>
+							<?php endforeach; ?>
+						</select>
+					</div>
+
+					<div class="input-group" style="width:280px; flex-shrink:0;">
+						<div class="input-group-prepend">
+							<span class="btn btn-secondary"><i class="fa fa-filter" aria-hidden="true"></i> Jurusan</span>
+						</div>
+						<select class="form-control" id="filter_jurusan_id" aria-label="Filter jurusan">
+							<option value="">-- Semua Jurusan --</option>
+							<?php foreach ($jurusan_list as $row) : ?>
+								<option value="<?= $row->id ?>"><?= esc($row->Nama) ?></option>
+							<?php endforeach; ?>
+						</select>
+					</div>
+
+					<button class="btn btn-outline-secondary" id="btnResetFilterFakultasJurusan" type="button" style="height:38px; flex-shrink:0;">
+						<i class="fa fa-undo" aria-hidden="true"></i> Reset Filter
+					</button>
+				</div>
+			<?php endif; ?>
+
 			<form name="form_items" id="form_items">
 				<table style="width: 100%;" id="tbl_data" class="table table-hover table-striped table-bordered">
 					<thead>
@@ -81,6 +135,11 @@ $request = service('request'); ?>
 			"serverSide": true,
 			"ajax": {
 				"url": '<?php echo site_url('api/anggota/datatable/1'); ?>',
+				"data": function(d) {
+					d.kelas_id = $('#filter_kelas_id').val();
+					d.fakultas_id = $('#filter_fakultas_id').val();
+					d.jurusan_id = $('#filter_jurusan_id').val();
+				}
 			},
 			   "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
        "<'row'<'col-md-12'tr>>" +
@@ -206,6 +265,20 @@ $request = service('request'); ?>
 
 	$(".check_data").click(function() {
 		$('#tbl_data input:checkbox').not(this).prop('checked', this.checked);
+	});
+
+	// Filter Kelas / Fakultas & Jurusan (sama dengan Daftar Anggota)
+	$('#filter_kelas_id, #filter_fakultas_id, #filter_jurusan_id').on('change', function() {
+		t.ajax.reload();
+	});
+	$('#btnResetFilterKelas').on('click', function() {
+		$('#filter_kelas_id').val('');
+		t.ajax.reload();
+	});
+	$('#btnResetFilterFakultasJurusan').on('click', function() {
+		$('#filter_fakultas_id').val('');
+		$('#filter_jurusan_id').val('');
+		t.ajax.reload();
 	});
 
 	$('#pulihkan_keranjang').click(function() {

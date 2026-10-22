@@ -68,6 +68,28 @@ $slug = $request->getGet('slug') ?? 'katalog_add_marc';
     });
 </script>
 <script>
+	// Dipanggil oleh onsubmit form: judul (245 $a) wajib diisi, tombol Simpan dikunci agar tidak tersimpan dobel.
+	function validateForm() {
+		var hasTitle = false;
+		$('#frm_create input[name^="Value[245]"]').each(function() {
+			var match = /\$a([^$]*)/.exec(this.value || '');
+			if (match && match[1].trim() !== '') {
+				hasTitle = true;
+			}
+		});
+		if (!hasTitle) {
+			Swal.fire({
+				title: 'Validasi Gagal',
+				text: 'Tag 245 (Pernyataan Judul) subruas $a wajib diisi.',
+				icon: 'warning',
+				type: 'warning'
+			});
+			return false;
+		}
+		$('#frm_create button[type="submit"]').prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-2"></i>Menyimpan...');
+		return true;
+	}
+
 	$(document).ready(function() {
 		$('.simple-btn-switch').on('click', function() {
 			var url = $(this).data('href');

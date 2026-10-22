@@ -373,13 +373,12 @@ if (!function_exists('get_control_number')) {
 
 			$newControlNumber =  substr($row, 3);
 		} else {
-			$query2 = $db->query('SELECT MAX(ControlNumber) AS MaxControlNumber FROM catalogs WHERE ControlNumber LIKE "INLIS0%"');
-			$row = $query2->getRow()->MaxControlNumber;
-
-			if ($row >= 0) {
-				$controlNumber = (int)preg_replace('/[^0-9]/', '', $row);
-			}
-			$newControlNumber =  'INLIS' . str_pad((int)$controlNumber + 1, 15, '0', STR_PAD_LEFT);
+			// Ambil angka terbesar secara numerik, bukan MAX() string: nomor dengan jumlah nol
+			// berbeda (mis. 'INLIS00000000145080' vs 'INLIS000000000145081') membuat MAX() string
+			// selalu mengembalikan nilai yang sama sehingga nomor kendali baru jadi ganda.
+			$query2 = $db->query("SELECT MAX(CAST(SUBSTRING(ControlNumber, 6) AS UNSIGNED)) AS MaxControlNumber FROM catalogs WHERE ControlNumber REGEXP '^INLIS[0-9]+$'");
+			$controlNumber = (int) ($query2->getRow()->MaxControlNumber ?? 0);
+			$newControlNumber =  'INLIS' . str_pad($controlNumber + 1, 15, '0', STR_PAD_LEFT);
 		}
 		return $newControlNumber;
 	}
@@ -726,7 +725,11 @@ function convert_catalog_ruas($CatalogId)
 	$update_data = [];
 
 	$update_data['ControlNumber'] = $marc['001'] ?? null;
-	$update_data['BIBID'] = parse_marc_value($marc['035'] ?? null, 'a');
+	// BIBID hanya ditimpa bila tag 035 berisi; jika kosong, BIBID yang sudah ada dipertahankan.
+	$bibid = parse_marc_value($marc['035'] ?? null, 'a');
+	if ($bibid !== '') {
+		$update_data['BIBID'] = $bibid;
+	}
 
 	// Combine subfields for the Title
 	$title_a = parse_marc_value($marc['245'] ?? null, 'a');
