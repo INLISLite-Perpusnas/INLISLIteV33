@@ -486,11 +486,20 @@ $slug = $request->getGet('slug') ?? '';
 <script>
 	$(document).ready(function() {
 		<?php if (session()->getFlashdata('swal_icon')) : ?>
+			const changedFiles = <?= json_encode(session()->getFlashdata('swal_files') ?: [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_INVALID_UTF8_SUBSTITUTE) ?>;
 			Swal.fire({
 				title: <?= json_encode(session()->getFlashdata('swal_title'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_INVALID_UTF8_SUBSTITUTE) ?>,
 				text: <?= json_encode(session()->getFlashdata('swal_text'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_INVALID_UTF8_SUBSTITUTE) ?>,
-				showConfirmButton: false,
-				timer: 3000,
+				showConfirmButton: changedFiles.length > 0,
+				timer: changedFiles.length > 0 ? undefined : 3000,
+				didOpen: () => {
+					if (changedFiles.length > 0) {
+						const list = document.createElement('pre');
+						list.textContent = changedFiles.join('\n');
+						list.style.cssText = 'max-height: 300px; overflow: auto; text-align: left; white-space: pre-wrap; overflow-wrap: anywhere; padding: 12px; background: #f5f5f5;';
+						Swal.getHtmlContainer().appendChild(list);
+					}
+				},
 				icon: <?= json_encode(session()->getFlashdata('swal_icon'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_INVALID_UTF8_SUBSTITUTE) ?>
 			});
 		<?php endif; ?>

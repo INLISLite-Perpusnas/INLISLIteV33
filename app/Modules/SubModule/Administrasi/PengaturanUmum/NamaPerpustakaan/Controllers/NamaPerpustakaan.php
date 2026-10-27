@@ -535,9 +535,35 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 				throw new \RuntimeException('Remote origin bukan repository GitHub proyek ini.');
 			}
 
-			[$code, $changes] = $this->runGit(['status', '--porcelain']);
-			if ($code !== 0 || $changes !== '') {
-				throw new \RuntimeException('Ada perubahan lokal. Commit atau amankan perubahan sebelum update.');
+			[$code, $changes, $truncated] = $this->runGit(['status', '--porcelain=v1', '-z', '--untracked-files=all'], 15, true, 1048576);
+			if ($code !== 0) {
+				throw new \RuntimeException('Tidak dapat memeriksa perubahan lokal Git.');
+			}
+			if ($changes !== '') {
+				$entries = explode(chr(0), rtrim($changes, chr(0)));
+				$files = [];
+				$count = 0;
+				for ($index = 0; $index < count($entries); $index++) {
+					$entry = $entries[$index];
+					if (strlen($entry) < 4) {
+						continue;
+					}
+					$path = substr($entry, 3);
+					if (strpbrk(substr($entry, 0, 2), 'RC') !== false && isset($entries[$index + 1])) {
+						$path .= ' (sebelumnya: ' . $entries[++$index] . ')';
+					}
+					$count++;
+					if (count($files) < 30) {
+						$files[] = $path;
+					}
+				}
+				$message = 'Ada perubahan lokal. Commit atau amankan perubahan sebelum update.';
+				if ($count > count($files) || $truncated) {
+					$message .= ' Menampilkan ' . count($files) . ' file dari ' . ($truncated ? 'setidaknya ' : '') . $count . ' file yang terdeteksi.';
+				}
+				return redirect()->back()->with('swal_icon', 'error')
+					->with('swal_title', 'Gagal')->with('swal_text', $message)
+					->with('swal_files', $files);
 			}
 
 			[$code, $before] = $this->runGit(['rev-parse', '--short', 'HEAD']);
@@ -572,7 +598,7 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 		}
 	}
 
-	private function runGit(array $arguments, int $timeout = 15): array
+	private function runGit(array $arguments, int $timeout = 15, bool $rawOutput = false, int $maxOutputBytes = 8192): array
 	{
 		$stdout = @tempnam(WRITEPATH . 'cache/', 'git_');
 		$stderr = @tempnam(WRITEPATH . 'cache/', 'git_');
@@ -615,7 +641,8 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 			$exitCode = $status['exitcode'];
 			$closed = proc_close($process);
 			$process = null;
-			return [$exitCode >= 0 ? $exitCode : $closed, trim((string) file_get_contents($stdout, false, null, 0, 8192))];
+			$output = (string) file_get_contents($stdout, false, null, 0, $maxOutputBytes);
+			return [$exitCode >= 0 ? $exitCode : $closed, $rawOutput ? $output : trim($output), filesize($stdout) > $maxOutputBytes];
 		} finally {
 			if (is_resource($process)) {
 				proc_close($process);
