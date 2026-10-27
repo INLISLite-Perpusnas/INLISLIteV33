@@ -462,6 +462,20 @@ $slug = $request->getGet('slug') ?? '';
 					</form>
 				</div>
 			</div>
+			<div class="main-card mb-3 card">
+				<div class="card-header"><i class="fa fa-save"></i>&nbsp;Backup Data</div>
+				<div class="card-body">
+					<p>Unduh database sebagai file SQL dan folder <code>public/uploads</code> sebagai file ZIP. Simpan kedua file di tempat aman.</p>
+					<form method="post" action="<?= base_url('master-nama-perpustakaan/backup-database') ?>" class="d-inline-block mb-2 mr-2">
+						<?= csrf_field() ?>
+						<button type="submit" class="btn btn-info"><i class="fa fa-database"></i> Backup Database (.sql)</button>
+					</form>
+					<form method="post" action="<?= base_url('master-nama-perpustakaan/backup-uploads') ?>" class="d-inline-block mb-2">
+						<?= csrf_field() ?>
+						<button type="submit" class="btn btn-info"><i class="fa fa-file-archive"></i> Backup Uploads (.zip)</button>
+					</form>
+				</div>
+			</div>
 		<?php endif; ?>
 	</div>
 </div>

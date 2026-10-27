@@ -434,6 +434,7 @@ $pageDescription = isset($meta_description)
                                 </a>
                             </li>
                             <?php endif; ?>
+                            <li><a class="dropdown-item" href="<?= site_url('home/survey') ?>"><i class="fa-solid fa-clipboard-list fa-fw text-secondary me-2"></i>Survei Pemustaka</a></li>
                             <?php if (setting_enabled('is_keanggotaan_online')): ?>
                             <li>
                                 <a class="dropdown-item" href="<?= base_url('home/pendaftaran-online') ?>">

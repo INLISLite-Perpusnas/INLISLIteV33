@@ -34,7 +34,7 @@ class SurveiPemustaka extends \Base\Controllers\BaseController
     public function index()
     {
         $this->data['title'] = 'Survei Pemustaka';
-        echo view('SurveiPemustaka\Views\list', $this->data);
+        return redirect()->to('surveipemustaka/manage');
     }
 
     public function question(int $id = 0)

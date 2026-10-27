@@ -11,6 +11,8 @@ $routes->group('master-nama-perpustakaan', ['namespace' => 'NamaPerpustakaan\Con
     $subroutes->add('update', 'NamaPerpustakaan::update'); 
     $subroutes->post('update-source-code', 'NamaPerpustakaan::updateSourceCode', ['filter' => 'csrf']);
     $subroutes->post('update-database', 'NamaPerpustakaan::updateDatabase', ['filter' => 'csrf']);
+    $subroutes->post('backup-database', 'NamaPerpustakaan::backupDatabase', ['filter' => 'csrf']);
+    $subroutes->post('backup-uploads', 'NamaPerpustakaan::backupUploads', ['filter' => 'csrf']);
     $subroutes->post('update-environment', 'NamaPerpustakaan::updateEnvironment', ['filter' => 'csrf']);
     $subroutes->add('searchperpustakaan', 'NamaPerpustakaan::searchPerpustakaan');
     $subroutes->post('daftarkan-inlislite', 'NamaPerpustakaan::daftarkanInlisLite');

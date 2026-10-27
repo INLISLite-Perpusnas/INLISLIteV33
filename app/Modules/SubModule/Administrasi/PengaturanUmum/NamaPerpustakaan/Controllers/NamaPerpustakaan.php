@@ -377,6 +377,57 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 		}, 'Update database selesai.');
 	}
 
+	public function backupDatabase()
+	{
+		return $this->downloadBackup('database', 'sql');
+	}
+
+	public function backupUploads()
+	{
+		return $this->downloadBackup('uploads', 'zip');
+	}
+
+	private function downloadBackup(string $type, string $extension)
+	{
+		if (!$this->request->is('post')) {
+			return $this->response->setStatusCode(405)->setBody('Metode tidak diizinkan.');
+		}
+		if (!is_member('admin')) {
+			return $this->response->setStatusCode(403)->setBody('Akses ditolak.');
+		}
+
+		$path = tempnam(WRITEPATH . 'cache', 'backup-');
+		if ($path === false) {
+			return redirect()->back()->with('swal_icon', 'error')
+				->with('swal_title', 'Gagal')->with('swal_text', 'Tidak dapat membuat file backup sementara.');
+		}
+
+		try {
+			$backup = new BackupService();
+			if ($type === 'database') {
+				$db = \Config\Database::connect('data', false);
+				try {
+					$db->initialize();
+					$backup->database($db->getConnection(), $path);
+				} finally {
+					$db->close();
+				}
+			} else {
+				$backup->uploads(ROOTPATH . 'public/uploads', $path);
+			}
+			$filename = 'backup-' . $type . '-' . date('Ymd-His') . '.' . $extension;
+			register_shutdown_function(static function () use ($path) {
+				@unlink($path);
+			});
+			return $this->response->download($path, null)->setFileName($filename);
+		} catch (\Throwable $exception) {
+			@unlink($path);
+			log_message('error', 'Backup ' . $type . ' gagal: ' . $exception->getMessage());
+			return redirect()->back()->with('swal_icon', 'error')
+				->with('swal_title', 'Gagal')->with('swal_text', 'Backup gagal. Periksa log aplikasi dan ruang penyimpanan.');
+		}
+	}
+
 	/**
 	 * Ubah CI_ENVIRONMENT di file .env (production/development). Berlaku mulai request berikutnya.
 	 */

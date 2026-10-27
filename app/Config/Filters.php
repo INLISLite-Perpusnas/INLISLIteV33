@@ -91,6 +91,10 @@ class Filters extends BaseConfig
             'cors',
             'permissions' => [
                 'except' => [
+                    'surveipemustaka/manage',
+                    'surveipemustaka/save-survey',
+                    'surveipemustaka/save-question',
+                    'surveipemustaka/save-option',
                     '',
                     'logout*',
                     'oai*',
@@ -111,6 +115,8 @@ class Filters extends BaseConfig
                     'api/master-template/*',
                     'master-template/*',
                     'master-nama-perpustakaan/update-database',
+                    'master-nama-perpustakaan/backup-database',
+                    'master-nama-perpustakaan/backup-uploads',
                     'api/member/*',
 
                     // --- PENGECUALIAN UNTUK CONTROLLER OPAC ---

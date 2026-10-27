@@ -4,6 +4,10 @@
 $routes->group('surveipemustaka', ['namespace' => 'SurveiPemustaka\Controllers'], function ($subroutes) {
 	$subroutes->add('', 'SurveiPemustaka::index');
 	$subroutes->add('index', 'SurveiPemustaka::index');
+	$subroutes->get('manage', 'SurveyAdmin::index');
+	$subroutes->post('save-survey', 'SurveyAdmin::saveSurvey', ['filter' => 'csrf']);
+	$subroutes->post('save-question', 'SurveyAdmin::saveQuestion', ['filter' => 'csrf']);
+	$subroutes->post('save-option', 'SurveyAdmin::saveOption', ['filter' => 'csrf']);
 	$subroutes->add('detail/(:any)', 'SurveiPemustaka::detail/$1');
 	$subroutes->add('create', 'SurveiPemustaka::create');
 	$subroutes->add('edit/(:any)', 'SurveiPemustaka::edit/$1');

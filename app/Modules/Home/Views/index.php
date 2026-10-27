@@ -646,6 +646,8 @@
     </div>
 </section>
 
+<?= $this->include('SurveiPemustaka\Views\public_form') ?>
+
 <?= $this->endSection() ?>
 
 <?= $this->section('script') ?>

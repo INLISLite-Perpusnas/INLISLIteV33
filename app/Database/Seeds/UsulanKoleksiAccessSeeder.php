@@ -16,9 +16,20 @@ class UsulanKoleksiAccessSeeder extends Seeder
             ->where('parent', 0)
             ->get()
             ->getRow();
+        if (!$parent) {
+            $parent = $this->db->table('c_menus')
+                ->where('name', 'Koleksi')
+                ->where('category_id', 1)
+                ->where('parent', 0)
+                ->get()
+                ->getRow();
+        }
 
-        if (!$admin || !$parent) {
-            throw new RuntimeException('Grup admin atau menu Koleksi tidak ditemukan.');
+        if (!$admin) {
+            throw new RuntimeException('Grup admin tidak ditemukan pada database data.');
+        }
+        if (!$parent) {
+            throw new RuntimeException('Menu induk Koleksi tidak ditemukan pada kategori backend.');
         }
 
         $this->db->transStart();

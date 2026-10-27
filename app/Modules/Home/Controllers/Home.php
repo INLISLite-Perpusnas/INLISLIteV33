@@ -62,6 +62,9 @@ class Home extends \Base\Controllers\BaseController
             $this->data = array_merge($this->data, $pageData);
         }
 
+        $this->data['surveys'] = (new \SurveiPemustaka\Models\SurveyFormService())
+            ->activeSurveys($this->surveyMemberNo() !== null);
+
         return view('Home\Views\index', $this->data);
     }
 
@@ -374,6 +377,56 @@ class Home extends \Base\Controllers\BaseController
                 'message' => 'Terjadi kesalahan saat mencari buku'
             ]);
         }
+    }
+
+    private function surveyMemberNo(): ?string
+    {
+        if (!logged_in()) {
+            return null;
+        }
+        $username = (string) (user()->username ?? '');
+        if ($username === '') {
+            return null;
+        }
+        $member = $this->db->table('members')->select('MemberNo')
+            ->where('MemberNo', $username)->get()->getRowArray();
+        return $member['MemberNo'] ?? null;
+    }
+
+    public function survey()
+    {
+        return view('Home\Views\survey', [
+            'title' => 'Survei Pemustaka',
+            'meta_description' => 'Isi survei aktif untuk membantu meningkatkan layanan perpustakaan.',
+            'surveys' => (new \SurveiPemustaka\Models\SurveyFormService())
+                ->activeSurveys($this->surveyMemberNo() !== null),
+        ]);
+    }
+
+    public function simpanSurvey(int $id)
+    {
+        $session = session();
+        $sessionId = $session->get('public_survey_session');
+        if (!is_string($sessionId) || $sessionId === '') {
+            $sessionId = bin2hex(random_bytes(16));
+            $session->set('public_survey_session', $sessionId);
+        }
+        if ($session->get('survey_done_' . $id)) {
+            return redirect()->to('home/survey#survei')->with('survey_error', 'Survei ini sudah Anda isi.');
+        }
+        try {
+            $error = (new \SurveiPemustaka\Models\SurveyFormService())->submit(
+                $id, $this->request->getPost('jawaban'), $sessionId, $this->surveyMemberNo()
+            );
+        } catch (\Throwable $exception) {
+            log_message('error', 'Gagal menyimpan survei: ' . $exception->getMessage());
+            $error = 'Jawaban belum tersimpan. Silakan coba lagi.';
+        }
+        if ($error !== null) {
+            return redirect()->to('home/survey#survei')->withInput()->with('survey_error', $error);
+        }
+        $session->set('survey_done_' . $id, true);
+        return redirect()->to('home/survey#survei')->with('survey_success', 'Terima kasih, jawaban survei berhasil dikirim.');
     }
 
     public function usulanKoleksi()
