@@ -323,22 +323,22 @@ class Home extends \Base\Controllers\BaseController
                 'link' => base_url('home/pendaftaran_online'),
                 'color' => 'warning'
             ]] : []),
-            [
+            ...(setting_enabled('is_peminjaman_mandiri', true) ? [[
                 'name' => 'Peminjaman Mandiri',
                 'description' => 'Pinjam buku secara mandiri',
                 'img' => base_url('assets/img/peminjaman.png'),
                 'icon' => 'fas fa-hand-holding-heart',
                 'link' => base_url('peminjaman-mandiri'),
                 'color' => 'danger'
-            ],
-            [
+            ]] : []),
+            ...(setting_enabled('is_pengembalian_mandiri', true) ? [[
                 'name' => 'Pengembalian Mandiri',
                 'description' => 'Kembalikan buku secara mandiri',
                 'img' => base_url('assets/img/pengembalian.png'),
                 'icon' => 'fas fa-undo',
                 'link' => base_url('pengembalian-mandiri'),
                 'color' => 'secondary'
-            ]
+            ]] : [])
         ];
     }
 

@@ -443,26 +443,6 @@ $slug = $request->getGet('slug') ?? '';
 				</div>
 			</div>
 			<div class="main-card mb-3 card">
-				<div class="card-header"><i class="fa fa-code"></i>&nbsp;Update Source Code</div>
-				<div class="card-body">
-					<p>Mengambil pembaruan dari <code>origin/main</code>. Perubahan lokal harus sudah di-commit atau disimpan di luar folder proyek. Migrasi database dan instalasi dependensi tidak dijalankan otomatis.</p>
-					<form method="post" action="<?= base_url('master-nama-perpustakaan/update-source-code') ?>" onsubmit="return confirm('Jalankan git pull origin main? Pastikan perubahan lokal sudah diamankan.');">
-						<?= csrf_field() ?>
-						<button type="submit" class="btn btn-warning"><i class="fa fa-download"></i> Update Source Code</button>
-					</form>
-				</div>
-			</div>
-			<div class="main-card mb-3 card">
-				<div class="card-header"><i class="fa fa-database"></i>&nbsp;Update Database</div>
-				<div class="card-body">
-					<p>Jalankan semua migrasi tertunda, lalu seeder baru atau yang berubah. Cadangkan database sebelum melanjutkan; seeder harus aman dijalankan ulang.</p>
-					<form method="post" action="<?= base_url('master-nama-perpustakaan/update-database') ?>" onsubmit="return confirm('Jalankan migrasi dan seeder baru atau berubah? Pastikan database sudah dicadangkan.');">
-						<?= csrf_field() ?>
-						<button type="submit" class="btn btn-primary"><i class="fa fa-database"></i> Update Database</button>
-					</form>
-				</div>
-			</div>
-			<div class="main-card mb-3 card">
 				<div class="card-header"><i class="fa fa-save"></i>&nbsp;Backup Data</div>
 				<div class="card-body">
 					<p>Unduh database sebagai file SQL dan folder <code>public/uploads</code> sebagai file ZIP. Simpan kedua file di tempat aman.</p>

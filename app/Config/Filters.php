@@ -91,10 +91,6 @@ class Filters extends BaseConfig
             'cors',
             'permissions' => [
                 'except' => [
-                    'surveipemustaka/manage',
-                    'surveipemustaka/save-survey',
-                    'surveipemustaka/save-question',
-                    'surveipemustaka/save-option',
                     '',
                     'logout*',
                     'oai*',

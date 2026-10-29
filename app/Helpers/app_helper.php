@@ -197,7 +197,7 @@ if (!function_exists('get_parameter')) {
 }
 
 if (!function_exists('setting_enabled')) {
-    function setting_enabled(string $name): bool
+    function setting_enabled(string $name, bool $default = false): bool
     {
         static $values = [];
 
@@ -214,10 +214,10 @@ if (!function_exists('setting_enabled')) {
                     ->get()
                     ->getRow();
             }
-            $values[$name] = (string) ($row->Value ?? '');
+            $values[$name] = $row ? (string) $row->Value : null;
         }
 
-        return $values[$name] === '1';
+        return $values[$name] === null ? $default : $values[$name] === '1';
     }
 }
 

@@ -414,16 +414,20 @@ $pageDescription = isset($meta_description)
                                     <i class="fa-solid fa-address-book fa-fw text-secondary me-2"></i>Buku Tamu
                                 </a>
                             </li>
+                            <?php if (setting_enabled('is_peminjaman_mandiri', true)): ?>
                             <li>
                                 <a class="dropdown-item" href="<?= base_url('peminjaman-mandiri') ?>">
                                     <i class="fa-solid fa-hand-holding-hand fa-fw text-secondary me-2"></i>Peminjaman Mandiri
                                 </a>
                             </li>
+                            <?php endif; ?>
+                            <?php if (setting_enabled('is_pengembalian_mandiri', true)): ?>
                             <li>
                                 <a class="dropdown-item" href="<?= base_url('pengembalian-mandiri') ?>">
                                     <i class="fa-solid fa-rotate-left fa-fw text-secondary me-2"></i>Pengembalian Mandiri
                                 </a>
                             </li>
+                            <?php endif; ?>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
@@ -522,8 +526,8 @@ $pageDescription = isset($meta_description)
                     <h2 class="footer-title">Layanan</h2>
                     <ul class="footer-links">
                         <?php if (setting_enabled('is_keanggotaan_online')): ?><li><a href="<?= base_url('home/pendaftaran-online') ?>">Keanggotaan Online</a></li><?php endif; ?>
-                        <li><a href="<?= base_url('peminjaman-mandiri') ?>">Peminjaman Mandiri</a></li>
-                        <li><a href="<?= base_url('pengembalian-mandiri') ?>">Pengembalian Mandiri</a></li>
+                        <?php if (setting_enabled('is_peminjaman_mandiri', true)): ?><li><a href="<?= base_url('peminjaman-mandiri') ?>">Peminjaman Mandiri</a></li><?php endif; ?>
+                        <?php if (setting_enabled('is_pengembalian_mandiri', true)): ?><li><a href="<?= base_url('pengembalian-mandiri') ?>">Pengembalian Mandiri</a></li><?php endif; ?>
                         <li><a href="<?= base_url('opac') ?>">OPAC</a></li>
                     </ul>
                 </div>

@@ -25,6 +25,8 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 		'is_home_cache'            => ['Cache Halaman Beranda', '1', '0'],
 		'isdrm'                    => ['DRM Konten Digital', '1', '0'],
 		'is_keanggotaan_online'    => ['Pendaftaran Keanggotaan Online', '1', '0'],
+		'is_peminjaman_mandiri'    => ['Peminjaman Mandiri', '1', '0'],
+		'is_pengembalian_mandiri'  => ['Pengembalian Mandiri', '1', '0'],
 		'is_perpustakaan_keliling' => ['Perpustakaan Keliling', '1', '0'],
 		'is_populer'               => ['Koleksi Populer', '1', '0'],
 		'is_sering_dipinjam'       => ['Koleksi Sering Dipinjam', '1', '0'],
@@ -80,7 +82,8 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 		$this->data['tentang_kami'] = $this->settingModel->where('Name', 'TentangKami')->first()->Value ?? '';
 		$this->data['feature_toggles'] = [];
 		foreach (self::FEATURE_TOGGLES as $name => [$label, $on]) {
-			$value = $this->settingModel->where('Name', $name)->first()->Value ?? '';
+			$value = $this->settingModel->where('Name', $name)->first()->Value
+				?? (in_array($name, ['is_peminjaman_mandiri', 'is_pengembalian_mandiri'], true) ? $on : '');
 			$this->data['feature_toggles'][$name] = [
 				'label'   => $label,
 				'checked' => strtoupper(trim((string) $value)) === strtoupper($on),
@@ -312,6 +315,7 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 			}
 
 			if ($success) {
+				cache()->delete('home_index_data');
 				$this->session->setFlashdata('swal_icon', 'success');
 				$this->session->setFlashdata('swal_title', 'Berhasil');
 				$this->session->setFlashdata('swal_text', 'Data berhasil disimpan');
