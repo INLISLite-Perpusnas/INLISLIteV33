@@ -57,11 +57,7 @@
 </style>
 
 <div class="container-fluid vk-container py-5" style="padding-top: 100px !important;">
-    <div class="vk-header">
-        <div class="vk-icon"><i class="fas fa-chart-line"></i></div>
-        <h1>Statistik Kunjungan</h1>
-        <p class="mb-0">Ringkasan kunjungan anggota dan rombongan perpustakaan</p>
-    </div>
+    <?= view('Opac\Views\partial\statistics_nav', ['active' => 'kunjungan']) ?>
 
     <form class="vk-filter" method="get" action="<?= base_url('opac/statistics_kunjungan') ?>">
         <label class="vk-filter-label mb-0" for="visit-period"><i class="fas fa-filter me-2 text-primary"></i>Periode Statistik</label>
@@ -221,8 +217,8 @@
                 {
                     label: 'Pengunjung',
                     data: trend.visitors,
-                    borderColor: '#1e3a8a',
-                    backgroundColor: 'rgba(59, 91, 219, 0.12)',
+                    borderColor: '#2d659e',
+                    backgroundColor: 'rgba(45, 101, 158, 0.12)',
                     fill: true,
                     tension: 0.3,
                     pointRadius: trend.labels.length > 60 ? 0 : 3,

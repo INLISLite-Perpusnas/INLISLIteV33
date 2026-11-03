@@ -106,7 +106,8 @@ if (!function_exists('get_array_tag')) {
 			$values = $matches[2];
 
 			for ($i = 0; $i < count($keys); $i++) {
-				$result[$keys[$i]] = trim($values[$i]);
+				// Tanda baca penghubung subruas (" :", " /", ",") tidak ikut tampil di form
+				$result[$keys[$i]] = marc_clean_tanda_baca($tag, $values[$i]);
 			}
 		}
 
@@ -185,14 +186,66 @@ if (!function_exists('stringify_catalog_ruas')) {
 	}
 }
 
+if (!function_exists('marc_field_columns')) {
+	/**
+	 * Kolom fields untuk form MARC. Kolom bit(1) di-cast agar bernilai 0/1 biasa.
+	 * Enabled = isian boleh diketik, IsCustomable = ruas tetap diisi lewat form per posisi.
+	 */
+	function marc_field_columns()
+	{
+		return 'f.ID, f.Tag, f.Name, f.Length, CAST(f.Mandatory AS UNSIGNED) AS Mandatory, CAST(f.Fixed AS UNSIGNED) AS Fixed, '
+			. 'CAST(f.Repeatable AS UNSIGNED) AS Repeatable, CAST(f.Enabled AS UNSIGNED) AS Enabled, CAST(f.IsCustomable AS UNSIGNED) AS IsCustomable';
+	}
+}
+
+if (!function_exists('marc_default_value')) {
+	/**
+	 * Isian awal satu ruas di form MARC (setara actionCreateTaglistClean INLISLite 3):
+	 * ruas tetap kosong kecuali 007 "ta" (jenis bahan 1) dan 008 dari nilai bawaan unsurnya;
+	 * ruas biasa "$a " (+ "$2 rda..." untuk 336/337/338).
+	 */
+	function marc_default_value(array $field, $worksheet_id)
+	{
+		if ((int) ($field['Fixed'] ?? 0) === 1) {
+			if ($field['Tag'] === '007' && (int) $worksheet_id === 1) {
+				return 'ta';
+			}
+			if ($field['Tag'] === '008') {
+				$items = db_connect()->table('worksheetfielditems wfi')
+					->select('wfi.StartPosition, wfi.Length, wfi.DefaultValue')
+					->join('worksheetfields wf', 'wf.ID = wfi.WorksheetField_id')
+					->where('wf.Worksheet_id', (int) $worksheet_id)
+					->where('wf.Field_id', (int) $field['ID'])
+					->orderBy('wfi.StartPosition', 'ASC')
+					->get()->getResult();
+				$value = '';
+				foreach ($items as $item) {
+					$part = (int) $item->StartPosition === 0 ? date('ymd') : (string) $item->DefaultValue;
+					$value .= str_pad(substr($part, 0, (int) $item->Length), (int) $item->Length, '#');
+				}
+				return $value;
+			}
+			return '';
+		}
+
+		$extra = ['336' => '$2 rdacontent', '337' => '$2 rdamedia', '338' => '$2 rdacarrier'];
+		return '$a ' . ($extra[$field['Tag']] ?? '');
+	}
+}
+
 if (!function_exists('get_all_tags')) {
 	function get_all_tags($worksheet_id = '1')
 	{
 		$db = db_connect();
 		$session = service('session');
+		// Data session versi lama belum memuat flag Enabled/IsCustomable: muat ulang
+		$cached = $session->get('worksheet_fields');
+		if (is_array($cached) && $cached && !array_key_exists('IsCustomable', reset($cached))) {
+			$session->remove('worksheet_fields');
+		}
 		if (!$session->has('worksheet_fields')) {
 			$builder = $db->table('worksheetfields as wsf')
-				->select('f.ID, f.Tag, f.Name, f.Mandatory, f.Fixed, f.Repeatable')
+				->select(marc_field_columns(), false)
 				->join('fields as f', 'f.ID = wsf.Field_id')
 				->where('wsf.Worksheet_id', $worksheet_id)
 				 ->orderBy('f.Tag', 'ASC');
@@ -200,7 +253,7 @@ if (!function_exists('get_all_tags')) {
 			$session->set('worksheet_fields', $worksheet_fields);
 		}
 		$session_tags = $session->get('worksheet_fields');
-		$builder2 = $db->table('fields as f')->select('f.ID, f.Tag, f.Name, f.Fixed, f.Repeatable')->orderBy('f.Tag', 'ASC');
+		$builder2 = $db->table('fields as f')->select(marc_field_columns(), false)->orderBy('f.Tag', 'ASC');
 		$fields = $builder2->get()->getResultArray();
 		$filtered_tags = array_filter($fields, function ($field) use ($session_tags) {
 			if ($field['Repeatable'] == 0) {
@@ -229,7 +282,7 @@ if (!function_exists('add_to_session')) {
 		$session = service('session');
 
 		$builder = $db->table('fields as f')
-			->select('f.ID, f.Tag, f.Name, f.Mandatory, f.Fixed, f.Repeatable')
+			->select(marc_field_columns(), false)
 			->where('f.ID', $field_id);
 		$worksheet_field = $builder->get()->getRowArray();
 		$worksheet_fields = $builder->get()->getResultArray();
@@ -245,7 +298,7 @@ if (!function_exists('add_to_session')) {
 			}
 		}
 
-		$builder2 = $db->table('fields as f')->select('f.ID, f.Tag, f.Name, f.Fixed, f.Repeatable');
+		$builder2 = $db->table('fields as f')->select(marc_field_columns(), false);
 		$fields = $builder2->get()->getResultArray();
 		$filtered_tags = array_filter($fields, function ($field) use ($session_tags) {
 			foreach ($session_tags as $worksheetField) {
@@ -273,7 +326,7 @@ if (!function_exists('remove_from_session')) {
 		$session = service('session');
 
 		$builder = $db->table('fields as f')
-			->select('f.ID, f.Tag, f.Name, f.Mandatory, f.Fixed, f.Repeatable')
+			->select(marc_field_columns(), false)
 			->where('f.ID', $field_id);
 		$worksheet_field = $builder->get()->getRowArray();
 
@@ -437,246 +490,6 @@ function multi_array($post)
 	return implode_data($fix);
 }
 
-
-function tag_indicator($key, $isRDA = false)
-{
-	$tag = 'unset';
-	$ind1 = '#';
-	$ind2 = '#';
-	switch ($key) {
-		case 'judul':
-			$tag = '245';
-			break;
-		case 'variasiBentukJudul':
-			$tag = '246';
-			break;
-		case 'judulAsli':
-			$tag = '740';
-			break;
-		case 'judulSeragam':
-			$tag = '240';
-			break;
-		case 'judulSebelumnya':
-			$tag = '247';
-			break;
-		case 'pengarangUtama':
-			$tag = '100';
-			break;
-		case 'pengarangTambahan':
-			$tag = '700';
-			break;
-		case 'penerbit':
-			$tag = $isRDA ? '264' : '260'; // ← berubah sesuai isRDA
-			break;
-		case 'frekuensi':
-			$tag = '310';
-			break;
-		case 'frekuensiSebelumnya':
-			$tag = '321';
-			break;
-		case 'PhysicalDescription':
-			$tag = '300';
-			break;
-		case 'jenisIsi':
-			$tag = '336';
-			break;
-		case 'jenisMedia':
-			$tag = '337';
-			break;
-		case 'jenisWadah':
-			$tag = '338';
-			break;
-		case 'ISBN':
-			$tag = '020';
-			break;
-		case 'LocCollDaring':
-			$tag = '856';
-			break;
-		case 'ControlNumber':
-			$ind1 = null;
-			$ind2 = null;
-			$tag = '001';
-			break;
-		case 'tag005':
-			$ind1 = null;
-			$ind2 = null;
-			$tag = '005';
-			break;
-		case 'BIBID':
-			$ind1 = '#';
-			$ind2 = '#';
-			$tag = '035';
-			break;
-		case 'CallNumber':
-			$tag = '084';
-			break;
-		case 'DeweyNo':
-			$tag = '082';
-			break;
-		case 'language':
-			$ind1 = null;
-			$ind2 = null;
-			$tag = '008';
-			break;
-		default:
-			$tag = $key;
-	}
-
-	return array(
-		'tag' => $tag,
-		'ind1' => $ind1,
-		'ind2' => $ind2
-	);
-}
-
-function data_catalog_ruas($post, $catalog_id)
-{
-	$result = [];
-	$now = date("Y-m-d H:i:s");
-
-	$isRDA = !empty($post['IsRDA']) && $post['IsRDA'] == 1;
-
-	// ← ambil relator SEBELUM di-exclude
-	$pengarangTambahanRelator = $post['pengarangTambahanRelator'] ?? [];
-
-	$excludedKeys = [
-		'pengarangTambahanRadio',
-		'pengarangUtamaRadio',
-		'catatanRadio',
-		'pengarangTambahanRelator',
-		'Languages',
-		'CoverURL',
-		'cat_id',
-		'update',
-		'worksheet_id',
-		'Worksheet_id', // ← tambah ini (case sensitive)
-		'catalog_type',
-		'worksheet_name',
-		'Edition',
-		'IsOPAC',
-		'IsRDA',
-		'IsRedirect',
-		'submit'
-	];
-	$post = array_diff_key($post, array_flip($excludedKeys));
-
-	$mergeKey = ['judul', 'penerbit', 'PhysicalDescription'];
-	foreach ($mergeKey as $key) {
-		$tag_indicator = tag_indicator($key, $isRDA);
-		$result[$tag_indicator['tag']][] = [
-			'Tag'        => $tag_indicator['tag'],
-			'Indicator1' => $tag_indicator['ind1'],
-			'Indicator2' => $tag_indicator['ind2'],
-			'CatalogId'  => $catalog_id,
-			'value'      => implode_data(merge_key_value($post[$key]), " "),
-			'CreateBy'   => user_id(),
-			'CreateDate' => $now,
-			'UpdateBy'   => user_id(),
-			'UpdateDate' => $now,
-		];
-		unset($post[$key]);
-	}
-
-	$authorKey = ['pengarangUtama', 'pengarangTambahan', 'subject', 'catatan'];
-	foreach ($authorKey as $key) {
-		$value = $post[$key] ?? [];
-
-		foreach ($value as $keys => $values) {
-			$keys_arr = explode("-", $keys);
-			$tag  = $keys_arr[0] ?? 'unset';
-			$ind1 = $keys_arr[1] ?? '#';
-			$ind2 = '#';
-
-			if (is_array($values)) {
-				// 1. Tambahkan $index pada foreach untuk menangkap urutan array-nya
-				foreach ($values as $index => $val) {
-
-					$fieldValue = '$a ' . trim($val ?? '');
-
-					// ← ambil relator berdasarkan $index, bukan $ind1
-					if ($key === 'pengarangTambahan') {
-
-						// 2. Ganti (int) $ind1 menjadi $index
-						$relatorKey = $index;
-
-						$relator = !empty($pengarangTambahanRelator[$relatorKey])
-							? trim($pengarangTambahanRelator[$relatorKey])
-							: '';
-
-						if (!empty($relator)) {
-							$fieldValue .= ' $e ' . $relator;
-						}
-					}
-
-					$result[$tag][] = [
-						'Tag'        => $tag,
-						'Indicator1' => $ind1,
-						'Indicator2' => $ind2,
-						'CatalogId'  => $catalog_id,
-						'value'      => $fieldValue,
-						'CreateBy'   => user_id(),
-						'CreateDate' => $now,
-						'UpdateBy'   => user_id(),
-						'UpdateDate' => $now,
-					];
-				}
-			}
-		}
-		unset($post[$key]);
-	}
-
-	foreach ($post as $key => $value) {
-		$tag_indicator = tag_indicator($key, $isRDA);
-		$tag  = $tag_indicator['tag'] ?? 'unset';
-		$ind1 = $tag_indicator['ind1'] ?? '#';
-		$ind2 = $tag_indicator['ind2'] ?? '#';
-
-		if (is_array($value)) {
-			foreach ($value as $keys => $values) {
-				$result[$tag][] = [
-					'Tag'        => $tag,
-					'Indicator1' => $ind1,
-					'Indicator2' => $ind2,
-					'CatalogId'  => $catalog_id,
-					'value'      => '$a ' . trim($values ?? ''),
-					'CreateBy'   => user_id(),
-					'CreateDate' => $now,
-					'UpdateBy'   => user_id(),
-					'UpdateDate' => $now,
-				];
-			}
-		} else {
-			$result[$tag][] = [
-				'Tag'        => $tag,
-				'Indicator1' => $ind1,
-				'Indicator2' => $ind2,
-				'CatalogId'  => $catalog_id,
-				'value'      => '$a ' . trim($value ?? ''),
-				'CreateBy'   => user_id(),
-				'CreateDate' => $now,
-				'UpdateBy'   => user_id(),
-				'UpdateDate' => $now,
-			];
-		}
-		unset($post[$key]);
-	}
-
-	return sort_array($result);
-}
-function sort_array($post)
-{
-	$sortedArray = [];
-
-	foreach ($post as $value) {
-		$sortedArray = array_merge($sortedArray, $value);
-	}
-
-	sort($sortedArray);
-
-	return $sortedArray;
-}
-
-
 function parse_marc_value($value, $subfields, $separator = ' ')
 {
 	if (is_null($value)) {
@@ -699,68 +512,577 @@ function parse_marc_value($value, $subfields, $separator = ' ')
 	return implode($separator, $result);
 }
 
-/**
- * Converts data from the catalog_ruas table into a flat array for the catalogs table.
- * @param int $CatalogId The ID of the catalog to convert.
- * @return array The data ready to be updated into the catalogs table.
+
+/*
+ * ------------------------------------------------------------------
+ * PENYIMPANAN RUAS KATALOG
+ * Mengikuti alur INLISLite 3 (pengkatalogan/KatalogController::actionSave,
+ * actionSaveRuas, actionCreateTaglistSimple, actionCreateTaglistAdvance dan
+ * CatalogHelpers::convertToCatalogFields). Hanya tabel catalogs & catalog_ruas.
+ * ------------------------------------------------------------------
  */
-function convert_catalog_ruas($CatalogId)
-{
-	// Make sure you use the correct namespace for your DataModel
-	$katalogRuasModel = new DataModel('catalog_ruas', null, 'ID');
-	$ruas_data = $katalogRuasModel->where('CatalogId', $CatalogId)->findAll();
 
-	if (empty($ruas_data)) {
-		return [];
+if (!function_exists('katalog_system_tags')) {
+	/**
+	 * Tag yang selalu diisi sistem saat simpan, bukan dari input form:
+	 * 001 (ControlNumber), 005 (waktu update), 035 (BIBID), 990 (No. Induk eksemplar).
+	 */
+	function katalog_system_tags()
+	{
+		return ['001', '005', '035', '990'];
 	}
-
-	// Reorganize the data into an associative array with Tag as the key
-	$marc = [];
-	foreach ($ruas_data as $ruas) {
-		// PERBAIKAN: Menggunakan sintaks object ($ruas->Tag) bukan array ($ruas['Tag'])
-		$marc[$ruas->Tag] = $ruas->Value;
-	}
-
-	// Start mapping data to the 'catalogs' table columns
-	$update_data = [];
-
-	$update_data['ControlNumber'] = $marc['001'] ?? null;
-	// BIBID hanya ditimpa bila tag 035 berisi; jika kosong, BIBID yang sudah ada dipertahankan.
-	$bibid = parse_marc_value($marc['035'] ?? null, 'a');
-	if ($bibid !== '') {
-		$update_data['BIBID'] = $bibid;
-	}
-
-	// Combine subfields for the Title
-	$title_a = parse_marc_value($marc['245'] ?? null, 'a');
-	$title_b = parse_marc_value($marc['245'] ?? null, 'b');
-	$title_c = parse_marc_value($marc['245'] ?? null, 'c');
-	$update_data['Title'] = trim($title_a . ' ' . $title_b . ' ' . $title_c);
-
-	$update_data['Author'] = parse_marc_value($marc['100'] ?? null, 'a');
-	$update_data['Edition'] = parse_marc_value($marc['250'] ?? null, 'a');
-
-	// Split and combine subfields for publication data from Tag 260
-	$update_data['Publisher'] = parse_marc_value($marc['260'] ?? null, 'b');
-	$update_data['PublishLocation'] = parse_marc_value($marc['260'] ?? null, 'a');
-	$update_data['PublishYear'] = parse_marc_value($marc['260'] ?? null, 'c');
-	$update_data['Publikasi'] = parse_marc_value($marc['260'] ?? null, ['a', 'b', 'c'], ' ');
-
-	$update_data['Subject'] = parse_marc_value($marc['600'] ?? null, 'a');
-	$update_data['PhysicalDescription'] = parse_marc_value($marc['300'] ?? null, 'a');
-	$update_data['ISBN'] = parse_marc_value($marc['020'] ?? null, 'a');
-	$update_data['CallNumber'] = parse_marc_value($marc['084'] ?? null, 'a');
-
-	// Extract language code from Tag 008 (position 35, length 3)
-	$tag_008_value = $marc['008'] ?? '';
-	$update_data['Languages'] = (strlen($tag_008_value) >= 38) ? substr($tag_008_value, 35, 3) : null;
-
-	$update_data['DeweyNo'] = parse_marc_value($marc['082'] ?? null, 'a');
-
-	// Add any other default values needed for the 'catalogs' table
-	$update_data['IsOPAC'] = 1;
-	$update_data['CreateDate'] = date('Y-m-d H:i:s');
-	$update_data['CreateBy'] = user_id();
-
-	return $update_data;
 }
+
+if (!function_exists('marc_tanda_baca')) {
+	/**
+	 * Tanda baca (fielddatas.Delimiter) yang mendahului tiap subruas suatu tag,
+	 * mis. 245 => ['b' => ' : ', 'c' => ' /'].
+	 */
+	function marc_tanda_baca($tag)
+	{
+		static $cache = [];
+
+		if (!isset($cache[$tag])) {
+			$rows = db_connect()->table('fielddatas')
+				->select('fielddatas.Code, fielddatas.Delimiter')
+				->join('fields', 'fields.ID = fielddatas.Field_id')
+				->where('fields.Tag', $tag)
+				->get()->getResult();
+
+			$cache[$tag] = [];
+			foreach ($rows as $row) {
+				if (trim((string) $row->Delimiter) !== '') {
+					$cache[$tag][$row->Code] = (string) $row->Delimiter;
+				}
+			}
+		}
+
+		return $cache[$tag];
+	}
+}
+
+if (!function_exists('marc_clean_tanda_baca')) {
+	/**
+	 * Buang tanda baca milik tag di akhir nilai subruas (setara getRegexPatternCleanTandaBaca).
+	 */
+	function marc_clean_tanda_baca($tag, $value)
+	{
+		$value = trim((string) $value);
+		// Diulang sampai stabil agar tanda baca ganda (mis. "Jakarta : :") ikut bersih
+		do {
+			$before = $value;
+			foreach (marc_tanda_baca($tag) as $delimiter) {
+				$value = trim(preg_replace('/' . preg_quote(trim($delimiter), '/') . '\z/', '', $value));
+			}
+		} while ($value !== $before && $value !== '');
+		return $value;
+	}
+}
+
+if (!function_exists('marc_parse_subfields')) {
+	/**
+	 * Pecah nilai ruas "$a ... $b ..." menjadi [[kode, nilai], ...] sesuai urutan.
+	 * Nilai tanpa "$" dianggap subruas $a.
+	 */
+	function marc_parse_subfields($value)
+	{
+		$value = trim((string) $value);
+		if ($value === '') {
+			return [];
+		}
+		if (strpos($value, '$') === false) {
+			return [['a', $value]];
+		}
+
+		$subfields = [];
+		foreach (explode('$', $value) as $i => $part) {
+			if ($i === 0) {
+				if (trim($part) !== '') {
+					$subfields[] = ['a', $part];
+				}
+				continue;
+			}
+			$code = substr($part, 0, 1);
+			if ($code === '' || $code === false) {
+				continue;
+			}
+			$subfields[] = [$code, (string) substr($part, 1)];
+		}
+
+		return $subfields;
+	}
+}
+
+if (!function_exists('marc_build_value')) {
+	/**
+	 * Susun nilai ruas dari daftar subruas lengkap dengan tanda baca dari fielddatas,
+	 * mis. 245 => "$a Judul : $b Anak judul /$c Penanggung jawab".
+	 */
+	function marc_build_value($tag, array $subfields)
+	{
+		$tandaBaca = marc_tanda_baca($tag);
+		$output = '';
+
+		foreach ($subfields as [$code, $value]) {
+			$value = marc_clean_tanda_baca($tag, $value);
+			if ($value === '') {
+				continue;
+			}
+			if ($output !== '' && isset($tandaBaca[$code])) {
+				$output .= $tandaBaca[$code];
+			}
+			$output .= '$' . $code . ' ' . $value;
+		}
+
+		return $output;
+	}
+}
+
+if (!function_exists('marc_value_is_empty')) {
+	/**
+	 * Ruas dianggap kosong bila tidak ada isi selain kode subruas (mis. "$a").
+	 */
+	function marc_value_is_empty($value)
+	{
+		return trim(preg_replace('/\$\w/', '', (string) $value)) === '';
+	}
+}
+
+if (!function_exists('build_tag_008')) {
+	/**
+	 * Susun tag 008 (40 karakter): 00-05 tanggal entri, 22 kelompok sasaran,
+	 * 33 bentuk karya tulis, 35-37 bahasa. Bila sudah ada 008 lama, posisi lain dipertahankan.
+	 */
+	function build_tag_008(array $languages, $existing = null)
+	{
+		// Data yang sempat tersimpan dengan awalan "$a " dibersihkan dulu
+		$existing = preg_replace('/^\$a\s*/', '', (string) $existing);
+		$value = strlen($existing) >= 40 ? $existing : date('ymd') . str_repeat('#', 34);
+
+		$ks   = trim((string) ($languages['ks'] ?? ''));
+		$bkt  = trim((string) ($languages['bkt'] ?? ''));
+		$lang = trim((string) ($languages['lang'] ?? ''));
+
+		$value = substr_replace($value, $ks !== '' ? substr($ks, 0, 1) : '|', 22, 1);
+		$value = substr_replace($value, $bkt !== '' ? substr($bkt, 0, 1) : '|', 33, 1);
+		$value = substr_replace($value, $lang !== '' ? str_pad(substr($lang, 0, 3), 3, '#') : '|||', 35, 3);
+
+		return $value;
+	}
+}
+
+if (!function_exists('build_simple_ruas')) {
+	/**
+	 * Bangun daftar ruas dari POST form entri sederhana (setara actionCreateTaglistSimple).
+	 * Saat edit, ruas yang tidak dikelola form sederhana (mis. 040, 041, 090, 542) dipertahankan.
+	 *
+	 * @param array $existing Baris catalog_ruas lama (object) untuk mode edit
+	 * @return array [['Tag', 'Indicator1', 'Indicator2', 'Value'], ...]
+	 */
+	function build_simple_ruas(array $post, bool $isRDA, int $worksheetId, array $existing = [])
+	{
+		$rows = [];
+		$add = function ($tag, $ind1, $ind2, array $subfields) use (&$rows) {
+			$value = marc_build_value($tag, $subfields);
+			if ($value !== '') {
+				$rows[] = ['Tag' => $tag, 'Indicator1' => $ind1, 'Indicator2' => $ind2, 'Value' => $value];
+			}
+		};
+		$list = function ($value) {
+			return array_values(array_filter(array_map('trim', (array) ($value ?? [])), 'strlen'));
+		};
+		$ind = function ($value, $default = '#') {
+			$value = trim((string) $value);
+			return $value === '' ? $default : substr($value, 0, 1);
+		};
+
+		// Tajuk pengarang utama (1XX tidak berulang: ambil isian pertama)
+		$mainAuthor = null;
+		foreach ((array) ($post['pengarangUtama'] ?? []) as $key => $names) {
+			$parts = explode('-', (string) $key);
+			foreach ($list($names) as $name) {
+				if ($mainAuthor === null) {
+					$tag = in_array($parts[0], ['100', '110', '111'], true) ? $parts[0] : '100';
+					$mainAuthor = [$tag, $ind($parts[1] ?? ''), $name];
+				}
+			}
+		}
+
+		// 245 Judul: ind1 = 1 bila ada pengarang utama
+		$judul = (array) ($post['judul'] ?? []);
+		$add('245', $mainAuthor ? '1' : '#', '#', [
+			['a', $judul['a'] ?? ''],
+			['b', $judul['b'] ?? ''],
+			['c', $judul['c'] ?? ''],
+		]);
+
+		foreach ($list($post['variasiBentukJudul'] ?? []) as $v) {
+			$add('246', '#', '#', [['a', $v]]);
+		}
+		foreach ($list($post['judulSeragam'] ?? []) as $v) {
+			$add('240', '#', '#', [['a', $v]]);
+		}
+		foreach ($list($post['judulSebelumnya'] ?? []) as $v) {
+			$add('247', '#', '#', [['a', $v]]);
+		}
+		foreach ($list($post['judulAsli'] ?? []) as $v) {
+			$add('740', '#', '#', [['a', $v]]);
+		}
+
+		if ($mainAuthor) {
+			$add($mainAuthor[0], $mainAuthor[1], '#', [['a', $mainAuthor[2]]]);
+		}
+
+		// Tajuk pengarang tambahan: key "TAG-IND1-BARIS" (atau "TAG-IND1"), relator ($e) per baris
+		$relators = (array) ($post['pengarangTambahanRelator'] ?? []);
+		foreach ((array) ($post['pengarangTambahan'] ?? []) as $key => $names) {
+			$parts = explode('-', (string) $key);
+			$tag   = in_array($parts[0], ['700', '710', '711'], true) ? $parts[0] : '700';
+			foreach ((array) $names as $index => $name) {
+				$relator = isset($parts[2]) ? ($relators[$parts[2]] ?? '') : ($relators[$index] ?? '');
+				$add($tag, $ind($parts[1] ?? ''), '#', [['a', $name], ['e', $relator]]);
+			}
+		}
+
+		// Publikasi: 264 untuk RDA, 260 untuk AACR
+		$penerbit = (array) ($post['penerbit'] ?? []);
+		$add($isRDA ? '264' : '260', '#', '#', [
+			['a', $penerbit['a'] ?? ''],
+			['b', $penerbit['b'] ?? ''],
+			['c', $penerbit['c'] ?? ''],
+		]);
+
+		foreach ($list($post['frekuensi'] ?? []) as $v) {
+			$add('310', '#', '#', [['a', $v]]);
+		}
+		foreach ($list($post['frekuensiSebelumnya'] ?? []) as $v) {
+			$add('321', '#', '#', [['a', $v]]);
+		}
+
+		$fisik = (array) ($post['PhysicalDescription'] ?? []);
+		$add('300', '#', '#', [
+			['a', $fisik['a'] ?? ''],
+			['b', $fisik['b'] ?? ''],
+			['c', $fisik['c'] ?? ''],
+			['e', $fisik['e'] ?? ''],
+		]);
+
+		foreach (['336' => ['jenisIsi', 'rdacontent'], '337' => ['jenisMedia', 'rdamedia'], '338' => ['jenisWadah', 'rdacarrier']] as $tag => [$field, $source]) {
+			foreach ($list($post[$field] ?? []) as $v) {
+				$add($tag, '#', '#', [['a', $v], ['2', $source]]);
+			}
+		}
+
+		foreach ($list($post['Edition'] ?? []) as $v) {
+			$add('250', '#', '#', [['a', $v]]);
+		}
+		foreach ($list($post['DeweyNo'] ?? []) as $v) {
+			$add('082', '#', '#', [['a', $v]]);
+		}
+		foreach ($list($post['CallNumber'] ?? []) as $v) {
+			$add('084', '#', '#', [['a', $v]]);
+		}
+		foreach ($list($post['ISBN'] ?? []) as $v) {
+			$add('020', '#', '#', [['a', $v]]);
+		}
+
+		// Subjek: ind2 = 4 (sumber tidak disebutkan)
+		foreach ((array) ($post['subject'] ?? []) as $key => $values) {
+			$parts = explode('-', (string) $key);
+			$tag   = in_array($parts[0], ['600', '650', '651'], true) ? $parts[0] : '650';
+			foreach ($list($values) as $v) {
+				$add($tag, $tag === '600' ? $ind($parts[1] ?? '') : '#', '4', [['a', $v]]);
+			}
+		}
+
+		// Catatan
+		foreach ((array) ($post['catatan'] ?? []) as $key => $values) {
+			$parts = explode('-', (string) $key);
+			$tag   = in_array($parts[0], ['500', '502', '504', '505', '520'], true) ? $parts[0] : '520';
+			foreach ($list($values) as $v) {
+				$add($tag, '#', '#', [['a', $v]]);
+			}
+		}
+
+		foreach ($list($post['LocCollDaring'] ?? []) as $v) {
+			$add('856', '#', '#', [['a', $v]]);
+		}
+
+		// Ruas lama di luar cakupan form sederhana tetap dibawa saat edit
+		$managed = [
+			'245', '246', '240', '247', '740', '100', '110', '111', '700', '710', '711',
+			'260', '264', '310', '321', '300', '336', '337', '338', '250', '082', '084',
+			'020', '600', '650', '651', '500', '502', '504', '505', '520', '856', '008',
+		];
+		$existing008 = null;
+		$has006 = $has007 = false;
+		foreach ($existing as $ruas) {
+			if ($ruas->Tag === '008') {
+				$existing008 = $existing008 ?? $ruas->Value;
+			}
+			if (in_array($ruas->Tag, $managed, true) || in_array($ruas->Tag, katalog_system_tags(), true)) {
+				continue;
+			}
+			$has006 = $has006 || $ruas->Tag === '006';
+			$has007 = $has007 || $ruas->Tag === '007';
+			$rows[] = [
+				'Tag'        => $ruas->Tag,
+				'Indicator1' => $ruas->Indicator1,
+				'Indicator2' => $ruas->Indicator2,
+				'Value'      => $ruas->Value,
+			];
+		}
+
+		// Nilai bawaan ruas tetap (006, 007, 008)
+		if (!$has006) {
+			$rows[] = ['Tag' => '006', 'Indicator1' => null, 'Indicator2' => null, 'Value' => 'a################'];
+		}
+		if (!$has007 && $worksheetId == 1) {
+			$rows[] = ['Tag' => '007', 'Indicator1' => null, 'Indicator2' => null, 'Value' => 'ta'];
+		}
+		$rows[] = [
+			'Tag'        => '008',
+			'Indicator1' => null,
+			'Indicator2' => null,
+			'Value'      => build_tag_008((array) ($post['Languages'] ?? []), $existing008),
+		];
+
+		// Urutkan berdasarkan tag (stabil: urutan dalam tag yang sama tetap)
+		usort($rows, function ($a, $b) {
+			return strcmp($a['Tag'], $b['Tag']);
+		});
+
+		return $rows;
+	}
+}
+
+if (!function_exists('build_marc_ruas')) {
+	/**
+	 * Bangun daftar ruas dari POST form MARC (setara actionCreateTaglistAdvance):
+	 * ruas kosong dibuang, tanda baca subruas dirapikan, tag sistem diabaikan.
+	 *
+	 * @return array [['Tag', 'Indicator1', 'Indicator2', 'Value'], ...]
+	 */
+	function build_marc_ruas(array $values, array $indicator1s = [], array $indicator2s = [])
+	{
+		$rows = [];
+
+		foreach ($values as $tag => $tagValues) {
+			$tag = (string) $tag;
+			if (in_array($tag, katalog_system_tags(), true)) {
+				continue;
+			}
+			$isControl = ctype_digit($tag) && (int) $tag < 10;
+
+			foreach ((array) $tagValues as $index => $value) {
+				$value = trim((string) $value);
+				if (marc_value_is_empty($value)) {
+					continue;
+				}
+
+				if ($isControl) {
+					$rows[] = ['Tag' => $tag, 'Indicator1' => null, 'Indicator2' => null, 'Value' => $value];
+					continue;
+				}
+
+				$value = marc_build_value($tag, marc_parse_subfields($value));
+				if ($value === '') {
+					continue;
+				}
+
+				$ind1 = $indicator1s[$tag] ?? '';
+				$ind2 = $indicator2s[$tag] ?? '';
+				$ind1 = trim((string) (is_array($ind1) ? ($ind1[$index] ?? '') : $ind1));
+				$ind2 = trim((string) (is_array($ind2) ? ($ind2[$index] ?? '') : $ind2));
+
+				$rows[] = [
+					'Tag'        => $tag,
+					'Indicator1' => $ind1 === '' ? '#' : substr($ind1, 0, 1),
+					'Indicator2' => $ind2 === '' ? '#' : substr($ind2, 0, 1),
+					'Value'      => $value,
+				];
+			}
+		}
+
+		return $rows;
+	}
+}
+
+if (!function_exists('save_katalog_ruas')) {
+	/**
+	 * Hapus lalu simpan ulang catalog_ruas (setara actionSaveRuas): 001, 005, 035 dari sistem,
+	 * lalu ruas input, lalu 990 dari No. Induk eksemplar katalog. Sequence diisi berurutan.
+	 * Panggil di dalam transaksi db_connect().
+	 */
+	function save_katalog_ruas($catalogId, $controlNumber, $bibid, array $rows)
+	{
+		$db       = db_connect();
+		$now      = date('Y-m-d H:i:s');
+		$userId   = user_id();
+		$terminal = get_ip_address();
+		$branchId = user()->branch_id ?? null;
+
+		$noInduk = [];
+		$collections = $db->table('collections')->select('NoInduk')
+			->where('Catalog_id', $catalogId)->orderBy('ID', 'ASC')
+			->get()->getResult();
+		foreach ($collections as $coll) {
+			if (trim((string) $coll->NoInduk) !== '') {
+				$noInduk[] = ['Tag' => '990', 'Indicator1' => '#', 'Indicator2' => '#', 'Value' => '$a ' . trim($coll->NoInduk)];
+			}
+		}
+
+		$all = array_merge(
+			[
+				['Tag' => '001', 'Indicator1' => null, 'Indicator2' => null, 'Value' => $controlNumber],
+				['Tag' => '005', 'Indicator1' => null, 'Indicator2' => null, 'Value' => date('YmdHis')],
+				['Tag' => '035', 'Indicator1' => '#', 'Indicator2' => '#', 'Value' => '$a ' . $bibid],
+			],
+			$rows,
+			$noInduk
+		);
+
+		$batch = [];
+		$seq = 1;
+		foreach ($all as $row) {
+			$batch[] = [
+				'CatalogId'      => $catalogId,
+				'Tag'            => $row['Tag'],
+				'Indicator1'     => $row['Indicator1'],
+				'Indicator2'     => $row['Indicator2'],
+				'Value'          => $row['Value'],
+				'Sequence'       => $seq++,
+				'CreateBy'       => $userId,
+				'CreateDate'     => $now,
+				'CreateTerminal' => $terminal,
+				'UpdateBy'       => $userId,
+				'UpdateDate'     => $now,
+				'UpdateTerminal' => $terminal,
+				'Branch_id'      => $branchId,
+			];
+		}
+
+		$db->table('catalog_ruas')->where('CatalogId', $catalogId)->delete();
+		$db->table('catalog_ruas')->insertBatch($batch);
+
+		return $all;
+	}
+}
+
+if (!function_exists('ruas_to_catalog_fields')) {
+	/**
+	 * Petakan ruas ke kolom tabel catalogs (setara CatalogHelpers::convertToCatalogFields).
+	 * Kolom yang tidak punya ruas dikosongkan agar tidak menyimpan nilai basi.
+	 */
+	function ruas_to_catalog_fields(array $rows)
+	{
+		$strip = function ($value) {
+			return trim(preg_replace('/\s+/', ' ', preg_replace('/\$\w/', ' ', (string) $value)));
+		};
+
+		$title = null;
+		$languages = null;
+		$list = array_fill_keys([
+			'Author', 'Edition', 'Publikasi', 'PublishLocation', 'Publisher', 'PublishYear',
+			'Subject', 'PhysicalDescription', 'ISBN', 'CallNumber', 'Note', 'DeweyNo',
+		], []);
+
+		foreach ($rows as $row) {
+			$tag   = $row['Tag'];
+			$value = (string) $row['Value'];
+
+			switch ($tag) {
+				case '245':
+					$title = $title ?? $strip($value);
+					break;
+				case '100':
+				case '110':
+				case '111':
+				case '700':
+				case '710':
+				case '711':
+					$a = marc_clean_tanda_baca($tag, parse_marc_value($value, 'a'));
+					$e = marc_clean_tanda_baca($tag, parse_marc_value($value, 'e'));
+					if ($a !== '') {
+						$list['Author'][] = $a . ($e !== '' ? ' (' . $e . ')' : '');
+					}
+					break;
+				case '250':
+					$list['Edition'][] = $strip($value);
+					break;
+				case '260':
+				case '264':
+					foreach (marc_parse_subfields($value) as [$code, $sub]) {
+						$sub = marc_clean_tanda_baca($tag, $sub);
+						if ($sub === '') {
+							continue;
+						}
+						if ($code === 'a') $list['PublishLocation'][] = $sub;
+						if ($code === 'b') $list['Publisher'][] = $sub;
+						if ($code === 'c') $list['PublishYear'][] = $sub;
+					}
+					$list['Publikasi'][] = $strip($value);
+					break;
+				case '600':
+				case '650':
+				case '651':
+					$list['Subject'][] = $strip($value);
+					break;
+				case '300':
+					$list['PhysicalDescription'][] = $strip($value);
+					break;
+				case '020':
+				case '022':
+				case '024':
+					$list['ISBN'][] = $strip($value);
+					break;
+				case '084':
+					$list['CallNumber'][] = $strip($value);
+					break;
+				case '500':
+				case '502':
+				case '504':
+				case '505':
+				case '520':
+				case '542':
+					$list['Note'][] = $strip($value);
+					break;
+				case '082':
+					$list['DeweyNo'][] = $strip($value);
+					break;
+				case '008':
+					if (strlen($value) >= 40) {
+						$languages = substr($value, 35, 3);
+					}
+					break;
+			}
+		}
+
+		$separators = [
+			'Author' => ' ; ', 'Edition' => ' ; ', 'Publikasi' => ';', 'PublishLocation' => ';',
+			'Publisher' => ';', 'PublishYear' => ';', 'Subject' => ' -- ', 'PhysicalDescription' => ' ',
+			'ISBN' => ' ; ', 'CallNumber' => ' ; ', 'Note' => ' ; ', 'DeweyNo' => ' ; ',
+		];
+		$maxLength = [
+			'Title' => 700, 'Author' => 700, 'Edition' => 255, 'Publikasi' => 700, 'PublishLocation' => 255,
+			'Publisher' => 255, 'PublishYear' => 255, 'Subject' => 700, 'PhysicalDescription' => 255,
+			'ISBN' => 700, 'CallNumber' => 700, 'Languages' => 255, 'DeweyNo' => 255,
+		];
+
+		$result = ['Title' => (string) $title];
+		foreach ($list as $field => $values) {
+			$values = array_filter($values, 'strlen');
+			$result[$field] = $values ? implode($separators[$field], $values) : null;
+		}
+		$result['Languages'] = $languages;
+
+		foreach ($maxLength as $field => $length) {
+			if ($result[$field] !== null) {
+				$result[$field] = mb_substr($result[$field], 0, $length);
+			}
+		}
+
+		return $result;
+	}
+}
+

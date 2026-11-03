@@ -8,6 +8,7 @@
  *  - EksemplarFormController   → create & edit
  *  - EksemplarImportController → import Excel & download template
  *  - EksemplarLabelController  → cetak label
+ *  - EksemplarExportController → export Excel format template import
  */
 
 if (!isset($routes)) {
@@ -42,10 +43,32 @@ $routes->group('eksemplar', ['namespace' => 'Eksemplar\Controllers'], function (
 });
 
 // -----------------------------------------------------------------------
+// EXPORT EKSEMPLAR (format template import, diproses per batch)
+// -----------------------------------------------------------------------
+$routes->group('export-eksemplar', ['namespace' => 'Eksemplar\Controllers'], function ($subroutes) {
+    $subroutes->get('/',        'EksemplarExportController::index');
+    $subroutes->get('index',    'EksemplarExportController::index');
+    $subroutes->post('start',   'EksemplarExportController::start',   ['filter' => 'csrf']);
+    $subroutes->post('process', 'EksemplarExportController::process', ['filter' => 'csrf']);
+    $subroutes->post('finish',  'EksemplarExportController::finish',  ['filter' => 'csrf']);
+    $subroutes->get('download', 'EksemplarExportController::download');
+});
+
+// -----------------------------------------------------------------------
 // KARANTINA (alias)
 // -----------------------------------------------------------------------
 $routes->group('karantina-eksemplar', ['namespace' => 'Eksemplar\Controllers'], function ($subroutes) {
     $subroutes->add('', 'EksemplarController::karantina');
+});
+
+// -----------------------------------------------------------------------
+// KARDEKS TERBITAN BERKALA
+// -----------------------------------------------------------------------
+$routes->group('kardeks-terbitan-berkala', ['namespace' => 'Eksemplar\Controllers'], function ($subroutes) {
+    $subroutes->get('',              'EksemplarKardeksController::index');
+    $subroutes->get('index',         'EksemplarKardeksController::index');
+    $subroutes->get('datatable',     'EksemplarKardeksController::datatable');
+    $subroutes->get('edisi/(:num)',  'EksemplarKardeksController::edisi/$1');
 });
 
 // -----------------------------------------------------------------------

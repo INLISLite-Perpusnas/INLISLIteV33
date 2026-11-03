@@ -11,6 +11,7 @@ $slug = $request->getGet('slug') ?? '';
 		padding: .5rem .75rem; border-radius: .25rem 0 0 .25rem; white-space: nowrap;
 	}
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>

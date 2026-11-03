@@ -33,6 +33,7 @@ $slug = $request->getGet('slug') ?? '';
         grid-column-start: 2;
     }
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -67,7 +68,7 @@ $slug = $request->getGet('slug') ?? '';
             <i class="header-icon lnr-list icon-gradient bg-plum-plate"></i> Daftar Perpanjangan
             <div class="btn-actions-pane-right actions-icon-btn">
                 <?php if (is_allowed('sirkulasi-perpanjangan/create')) : ?>
-                    <a href="<?= base_url('sirkulasi-perpanjangan/create') ?>" class="btn btn-success" title="Tambah">
+                    <a href="<?= base_url('sirkulasi-perpanjangan/create') ?>" class="btn btn-catalog-add" title="Tambah">
                         <i class="fa fa-plus"></i> Perpanjangan
                     </a>
                 <?php endif; ?>

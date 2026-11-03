@@ -2,43 +2,38 @@
 
 <?= $this->section('style') ?>
 <style>
+    /* Browse Katalog - gaya INA Digital (Inter, skala 28/36, 18/26, 16/24, 14/20, 12/16; biru #2d659e) */
     :root {
-        --op-primary: #1e3a8a;
-        --op-primary-light: #3b5bdb;
-        --op-primary-soft: #eef2ff;
-        --op-ink: #111827;
+        --op-primary: #2d659e;
+        --op-primary-hover: #24527f;
+        --op-primary-soft: #eef4fa;
+        --op-ink: #1f2937;
+        --op-ink-subtle: #374151;
         --op-muted: #6b7280;
         --op-border: #e5e7eb;
-        --op-bg: #f6f7fb;
-        --op-radius-lg: 20px;
-        --op-radius-md: 14px;
-        --op-radius-sm: 10px;
-        --op-shadow-sm: 0 1px 3px rgba(17, 24, 39, 0.06), 0 1px 2px rgba(17, 24, 39, 0.04);
-        --op-shadow-md: 0 10px 30px -12px rgba(30, 58, 138, 0.18);
+        --op-border-strong: #d1d5db;
+        --op-bg: #f7f7f8;
+        --op-radius-lg: 12px;
+        --op-radius-md: 12px;
+        --op-radius-sm: 8px;
+        --op-shadow-sm: 0 1px 3px rgba(16, 24, 40, .08), 0 1px 2px rgba(16, 24, 40, .04);
+        --op-focus: 0 0 0 3px rgba(45, 101, 158, .2);
     }
 
     body { background: var(--op-bg); }
 
-    .op-container { max-width: 1600px; margin-left: auto; margin-right: auto; }
+    .op-container { max-width: 1280px; margin-left: auto; margin-right: auto; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--op-ink); }
     @media (min-width: 1400px) {
-        .op-container { padding-left: 2.5rem; padding-right: 2.5rem; }
+        .op-container { padding-left: 2rem; padding-right: 2rem; }
     }
 
-    /* Page header */
-    .op-page-header { text-align: center; margin-bottom: 2.5rem; }
-    .op-page-header .op-icon-badge {
-        width: 64px; height: 64px;
-        border-radius: 18px;
-        background: linear-gradient(135deg, var(--op-primary), var(--op-primary-light));
-        display: inline-flex; align-items: center; justify-content: center;
-        color: #fff; font-size: 1.5rem;
-        box-shadow: var(--op-shadow-md);
-        margin-bottom: 1rem;
-    }
-    .op-page-header h1 { font-weight: 800; letter-spacing: -0.02em; color: var(--op-ink); font-size: 2.15rem; }
-    .op-page-header p { color: var(--op-muted); font-size: 1.02rem; }
+    /* Header halaman: rata kiri, H4 */
+    .op-page-header { text-align: left; margin-bottom: 24px; }
+    .op-page-header .op-icon-badge { display: none; }
+    .op-page-header h1 { font-size: 28px; line-height: 36px; font-weight: 700; letter-spacing: 0; color: var(--op-ink); margin: 0 0 4px; }
+    .op-page-header p { font-size: 16px; line-height: 24px; color: var(--op-muted); }
 
-    /* Card shells */
+    /* Kartu */
     .op-card {
         background: #fff;
         border: 1px solid var(--op-border);
@@ -47,222 +42,253 @@
         overflow: hidden;
     }
     .op-card-header {
-        padding: 1.1rem 1.4rem;
-        display: flex; align-items: center; gap: .6rem;
+        padding: 16px 24px;
+        display: flex; align-items: center; gap: 8px;
         border-bottom: 1px solid var(--op-border);
-        font-weight: 700;
+        font-size: 18px; line-height: 26px; font-weight: 600;
         color: var(--op-ink);
-        font-size: 1rem;
     }
-    .op-card-header .op-header-icon {
-        width: 34px; height: 34px;
-        border-radius: 10px;
-        display: flex; align-items: center; justify-content: center;
-        color: #fff; font-size: .85rem;
-        flex: 0 0 auto;
-    }
-    .op-card-body { padding: 1.5rem; }
+    .op-card-header .op-header-icon { display: none; }
+    .op-card-header .op-header-meta { font-size: 14px; line-height: 20px; font-weight: 500; color: var(--op-muted); }
+    .op-card-body { padding: 24px; }
 
-    /* Overview mini stats */
+    /* Card Metrics: label, angka besar, ikon di kotak lembut */
     .op-mini-stat-card {
-        border-radius: var(--op-radius-md);
-        padding: 1.1rem;
-        text-align: center;
-        color: #fff;
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
         height: 100%;
+        padding: 16px 20px;
+        text-align: left;
+        background: #fff;
+        border: 1px solid var(--op-border);
+        border-radius: var(--op-radius-sm);
     }
-    .op-mini-stat-card i { opacity: .9; }
-    .op-mini-stat-card h5 { font-weight: 800; margin-top: .35rem; }
-    .op-mini-stat-card small { opacity: .85; font-weight: 500; }
-    .op-mg-primary { background: linear-gradient(135deg, #1e3a8a, #3b5bdb); }
-    .op-mg-success { background: linear-gradient(135deg, #059669, #34d399); }
-    .op-mg-info    { background: linear-gradient(135deg, #0891b2, #38bdf8); }
-    .op-mg-warning { background: linear-gradient(135deg, #d97706, #fbbf24); }
+    .op-mini-stat-card small { display: block; font-size: 14px; line-height: 20px; font-weight: 500; color: var(--op-muted); }
+    .op-mini-stat-card h5 { margin: 0; font-size: 28px; line-height: 36px; font-weight: 700; color: var(--op-ink); font-variant-numeric: tabular-nums; }
+    .op-mini-stat-card i {
+        flex-shrink: 0;
+        width: 44px; height: 44px;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 18px;
+        color: var(--op-primary);
+        background: var(--op-primary-soft);
+        border-radius: var(--op-radius-sm);
+    }
 
-    /* Browse type selector cards */
+    /* Pemilih kategori */
     .op-type-btn {
-        display: block;
-        text-align: center;
-        padding: 1.5rem 1rem;
-        border-radius: var(--op-radius-md);
-        border: 1.5px solid var(--op-border);
+        display: flex; align-items: center; gap: 12px;
+        height: 100%;
+        padding: 16px 20px;
+        text-align: left;
+        border: 1px solid var(--op-border);
+        border-radius: var(--op-radius-sm);
         background: #fff;
         color: var(--op-ink);
         text-decoration: none;
-        transition: all .2s ease;
-        height: 100%;
+        transition: border-color .15s ease, background-color .15s ease;
     }
-    .op-type-btn:hover { border-color: #c7d2fe; background: #f7f8ff; color: var(--op-ink); transform: translateY(-2px); }
-    .op-type-btn.active {
-        border-color: transparent;
+    .op-type-btn:hover { border-color: var(--op-primary); background: var(--op-primary-soft); color: var(--op-ink); }
+    .op-type-btn:focus-visible { outline: none; box-shadow: var(--op-focus); }
+    .op-type-btn.active,
+    .op-type-btn.active:hover {
+        background: var(--op-primary);
+        border-color: var(--op-primary);
         color: #fff;
-        box-shadow: var(--op-shadow-md);
     }
-    .op-type-btn.active.t-author { background: linear-gradient(135deg, #1e3a8a, #3b5bdb); }
-    .op-type-btn.active.t-title  { background: linear-gradient(135deg, #059669, #34d399); }
-    .op-type-btn.active.t-subject{ background: linear-gradient(135deg, #0891b2, #38bdf8); }
-    .op-type-btn .op-type-icon { font-size: 1.8rem; margin-bottom: .5rem; display: block; }
-    .op-type-btn strong { display: block; font-size: 1.05rem; margin-bottom: .2rem; }
-    .op-type-btn small { opacity: .85; }
+    .op-type-btn .op-type-icon { flex-shrink: 0; font-size: 20px; margin: 0; color: var(--op-primary); }
+    .op-type-btn.active .op-type-icon { color: #fff; }
+    .op-type-btn strong { display: block; font-size: 16px; line-height: 24px; font-weight: 600; }
+    .op-type-btn small { display: block; font-size: 14px; line-height: 20px; color: var(--op-muted); }
+    .op-type-btn.active small { color: rgba(255, 255, 255, .85); }
 
-    /* Alphabet nav */
-    .op-alpha-nav { text-align: center; }
+    /* Navigasi huruf */
+    .op-alpha-nav { text-align: left; }
     .browse-letter {
         display: inline-flex;
         align-items: center; justify-content: center;
-        width: 40px;
-        height: 40px;
-        margin: 3px;
-        border-radius: 10px;
-        font-weight: 700;
-        font-size: 0.92rem;
+        width: 40px; height: 40px;
+        margin: 0 4px 8px 0;
+        border-radius: var(--op-radius-sm);
+        font-size: 14px; line-height: 20px; font-weight: 600;
         text-decoration: none;
-        color: var(--op-primary);
-        background: #f8f9fc;
-        border: 1px solid var(--op-border);
-        transition: all 0.2s ease;
+        color: var(--op-ink-subtle);
+        background: #fff;
+        border: 1px solid var(--op-border-strong);
+        transition: border-color .15s ease, background-color .15s ease, color .15s ease;
     }
-    .browse-letter:hover {
-        background: var(--op-primary);
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 14px -6px rgba(30,58,138,.45);
-    }
-    .browse-letter.active {
-        background: linear-gradient(135deg, var(--op-primary), var(--op-primary-light));
-        color: white;
-        border-color: transparent;
-        box-shadow: 0 6px 14px -6px rgba(30,58,138,.45);
-    }
-    .op-alpha-divider { border-top: 1px dashed var(--op-border); margin: .9rem auto; max-width: 90%; }
+    .browse-letter:hover { border-color: var(--op-primary); color: var(--op-primary); background: var(--op-primary-soft); }
+    .browse-letter:focus-visible { outline: none; box-shadow: var(--op-focus); }
+    .browse-letter.active,
+    .browse-letter.active:hover { background: var(--op-primary); border-color: var(--op-primary); color: #fff; }
+    .op-alpha-divider { border-top: 1px solid var(--op-border); margin: 8px 0 16px; max-width: none; }
 
-    /* Results header */
-    .op-results-title { font-weight: 800; color: var(--op-ink); font-size: 1.35rem; }
+    /* Header hasil */
+    .op-results-title { font-size: 18px; line-height: 26px; font-weight: 600; color: var(--op-ink); }
+    .op-results-title > i { display: none; }
     .op-count-badge {
         background: var(--op-primary-soft); color: var(--op-primary);
-        border-radius: 999px; padding: .35rem .85rem; font-weight: 700; font-size: .82rem;
-        display: inline-flex; align-items: center; gap: .3rem;
+        border-radius: 999px; padding: 2px 10px;
+        font-size: 12px; line-height: 16px; font-weight: 600;
+        display: inline-flex; align-items: center; gap: 4px;
+        vertical-align: middle;
     }
     .op-view-toggle-btn {
-        border-radius: 999px !important;
-        border: 1px solid var(--op-border) !important;
+        min-height: 40px;
+        border-radius: var(--op-radius-sm) !important;
+        border: 1px solid var(--op-border-strong) !important;
         color: var(--op-ink) !important;
         background: #fff !important;
-        font-weight: 600;
-        font-size: .875rem;
+        font-size: 14px; line-height: 20px; font-weight: 600;
     }
-    .op-view-toggle-btn:hover { border-color: #c7d2fe !important; color: var(--op-primary) !important; }
-    .op-dropdown-menu { border-radius: var(--op-radius-sm); border: 1px solid var(--op-border); box-shadow: var(--op-shadow-md); padding: .4rem; }
-    .op-dropdown-menu .dropdown-item { border-radius: 8px; padding: .5rem .65rem; font-size: .88rem; }
+    .op-view-toggle-btn:hover { border-color: var(--op-primary) !important; color: var(--op-primary) !important; }
+    .op-dropdown-menu { border-radius: var(--op-radius-sm); border: 1px solid var(--op-border); box-shadow: 0 8px 24px rgba(16, 24, 40, .12); padding: 4px; }
+    .op-dropdown-menu .dropdown-item { border-radius: 6px; padding: 8px 12px; font-size: 14px; line-height: 20px; }
     .op-dropdown-menu .dropdown-item:hover { background: var(--op-primary-soft); color: var(--op-primary); }
 
-    /* Catalog grid cards */
+    /* Kartu katalog (grid) */
     .catalog-card {
-        border: 1px solid var(--op-border);
+        border: 1px solid var(--op-border) !important;
         border-radius: var(--op-radius-md);
-        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color .25s ease;
         box-shadow: var(--op-shadow-sm);
         overflow: hidden;
         background: #fff;
+        transition: border-color .15s ease, box-shadow .15s ease;
     }
-    .catalog-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--op-shadow-md);
-        border-color: #c7d2fe;
-    }
+    .catalog-card:hover { border-color: var(--op-primary) !important; box-shadow: 0 4px 12px rgba(16, 24, 40, .08); }
     .catalog-card .cc-header {
-        padding: .7rem 1rem;
-        color: #fff;
-        display: flex; align-items: center; gap: .5rem;
-        font-size: .82rem; font-weight: 700;
+        padding: 12px 16px 0;
+        display: flex; align-items: center; gap: 6px;
+        font-size: 12px; line-height: 16px; font-weight: 600;
+        color: var(--op-muted);
+        background: transparent;
     }
-    .cc-header.t-author { background: linear-gradient(135deg, #1e3a8a, #3b5bdb); }
-    .cc-header.t-title  { background: linear-gradient(135deg, #059669, #34d399); }
-    .cc-header.t-subject{ background: linear-gradient(135deg, #0891b2, #38bdf8); }
-    .catalog-card .cc-body { padding: 1.1rem; }
-    .catalog-card .cc-title { font-weight: 700; color: var(--op-ink); font-size: 1rem; margin-bottom: .7rem; line-height: 1.35; }
-    .catalog-card .cc-meta { font-size: .8rem; color: var(--op-muted); display: flex; align-items: flex-start; gap: .45rem; margin-bottom: .3rem; }
-    .catalog-card .cc-meta i { color: var(--op-primary-light); margin-top: .15rem; }
-    .catalog-card .cc-footer { padding: .8rem 1.1rem; border-top: 1px solid var(--op-border); background: #fafbfd; }
+    .catalog-card .cc-header i { color: var(--op-primary); }
+    .catalog-card .cc-body { padding: 8px 16px 16px; }
+    .catalog-card .cc-title { font-size: 16px; line-height: 24px; font-weight: 600; color: var(--op-ink); margin-bottom: 12px; }
+    .catalog-card .cc-meta { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 4px; font-size: 14px; line-height: 20px; color: var(--op-muted); }
+    .catalog-card .cc-meta strong { font-weight: 500; color: var(--op-ink-subtle); }
+    .catalog-card .cc-meta i { width: 14px; margin-top: 3px; color: #9ca3af; }
+    .catalog-card .cc-footer { padding: 12px 16px; border-top: 1px solid var(--op-border); background: #fff; }
 
     .op-chip-subject {
         background: var(--op-primary-soft); color: var(--op-primary);
-        border-radius: 999px; padding: .3rem .7rem; font-weight: 600; font-size: .76rem;
-        display: inline-flex; align-items: center; gap: .3rem;
+        border-radius: 999px; padding: 2px 10px;
+        font-size: 12px; line-height: 16px; font-weight: 600;
+        display: inline-flex; align-items: center; gap: 4px;
     }
     .op-chip-controlnum {
-        background: #f4f4f5; color: #3f3f46;
-        border-radius: 999px; padding: .25rem .65rem; font-weight: 700; font-size: .74rem;
+        background: #f3f4f6; color: var(--op-ink-subtle);
+        border-radius: 999px; padding: 2px 10px;
+        font-size: 12px; line-height: 16px; font-weight: 600;
     }
 
+    /* Tombol: utama solid, sekunder bergaris */
     .btn-op-primary {
-        background: linear-gradient(135deg, var(--op-primary), var(--op-primary-light));
-        border: none; color: #fff; font-weight: 600;
-        border-radius: 999px;
-        box-shadow: 0 6px 16px -6px rgba(30,58,138,.5);
+        display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+        min-height: 36px;
+        padding: 6px 14px;
+        font-size: 14px; line-height: 20px; font-weight: 600;
+        color: #fff;
+        background: var(--op-primary);
+        border: 1px solid var(--op-primary);
+        border-radius: var(--op-radius-sm);
+        box-shadow: none;
     }
-    .btn-op-primary:hover { color: #fff; filter: brightness(1.05); }
+    .btn-op-primary:hover { color: #fff; background: var(--op-primary-hover); border-color: var(--op-primary-hover); filter: none; }
     .btn-op-soft {
-        background: #fff; border: 1px solid var(--op-border); color: var(--op-ink);
-        border-radius: 999px; font-weight: 600;
+        display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+        min-height: 40px;
+        padding: 8px 16px;
+        font-size: 14px; line-height: 20px; font-weight: 600;
+        color: var(--op-primary);
+        background: #fff;
+        border: 1px solid var(--op-primary);
+        border-radius: var(--op-radius-sm);
     }
-    .btn-op-soft:hover { border-color: var(--op-primary-light); color: var(--op-primary); }
+    .btn-op-soft:hover { color: var(--op-primary-hover); background: var(--op-primary-soft); border-color: var(--op-primary-hover); }
+    .btn-op-primary:focus-visible,
+    .btn-op-soft:focus-visible { outline: none; box-shadow: var(--op-focus); }
+    .btn-op-soft .text-success,
+    .btn-op-soft .text-info { color: inherit !important; }
+    .btn-group > .btn-op-soft + .btn-op-soft { margin-left: 8px; }
+    .btn-group > .btn-op-soft { border-radius: var(--op-radius-sm) !important; }
 
     /* List view */
     .op-list-item {
         border: 1px solid var(--op-border);
         border-radius: var(--op-radius-md);
-        padding: 1.1rem 1.3rem;
-        margin-bottom: .9rem;
+        padding: 16px 20px;
+        margin-bottom: 12px;
         background: #fff;
-        transition: border-color .2s ease, box-shadow .2s ease;
+        transition: border-color .15s ease;
     }
-    .op-list-item:hover { border-color: #c7d2fe; box-shadow: var(--op-shadow-sm); }
+    .op-list-item:hover { border-color: var(--op-primary); }
+    .op-list-item h5 { font-size: 16px; line-height: 24px; font-weight: 600 !important; color: var(--op-ink) !important; }
+    .op-list-item p,
+    .op-list-item small { font-size: 14px; line-height: 20px; }
 
-    /* Table view */
-    .op-table-wrap { border: 1px solid var(--op-border); border-radius: var(--op-radius-md); overflow: hidden; }
+    /* Tabel INA */
+    .op-table-wrap { background: #fff; border: 1px solid var(--op-border); border-radius: var(--op-radius-md); overflow: hidden; }
     .op-table-wrap table { margin-bottom: 0; }
     .op-table-wrap thead th {
-        background: #f8f9fc; color: var(--op-ink); font-size: .74rem;
-        text-transform: uppercase; letter-spacing: .04em; font-weight: 700;
-        border: none; padding: .75rem 1rem;
+        padding: 12px 16px;
+        font-size: 14px; line-height: 20px; font-weight: 600;
+        text-transform: none; letter-spacing: 0;
+        color: var(--op-ink-subtle);
+        background: #f9fafb;
+        border-bottom: 1px solid var(--op-border);
+        white-space: nowrap;
     }
-    .op-table-wrap tbody td { padding: .65rem 1rem; vertical-align: middle; font-size: .875rem; border-color: #f0f1f5; }
-    .op-table-wrap tbody tr:hover { background: #fafbff; }
+    .op-table-wrap tbody td { padding: 12px 16px; vertical-align: top; font-size: 14px; line-height: 20px; border-color: var(--op-border); }
+    .op-table-wrap tbody tr:hover { background: #f9fafb; }
+    .op-table-wrap td:first-child,
+    .op-table-wrap th:first-child { text-align: right; width: 56px; font-variant-numeric: tabular-nums; }
 
     /* Empty state */
     .op-empty-panel {
         text-align: center;
-        padding: 3.5rem 1.5rem;
+        padding: 48px 24px;
         background: #fff;
         border: 1px solid var(--op-border);
         border-radius: var(--op-radius-lg);
         box-shadow: var(--op-shadow-sm);
     }
-    .op-empty-panel i { color: #d1d5db; }
+    .op-empty-panel i { color: #9ca3af; }
+    .op-empty-panel h4 { font-size: 18px; line-height: 26px; color: var(--op-ink) !important; }
+    .op-empty-panel .btn-group { gap: 8px; }
 
-    /* Pagination */
-    .custom-pagination .pagination { justify-content: center; gap: .25rem; }
+    /* Pagination INA */
+    .custom-pagination .pagination { justify-content: center; gap: 4px; }
     .custom-pagination .page-link {
-        border-radius: 10px !important;
-        border: 1px solid var(--op-border) !important;
-        color: var(--op-ink) !important;
-        font-weight: 600;
-        margin: 0 2px;
+        min-width: 40px; height: 40px;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: var(--op-radius-sm) !important;
+        border: 1px solid var(--op-border-strong) !important;
+        color: var(--op-ink-subtle) !important;
+        background: #fff !important;
+        font-size: 14px; font-weight: 600;
+        margin: 0;
     }
+    .custom-pagination .page-link:hover { border-color: var(--op-primary) !important; color: var(--op-primary) !important; }
     .custom-pagination .page-item.active .page-link {
-        background: linear-gradient(135deg, var(--op-primary), var(--op-primary-light)) !important;
-        border-color: transparent !important;
+        background: var(--op-primary) !important;
+        border-color: var(--op-primary) !important;
         color: #fff !important;
     }
 
     mark, .bg-warning.px-1.rounded { background: #fde68a !important; border-radius: 4px; padding: 0 2px; }
+
+    @media (max-width: 768px) {
+        .op-page-header h1 { font-size: 24px; line-height: 32px; }
+        .op-card-body { padding: 16px; }
+        .op-card-header { padding: 16px; }
+    }
 </style>
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
 
-<div class="container-fluid op-container py-5" style="padding-top: 100px !important;">
+<div class="container-fluid op-container py-5" style="padding-top: 110px !important;">
 
     <!-- Page Header -->
     <div class="op-page-header">
@@ -276,7 +302,7 @@
         <div class="col-12">
             <div class="op-card">
                 <div class="op-card-header">
-                    <span class="op-header-icon" style="background: linear-gradient(135deg,#1e3a8a,#3b5bdb);"><i class="fas fa-filter"></i></span>
+                    <span class="op-header-icon"><i class="fas fa-filter"></i></span>
                     Pilih Kategori Browse
                 </div>
                 <div class="op-card-body">
@@ -284,31 +310,27 @@
                     <!-- Statistik -->
                     <div class="row g-3 mb-4">
                         <div class="col-md-3">
-                            <div class="op-mini-stat-card op-mg-primary">
-                                <i class="fas fa-users fa-2x"></i>
-                                <h5><?= number_format($total_authors) ?></h5>
-                                <small>Total Pengarang</small>
+                            <div class="op-mini-stat-card">
+                                <div><small>Total Pengarang</small><h5><?= number_format($total_authors) ?></h5></div>
+                                <i class="fas fa-users" aria-hidden="true"></i>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="op-mini-stat-card op-mg-success">
-                                <i class="fas fa-book fa-2x"></i>
-                                <h5><?= number_format($total_titles) ?></h5>
-                                <small>Total Judul</small>
+                            <div class="op-mini-stat-card">
+                                <div><small>Total Judul</small><h5><?= number_format($total_titles) ?></h5></div>
+                                <i class="fas fa-book" aria-hidden="true"></i>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="op-mini-stat-card op-mg-info">
-                                <i class="fas fa-tags fa-2x"></i>
-                                <h5><?= number_format($total_subjects) ?></h5>
-                                <small>Total Subjek</small>
+                            <div class="op-mini-stat-card">
+                                <div><small>Total Subjek</small><h5><?= number_format($total_subjects) ?></h5></div>
+                                <i class="fas fa-tags" aria-hidden="true"></i>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="op-mini-stat-card op-mg-warning">
-                                <i class="fas fa-globe fa-2x"></i>
-                                <h5><?= number_format($total_languages) ?></h5>
-                                <small>Bahasa</small>
+                            <div class="op-mini-stat-card">
+                                <div><small>Bahasa</small><h5><?= number_format($total_languages) ?></h5></div>
+                                <i class="fas fa-globe" aria-hidden="true"></i>
                             </div>
                         </div>
                     </div>
@@ -319,24 +341,21 @@
                             <a href="<?= base_url('opac/browse?type=author&letter=' . ($letter ?? 'A')) ?>"
                                class="op-type-btn t-author <?= ($browse_type ?? '') == 'author' ? 'active' : '' ?>">
                                 <i class="fas fa-user op-type-icon"></i>
-                                <strong>Pengarang</strong>
-                                <small>Browse berdasarkan nama pengarang</small>
+                                <span><strong>Pengarang</strong><small>Browse berdasarkan nama pengarang</small></span>
                             </a>
                         </div>
                         <div class="col-md-4">
                             <a href="<?= base_url('opac/browse?type=title&letter=' . ($letter ?? 'A')) ?>"
                                class="op-type-btn t-title <?= ($browse_type ?? '') == 'title' ? 'active' : '' ?>">
                                 <i class="fas fa-book op-type-icon"></i>
-                                <strong>Judul</strong>
-                                <small>Browse berdasarkan judul buku</small>
+                                <span><strong>Judul</strong><small>Browse berdasarkan judul buku</small></span>
                             </a>
                         </div>
                         <div class="col-md-4">
                             <a href="<?= base_url('opac/browse?type=subject&letter=' . ($letter ?? 'A')) ?>"
                                class="op-type-btn t-subject <?= ($browse_type ?? '') == 'subject' ? 'active' : '' ?>">
                                 <i class="fas fa-tags op-type-icon"></i>
-                                <strong>Subjek</strong>
-                                <small>Browse berdasarkan subjek</small>
+                                <span><strong>Subjek</strong><small>Browse berdasarkan subjek</small></span>
                             </a>
                         </div>
                     </div>
@@ -360,9 +379,9 @@
             <div class="col-12">
                 <div class="op-card">
                     <div class="op-card-header">
-                        <span class="op-header-icon" style="background: linear-gradient(135deg,#4b5563,#9ca3af);"><i class="fas fa-sort-alpha-down"></i></span>
+                        <span class="op-header-icon"><i class="fas fa-sort-alpha-down"></i></span>
                         Pilih Huruf Awal
-                        <span class="text-primary">(<?= $typeNames[$browse_type] ?? $browse_type ?>)</span>
+                        <span class="op-header-meta">&middot; <?= esc($typeNames[$browse_type] ?? $browse_type) ?></span>
                     </div>
                     <div class="op-card-body">
                         <div class="alphabet-nav op-alpha-nav">
@@ -680,7 +699,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const alphabetNav = document.querySelector('.alphabet-nav');
     if (alphabetNav) {
         const btn    = document.createElement('button');
-        btn.className = 'btn btn-op-soft btn-sm ms-3 mt-2';
+        btn.className = 'btn btn-op-soft btn-sm mt-2';
         btn.innerHTML = '<i class="fas fa-search me-1"></i>Jump';
         btn.onclick   = quickJumpToLetter;
         alphabetNav.appendChild(btn);

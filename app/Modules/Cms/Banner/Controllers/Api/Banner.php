@@ -35,46 +35,33 @@ class Banner extends \Base\Controllers\BaseResourceController
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
 			->edit('title', function ($row) {
-				$html  =  '<b>' . $row->title . '</b>';
-				return $html;
-			})
-			->edit('file_cover', function ($row) {
+				// Kolom entitas: thumbnail cover + judul
 				$default = base_url('uploads/default/no_cover.jpg');
-				$image   = (!empty($row->file_cover))
-					? base_url('uploads/banner/' . $row->file_cover)
-					: $default;
-
-				$html = '<a href="' . $image . '" class="image-link">
-                <img width="100" class="rounded"
-                     src="' . $image . '"
-                     onerror="this.onerror=null;this.src=\'' . $default . '\';"
-                     alt="">
-             </a>';
-				return $html;
+				$image   = !empty($row->file_cover) ? base_url('uploads/banner/' . $row->file_cover) : $default;
+				return '<div class="ina-cell-entity">'
+					. '<a href="' . esc($image, 'attr') . '" class="image-link ina-thumb" aria-label="Lihat cover ' . esc($row->title, 'attr') . '">'
+					. '<img src="' . esc($image, 'attr') . '" onerror="this.onerror=null;this.src=\'' . $default . '\';" alt="" width="72" height="48" loading="lazy">'
+					. '</a><span class="ina-cell-title">' . esc($row->title) . '</span></div>';
 			})
-
 			->edit('category', function ($row) {
-				$html = '<span class="badge badge-primary badge-pill">' . $row->category . '</span> ';
-				if (!empty($row->category_sub)) {
-					$html .= '<br><span class="badge badge-secondary badge-pill">' . $row->category_sub . '</span>';
-				}
-				return $html;
+				return '<span class="ina-badge ina-badge-info">' . esc($row->category) . '</span>';
 			})
 			->edit('active', function ($row) {
-				$status = $row->active == 1 ? 'Active' : 'Inactive';
-				$class = $row->active == 1 ? 'success' : 'danger';
-				$html = '<span class="badge badge-' . $class . '  badge-pill">' . $status . '</span>';
-				return $html;
+				return $row->active == 1
+					? '<span class="ina-badge ina-badge-success">Aktif</span>'
+					: '<span class="ina-badge ina-badge-neutral">Nonaktif</span>';
 			})
 			->edit('description', function ($row) {
-				return character_limiter($row->description, 100);
+				// Isi sel dibatasi maksimal 3 baris lewat CSS (ina-cell-clamp)
+				return '<span class="ina-cell-clamp">' . esc(character_limiter(strip_tags((string) $row->description), 200)) . '</span>';
 			})
 			->edit('action', function ($row) {
-				$edit = '<a href="' . base_url('cms/banner/edit/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-				$active = '<a href="' . base_url('cms/banner/apply_status/' . $row->id . '?field=active&value=1') . '"  data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Active" class="btn btn-success active-data"><i class="pe-7s-check font-weight-bold"> </i> </a>';
-				$inactive = '<a href="' . base_url('cms/banner/apply_status/' . $row->id . '?field=active&value=0') . '" data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Inactive" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"> </i> </a>';
-				$delete = '<a href="javascript:void(0);" data-href="' . base_url('cms/banner/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
-				return $edit . ' ' . $active . ' ' . $inactive . ' ' . $delete;
+				// Ikon aksi konsisten: ubah, aktif/nonaktifkan (sesuai status), hapus
+				$isActive = $row->active == 1;
+				$edit = '<a href="' . base_url('cms/banner/edit/' . $row->id) . '" class="ina-action" title="Ubah" aria-label="Ubah banner"><i class="fas fa-pen" aria-hidden="true"></i></a>';
+				$toggle = '<a href="' . base_url('cms/banner/apply_status/' . $row->id . '?field=active&value=' . ($isActive ? 0 : 1)) . '" data-id="' . $row->id . '" class="ina-action ' . ($isActive ? 'draft-data' : 'active-data') . '" title="' . ($isActive ? 'Nonaktifkan' : 'Aktifkan') . '" aria-label="' . ($isActive ? 'Nonaktifkan banner' : 'Aktifkan banner') . '"><i class="fas ' . ($isActive ? 'fa-eye-slash' : 'fa-eye') . '" aria-hidden="true"></i></a>';
+				$delete = '<a href="javascript:void(0);" data-href="' . base_url('cms/banner/delete/' . $row->id) . '" class="ina-action ina-action-danger remove-data" title="Hapus" aria-label="Hapus banner"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
+				return '<div class="ina-actions">' . $edit . $toggle . $delete . '</div>';
 			})
 			->toJson();
 		return $dataTable;

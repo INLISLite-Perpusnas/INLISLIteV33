@@ -149,5 +149,9 @@ class Database extends Config
     public function __construct()
     {
         parent::__construct();
+
+        // Grup 'data' dan 'default' memakai database yang sama; 'data' cukup mengikuti
+        // konfigurasi 'default' (termasuk override dari .env) agar kode lama tetap jalan.
+        $this->data = $this->default;
     }
 }

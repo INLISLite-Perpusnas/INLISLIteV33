@@ -101,9 +101,10 @@
     
     .status-draft { background-color: #6c757d; color: white; }
     .status-active { background-color: #28a745; color: white; }
-    .status-completed { background-color: #007bff; color: white; }
+    .status-completed { background-color: #2d659e; color: white; }
     .status-cancelled { background-color: #dc3545; color: white; }
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>

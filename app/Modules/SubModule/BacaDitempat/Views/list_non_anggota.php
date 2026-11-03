@@ -5,6 +5,7 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -38,7 +39,7 @@ $slug = $request->getGet('slug') ?? '';
             </a>
         </li>
         <li class="nav-item">
-            <a style="padding-left: 10px !important;" class="btn-header-argon active" href="<?= base_url('baca-di-tempat/non_anggota') ?>">
+            <a class="btn-header-argon active" aria-current="page" href="<?= base_url('baca-di-tempat/non_anggota') ?>">
                 <span>Non Anggota</span>
             </a>
         </li>
@@ -47,7 +48,7 @@ $slug = $request->getGet('slug') ?? '';
     <div class="main-card mb-3 card">
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Baca Ditempat Non Anggota
             <div class="btn-actions-pane-right actions-icon-btn">
-                <a data-bs-toggle="modal" data-bs-target="#modalPengembalian" data-toggle="modal" data-target="#modalPengembalian" href="javascript:void(0);" class="btn btn-primary btn-sm"><i class="pe-7s-plus"></i> Tambah</a>
+                <a data-bs-toggle="modal" data-bs-target="#modalPengembalian" data-toggle="modal" data-target="#modalPengembalian" href="javascript:void(0);" class="btn btn-catalog-add btn-sm"><i class="fa fa-plus" aria-hidden="true"></i> Tambah</a>
             </div>
         </div>
         <div class="card-body">
@@ -246,7 +247,7 @@ $slug = $request->getGet('slug') ?? '';
             text: "<?= lang('App.swal.can_not_be_restored') ?>",
             type: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
+            confirmButtonColor: '#2d659e',
             cancelButtonColor: '#dd6b55',
             confirmButtonText: '<?= lang('App.btn.yes') ?>',
             cancelButtonText: '<?= lang('App.btn.no') ?>'

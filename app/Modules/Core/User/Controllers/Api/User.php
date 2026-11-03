@@ -131,8 +131,8 @@ class User extends \Base\Controllers\BaseResourceController
 				$status = $row->active == 1 ? 'Aktif' : 'Non Aktif';
 				$class = $row->active == 1 ? 'success' : 'danger';
 				$html = '<span class="badge badge-' . $class . '  badge-pill">' . $status . '</span>';
-				// $active	= '<a href="' . base_url('user/apply_status/' . $row->id . '?field=active&value=1') . '"  data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Aktifkan" class="btn btn-success publish-data"><i class="pe-7s-check font-weight-bold"> </i> </a>';
-				// $inactive = '<a href="' . base_url('user/apply_status/' . $row->id . '?field=active&value=0') . '" data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Nonaktifkan" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"> </i> </a>';
+				// $active	= '<a href="' . base_url('user/apply_status/' . $row->id . '?field=active&value=1') . '"  data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Aktifkan" aria-label="Aktifkan" class="ina-action publish-data"><i class="fas fa-eye" aria-hidden="true"></i></a>';
+				// $inactive = '<a href="' . base_url('user/apply_status/' . $row->id . '?field=active&value=0') . '" data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Nonaktifkan" aria-label="Nonaktifkan" class="ina-action draft-data"><i class="fas fa-eye-slash" aria-hidden="true"></i></a>';
 
 				// $html .=  $active . ' ' . $inactive;
 				return $html;
@@ -144,8 +144,8 @@ class User extends \Base\Controllers\BaseResourceController
 			})
 			->edit('action', function ($row) {
 				
-				$detail = '<a href="' . base_url('user/detail/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Profil User" class="btn btn-warning show-data"><i class="pe-7s-user font-weight-bold"> </i></a>';
-				$delete = '<a href="javascript:void(0);" data-href="' . base_url('user/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus User" class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+				$detail = '<a href="' . base_url('user/detail/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Profil User" aria-label="Profil User" class="ina-action show-data"><i class="fas fa-pen" aria-hidden="true"></i></a>';
+				$delete = '<a href="javascript:void(0);" data-href="' . base_url('user/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus User" aria-label="Hapus User" class="ina-action ina-action-danger remove-data"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
 				$html 	=  ' ' . $detail . ' ' . $delete;
 				return $html;
 			})

@@ -204,7 +204,7 @@ $rda = $request->getGet('rda') ?? 1;
                         <input type="text"
                                class="form-control"
                                id="pengarangTambahanInput-0"
-                               name="pengarangTambahan[700-0][]"
+                               name="pengarangTambahan[700-0-0][]"
                                placeholder=""
                                value="" />
                         <!-- ← hidden input relator index 0 -->
@@ -253,7 +253,7 @@ $rda = $request->getGet('rda') ?? 1;
                                                    data-select="pengarangTambahanSelect-0"
                                                    data-input="pengarangTambahanInput-0"
                                                    name="pengarangTambahanRadio[0][]"
-                                                   value="2">
+                                                   value="3">
                                             Nama Keluarga
                                         </label>
                                     </div>

@@ -102,8 +102,9 @@ public function checkBook()
             ->where('active', 1)
             ->countAllResults();
 
-        $dueDate   = new \DateTime($item->DueDate);
-        $isOverdue = $today > $dueDate;
+        // Hari kerja terlambat (jam diabaikan); terlambat hanya jika > 0
+        $daysOverdue = hari_terlambat($item->DueDate, $today->format('Y-m-d'));
+        $isOverdue = $daysOverdue > 0;
 
         $formattedItems[] = [
             'id'            => $item->ID,
@@ -115,7 +116,7 @@ public function checkBook()
             'due_date'      => $item->DueDate,
             'extend_count'  => $extendCount,
             'is_overdue'    => $isOverdue,
-            'days_overdue'  => $isOverdue ? $today->diff($dueDate)->days : 0,
+            'days_overdue'  => $daysOverdue,
         ];
     }
 

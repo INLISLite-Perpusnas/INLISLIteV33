@@ -22,6 +22,7 @@ $slug = $request->getGet('slug');
 		/* Ensure the dropdown itself is above the modal */
 	}
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -70,7 +71,7 @@ $slug = $request->getGet('slug');
 			<div class="btn-actions-pane-right actions-icon-btn">
 				<?php if (!empty($slug)) : ?>
 					<?php if (is_allowed('user/create')) : ?>
-					  <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class=" btn btn-success" title=""><i class="fa fa-plus"></i> Tambah User</a>
+					  <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-catalog-add" title=""><i class="fa fa-plus"></i> Tambah User</a>
 					<?php endif; ?>
 				<?php endif; ?>
 			</div>

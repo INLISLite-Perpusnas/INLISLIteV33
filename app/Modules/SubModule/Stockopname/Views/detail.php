@@ -1,87 +1,93 @@
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
 <style>
+    /* Gaya INA: warna solid #2d659e, tanpa gradien & efek melayang */
     .scanner-container {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 15px;
-        padding: 20px;
+        background: #2d659e;
+        border-radius: 12px;
+        padding: 20px 24px;
         margin-bottom: 20px;
-        color: white;
+        color: #fff;
     }
 
     .barcode-input {
-        font-size: 1.2rem;
-        padding: 12px;
-        border: none;
-        border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        height: 48px;
+        font-size: 1.1rem;
+        padding: 0 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        box-shadow: none;
     }
 
     .barcode-input:focus {
-        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
-        border: 2px solid #667eea;
+        outline: none;
+        border-color: #2d659e;
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, .45);
     }
 
     .scan-btn {
-        background: linear-gradient(45deg, #28a745, #20c997);
-        border: none;
-        padding: 12px 25px;
-        border-radius: 10px;
-        color: white;
-        font-weight: bold;
-        transition: all 0.3s ease;
+        height: 48px;
+        background: #fff;
+        border: 1px solid #fff;
+        padding: 0 22px;
+        border-radius: 8px;
+        color: #2d659e;
+        font-weight: 600;
+        transition: background-color .15s ease;
     }
 
     .scan-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+        background: #eaf1f8;
+        color: #2d659e;
+    }
+
+    .scan-btn:focus-visible {
+        outline: 2px solid #fff;
+        outline-offset: 2px;
     }
 
     .collection-card {
-        border: none;
-        border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--ina-border, #e5e7eb);
+        border-radius: 12px;
+        box-shadow: var(--ina-shadow, 0 1px 3px rgba(16, 24, 40, .08));
         margin-bottom: 15px;
-        transition: all 0.3s ease;
-    }
-
-    .collection-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     }
 
     .status-badge {
-        font-size: 0.8rem;
-        padding: 5px 10px;
-        border-radius: 15px;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 999px;
     }
 
     .change-indicator {
-        background: linear-gradient(45deg, #ffc107, #ff8c00);
-        color: white;
-        font-size: 0.7rem;
+        background: #fff4e5;
+        color: #9a4b00;
+        font-size: 11px;
+        font-weight: 600;
         padding: 2px 8px;
-        border-radius: 10px;
+        border-radius: 999px;
         margin-left: 5px;
     }
 
     .summary-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 15px;
-        padding: 20px;
+        background: #2d659e;
+        color: #fff;
+        border-radius: 12px;
+        padding: 20px 24px;
         margin-bottom: 20px;
     }
 
     .table-container {
-        border-radius: 15px;
+        border: 1px solid var(--ina-border, #e5e7eb);
+        border-radius: 12px;
         overflow: hidden;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
 
     #detailTable .form-select-sm {
         min-width: 120px;
-        font-size: 0.8rem;
+        font-size: 13px;
+        border-radius: 8px;
     }
 
     #detailTable .select-saving {
@@ -89,98 +95,76 @@
         pointer-events: none;
     }
 
-    .table th,
-    #detailTable thead tr th {
-        background-color: #667eea !important;
-        color: white !important;
-        font-weight: 600;
-        border: none;
-    }
-
     .not-scanned-list {
         max-height: 400px;
         overflow-y: auto;
-        background: #f8f9fa;
-        border-radius: 10px;
-        padding: 15px;
+        background: #f9fafb;
+        border: 1px solid var(--ina-border, #e5e7eb);
+        border-radius: 8px;
+        padding: 12px;
     }
 
     .not-scanned-item {
-        background: white;
+        background: #fff;
+        border: 1px solid var(--ina-border, #e5e7eb);
+        border-left: 4px solid var(--ina-danger, #c62828);
         border-radius: 8px;
-        padding: 10px;
+        padding: 10px 12px;
         margin-bottom: 8px;
-        border-left: 4px solid #dc3545;
-        transition: all 0.3s ease;
     }
 
     .not-scanned-item:hover {
-        transform: translateX(5px);
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .modal-content {
-        border-radius: 15px;
-        border: none;
-    }
-
-    .modal-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 15px 15px 0 0;
+        background: #fafafa;
     }
 
     .btn-update {
-        background: linear-gradient(45deg, #007bff, #0056b3);
-        border: none;
+        background: #2d659e;
+        border: 1px solid #2d659e;
         border-radius: 8px;
         padding: 8px 15px;
-        color: white;
-        transition: all 0.3s ease;
+        color: #fff;
+        font-weight: 600;
+        transition: background-color .15s ease;
     }
 
     .btn-update:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        background: #24527f;
+        border-color: #24527f;
+        color: #fff;
     }
 
     .btn-delete {
-        background: linear-gradient(45deg, #dc3545, #c82333);
-        border: none;
+        background: #fff;
+        border: 1px solid #f5c2c2;
         border-radius: 8px;
         padding: 8px 15px;
-        color: white;
-        transition: all 0.3s ease;
+        color: var(--ina-danger, #c62828);
+        font-weight: 600;
+        transition: background-color .15s ease;
     }
 
     .btn-delete:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        background: #fdecec;
+        color: var(--ina-danger, #c62828);
     }
 
-    /* Custom styling for CI4 pager links, since we no longer use DataTables' own pagination UI */
+    /* Paginasi CI4 */
     .pagination {
         margin-bottom: 0;
         flex-wrap: wrap;
     }
 
     .pagination .page-link {
-        border-radius: 8px;
-        margin: 0 3px;
-        border: none;
-        color: #667eea;
+        color: #2d659e;
     }
 
-    .pagination .page-item.active .page-link {
-        background: linear-gradient(45deg, #667eea, #764ba2);
-        color: white;
+    .content-wrapper .pagination .page-item.active .page-link {
+        color: #fff;
+        background: #2d659e;
+        border-color: #2d659e;
     }
 
     @media (max-width: 768px) {
-        .table-responsive {
-            border-radius: 15px;
-        }
-
         .collection-card {
             margin-bottom: 10px;
         }
@@ -209,6 +193,7 @@
         border: 1px solid #ccc;
     }
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>

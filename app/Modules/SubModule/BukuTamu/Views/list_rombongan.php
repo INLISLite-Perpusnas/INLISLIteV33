@@ -5,6 +5,7 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -38,12 +39,12 @@ $slug = $request->getGet('slug') ?? '';
             </a>
         </li>
         <li class="nav-item">
-            <a style="padding-left: 10px !important;" class="btn-header-argon" href="<?= base_url('bukutamu/non_anggota') ?>">
+            <a class="btn-header-argon" href="<?= base_url('bukutamu/non_anggota') ?>">
                 <span>Bukan Anggota </span>
             </a>
         </li>
         <li class="nav-item">
-            <a style="padding-left: 10px !important;" class="btn-header-argon" href="<?= base_url('bukutamu/rombongan') ?>">
+            <a class="btn-header-argon active" aria-current="page" href="<?= base_url('bukutamu/rombongan') ?>">
                 <span>Rombongan</span>
             </a>
         </li>
@@ -178,7 +179,7 @@ $slug = $request->getGet('slug') ?? '';
             text: "<?= lang('App.swal.can_not_be_restored') ?>",
             type: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
+            confirmButtonColor: '#2d659e',
             cancelButtonColor: '#dd6b55',
             confirmButtonText: '<?= lang('App.btn.yes') ?>',
             cancelButtonText: '<?= lang('App.btn.no') ?>'

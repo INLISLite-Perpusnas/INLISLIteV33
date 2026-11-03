@@ -26,6 +26,7 @@ $slug = $request->getGet('slug') ?? '';
         grid-column-start: 2;
     }
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -58,7 +59,7 @@ $slug = $request->getGet('slug') ?? '';
             <div class="btn-actions-pane-right actions-icon-btn">
                 <?php if (is_allowed('sirkulasi-pengembalian/create')) : ?>
                     <!-- <a data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Pengembalian</a> -->
-                    <a href="<?= base_url('sirkulasi-pengembalian/create') ?>" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Pengembalian</a>
+                    <a href="<?= base_url('sirkulasi-pengembalian/create') ?>" class="btn btn-catalog-add" title="Tambah"><i class="fa fa-plus"></i> Pengembalian</a>
                 <?php endif; ?>
             </div>
         </div>

@@ -11,6 +11,7 @@ $slug = $request->getGet('slug') ?? 'depan';
 		vertical-align: middle;
 	}
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style') ?>
 
 <?= $this->section('page') ?>
@@ -59,7 +60,7 @@ $slug = $request->getGet('slug') ?? 'depan';
 				<?php if (is_allowed('template/create')) : ?>
 					<a href="<?= base_url(
 									'master-template-kartu/create?slug=' . $slug
-								) ?>" class=" btn btn-success" title=""><i class="fa fa-plus"></i>
+								) ?>" class="btn btn-catalog-add" title=""><i class="fa fa-plus"></i>
 						Tambah Template Kartu </a>
 				<?php endif; ?>
 			</div>

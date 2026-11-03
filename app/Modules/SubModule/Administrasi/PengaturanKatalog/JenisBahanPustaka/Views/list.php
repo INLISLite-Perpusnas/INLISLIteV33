@@ -5,6 +5,7 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -36,7 +37,7 @@ $slug = $request->getGet('slug') ?? '';
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Jenis Bahan Pustaka
             <div class="btn-actions-pane-right actions-icon-btn">
                 <?php if (is_allowed('master-jenis-bahan-pustaka/create')) : ?>
-                    <a href="<?= base_url('master-jenis-bahan-pustaka/create') ?>" class=" btn btn-success" title=""><i class="fa fa-plus"></i> Tambah </a>
+                    <a href="<?= base_url('master-jenis-bahan-pustaka/create') ?>" class="btn btn-catalog-add" title=""><i class="fa fa-plus"></i> Tambah </a>
                 <?php endif; ?>
             </div>
         </div>

@@ -38,15 +38,15 @@ class PerpusKelilingJadwal extends Entity
         $st = $this->getStatusTampil($now);
         switch ($st) {
             case 'akan_datang':
-                return '<span class="badge bg-primary">Akan datang</span>';
+                return '<span class="ina-badge ina-badge-info">Akan datang</span>';
             case 'berlangsung':
-                return '<span class="badge bg-success">Sedang berlangsung</span>';
+                return '<span class="ina-badge ina-badge-success">Sedang berlangsung</span>';
             case 'selesai':
-                return '<span class="badge bg-secondary">Selesai</span>';
+                return '<span class="ina-badge ina-badge-neutral">Selesai</span>';
             case 'dibatalkan':
-                return '<span class="badge bg-danger">Dibatalkan</span>';
+                return '<span class="ina-badge ina-badge-danger">Dibatalkan</span>';
             default:
-                return '<span class="badge bg-light text-dark">' . esc($st) . '</span>';
+                return '<span class="ina-badge ina-badge-neutral">' . esc($st) . '</span>';
         }
     }
 

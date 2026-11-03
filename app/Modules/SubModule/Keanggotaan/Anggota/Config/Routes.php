@@ -51,7 +51,9 @@ $routes->group('anggota', ['namespace' => 'Anggota\Controllers'], function ($sub
 
     // === AnggotaOnlineController ===
     $subroutes->add('online',                 'AnggotaOnlineController::online');
-    $subroutes->add('aktifkan_online',        'AnggotaOnlineController::aktifkan_online');
+    $subroutes->post('aktifkan_online',       'AnggotaOnlineController::aktifkan_online', ['filter' => 'csrf']);
+    $subroutes->post('extend',                'AnggotaOnlineController::extend', ['filter' => 'csrf']);
+    $subroutes->post('extend/(:segment)',     'AnggotaOnlineController::extend/$1', ['filter' => 'csrf']);
 
     // === AnggotaImportController ===
     $subroutes->add('import_view',            'AnggotaImportController::import_view');

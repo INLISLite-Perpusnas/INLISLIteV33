@@ -349,14 +349,15 @@
 		animation-delay: 0.4s;
 	}
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-guestbook.css') ?>?v=<?= @filemtime(FCPATH . 'assets/css/ina-guestbook.css') ?>">
 
-<div class="page-container" style="padding-top: 130px !important; padding-bottom: 40px !important;">
+<div class="page-container gb-ina" style="padding-top: 130px !important; padding-bottom: 40px !important;">
 	<div class="content-wrapper">
 		<!-- Header Section -->
 		<div class="page-header">
 			<div class="library-info">
-				<h1><?= $data->Name ?? 'Perpustakaan' ?></h1>
-				<div class="library-location"><?= $data->LocationLibrary_name ?? 'Dinas Perpustakaan dan Kearsipan' ?>
+				<h1><?= esc($data->Name ?? 'Perpustakaan') ?></h1>
+				<div class="library-location"><?= esc($data->LocationLibrary_name ?? 'Dinas Perpustakaan dan Kearsipan') ?>
 				</div>
 				<nav class="breadcrumb-custom">
 					<a href="<?= base_url() ?>"><i class="fas fa-home"></i> Beranda</a>
@@ -366,8 +367,7 @@
 					<span class="active">Anggota</span>
 				</nav>
 			</div><br>
-			<h2 style="background-color: #1b3878; color: #fff; padding: 10px; border-radius: 5px;">Total Kunjungan Hari
-				ini <?= $totalKunjungan ?? '0' ?></h2>
+			<div class="gb-visit-total" role="status"><span>Total Kunjungan Hari Ini</span><strong><?= $totalKunjungan ?? '0' ?></strong></div>
 		</div>
 
 		<!-- Navigation Tabs -->
@@ -385,6 +385,19 @@
 				<span>Rombongan</span>
 			</a>
 		</div>
+
+		<?php if (!empty($message)): ?>
+			<div class="alert-custom alert-error-custom" role="alert">
+				<i class="fas fa-exclamation-circle"></i>
+				<div>
+					<strong>Perhatian!</strong><br>
+					<?= esc(trim(strip_tags((string) $message))) ?>
+				</div>
+				<button type="button" class="alert-close" onclick="this.parentElement.style.display='none'">
+					<span>&times;</span>
+				</button>
+			</div>
+		<?php endif; ?>
 
 		<?php if (empty($member)): ?>
 			<!-- Search Section -->
@@ -422,18 +435,17 @@
 			<div class="action-section">
 				<form id="frm_store_anggota" method="post" action="<?php echo base_url('buku-tamu/store_anggota'); ?>">
 					<?= csrf_field() ?>
-					<input type="hidden" name="member_no" value="<?= $member->MemberNo ?>">
+					<input type="hidden" name="member_no" value="<?= esc($member->MemberNo, 'attr') ?>">
 
 					<?php if ($SettingBukuTamu == 1): ?>
 
 						<?php // PERBAIKAN: Menambahkan tanda kutip pembuka pada class 
 								?>
 						<div class="form-group">
-							<div class="col-md-12" style="padding-left: 0; text-align: center; !important;">
+							<div class="gb-purpose">
 								<div class="position-relative form-group">
 									<label for="TujuanKunjungan_id">Tujuan Kunjungan</label>
-									<select class="form-control" name="TujuanKunjungan_id" id="TujuanKunjungan_id"
-										style="width: 50%; text-align: center; margin-top: 10px; margin-left: 270px; !important;">
+									<select class="form-control" name="TujuanKunjungan_id" id="TujuanKunjungan_id">
 										<option value="" disabled selected> ----- Pilih ----- </option>
 										<?php foreach ($tujuan_kunjungan as $row): ?>
 											<?php // PERBAIKAN: Menyamakan ID dengan id 
@@ -452,7 +464,7 @@
 				</form>
 
 				</p>
-				<p style="text-align:center; color: #e74c3c; font-size: 1rem;">
+				<p class="gb-autosave">
 					Otomatis tersimpan dalam <strong><span
 							id="countdown"><?= (int) ($visit_autosave_seconds ?? 30) ?></span></strong> detik...
 				</p>
@@ -463,7 +475,7 @@
 			<div class="member-profile">
 				<div class="welcome-header">
 					<h2>Profil Anggota</h2>
-					<div class="member-number">No. Anggota: <?= $member->MemberNo ?></div>
+					<div class="member-number">No. Anggota: <?= esc($member->MemberNo) ?></div>
 				</div>
 				<?= view('Member\Views\member_profile', array('member' => $member ?? '', 'jenis_anggota' => $jenis_anggota ?? [])) ?>
 			</div>
@@ -516,7 +528,7 @@
 			Swal.fire({
 				icon: 'success',
 				title: 'Berhasil!',
-				text: '<?= session()->getFlashdata('success') ?>',
+				text: <?= json_encode((string) session()->getFlashdata('success'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
 				showConfirmButton: false,
 				timer: 2000
 			});
@@ -539,10 +551,7 @@
 
 				if (countdown <= 0) {
 					clearInterval(timer);
-					const select = document.getElementById('TujuanKunjungan_id');
-					if (select && !select.value) {
-						select.value = '<?= $tujuan_kunjungan[0]->ID ?? '' ?>';
-					}
+					// Tujuan tidak diisi otomatis: kosong berarti pengunjung tidak memilih
 					if (storeForm) storeForm.submit();
 				}
 			}, 1000);

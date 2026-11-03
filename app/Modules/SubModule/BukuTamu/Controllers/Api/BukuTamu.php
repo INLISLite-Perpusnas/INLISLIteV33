@@ -73,7 +73,7 @@ class BukuTamu extends \Base\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('action', function ($row) {
-				$html   = '<a href="javascript:void(0);" data-href="' . base_url('bukutamu/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a> ';
+				$html   = '<a href="javascript:void(0);" data-href="' . base_url('bukutamu/delete/' . $row->id) . '" title="Hapus" aria-label="Hapus data buku tamu" class="ina-action ina-action-danger remove-data"><i class="fas fa-trash-alt" aria-hidden="true"></i></a> ';
 				return $html;
 			})
 			->toJson();
@@ -111,7 +111,7 @@ public function non_anggota_datatable()
             return $html;
         })
         ->edit('action', function ($row) {
-            $html   = '<a href="javascript:void(0);" data-href="' . base_url('bukutamu/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a> ';
+            $html   = '<a href="javascript:void(0);" data-href="' . base_url('bukutamu/delete/' . $row->id) . '" title="Hapus" aria-label="Hapus data buku tamu" class="ina-action ina-action-danger remove-data"><i class="fas fa-trash-alt" aria-hidden="true"></i></a> ';
             return $html;
         })
         ->toJson();
@@ -140,7 +140,7 @@ public function non_anggota_datatable()
 				return $html;
 			})
 			->edit('action', function ($row) {
-				$html   = '<a href="javascript:void(0);" data-href="' . base_url('bukutamu/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a> ';
+				$html   = '<a href="javascript:void(0);" data-href="' . base_url('bukutamu/delete/' . $row->id) . '" title="Hapus" aria-label="Hapus data buku tamu" class="ina-action ina-action-danger remove-data"><i class="fas fa-trash-alt" aria-hidden="true"></i></a> ';
 				return $html;
 			})
 			->toJson();

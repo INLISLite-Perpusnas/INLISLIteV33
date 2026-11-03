@@ -1,39 +1,39 @@
 <?php if (!isset($routes)) {
 	$routes = \Config\Services::routes(true);
 }
+
+/**
+ * Alur admin mengikuti modul survey INLISLite 3:
+ * Daftar Survei -> Daftar Pertanyaan -> Daftar Pilihan / Daftar Isian,
+ * dengan modal Hasil Survei dari daftar survei.
+ */
 $routes->group('surveipemustaka', ['namespace' => 'SurveiPemustaka\Controllers'], function ($subroutes) {
-	$subroutes->add('', 'SurveiPemustaka::index');
-	$subroutes->add('index', 'SurveiPemustaka::index');
-	$subroutes->get('manage', 'SurveyAdmin::index');
-	$subroutes->post('save-survey', 'SurveyAdmin::saveSurvey', ['filter' => 'csrf']);
-	$subroutes->post('save-question', 'SurveyAdmin::saveQuestion', ['filter' => 'csrf']);
-	$subroutes->post('save-option', 'SurveyAdmin::saveOption', ['filter' => 'csrf']);
-	$subroutes->add('detail/(:any)', 'SurveiPemustaka::detail/$1');
-	$subroutes->add('create', 'SurveiPemustaka::create');
-	$subroutes->add('edit/(:any)', 'SurveiPemustaka::edit/$1');
-	$subroutes->add('delete/(:any)', 'SurveiPemustaka::delete/$1');
-	$subroutes->add('apply_status/(:any)', 'SurveiPemustaka::apply_status/$1');
-	$subroutes->add('do_init', 'SurveiPemustaka::do_init');
-	$subroutes->add('do_upload', 'SurveiPemustaka::do_upload');
-	$subroutes->add('do_delete', 'SurveiPemustaka::do_delete');
-	$subroutes->add('flip', 'SurveiPemustaka::flip');
+	// === Survei ===
+	$subroutes->get('', 'SurveyAdmin::index');
+	$subroutes->get('index', 'SurveyAdmin::index');
+	$subroutes->get('create', 'SurveyAdmin::create');
+	$subroutes->post('create', 'SurveyAdmin::create', ['filter' => 'csrf']);
+	$subroutes->get('edit/(:num)', 'SurveyAdmin::edit/$1');
+	$subroutes->post('edit/(:num)', 'SurveyAdmin::edit/$1', ['filter' => 'csrf']);
+	$subroutes->post('delete/(:num)', 'SurveyAdmin::delete/$1', ['filter' => 'csrf']);
+	$subroutes->get('hasil/(:num)', 'SurveyAdmin::hasil/$1');
 
-	//custom
-	$subroutes->add('question/(:any)', 'SurveiPemustaka::question/$1');
-	$subroutes->add('items/(:any)', 'SurveiPemustaka::items/$1');
-});
+	// === Pertanyaan ===
+	$subroutes->get('pertanyaan/(:num)', 'SurveyAdmin::pertanyaan/$1');
+	$subroutes->get('pertanyaan/create/(:num)', 'SurveyAdmin::pertanyaanCreate/$1');
+	$subroutes->post('pertanyaan/create/(:num)', 'SurveyAdmin::pertanyaanCreate/$1', ['filter' => 'csrf']);
+	$subroutes->get('pertanyaan/edit/(:num)', 'SurveyAdmin::pertanyaanEdit/$1');
+	$subroutes->post('pertanyaan/edit/(:num)', 'SurveyAdmin::pertanyaanEdit/$1', ['filter' => 'csrf']);
+	$subroutes->post('pertanyaan/delete/(:num)', 'SurveyAdmin::pertanyaanDelete/$1', ['filter' => 'csrf']);
 
-$routes->group('api/surveipemustaka', ['namespace' => 'SurveiPemustaka\Controllers\Api'], function ($subroutes) {
-	$subroutes->add('detail/(:any)', 'SurveiPemustaka::detail/$1');
-	$subroutes->add('create', 'SurveiPemustaka::create');
-	$subroutes->add('edit/(:any)', 'SurveiPemustaka::edit/$1');
-	$subroutes->add('delete/(:any)', 'SurveiPemustaka::delete/$1');
+	// === Pilihan (pertanyaan pilihan ganda) ===
+	$subroutes->get('pilihan/(:num)', 'SurveyAdmin::pilihan/$1');
+	$subroutes->get('pilihan/create/(:num)', 'SurveyAdmin::pilihanCreate/$1');
+	$subroutes->post('pilihan/create/(:num)', 'SurveyAdmin::pilihanCreate/$1', ['filter' => 'csrf']);
+	$subroutes->get('pilihan/edit/(:num)', 'SurveyAdmin::pilihanEdit/$1');
+	$subroutes->post('pilihan/edit/(:num)', 'SurveyAdmin::pilihanEdit/$1', ['filter' => 'csrf']);
+	$subroutes->post('pilihan/delete/(:num)', 'SurveyAdmin::pilihanDelete/$1', ['filter' => 'csrf']);
 
-	//custom
-	$subroutes->add('datatable', 'SurveiPemustaka::datatable');
-	$subroutes->add('datatable/(:any)', 'SurveiPemustaka::datatable/$1');
-	$subroutes->add('question_datatable', 'SurveiPemustaka::question_datatable');
-	$subroutes->add('question_datatable/(:any)', 'SurveiPemustaka::question_datatable/$1');
-	$subroutes->add('items_datatable', 'SurveiPemustaka::items_datatable');
-	$subroutes->add('items_datatable/(:any)', 'SurveiPemustaka::items_datatable/$1');
+	// === Isian (pertanyaan isian bebas, hanya baca) ===
+	$subroutes->get('isian/(:num)', 'SurveyAdmin::isian/$1');
 });

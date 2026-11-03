@@ -26,11 +26,12 @@
 	.form-status.success { color: #146c43; }
 	.form-status.error { color: #b42318; }
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-guestbook.css') ?>?v=<?= @filemtime(FCPATH . 'assets/css/ina-guestbook.css') ?>">
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
 
-<section class="location-settings" aria-labelledby="location-settings-title">
+<section class="location-settings gb-ina" aria-labelledby="location-settings-title">
 	<div class="container">
 		<div class="location-card">
 		<h2 id="location-settings-title">Atur Lokasi Ruang Perpustakaan</h2>
@@ -80,7 +81,7 @@
 								</div>
 							</div>
 							<div class="d-flex justify-content-end gap-2 mt-4">
-								<button type="reset" class="btn btn-danger">Reset Form</button>
+								<button type="reset" class="btn btn-outline-secondary">Reset Form</button>
 								<button type="submit" class="btn btn-primary" id="btnSave" disabled>Simpan Pengaturan</button>
 							</div>
 						</form>

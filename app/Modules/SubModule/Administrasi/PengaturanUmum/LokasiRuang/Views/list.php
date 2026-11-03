@@ -22,6 +22,7 @@ if (is_member('sa_kabkot')) {
 
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -54,7 +55,7 @@ if (is_member('sa_kabkot')) {
 		<div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Lokasi Ruang
 			<div class="btn-actions-pane-right actions-icon-btn">
 				
-					  <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah"><i class="fa fa-plus"></i> Lokasi Ruang</a>
+					  <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-catalog-add" title="Tambah"><i class="fa fa-plus"></i> Lokasi Ruang</a>
 			</div>
 		</div>
 		<div class="card-body">

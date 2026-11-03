@@ -61,6 +61,7 @@
         border: 1px solid #dee2e6;
     }
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -137,7 +138,7 @@
                     </div>
                     <div class="col-lg-2 col-md-12 col-sm-12">
                         <div class="form-group mb-2 text-end">
-                            <a href="<?= base_url('stockopname/create') ?>" class="btn btn-success">
+                            <a href="<?= base_url('stockopname/create') ?>" class="btn btn-catalog-add">
                                 <i class="fa fa-plus"></i> Tambah Baru
                             </a>
                         </div>

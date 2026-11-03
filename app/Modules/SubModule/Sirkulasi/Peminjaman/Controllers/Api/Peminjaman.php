@@ -72,42 +72,6 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 		->orderBy('cli.LoanDate', 'DESC'); // Urutkan berdasarkan tanggal pinjam terbaru				;
 		
 
-    // --- BARU: AMBIL PENGATURAN HARI LIBUR ---
-    // Pastikan $this->settingModel sudah tersedia di controller Anda
-    $settingsData = $this->settingModel
-        ->select('Name, Value')
-        ->whereIn('Name', ['IsSaturdayHoliday', 'IsSundayHoliday'])
-        ->findAll();
-
-    $settings = array_column($settingsData, 'Value', 'Name');
-
-    // Default ke 'True' (dianggap libur) jika pengaturan tidak ditemukan
-    $isSaturdayHoliday = $settings['IsSaturdayHoliday'] ?? 'True';
-    $isSundayHoliday = $settings['IsSundayHoliday'] ?? 'True';
-
-    $weekendDaysToIgnore = [];
-    if ($isSaturdayHoliday !== 'False') {
-        $weekendDaysToIgnore[] = '6'; // 6 = Sabtu
-    }
-    if ($isSundayHoliday !== 'False') {
-        $weekendDaysToIgnore[] = '7'; // 7 = Minggu
-    }
-    // --- AKHIR BLOK BARU ---
-
-
-    // --- BARU: AMBIL HARI LIBUR NASIONAL/KUSTOM ---
-    $holidayRows = $db->table('holidays as a')
-        ->select('a.Dates')
-        ->where('a.active', 1) // Asumsi kita hanya ambil hari libur yang aktif
-        ->get()
-        ->getResult();
-
-    $holidayList = [];
-    foreach ($holidayRows as $holiday) {
-        // Simpan dalam format Y-m-d sebagai key array untuk pencarian cepat
-        $holidayList[date('Y-m-d', strtotime($holiday->Dates))] = true;
-    }
-    // --- AKHIR BLOK BARU ---
 
 
     $dataTable = DataTable::of($builder)
@@ -190,73 +154,11 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
             $html .=  '<badge class="badge badge-warning badge-pill">' . $row->DueDate . '</badge>';
             return $html;
         })
-        // --- BLOK 'LateDays' DIMODIFIKASI ---
-        ->edit('LateDays', function ($row) use ($weekendDaysToIgnore, $holidayList) {
-            
-            $today = date('Y-m-d');
-
-            if ($row->DueDate > $today) {
-                // --- Belum Jatuh Tempo ---
-                $periods = \Carbon\CarbonPeriod::create($today, $row->DueDate);
-                $dates = [];
-                foreach ($periods as $period) {
-                    $currentDayOfWeek = $period->format('N'); // 1 (Mon) - 7 (Sun)
-                    $currentDate = $period->format('Y-m-d');
-                    
-                    // Lewati jika hari ini (untuk perhitungan sisa hari)
-                    if ($currentDate == $today) continue;
-
-                    // Cek 1: Apakah hari ini Sabtu/Minggu yang disetel libur?
-                    if (in_array($currentDayOfWeek, $weekendDaysToIgnore)) continue;
-
-                    // Cek 2: Apakah hari ini ada di daftar hari libur?
-                    if (isset($holidayList[$currentDate])) continue;
-                    
-                    // Jika lolos, tambahkan ke hitungan
-                    $dates[] = $currentDate;
-                }
-
-                $diff = '-' . count($dates);
-                if (count($dates) <= 3) {
-                    if (count($dates) == 0) {
-                        $diff_class = 'info';
-                        // Logika +0 dari kode asli Anda, mungkin untuk "Jatuh Tempo Hari Ini"
-                        $diff = '+' . count($dates); 
-                    } else {
-                        $diff_class = 'warning'; // Mendekati jatuh tempo
-                    }
-                } else {
-                    $diff_class = 'secondary'; // Masih lama
-                }
-            } else {
-                // --- Sudah Jatuh Tempo / Terlambat ---
-                $periods = \Carbon\CarbonPeriod::create($row->DueDate, $today);
-                $dates = [];
-                foreach ($periods as $period) {
-                    $currentDayOfWeek = $period->format('N');
-                    $currentDate = $period->format('Y-m-d');
-
-                    // Lewati tanggal jatuh tempo itu sendiri (denda dihitung H+1)
-                    if ($currentDate == $row->DueDate) continue;
-
-                    // Cek 1: Apakah hari ini Sabtu/Minggu yang disetel libur?
-                    if (in_array($currentDayOfWeek, $weekendDaysToIgnore)) continue;
-
-                    // Cek 2: Apakah hari ini ada di daftar hari libur?
-                    if (isset($holidayList[$currentDate])) continue;
-
-                    // Jika lolos, tambahkan ke hitungan
-                    $dates[] = $currentDate;
-                }
-
-                $diff = '+' . count($dates);
-                $diff_class = (count($dates) > 0) ? 'danger' : 'info'; // 'danger' jika terlambat, 'info' jika 0 (pas hari H)
-            }
-
-            $html  =  '<badge class="badge badge-' . $diff_class . ' badge-pill">' . $diff . ' hari</badge>';
-            return $html;
+        // Hari terlambat dihitung helper hari_terlambat() agar sama di semua menu sirkulasi
+        ->edit('LateDays', function ($row) {
+            $status = status_jatuh_tempo($row->DueDate);
+            return '<badge class="badge badge-' . $status['class'] . ' badge-pill">' . $status['text'] . ' hari</badge>';
         })
-        // --- AKHIR BLOK MODIFIKASI 'LateDays' ---
         ->edit('UpdateDate', function ($row) {
             $html  =  '<badge class="badge badge-info badge-pill">' . $row->UpdateDate . '</badge>';
             return $html;
@@ -290,43 +192,6 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
         $builder->where('m.MemberNo', $member_no);
     }
 
-    // --- BARU: AMBIL PENGATURAN HARI LIBUR ---
-    // Pastikan $this->settingModel sudah tersedia di controller Anda
-    // (misalnya melalui dependency injection atau $this->settingModel = new \App\Models\SettingModel();)
-    $settingsData = $this->settingModel
-        ->select('Name, Value')
-        ->whereIn('Name', ['IsSaturdayHoliday', 'IsSundayHoliday'])
-        ->findAll();
-
-    $settings = array_column($settingsData, 'Value', 'Name');
-
-    // Default ke 'True' (dianggap libur) jika pengaturan tidak ditemukan
-    $isSaturdayHoliday = $settings['IsSaturdayHoliday'] ?? 'True';
-    $isSundayHoliday = $settings['IsSundayHoliday'] ?? 'True';
-
-    $weekendDaysToIgnore = [];
-    if ($isSaturdayHoliday !== 'False') {
-        $weekendDaysToIgnore[] = '6'; // 6 = Sabtu
-    }
-    if ($isSundayHoliday !== 'False') {
-        $weekendDaysToIgnore[] = '7'; // 7 = Minggu
-    }
-    // --- AKHIR BLOK BARU ---
-
-
-    // --- BARU: AMBIL HARI LIBUR NASIONAL/KUSTOM ---
-    $holidayRows = $db->table('holidays as a')
-        ->select('a.Dates')
-        ->where('a.active', 1) // Asumsi kita hanya ambil hari libur yang aktif
-        ->get()
-        ->getResult();
-
-    $holidayList = [];
-    foreach ($holidayRows as $holiday) {
-        // Simpan dalam format Y-m-d sebagai key array untuk pencarian cepat
-        $holidayList[date('Y-m-d', strtotime($holiday->Dates))] = true;
-    }
-    // --- AKHIR BLOK BARU ---
 
     // dd($builder->get()->getResult());
 
@@ -367,73 +232,11 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
             $html .=  '<badge class="badge badge-warning badge-pill">' . $row->DueDate . '</badge>';
             return $html;
         })
-        // --- BLOK 'LateDays' DIMODIFIKASI ---
-        ->edit('LateDays', function ($row) use ($weekendDaysToIgnore, $holidayList) {
-            
-            $today = date('Y-m-d');
-
-            if ($row->DueDate > $today) {
-                // --- Belum Jatuh Tempo ---
-                $periods = \Carbon\CarbonPeriod::create($today, $row->DueDate);
-                $dates = [];
-                foreach ($periods as $period) {
-                    $currentDayOfWeek = $period->format('N'); // 1 (Mon) - 7 (Sun)
-                    $currentDate = $period->format('Y-m-d');
-                    
-                    // Lewati jika hari ini (untuk perhitungan sisa hari)
-                    if ($currentDate == $today) continue;
-
-                    // Cek 1: Apakah hari ini Sabtu/Minggu yang disetel libur?
-                    if (in_array($currentDayOfWeek, $weekendDaysToIgnore)) continue;
-
-                    // Cek 2: Apakah hari ini ada di daftar hari libur?
-                    if (isset($holidayList[$currentDate])) continue;
-                    
-                    // Jika lolos, tambahkan ke hitungan
-                    $dates[] = $currentDate;
-                }
-
-                $diff = '-' . count($dates);
-                if (count($dates) <= 3) {
-                    if (count($dates) == 0) {
-                        $diff_class = 'info';
-                        // Logika +0 dari kode asli Anda, mungkin untuk "Jatuh Tempo Hari Ini"
-                        $diff = '+' . count($dates); 
-                    } else {
-                        $diff_class = 'warning'; // Mendekati jatuh tempo
-                    }
-                } else {
-                    $diff_class = 'secondary'; // Masih lama
-                }
-            } else {
-                // --- Sudah Jatuh Tempo / Terlambat ---
-                $periods = \Carbon\CarbonPeriod::create($row->DueDate, $today);
-                $dates = [];
-                foreach ($periods as $period) {
-                    $currentDayOfWeek = $period->format('N');
-                    $currentDate = $period->format('Y-m-d');
-
-                    // Lewati tanggal jatuh tempo itu sendiri (denda dihitung H+1)
-                    if ($currentDate == $row->DueDate) continue;
-
-                    // Cek 1: Apakah hari ini Sabtu/Minggu yang disetel libur?
-                    if (in_array($currentDayOfWeek, $weekendDaysToIgnore)) continue;
-
-                    // Cek 2: Apakah hari ini ada di daftar hari libur?
-                    if (isset($holidayList[$currentDate])) continue;
-
-                    // Jika lolos, tambahkan ke hitungan
-                    $dates[] = $currentDate;
-                }
-
-                $diff = '+' . count($dates);
-                $diff_class = (count($dates) > 0) ? 'danger' : 'info'; // 'danger' jika terlambat, 'info' jika 0 (pas hari H)
-            }
-
-            $html  =  '<badge class="badge badge-' . $diff_class . ' badge-pill">' . $diff . ' hari</badge>';
-            return $html;
+        // Hari terlambat dihitung helper hari_terlambat() agar sama di semua menu sirkulasi
+        ->edit('LateDays', function ($row) {
+            $status = status_jatuh_tempo($row->DueDate);
+            return '<badge class="badge badge-' . $status['class'] . ' badge-pill">' . $status['text'] . ' hari</badge>';
         })
-        // --- AKHIR BLOK MODIFIKASI 'LateDays' ---
         ->edit('UpdateDate', function ($row) {
             $html  =  '<badge class="badge badge-info badge-pill">' . $row->UpdateDate . '</badge>';
             return $html;
@@ -447,46 +250,8 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
             $pelanggaran = $db->table('pelanggaran')
             ->select('CollectionLoanItem_id')->where('CollectionLoanItem_id', $row->ID)->get()->getRow();
             
-            // --- PERHITUNGAN ULANG HARI TERLAMBAT (HANYA UNTUK LOGIKA TOMBOL) ---
-            // Logika ini harus SAMA PERSIS dengan logika di 'LateDays'
-            // Kita perlu mengambil $weekendDaysToIgnore dan $holidayList ke sini juga
-            // CARA LEBIH BAIK: Hitung sekali saja di 'LateDays' dan teruskan.
-            // Tapi karena library datatable memisahkan closure, kita hitung ulang di sini
-            // (CATATAN: Ini tidak efisien. Idealnya, hasil 'LateDays' harus disimpan/diteruskan)
-            
-            // --- Mulai perhitungan cepat (untuk $isLate) ---
-            $today = date('Y-m-d');
-            if ($row->DueDate < $today) {
-                 // Ambil lagi pengaturan libur (ini SANGAT tidak efisien, tapi terpaksa)
-                 $settingsData = $this->settingModel->select('Name, Value')->whereIn('Name', ['IsSaturdayHoliday', 'IsSundayHoliday'])->findAll();
-                 $settings = array_column($settingsData, 'Value', 'Name');
-                 $isSaturdayHoliday = $settings['IsSaturdayHoliday'] ?? 'True';
-                 $isSundayHoliday = $settings['IsSundayHoliday'] ?? 'True';
-                 $weekendDaysToIgnore_action = [];
-                 if ($isSaturdayHoliday !== 'False') $weekendDaysToIgnore_action[] = '6';
-                 if ($isSundayHoliday !== 'False') $weekendDaysToIgnore_action[] = '7';
-
-                 $holidayRows_action = $db->table('holidays as a')->select('a.Dates')->where('a.active', 1)->get()->getResult();
-                 $holidayList_action = [];
-                 foreach ($holidayRows_action as $holiday) {
-                     $holidayList_action[date('Y-m-d', strtotime($holiday->Dates))] = true;
-                 }
-                // --- Selesai ambil data libur ---
-
-                $periods = \Carbon\CarbonPeriod::create($row->DueDate, $today);
-                $dates = [];
-                foreach ($periods as $period) {
-                    $currentDayOfWeek = $period->format('N');
-                    $currentDate = $period->format('Y-m-d');
-                    if ($currentDate == $row->DueDate) continue; // H+1
-                    if (in_array($currentDayOfWeek, $weekendDaysToIgnore_action)) continue;
-                    if (isset($holidayList_action[$currentDate])) continue;
-                    $dates[] = $currentDate;
-                }
-                $lateDays = count($dates);
-                $isLate = $lateDays > 0;
-            }
-            // --- Selesai perhitungan cepat ---
+            $lateDays = hari_terlambat($row->DueDate);
+            $isLate = $lateDays > 0;
 
 
             $actionButtons = '';
@@ -579,39 +344,7 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('LateDays', function ($row) {
-				if ($row->DueDate > date('Y-m-d')) {
-					$periods = \Carbon\CarbonPeriod::create(date('Y-m-d'), $row->DueDate);
-					$dates = [];
-					foreach ($periods as $period) {
-						if (in_array($period->format('N'), ['6', '7'])) continue;
-						$dates[] = $period->format('Y-m-d');
-					}
-
-					$diff = '-' . count($dates);
-					if (count($dates) <= 3) {
-						if (count($dates) == 0) {
-							$diff_class = 'info';
-							$diff = '+' . count($dates);
-						} else {
-							$diff_class = 'warning';
-						}
-					} else {
-						$diff_class = 'secondary';
-					}
-				} else {
-					$periods = \Carbon\CarbonPeriod::create($row->DueDate, date('Y-m-d'));
-					$dates = [];
-					foreach ($periods as $period) {
-						if (in_array($period->format('N'), ['6', '7'])) continue;
-						$dates[] = $period->format('Y-m-d');
-					}
-
-					$diff = '+' . count($dates);
-					$diff_class = 'danger';
-				}
-
-				$html  =  '<b>' . $diff . ' hari</b>';
-				return $html;
+				return '<b>' . status_jatuh_tempo($row->DueDate)['text'] . ' hari</b>';
 			})
 			->edit('action', function ($row) {
 				$edit = '<a href="javascript:void(0);" data-href="' . base_url('sirkulasi/pengembalian/do_return/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Kembalikan" class="btn btn-primary return-data"><i class="pe-7s-refresh font-weight-bold"> </i></a>';

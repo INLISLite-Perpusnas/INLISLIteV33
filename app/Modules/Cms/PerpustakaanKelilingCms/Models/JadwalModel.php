@@ -313,19 +313,19 @@ class JadwalModel extends Model
         foreach ($data as $r) {
             $entity = new \App\Entities\PerpusKelilingJadwal($r);
 
-            $btnDetail = '<button type="button" class="btn btn-sm btn-info btn-detail" data-id="' . $r['id'] . '" title="Detail"><i class="fa fa-eye"></i></button>';
+            $btnDetail = '<button type="button" class="ina-action btn-detail" data-id="' . $r['id'] . '" title="Detail" aria-label="Detail"><i class="fas fa-eye" aria-hidden="true"></i></button>';
             $btnEdit = $entity->bisaEdit()
-                ? '<button type="button" class="btn btn-sm btn-primary btn-edit" data-id="' . $r['id'] . '" title="Edit"><i class="fa fa-edit"></i></button>'
+                ? '<button type="button" class="ina-action btn-edit" data-id="' . $r['id'] . '" title="Ubah" aria-label="Ubah"><i class="fas fa-pen" aria-hidden="true"></i></button>'
                 : '';
             $btnBatal = $entity->bisaBatalkan()
-                ? '<button type="button" class="btn btn-sm btn-danger btn-batal" data-id="' . $r['id'] . '" title="Batalkan"><i class="fa fa-times"></i></button>'
+                ? '<button type="button" class="ina-action ina-action-danger btn-batal" data-id="' . $r['id'] . '" title="Batalkan" aria-label="Batalkan"><i class="fas fa-ban" aria-hidden="true"></i></button>'
                 : '';
             $btnDok = $entity->bisaDokumentasi()
-                ? '<button type="button" class="btn btn-sm btn-warning btn-dokumentasi" data-id="' . $r['id'] . '" title="Kelola Dokumentasi"><i class="fa fa-camera"></i></button>'
+                ? '<button type="button" class="ina-action btn-dokumentasi" data-id="' . $r['id'] . '" title="Kelola Dokumentasi" aria-label="Kelola Dokumentasi"><i class="fas fa-camera" aria-hidden="true"></i></button>'
                 : '';
-            $btnDup = '<button type="button" class="btn btn-sm btn-secondary btn-duplikat" data-id="' . $r['id'] . '" title="Duplikat Jadwal"><i class="fa fa-copy"></i></button>';
+            $btnDup = '<button type="button" class="ina-action btn-duplikat" data-id="' . $r['id'] . '" title="Duplikat Jadwal" aria-label="Duplikat Jadwal"><i class="fas fa-copy" aria-hidden="true"></i></button>';
 
-            $action = '<div class="btn-group">' . $btnDetail . $btnEdit . $btnBatal . $btnDok . $btnDup . '</div>';
+            $action = '<div class="ina-actions">' . $btnDetail . $btnEdit . $btnBatal . $btnDok . $btnDup . '</div>';
 
             $rows[] = [
                 'id' => $r['id'],
@@ -342,7 +342,7 @@ class JadwalModel extends Model
                 'nama_lokasi' => esc($r['nama_lokasi'] ?? '-'),
                 'daftar_petugas' => esc($r['daftar_petugas'] ?? '-'),
                 'status_tampil' => $entity->getBadgeStatusHtml(),
-                'total_dokumentasi' => '<span class="badge bg-info">' . esc($r['total_dokumentasi']) . ' foto</span>',
+                'total_dokumentasi' => '<span class="ina-badge ina-badge-info">' . esc($r['total_dokumentasi']) . ' foto</span>',
                 'action' => $action,
             ];
         }

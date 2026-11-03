@@ -1,44 +1,14 @@
 <?php
 $request = service('request');
 $slug = $request->getGet('slug') ?? '';
+$errors = $errors ?? [];
+$err = static fn(string $field) => $errors[$field] ?? null;
+$asset = static fn(string $path) => base_url($path) . '?v=' . filemtime(FCPATH . $path);
 ?>
 
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style') ?>
-<style>
-    .tox.tox-tinymce.tox-fullscreen {
-        z-index: 1050;
-        top: 60px !important;
-        left: 85px !important;
-        width: calc(100% - 85px) !important;
-    }
-
-    /* Style untuk Preview Image */
-    .preview-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 10px;
-    }
-
-    .img-preview-box {
-        position: relative;
-        width: 120px;
-        height: 120px;
-        border: 1px solid #ddd;
-        padding: 5px;
-        border-radius: 5px;
-        overflow: hidden;
-        background: #f9f9f9;
-    }
-
-    .img-preview-box img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        /* Agar gambar tidak gepeng */
-    }
-</style>
+<link rel="stylesheet" href="<?= $asset('assets/css/ina-form.css') ?>">
 <?= $this->endSection('style') ?>
 
 <?= $this->section('page') ?>
@@ -47,102 +17,106 @@ $slug = $request->getGet('slug') ?? '';
     <div class="app-page-title">
         <div class="page-title-wrapper">
             <div class="page-title-heading">
-                <div class="page-title-icon">
-                    <i class="pe-7s-network icon-gradient bg-strong-bliss"></i>
-                </div>
-                <div>Berita <?= ucwords(unslugify($slug)) ?>
-                    <div class="page-title-subheading">Mohon lengkapi data pada form berikut.</div>
+                <div>Tambah Berita
+                    <div class="page-title-subheading">Lengkapi data berita berikut.</div>
                 </div>
             </div>
             <div class="page-title-actions">
-                <nav class="" aria-label="breadcrumb">
+                <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
-                        <li class="breadcrumb-item"><a href="<?= base_url('cms/berita') ?>"><?= lang('Berita') ?></a></li>
-                        <li class="breadcrumb-item" aria-current="page">Tambah Berita</li>
+                        <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>">Beranda</a></li>
+                        <li class="breadcrumb-item"><a href="<?= base_url('cms/berita') ?>">Berita</a></li>
+                        <li class="active breadcrumb-item" aria-current="page">Tambah</li>
                     </ol>
                 </nav>
             </div>
         </div>
     </div>
 
-    <div class="main-card mb-3 card">
-        <div class="card-header">
-            <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Form Tambah Berita
+    <?= get_message('message') ?>
+
+    <form id="frm_create" class="ina-form-card" method="post" enctype="multipart/form-data" action="<?= base_url('cms/berita/create?slug=' . $slug) ?>" novalidate>
+        <div class="ina-form-card-header">
+            <h2>Data Berita</h2>
+            <p>Kolom bertanda <span class="ina-required" aria-hidden="true">*</span> wajib diisi.</p>
         </div>
-        <div class="card-body">
-            <div id="infoMessage"><?= $message ?? '' ?></div>
-            <?= get_message('message') ?>
 
-            <form id="frm_create" class="col-md-12 mx-auto" method="post" enctype="multipart/form-data" action="<?= base_url('cms/berita/create?slug=' . $slug) ?>">
+        <div class="ina-form-body">
+            <!-- Text Field: Judul -->
+            <div class="ina-field ina-col-12<?= $err('title') ? ' has-error' : '' ?>">
+                <label class="ina-label" for="title">Judul Berita<span class="ina-required" aria-hidden="true">*</span></label>
+                <input type="text" class="ina-input" name="title" id="title" placeholder="Contoh: Perpustakaan Gelar Lomba Bercerita"
+                    value="<?= esc(set_value('title')) ?>" required aria-required="true"
+                    aria-describedby="title_error"<?= $err('title') ? ' aria-invalid="true"' : '' ?> />
+                <p class="ina-error" id="title_error" <?= $err('title') ? '' : 'hidden' ?>><span><?= esc($err('title') ?? '') ?></span></p>
+            </div>
 
-                <div class="form-row">
-                    <div class="col-md-12">
-                        <div class="position-relative form-group">
-                            <label for="title">Judul Berita*</label>
-                            <div>
-                                <input type="text" class="form-control" name="title" id="title" placeholder="Judul Berita " value="<?= set_value('title') ?>" required />
-                            </div>
-                        </div>
+            <!-- Text Area (editor): Uraian -->
+            <div class="ina-field ina-col-12">
+                <label class="ina-label" for="content">Uraian<span class="ina-optional">(opsional)</span></label>
+                <textarea id="content" name="content" aria-describedby="content_help"><?= set_value('content') ?></textarea>
+                <p class="ina-helper" id="content_help">Isi lengkap berita. Gunakan toolbar untuk format teks, tautan, dan gambar.</p>
+            </div>
+
+            <!-- Text Area: Keterangan -->
+            <div class="ina-field ina-col-12">
+                <label class="ina-label" for="frm_create_description">Keterangan<span class="ina-optional">(opsional)</span></label>
+                <textarea class="ina-textarea" id="frm_create_description" name="description" placeholder="Tulis ringkasan singkat berita" aria-describedby="description_help"><?= esc(set_value('description')) ?></textarea>
+                <p class="ina-helper" id="description_help">Ringkasan tampil di daftar berita.</p>
+            </div>
+
+            <!-- File Upload (satu file): Cover -->
+            <div class="ina-field ina-col-6<?= $err('file_cover') ? ' has-error' : '' ?>">
+                <span class="ina-label" id="file_cover_label">Cover<span class="ina-optional">(opsional)</span></span>
+                <div class="ina-upload" data-accept="jpg,jpeg,png" data-max-mb="2" data-label="Cover"
+                    data-error="<?= esc($err('file_cover') ?? '', 'attr') ?>">
+                    <div class="ina-upload-base">
+                        <button type="button" class="ina-upload-btn" aria-labelledby="file_cover_label file_cover_btn" aria-describedby="file_cover_desc file_cover_error">
+                            <i class="fas fa-upload" aria-hidden="true"></i> <span id="file_cover_btn">Pilih File</span>
+                        </button>
+                        <p class="ina-upload-desc" id="file_cover_desc">
+                            Seret gambar ke sini atau pilih file.<br>
+                            <strong>Format:</strong> JPG, JPEG, PNG · <strong>Maks.:</strong> 2 MB
+                        </p>
+                        <input type="file" class="ina-upload-input" name="file_cover" id="file_cover" accept=".jpg,.jpeg,.png" tabindex="-1" aria-hidden="true">
                     </div>
+                    <div class="ina-upload-list" aria-live="polite"></div>
+                    <p class="ina-error" id="file_cover_error" hidden><span></span></p>
                 </div>
+            </div>
 
-                <div class="form-group">
-                    <label for="content">Uraian</label>
-                    <div>
-                        <textarea id="content" name="content" placeholder="" rows="1" class="form-control autosize-input"><?= set_value('content') ?></textarea>
+            <!-- File Upload (banyak file): Galeri -->
+            <div class="ina-field ina-col-6<?= $err('file_image') ? ' has-error' : '' ?>">
+                <span class="ina-label" id="file_image_label">Galeri Foto<span class="ina-optional">(opsional)</span></span>
+                <div class="ina-upload" data-accept="jpg,jpeg,png" data-max-mb="2" data-multiple="1" data-label="Foto galeri"
+                    data-error="<?= esc($err('file_image') ?? '', 'attr') ?>">
+                    <div class="ina-upload-base">
+                        <button type="button" class="ina-upload-btn" aria-labelledby="file_image_label file_image_btn" aria-describedby="file_image_desc file_image_error">
+                            <i class="fas fa-upload" aria-hidden="true"></i> <span id="file_image_btn">Pilih File</span>
+                        </button>
+                        <p class="ina-upload-desc" id="file_image_desc">
+                            Bisa pilih beberapa foto sekaligus.<br>
+                            <strong>Format:</strong> JPG, JPEG, PNG · <strong>Maks.:</strong> 2 MB per foto
+                        </p>
+                        <input type="file" class="ina-upload-input" name="file_image[]" id="file_image" multiple accept=".jpg,.jpeg,.png" tabindex="-1" aria-hidden="true">
                     </div>
+                    <div class="ina-upload-list" aria-live="polite"></div>
+                    <p class="ina-error" id="file_image_error" hidden><span></span></p>
                 </div>
-
-                <div class="form-group">
-                    <label for="description">Keterangan </label>
-                    <div>
-                        <textarea id="frm_create_description" name="description" placeholder="Keterangan " rows="2" class="form-control autosize-input" style="min-height: 38px;"><?= set_value('description') ?></textarea>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="position-relative form-group p-3 border rounded">
-                            <label for="file_cover" class="font-weight-bold">Cover (Wajib)</label>
-
-                            <input type="file" class="form-control-file" name="file_cover" id="file_cover" accept=".jpg,.jpeg,.png" onchange="previewFile(this, 'preview_cover_container')">
-
-                            <small class="form-text text-muted mt-2 mb-2">
-                                - Format: JPG, JPEG, PNG (Max 2 MB)
-                            </small>
-
-                            <div id="preview_cover_container" class="preview-container"></div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="position-relative form-group p-3 border rounded">
-                            <label for="file_image" class="font-weight-bold">Images Gallery (Opsional)</label>
-
-                            <input type="file" class="form-control-file" name="file_image[]" id="file_image" multiple accept=".jpg,.jpeg,.png" onchange="previewMultipleFiles(this, 'preview_image_container')">
-
-                            <small class="form-text text-muted mt-2 mb-2">
-                                - Tahan CTRL untuk memilih banyak foto. (Max 2 MB per file)
-                            </small>
-
-                            <div id="preview_image_container" class="preview-container"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group mt-4">
-                    <button type="submit" class="btn btn-primary btn-lg" name="submit"><i class="fa fa-save"></i> Simpan Berita</button>
-                    <a href="<?= base_url('cms/berita') ?>" class="btn btn-secondary btn-lg"><i class="fa fa-arrow-left"></i> Kembali</a>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+
+        <div class="ina-form-footer">
+            <a href="<?= base_url('cms/berita') ?>" class="ina-btn ina-btn-secondary">Batal</a>
+            <button type="submit" class="ina-btn ina-btn-primary-solid" name="submit">Simpan</button>
+        </div>
+    </form>
 </div>
 
 <?= $this->endSection('page') ?>
 
 <?= $this->section('script') ?>
+<script src="<?= $asset('assets/js/ina-upload.js') ?>"></script>
 <script>
     $(document).ready(function() {
         <?php if (session()->getFlashdata('swal_icon')) : ?>
@@ -157,96 +131,5 @@ $slug = $request->getGet('slug') ?? '';
         <?php endif; ?>
     });
 </script>
-<script>
-    // 1. Fungsi Preview Single File (Cover)
-    function previewFile(input, previewId) {
-        var previewContainer = document.getElementById(previewId);
-        // Pastikan jQuery tersedia sebelum menggunakannya di sini,
-        // meskipun di fungsi ini kita menggunakan DOM murni untuk kinerja yang lebih baik.
-        previewContainer.innerHTML = ''; // Hapus preview sebelumnya
-
-        if (input.files && input.files[0]) {
-            var reader = new FileReader();
-
-            reader.onload = function(e) {
-                var html = `
-                    <div class="img-preview-box">
-                        <img src="${e.target.result}" title="${input.files[0].name}">
-                    </div>`;
-                // Menggunakan jQuery jika Anda sudah memuatnya
-                $(previewContainer).html(html);
-                // Atau DOM murni: previewContainer.innerHTML = html;
-            }
-
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
-    // 2. Fungsi Preview Multiple Files (Gallery)
-    // Menggunakan let untuk i dan fileName agar reader.onload dapat mengakses nilai yang benar (closure).
-    function previewMultipleFiles(input, previewId) {
-        var previewContainer = document.getElementById(previewId);
-        // Menggunakan jQuery untuk clearing, asumsikan jQuery tersedia
-        $(previewContainer).empty(); // Hapus preview sebelumnya
-
-        if (input.files) {
-            var filesAmount = input.files.length;
-
-            for (let i = 0; i < filesAmount; i++) {
-                let reader = new FileReader(); // Gunakan let untuk reader
-                let file = input.files[i]; // Tangkap file saat ini
-
-                reader.onload = function(event) {
-                    var html = `
-                        <div class="img-preview-box">
-                            <img src="${event.target.result}" title="${file.name}">
-                        </div>`;
-                    $(previewContainer).append(html);
-                }
-
-                reader.readAsDataURL(file);
-            }
-        }
-    }
-    if (!jQuery.now) {
-        jQuery.now = function() {
-            return Date.now();
-        };
-    }
-
-    // Perbaikan Utama: Membungkus inisialisasi Summernote di dalam $(document).ready()
-    $(document).ready(function() {
-        // TinyMCE Init (Menggunakan Summernote)
-        $('#content').summernote({
-            height: 430,
-            minHeight: null,
-            maxHeight: null,
-            focus: true,
-            toolbar: [
-                ['style', ['style', 'undo', 'redo', 'codeview']],
-                ['font', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
-                ['fontname', ['fontname']],
-                ['fontsize', ['fontsize']],
-                ['color', ['color']],
-                ['para', ['ul', 'ol', 'paragraph', 'table']],
-                ['insert', ['link', 'picture', 'video', 'hr']],
-            ],
-            fontNames: ['System Font',
-                'Dosis', 'Andale Mono', 'Arial', 'Arial Black', 'Book Antiqua',
-                'Comic Sans MS', 'Courier New', 'Georgia', 'Helvetica', 'Impact',
-                'Symbol', 'Tahoma', 'Times New Roman', 'Trebuchet MS', 'Verdana'
-            ],
-            fontSizes: [
-                '12', '13', '14', '15', '16', '17', '18', '19', '20', '24',
-                '28', '32', '34', '36', '72'
-            ],
-            styleTags: ['p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-            callbacks: {
-                onInit: function() {
-                    console.log('Summernote is initialized on #content');
-                }
-            },
-        });
-    });
-</script>
+<?= $this->include('Berita\Views\form_script') ?>
 <?= $this->endSection('script') ?>

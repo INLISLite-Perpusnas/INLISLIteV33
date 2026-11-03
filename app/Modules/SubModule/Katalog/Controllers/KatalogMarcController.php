@@ -46,14 +46,22 @@ class KatalogMarcController extends \Base\Controllers\BaseController
             }
 
             if ($valid) {
-                $catalogsModel = new DataModel('catalogs', null, 'ID');
-                $katalogRuasModel = new DataModel('catalog_ruas', null, 'ID');
-                $save_data = [
+                $now  = date('Y-m-d H:i:s');
+                $ruas = $this->_buildRuasData();
+
+                // Kolom bibliografis catalogs diturunkan dari ruas (setara convertToCatalogFields)
+                $save_data = array_merge(ruas_to_catalog_fields($ruas), [
                     'Worksheet_id' => $this->request->getPost('Worksheet_id'),
                     'ControlNumber' => get_control_number(),
-                    'BIBID' => random_string('numeric', 13),
-                    'Branch_id' => user()->branch_id,
-                ];
+                    'BIBID' => get_bib_id(),
+                    'Branch_id' => user()->branch_id ?? null,
+                    'CreateBy' => user_id(),
+                    'CreateDate' => $now,
+                    'CreateTerminal' => get_ip_address(),
+                    'UpdateBy' => user_id(),
+                    'UpdateDate' => $now,
+                    'UpdateTerminal' => get_ip_address(),
+                ]);
 
                 if ($this->request->getPost('IsRDA') !== null) {
                     $save_data['IsRDA'] = $this->request->getPost('IsRDA') ? 1 : 0;
@@ -62,20 +70,11 @@ class KatalogMarcController extends \Base\Controllers\BaseController
                 $db = db_connect();
                 $db->transStart();
 
-                $CatalogId = $catalogsModel->insert($save_data);
-                $catalog_ruas_data = $this->_buildRuasData($CatalogId);
+                $db->table('catalogs')->insert($save_data);
+                $CatalogId = $db->insertID();
 
-                // Tag 001 selalu diisi sistem dengan ControlNumber di paling awal
-                array_unshift($catalog_ruas_data, [
-                    'CatalogId' => $CatalogId,
-                    'Tag' => '001',
-                    'Value' => $save_data['ControlNumber'],
-                    'Indicator1' => '',
-                    'Indicator2' => '',
-                ]);
-
-                $katalogRuasModel->insertBatch($catalog_ruas_data);
-                $catalogsModel->update($CatalogId, convert_catalog_ruas($CatalogId));
+                // 001, 005, 035 selalu diisi sistem
+                save_katalog_ruas($CatalogId, $save_data['ControlNumber'], $save_data['BIBID'], $ruas);
 
                 $db->transComplete();
 
@@ -146,28 +145,21 @@ class KatalogMarcController extends \Base\Controllers\BaseController
             }
 
             if ($valid) {
-                $katalogRuasModel = new DataModel('catalog_ruas', null, 'ID');
-                $catalog_ruas_data = $this->_buildRuasData($id);
-
-                // Tag 001 selalu diisi sistem dengan ControlNumber katalog
-                array_unshift($catalog_ruas_data, [
-                    'CatalogId' => $id,
-                    'Tag' => '001',
-                    'Value' => $catalog->ControlNumber,
-                    'Indicator1' => '',
-                    'Indicator2' => '',
-                ]);
+                $ruas = $this->_buildRuasData();
 
                 // Hapus lalu sisipkan ulang ruas dalam satu transaksi agar ruas lama tidak hilang bila gagal
                 $db = db_connect();
                 $db->transStart();
 
-                $catalogsModel->update($id, [
+                $db->table('catalogs')->where('ID', $id)->update(array_merge(ruas_to_catalog_fields($ruas), [
                     'Worksheet_id' => $this->request->getPost('Worksheet_id'),
-                ]);
-                $katalogRuasModel->where('CatalogId', $id)->delete();
-                $katalogRuasModel->insertBatch($catalog_ruas_data);
-                $catalogsModel->update($id, convert_catalog_ruas($id));
+                    'UpdateBy' => user_id(),
+                    'UpdateDate' => date('Y-m-d H:i:s'),
+                    'UpdateTerminal' => get_ip_address(),
+                ]));
+
+                // 001, 005, 035 dan 990 (No. Induk eksemplar) selalu diisi sistem
+                save_katalog_ruas($id, $catalog->ControlNumber, $catalog->BIBID, $ruas);
 
                 $db->transComplete();
 
@@ -212,6 +204,10 @@ class KatalogMarcController extends \Base\Controllers\BaseController
 
         $existing_data = [];
         foreach ($existing_ruas as $ruas) {
+            // 990 (No. Induk) dibentuk ulang dari data eksemplar saat simpan
+            if ($ruas->Tag === '990') {
+                continue;
+            }
             $existing_data[$ruas->Tag][] = [
                 'Value' => $ruas->Value,
                 'Indicator1' => $ruas->Indicator1,
@@ -220,6 +216,21 @@ class KatalogMarcController extends \Base\Controllers\BaseController
         }
 
         $all_tags = get_all_tags($worksheet_id);
+
+        // Ruas katalog yang tidak ada di daftar tag jenis bahan tetap ditampilkan agar tidak hilang saat disimpan
+        $missing = array_diff(array_keys($existing_data), array_column($all_tags->session_tags, 'Tag'));
+        if ($missing) {
+            $extra = db_connect()->table('fields as f')
+                ->select(marc_field_columns(), false)
+                ->whereIn('f.Tag', array_map('strval', $missing))
+                ->get()->getResultArray();
+            $merged = array_merge($all_tags->session_tags, $extra);
+            usort($merged, function ($a, $b) {
+                return strcmp($a['Tag'], $b['Tag']);
+            });
+            $session->set('worksheet_fields', $merged);
+            $all_tags = get_all_tags($worksheet_id);
+        }
         $data['existing_data'] = $existing_data;
         $data['session_tags'] = $all_tags->session_tags;
         $data['filtered_tags'] = $all_tags->filtered_tags;
@@ -530,51 +541,15 @@ class KatalogMarcController extends \Base\Controllers\BaseController
     // ----------------------------------------------------------------
 
     /**
-     * Bangun array catalog_ruas dari data POST MARC.
+     * Bangun daftar ruas dari data POST MARC (tag 001/005/035/990 diisi sistem saat simpan).
      */
-    private function _buildRuasData(int $CatalogId): array
+    private function _buildRuasData(): array
     {
-        $Indicator1s = $this->request->getPost('Indicator1') ?? [];
-        $Indicator2s = $this->request->getPost('Indicator2') ?? [];
-        $Values = $this->request->getPost('Value') ?? [];
-
-        // Daftar tag kontrol MARC yang tidak memiliki indikator dan subfield
-        $controlTags = ['005', '006', '007', '008'];
-
-        $catalog_ruas_data = [];
-
-        foreach ($Values as $key => $valData) {
-            $valuesArr = is_array($valData) ? $valData : [$valData];
-
-            foreach ($valuesArr as $index => $rowValue) {
-                // Jika tag termasuk Control Tag, set indikator kosong secara otomatis
-                if (in_array($key, $controlTags)) {
-                    $ind1 = '';
-                    $ind2 = '';
-                } else {
-                    // Untuk tag biasa, ambil dari post berdasarkan key & index dengan aman
-                    $ind1 = $Indicator1s[$key][$index] ?? ($Indicator1s[$key] ?? '');
-                    $ind2 = $Indicator2s[$key][$index] ?? ($Indicator2s[$key] ?? '');
-                }
-
-                $catalog_ruas_data[] = [
-                    'CatalogId' => $CatalogId,
-                    'Tag' => $key,
-                    'Value' => $rowValue,
-                    'Indicator1' => is_array($ind1) ? ($ind1[$index] ?? '') : $ind1,
-                    'Indicator2' => is_array($ind2) ? ($ind2[$index] ?? '') : $ind2,
-                ];
-            }
-        }
-
-        // Buang baris yang belum diisi (masih placeholder '$a' atau kosong), termasuk tag kontrol,
-        // supaya '$a' tidak tersimpan sebagai isi 005-008. Tag 001 selalu diisi oleh sistem.
-        $catalog_ruas_data = array_values(array_filter($catalog_ruas_data, function ($item) {
-            $value = trim((string) $item['Value']);
-            return $item['Tag'] !== '001' && $value !== '' && $value !== '$a';
-        }));
-
-        return $catalog_ruas_data;
+        return build_marc_ruas(
+            (array) ($this->request->getPost('Value') ?? []),
+            (array) ($this->request->getPost('Indicator1') ?? []),
+            (array) ($this->request->getPost('Indicator2') ?? [])
+        );
     }
 
     /**

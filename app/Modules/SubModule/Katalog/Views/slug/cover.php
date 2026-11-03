@@ -1,7 +1,7 @@
 <div class="card-header">
 	<i class="header-icon lnr-picture icon-gradient bg-plum-plate"> </i> Cover Katalog
 	<div class="btn-actions-pane-right actions-icon-btn">
-		<a href="javascript:void(0);" data-id="<?= $catalog->ID ?>" data-ref-id="" data-field="CoverURL" data-title-header="Upload Konten Digital" data-title-file="File Cover" data-dropzone-url="<?= base_url('katalog/do_upload') ?>" data-upload-url="<?= base_url('api/katalog/upload_cover') ?>" data-max-files="1" data-max-size="12" data-format=".jpg,.jpeg,.png" data-format-title="Format (JPG|JPEG|PNG). Max 2MB" data-redirect-url="<?= base_url('katalog/edit/' . $catalog->ID . '?slug=cover') ?>" title="" class="btn btn-success upload-data">
+		<a href="javascript:void(0);" data-id="<?= $catalog->ID ?>" data-ref-id="" data-field="CoverURL" data-title-header="Upload Konten Digital" data-title-file="File Cover" data-dropzone-url="<?= base_url('katalog/do_upload') ?>" data-upload-url="<?= base_url('api/katalog/upload_cover') ?>" data-max-files="1" data-max-size="2" data-format=".jpg,.jpeg,.png" data-format-title="Format (JPG|JPEG|PNG). Max 2MB" data-redirect-url="<?= base_url('katalog/edit/' . $catalog->ID . '?slug=cover') ?>" title="" class="btn btn-catalog-add upload-data">
 			<i class="fa fa-plus"></i> Tambah File
 		</a>
 	</div>

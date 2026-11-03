@@ -1,5 +1,6 @@
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -29,7 +30,7 @@
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Role
             <div class="btn-actions-pane-right actions-icon-btn">
                 <?php if (is_member('admin')) : ?>
-                    <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah Role"><i class="fa fa-plus"></i> Tambah Role</a>
+                    <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-catalog-add" title="Tambah Role"><i class="fa fa-plus"></i> Tambah Role</a>
                 <?php endif; ?>
             </div>
         </div>
@@ -51,13 +52,13 @@
                             <td><?= _spec($row->description); ?></td>
                             <td width="180" class="text-center">
                                 <?php if (is_member('admin')) : ?>
-                                    <a href="<?= base_url('group/permissions/' . $row->id); ?>" data-toggle="tooltip" data-placement="top" title="Permission" class="btn btn-primary"><i class="fa fa-cogs"> </i></a>
+                                    <a href="<?= base_url('group/permissions/' . $row->id); ?>" data-toggle="tooltip" data-placement="top" title="Permission" aria-label="Atur permission" class="ina-action"><i class="fa fa-cogs" aria-hidden="true"></i></a>
                                 <?php endif; ?>
                                 <?php if (is_member('admin')) : ?>
-                                    <a href="javascript:void(0);" data-href="<?= base_url('api/group/detail/' . $row->id); ?>" data-toggle="tooltip" data-placement="top" title="Edit Role " class="btn btn-warning show-data"><i class="pe-7s-note font-weight-bold"> </i></a>
+                                    <a href="javascript:void(0);" data-href="<?= base_url('api/group/detail/' . $row->id); ?>" data-toggle="tooltip" data-placement="top" title="Ubah Role" aria-label="Ubah role" class="ina-action show-data"><i class="fas fa-pen" aria-hidden="true"></i></a>
                                 <?php endif; ?>
                                 <?php if (is_member('admin')) : ?>
-                                    <a href="javascript:void(0);" data-href="<?= base_url('group/delete/' . $row->id); ?>" data-toggle="tooltip" data-placement="top" title="Hapus Role" class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>
+                                    <a href="javascript:void(0);" data-href="<?= base_url('group/delete/' . $row->id); ?>" data-toggle="tooltip" data-placement="top" title="Hapus Role" aria-label="Hapus role" class="ina-action ina-action-danger remove-data"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>
                                 <?php endif; ?>
                             </td>
                         </tr>

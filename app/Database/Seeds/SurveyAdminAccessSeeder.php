@@ -29,8 +29,8 @@ class SurveyAdminAccessSeeder extends Seeder
                 'parent' => 0,
                 'controller' => 'surveipemustaka',
                 'slug' => 'survei-pemustaka',
-                'icon' => 'pe-7s-graph2',
-                'permission' => 'access|index|manage',
+                'icon' => 'fas fa-chart-bar',
+                'permission' => 'access|index|create|edit|delete',
                 'type' => 'menu',
                 'category_id' => 1,
                 'category' => 'backend-menu',
@@ -40,17 +40,20 @@ class SurveyAdminAccessSeeder extends Seeder
         } else {
             $this->db->table('c_menus')->where('id', $menu->id)->update([
                 'controller' => 'surveipemustaka', 'active' => 1,
+                'permission' => 'access|index|create|edit|delete',
             ]);
         }
 
         $actions = [
             'surveipemustaka/access' => 'Akses menu Survei Pemustaka',
             'surveipemustaka/index' => 'Akses halaman Survei Pemustaka',
-            'surveipemustaka/manage' => 'Kelola Survei Pemustaka',
-            'surveipemustaka/save-survey' => 'Simpan survei',
-            'surveipemustaka/save-question' => 'Simpan pertanyaan survei',
-            'surveipemustaka/save-option' => 'Simpan pilihan survei',
-            'survei/create' => 'Izin mengelola survei pada controller lama',
+            'surveipemustaka/create' => 'Tambah survei',
+            'surveipemustaka/edit' => 'Ubah survei',
+            'surveipemustaka/delete' => 'Hapus survei',
+            'surveipemustaka/hasil' => 'Lihat hasil survei',
+            'surveipemustaka/pertanyaan' => 'Kelola pertanyaan survei',
+            'surveipemustaka/pilihan' => 'Kelola pilihan jawaban survei',
+            'surveipemustaka/isian' => 'Lihat isian jawaban survei',
         ];
 
         foreach ($actions as $name => $description) {

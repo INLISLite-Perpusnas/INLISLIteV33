@@ -17,7 +17,7 @@
 		</a>
 	</li>
 	<li class="nav-item">
-		<a class="nav-link <?=($slug == 'reserve')?'active':''?>" href="<?=base_url('anggota/online?slug=violation')?>">
+		<a class="nav-link <?=($slug == 'violation')?'active':''?>" href="<?=base_url('anggota/online?slug=violation')?>">
 			<span><i class="header-icon lnr-cart"></i> Daftar Pelanggaran</span>
 		</a>
 	</li>

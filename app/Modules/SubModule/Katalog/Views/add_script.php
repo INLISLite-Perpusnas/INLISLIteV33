@@ -54,7 +54,14 @@
         });
 
         // ========== PENGARANG TAMBAHAN - TAMBAH BARIS ==========
-        var idxPengarangTambahan = 0;
+        // Lanjutkan dari jumlah baris yang sudah ada (form edit) agar index baris tidak bentrok
+        var idxPengarangTambahan = $('.pengarangTambahanWrapper').length;
+
+        // Nama input: pengarangTambahan[TAG-IND1-BARIS][], BARIS dipakai untuk mencocokkan relator ($e)
+        function setPengarangTambahanName(inputId, tag, ind1) {
+            var row = String(inputId).split('-').pop();
+            $('#' + inputId).attr('name', 'pengarangTambahan[' + tag + '-' + ind1 + '-' + row + '][]');
+        }
 
        $('.add-pengarangTambahan').click(function() {
             idxPengarangTambahan++;
@@ -88,7 +95,7 @@
 
             html.push('</div>');
             // ← KUNCI: name pakai idxPengarangTambahan sebagai key unik, BUKAN 700-0 semua
-            html.push('<input type="text" class="form-control" id="pengarangTambahanInput-' + idxPengarangTambahan + '" name="pengarangTambahan[700-' + idxPengarangTambahan + '][]" placeholder="" value="" />');
+            html.push('<input type="text" class="form-control" id="pengarangTambahanInput-' + idxPengarangTambahan + '" name="pengarangTambahan[700-0-' + idxPengarangTambahan + '][]" placeholder="" value="" />');
             html.push('<input type="hidden" id="pengarangTambahanRelator-' + idxPengarangTambahan + '" name="pengarangTambahanRelator[' + idxPengarangTambahan + ']" value="" />');
             html.push('<div class="input-group-append">');
             html.push('<span data-id="' + idxPengarangTambahan + '" class="remove-pengarangTambahan btn btn-outline-secondary"><i class="fa fa-minus"></i></span>');
@@ -104,7 +111,7 @@
             html.push('<input class="form-check-input pengarangTambahanRadio" type="radio" data-select="pengarangTambahanSelect-' + idxPengarangTambahan + '" data-input="pengarangTambahanInput-' + idxPengarangTambahan + '" name="pengarangTambahanRadio[' + idxPengarangTambahan + '][]" value="1">Nama Belakang');
             html.push('</label></div></div>');
             html.push('<div class="col-sm-4"><div class="form-check"><label class="form-check-label">');
-            html.push('<input class="form-check-input pengarangTambahanRadio" type="radio" data-select="pengarangTambahanSelect-' + idxPengarangTambahan + '" data-input="pengarangTambahanInput-' + idxPengarangTambahan + '" name="pengarangTambahanRadio[' + idxPengarangTambahan + '][]" value="2">Nama Keluarga');
+            html.push('<input class="form-check-input pengarangTambahanRadio" type="radio" data-select="pengarangTambahanSelect-' + idxPengarangTambahan + '" data-input="pengarangTambahanInput-' + idxPengarangTambahan + '" name="pengarangTambahanRadio[' + idxPengarangTambahan + '][]" value="3">Nama Keluarga');
             html.push('</label></div></div>');
             html.push('</div></fieldset></div>');
             html.push('</div>');
@@ -126,9 +133,7 @@
             var relatorInput = $(this).data('relator-input');
             var relator = $(this).find('option:selected').data('relator') ?? '';
 
-            console.log('ind1:', ind1, 'value:', value, 'relator:', relator);
-
-            $('#' + input).attr('name', 'pengarangTambahan[' + value + '-' + ind1 + '][]');
+            setPengarangTambahanName(input, value, ind1);
 
             // ← simpan relator ke hidden input
             if (relatorInput) {
@@ -143,7 +148,7 @@
             var value = $('#' + select).val();
             var input = $(this).data('input');
 
-            $('#' + input).attr('name', 'pengarangTambahan[' + value + '-' + ind1 + '][]');
+            setPengarangTambahanName(input, value, ind1);
         });
 
         // ========== SUBJECT ==========

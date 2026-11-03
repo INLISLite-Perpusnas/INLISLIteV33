@@ -221,6 +221,29 @@ if (!function_exists('setting_enabled')) {
     }
 }
 
+if (!function_exists('setting_cache_ttl')) {
+    /**
+     * Lama cache dalam DETIK dari settingparameters (nilai disimpan dalam menit,
+     * diatur di master-pengaturan-frontend). Fallback ke $defaultMinutes bila kosong/tidak valid.
+     */
+    function setting_cache_ttl(string $name, int $defaultMinutes): int
+    {
+        static $values = [];
+
+        if (!array_key_exists($name, $values)) {
+            $row = \Config\Database::connect('data')->table('settingparameters')
+                ->select('Value')
+                ->where('Name', $name)
+                ->get()
+                ->getRow();
+            $values[$name] = $row ? (int) $row->Value : 0;
+        }
+
+        $minutes = $values[$name] > 0 ? $values[$name] : $defaultMinutes;
+        return $minutes * 60;
+    }
+}
+
 if (!function_exists('add_parameter')) {
     function add_parameter($param = null, $value = null)
     {
@@ -314,17 +337,17 @@ if (!function_exists('display_menu_dropdown')) {
         $action .=
             '<a href="' .
             base_url('menu?slug=' . $category_slug . '&menu_id=' . $id) .
-            '" data-toggle="tooltip" data-placement="top" title="Edit Menu/Sub" class="btn btn-xs btn-warning"><i class="pe-7s-note font-weight-bold"></i></a>&nbsp;';
+            '" data-toggle="tooltip" data-placement="top" title="Ubah Menu/Sub" aria-label="Ubah menu" class="ina-action"><i class="fas fa-pen" aria-hidden="true"></i></a>';
         $action .=
             '<a href="javascript:void(0)" data-href="' .
             base_url('menu/delete/' . $id . '?slug=' . $category_slug) .
-            '" data-toggle="tooltip" data-placement="top" title="Hapus Menu/Sub" class="btn btn-xs btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"></i></a>&nbsp;';
+            '" data-toggle="tooltip" data-placement="top" title="Hapus Menu/Sub" aria-label="Hapus menu" class="ina-action ina-action-danger remove-data"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
         $action .=
             '<a href="' .
             base_url(
                 'menu?slug=' . $category_slug . '&parent_id=' . $id
             ) .
-            '" data-toggle="tooltip" data-placement="top" title="Tambah Menu/Sub" class="btn btn-xs btn-success"><i class="pe-7s-plus font-weight-bold"></i></a>';
+            '" data-toggle="tooltip" data-placement="top" title="Tambah Sub Menu" aria-label="Tambah sub menu" class="ina-action"><i class="fas fa-plus" aria-hidden="true"></i></a>';
         $action .= '</div>';
 
         return $action;
@@ -1199,5 +1222,94 @@ if (!function_exists('checkAuthorization')) {
         }
 
         return false;
+    }
+}
+if (!function_exists('sirkulasi_hari_libur')) {
+    /**
+     * Hari libur sirkulasi: hari pekan yang libur (N: 6=Sabtu, 7=Minggu, dari setting
+     * IsSaturdayHoliday/IsSundayHoliday) dan tanggal di tabel holidays. Di-cache per request.
+     */
+    function sirkulasi_hari_libur(): array
+    {
+        static $libur = null;
+        if ($libur === null) {
+            $db = db_connect();
+            $settings = array_column($db->table('settingparameters')
+                ->select('Name, Value')
+                ->whereIn('Name', ['IsSaturdayHoliday', 'IsSundayHoliday'])
+                ->get()->getResultArray(), 'Value', 'Name');
+
+            $weekend = [];
+            // Default dianggap libur jika setting tidak ada
+            if (($settings['IsSaturdayHoliday'] ?? 'True') !== 'False') $weekend[] = '6';
+            if (($settings['IsSundayHoliday'] ?? 'True') !== 'False') $weekend[] = '7';
+
+            $tanggal = [];
+            foreach ($db->table('holidays')->select('Dates')->where('active', 1)->get()->getResult() as $row) {
+                $tanggal[date('Y-m-d', strtotime($row->Dates))] = true;
+            }
+            $libur = ['weekend' => $weekend, 'tanggal' => $tanggal];
+        }
+        return $libur;
+    }
+}
+
+if (!function_exists('hari_kerja_antara')) {
+    /**
+     * Jumlah hari kerja setelah tanggal $from sampai dengan tanggal $to (jam diabaikan),
+     * melewati hari libur sirkulasi. 0 jika $to tidak setelah $from.
+     */
+    function hari_kerja_antara($from, $to): int
+    {
+        $start = new \DateTime(date('Y-m-d', strtotime((string) $from)));
+        $end   = new \DateTime(date('Y-m-d', strtotime((string) $to)));
+        if ($end <= $start) {
+            return 0;
+        }
+
+        $libur = sirkulasi_hari_libur();
+        $count = 0;
+        for ($day = $start->modify('+1 day'); $day <= $end; $day->modify('+1 day')) {
+            if (in_array($day->format('N'), $libur['weekend'], true) || isset($libur['tanggal'][$day->format('Y-m-d')])) {
+                continue;
+            }
+            $count++;
+        }
+        return $count;
+    }
+}
+
+if (!function_exists('hari_terlambat')) {
+    /**
+     * Hari terlambat pengembalian: hari kerja sesudah tanggal jatuh tempo sampai tanggal
+     * kembali (atau hari ini jika belum kembali). Dipakai semua menu sirkulasi agar angkanya sama.
+     */
+    function hari_terlambat($dueDate, $returnDate = null): int
+    {
+        if (empty($dueDate)) {
+            return 0;
+        }
+        return hari_kerja_antara($dueDate, $returnDate ?: date('Y-m-d'));
+    }
+}
+
+if (!function_exists('status_jatuh_tempo')) {
+    /**
+     * Label sisa hari / hari terlambat untuk pinjaman yang belum kembali.
+     * Hasil: ['text' => '-3' | '+0' | '+2', 'class' => secondary|warning|info|danger, 'late' => int].
+     */
+    function status_jatuh_tempo($dueDate): array
+    {
+        $today = date('Y-m-d');
+        if (date('Y-m-d', strtotime((string) $dueDate)) > $today) {
+            $sisa = hari_kerja_antara($today, $dueDate);
+            if ($sisa === 0) {
+                return ['text' => '+0', 'class' => 'info', 'late' => 0];
+            }
+            return ['text' => '-' . $sisa, 'class' => $sisa <= 3 ? 'warning' : 'secondary', 'late' => 0];
+        }
+
+        $late = hari_terlambat($dueDate, $today);
+        return ['text' => '+' . $late, 'class' => $late > 0 ? 'danger' : 'info', 'late' => $late];
     }
 }

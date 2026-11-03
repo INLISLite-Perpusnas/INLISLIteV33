@@ -1,6 +1,8 @@
 <?= $this->extend('App\Views\layout\main'); ?>
 
 <?= $this->section('style'); ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-table.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-table.css') ?>">
 <link rel="stylesheet" href="<?= base_url('assets/vendors/flatpickr/flatpickr.min.css') ?>" />
 <style>
     .select2-container {
@@ -49,7 +51,7 @@
                 </div>
             </div>
             <div class="page-title-actions">
-                <button type="button" class="btn btn-success" id="btn-tambah">
+                <button type="button" class="btn btn-catalog-add" id="btn-tambah">
                     <i class="fa fa-plus"></i> Tambah Jadwal
                 </button>
             </div>
@@ -97,11 +99,11 @@
                     </select>
                 </div>
                 <div class="form-group col-md-3 align-self-end">
-                    <button type="button" class="btn btn-primary" id="btn-terapkan-filter"><i class="fa fa-filter"></i>
+                    <button type="button" class="btn btn-catalog-add" id="btn-terapkan-filter"><i class="fa fa-filter"></i>
                         Terapkan</button>
-                    <button type="button" class="btn btn-secondary" id="btn-reset-filter"><i class="fa fa-sync"></i>
+                    <button type="button" class="btn btn-ina-outline" id="btn-reset-filter"><i class="fa fa-sync"></i>
                         Reset</button>
-                    <button type="button" class="btn btn-success" id="btn-export-excel"><i class="fa fa-file-excel"></i>
+                    <button type="button" class="btn btn-ina-outline" id="btn-export-excel"><i class="fa fa-file-excel"></i>
                         Export Excel</button>
                 </div>
             </form>
@@ -201,11 +203,51 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                    <button type="button" class="btn btn-ina-outline" data-dismiss="modal"
                         data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary" id="btn-simpan">Simpan Jadwal</button>
+                    <button type="submit" class="btn btn-catalog-add" id="btn-simpan">Simpan Jadwal</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detail Jadwal -->
+<div class="modal fade" id="modalDetail" tabindex="-1" role="dialog" aria-labelledby="modalDetailLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalDetailLabel">Detail Jadwal</h5>
+                <button type="button" class="close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Tutup">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="detail-loading" class="text-center text-muted py-4">Memuat...</div>
+                <div id="detail-body" style="display:none;">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-3">Status</dt>
+                        <dd class="col-sm-9" id="detail-status"></dd>
+                        <dt class="col-sm-3">Tanggal &amp; Jam</dt>
+                        <dd class="col-sm-9" id="detail-waktu"></dd>
+                        <dt class="col-sm-3">Unit</dt>
+                        <dd class="col-sm-9" id="detail-unit"></dd>
+                        <dt class="col-sm-3">Lokasi</dt>
+                        <dd class="col-sm-9"><span id="detail-lokasi"></span><br><small class="text-muted" id="detail-alamat"></small></dd>
+                        <dt class="col-sm-3">Petugas</dt>
+                        <dd class="col-sm-9" id="detail-petugas"></dd>
+                        <dt class="col-sm-3">Keterangan</dt>
+                        <dd class="col-sm-9" id="detail-keterangan"></dd>
+                        <dt class="col-sm-3 detail-batal-row">Alasan Batal</dt>
+                        <dd class="col-sm-9 detail-batal-row" id="detail-alasan"></dd>
+                    </dl>
+                    <h6 class="mt-3 mb-2">Dokumentasi</h6>
+                    <div class="row" id="detail-dokumentasi"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ina-outline" data-dismiss="modal" data-bs-dismiss="modal">Tutup</button>
+            </div>
         </div>
     </div>
 </div>
@@ -231,7 +273,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                    <button type="button" class="btn btn-ina-outline" data-dismiss="modal"
                         data-bs-dismiss="modal">Tutup</button>
                     <button type="submit" class="btn btn-danger">Batalkan Jadwal</button>
                 </div>
@@ -264,7 +306,7 @@
                                 placeholder="Caption/Keterangan singkat foto...">
                         </div>
                         <div class="col-md-2">
-                            <button type="submit" class="btn btn-primary btn-block"><i class="fa fa-upload"></i>
+                            <button type="submit" class="btn btn-catalog-add btn-block"><i class="fa fa-upload"></i>
                                 Upload</button>
                         </div>
                     </div>
@@ -380,6 +422,51 @@
             }
         });
 
+        // Detail (data dari endpoint jadwal/detail; semua teks diisi lewat .text() agar aman)
+        $('#tbl_jadwal').on('click', '.btn-detail', function () {
+            var id = $(this).data('id');
+            $('#detail-body').hide();
+            $('#detail-loading').text('Memuat...').show();
+            $('#modalDetail').appendTo('body').modal('show');
+
+            $.get('<?= site_url('cms/perpustakaan-keliling/jadwal/detail/') ?>' + id, function (res) {
+                if (!res.status) {
+                    $('#detail-loading').text(res.message || 'Jadwal tidak ditemukan');
+                    return;
+                }
+                var j = res.jadwal;
+                $('#detail-status').html(j.status_html);
+                $('#detail-waktu').text(j.tanggal + ' • ' + j.jam + ' WIB');
+                $('#detail-unit').text(j.unit);
+                $('#detail-lokasi').text(j.lokasi);
+                $('#detail-alamat').text(j.alamat);
+                $('#detail-petugas').text((res.petugas || []).map(function (p) { return p.username; }).join(', ') || '-');
+                $('#detail-keterangan').text(j.keterangan);
+                $('.detail-batal-row').toggle(!!j.alasan_batal);
+                $('#detail-alasan').text(j.alasan_batal || '');
+
+                var $dok = $('#detail-dokumentasi').empty();
+                if (!res.dokumentasi || !res.dokumentasi.length) {
+                    $dok.append($('<div class="col-12 text-muted">').text('Belum ada dokumentasi.'));
+                }
+                (res.dokumentasi || []).forEach(function (d) {
+                    var $col = $('<div class="col-6 col-md-3 mb-3">');
+                    var $a = $('<a target="_blank" rel="noopener">').attr('href', d.url);
+                    $a.append($('<img class="img-fluid rounded border" style="height:110px;width:100%;object-fit:cover;">').attr({ src: d.url, alt: d.keterangan || 'Dokumentasi' }));
+                    $col.append($a);
+                    if (d.keterangan) {
+                        $col.append($('<small class="d-block text-muted mt-1">').text(d.keterangan));
+                    }
+                    $dok.append($col);
+                });
+
+                $('#detail-loading').hide();
+                $('#detail-body').show();
+            }).fail(function () {
+                $('#detail-loading').text('Gagal memuat detail jadwal.');
+            });
+        });
+
         // Duplikat
         $('#tbl_jadwal').on('click', '.btn-duplikat', function () {
             var rowData = tableJadwal.row($(this).closest('tr')).data();
@@ -469,7 +556,7 @@
                                     <div class="border rounded p-2 bg-light">
                                         <img src="${d.url}" class="img-fluid rounded mb-2" style="height: 120px; object-fit: cover;">
                                         <input type="text" class="form-control form-control-sm input-caption mb-1" data-id="${d.id}" value="${d.keterangan || ''}" placeholder="Caption...">
-                                        <button type="button" class="btn btn-sm btn-danger btn-block btn-hapus-dok" data-id="${d.id}"><i class="fa fa-trash"></i> Hapus</button>
+                                        <button type="button" class="btn btn-sm btn-ina-outline-danger btn-block btn-hapus-dok" data-id="${d.id}"><i class="fa fa-trash"></i> Hapus</button>
                                     </div>
                                 </div>
                             `;

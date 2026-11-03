@@ -12,6 +12,7 @@ $slug = $request->getGet('slug');
 		font-weight: normal;
 	}
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style') ?>
 
 <?= $this->section('page') ?>
@@ -143,7 +144,7 @@ $slug = $request->getGet('slug');
 									<?php endforeach; ?>
 								</select>
 								<div class="input-group-append">
-									<button type="button" name="add" data-tbody="wsf-tbody" class="btn btn-success item-btn-add"><i class="fa fa-plus"></i> Tambah</button>
+									<button type="button" name="add" data-tbody="wsf-tbody" class="btn btn-ina-outline item-btn-add"><i class="fa fa-plus"></i> Tambah</button>
 								</div>
 							</div>
 						</div>
@@ -169,7 +170,7 @@ $slug = $request->getGet('slug');
 											<input type="text" class="form-control" name="name1[<?= $index ?>]" placeholder="" value="<?= $row->Name ?>" readonly />
 										</td>
 										<td class="text-center">
-											<button data-id="<?= $row->ID ?>" data-code="<?= $row->Tag ?>" data-name="<?= $row->Name ?>" type="button" class="btn btn-danger wsf-btn-remove" data-href="<?= base_url('api/master-jenis-bahan-pustaka/wsf_delete/' . $row->ID) ?>"><i class="fa fa-times"></i></button>
+											<button data-id="<?= $row->ID ?>" data-code="<?= $row->Tag ?>" data-name="<?= $row->Name ?>" type="button" class="btn btn-ina-outline-danger wsf-btn-remove" data-href="<?= base_url('api/master-jenis-bahan-pustaka/wsf_delete/' . $row->ID) ?>"><i class="fa fa-times"></i></button>
 										</td>
 									</tr>
 								<?php endforeach; ?>
@@ -179,7 +180,7 @@ $slug = $request->getGet('slug');
 				</div>
 
 				<div class="form-group">
-					<button type="submit" class="btn btn-primary" name="submit">Simpan</button>
+					<button type="submit" class="btn btn-catalog-add" name="submit">Simpan</button>
 				</div>
 			</form>
 		</div>
@@ -242,7 +243,7 @@ $slug = $request->getGet('slug');
 						<input type="text" class="form-control" name="name0[` + index + `]" placeholder="" value="` + name + `" readonly />
 					</td>
 					<td class="text-center">
-						<button data-id="` + index + `" data-code="` + code + `" data-name="` + name + `" type="button" class="btn btn-danger wsf-btn-remove" data-href=""><i class="fa fa-times"></i></button>
+						<button data-id="` + index + `" data-code="` + code + `" data-name="` + name + `" type="button" class="btn btn-ina-outline-danger wsf-btn-remove" data-href=""><i class="fa fa-times"></i></button>
 					</td>
 				</tr>
 			`);

@@ -65,6 +65,8 @@ $request = service('request');
     #filterForm .criterion-control:first-child { grid-column: 1 / -1; }
 }
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
+<script src="<?= base_url('assets/js/ina-form-enhance.js') . '?v=' . filemtime(FCPATH . 'assets/js/ina-form-enhance.js') ?>" defer></script>
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -290,7 +292,7 @@ $request = service('request');
                     <div class="filter-section criteria-section" aria-labelledby="<?= $group ?>_criteria_heading">
                         <div class="criteria-heading">
                             <h6 id="<?= $group ?>_criteria_heading"><?= esc($label) ?></h6>
-                            <button type="button" class="btn btn-success" data-add-criterion="<?= $group ?>" aria-label="Tambah <?= esc($label, 'attr') ?>" title="Tambah kriteria">
+                            <button type="button" class="btn btn-ina-outline" data-add-criterion="<?= $group ?>" aria-label="Tambah <?= esc($label, 'attr') ?>" title="Tambah kriteria">
                                 <i class="fas fa-plus-circle" aria-hidden="true"></i>
                             </button>
                         </div>
@@ -337,24 +339,24 @@ $request = service('request');
                     <small class="text-muted">Frekuensi dikelompokkan berdasarkan kriteria yang dipilih (termasuk Semua); jika tanpa kriteria, gunakan kolom yang dicentang.</small>
                 </div>
                 <div class="d-flex justify-content-center flex-nowrap mb-4 overflow-auto pb-2">
-                    <button type="button" class="btn btn-primary btn-lg px-4 mx-1" id="btnPreview">
-                        <i class="fas fa-eye"></i> Preview Data (100 Baris Pertama)
+                    <button type="button" class="btn btn-ina-outline btn-lg px-4 mx-1" id="btnPreview">
+                        <i class="fas fa-eye"></i> Pratinjau 100 Data
                     </button>
-                    <button type="button" class="btn btn-success btn-lg px-4 mx-1" id="btnExport">
-                        <i class="fas fa-file-excel"></i> Export ke Excel (Semua Data)
+                    <button type="button" class="btn btn-catalog-add btn-lg px-4 mx-1" id="btnExport">
+                        <i class="fas fa-file-excel"></i> Export Excel
                     </button>
-                    <button type="button" class="btn btn-danger btn-lg px-4 mx-1" id="btnExportPdf">
-                        <i class="fas fa-file-pdf"></i> Export ke PDF (Semua Data)
+                    <button type="button" class="btn btn-ina-outline btn-lg px-4 mx-1" id="btnExportPdf">
+                        <i class="fas fa-file-pdf"></i> Export PDF
                     </button>
                     <button type="button" class="btn btn-secondary btn-lg px-4 mx-1" onclick="clearAllFilters()">
-                        <i class="fas fa-eraser"></i> Clear All Filters
+                        <i class="fas fa-eraser"></i> Hapus Filter
                     </button>
                 </div>
             </form>
 
             <!-- Preview Section -->
             <div class="preview-container" id="previewSection" style="display: none;">
-                <h5><i class="fas fa-eye"></i> Preview Data (100 Baris Pertama)</h5>
+                <h5><i class="fas fa-eye"></i> Pratinjau 100 Data</h5>
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle"></i> Menampilkan <strong>100 baris pertama</strong> dari data yang akan diexport. 
                     Jika sudah sesuai, klik tombol Export ke Excel untuk mengunduh semua data.
@@ -487,7 +489,7 @@ $(document).ready(function() {
                 $('#preview-table').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Terjadi kesalahan saat memuat preview data. Silakan coba lagi.</div>');
             },
             complete: function() {
-                $('#btnPreview').html('<i class="fas fa-eye"></i> Preview Data (100 Baris Pertama)').prop('disabled', false);
+                $('#btnPreview').html('<i class="fas fa-eye"></i> Pratinjau 100 Data').prop('disabled', false);
             }
         });
     });
@@ -560,7 +562,7 @@ if (selectedColumns.length === 0 && ($('#export_mode').val() !== 'frekuensi' || 
         
         // Reset button
         setTimeout(function() {
-            $('#btnExport').html('<i class="fas fa-file-excel"></i> Export ke Excel (Semua Data)').prop('disabled', false);
+            $('#btnExport').html('<i class="fas fa-file-excel"></i> Export Excel').prop('disabled', false);
         }, 2000);
     });
 
@@ -603,7 +605,7 @@ if (selectedColumns.length === 0 && ($('#export_mode').val() !== 'frekuensi' || 
         form.remove();
 
         setTimeout(function() {
-            $('#btnExportPdf').html('<i class="fas fa-file-pdf"></i> Export ke PDF (Semua Data)').prop('disabled', false);
+            $('#btnExportPdf').html('<i class="fas fa-file-pdf"></i> Export PDF').prop('disabled', false);
         }, 2000);
     });
     

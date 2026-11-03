@@ -18,22 +18,7 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 	public $validation;
 	public $session;
 
-	// Toggle fitur di settingparameters: Name => [label, nilai aktif, nilai nonaktif]
-	private const FEATURE_TOGGLES = [
-		'is_opac_cache'            => ['Cache Halaman OPAC', '1', '0'],
-		'is_dashboard_cache'       => ['Cache Dashboard', '1', '0'],
-		'is_home_cache'            => ['Cache Halaman Beranda', '1', '0'],
-		'isdrm'                    => ['DRM Konten Digital', '1', '0'],
-		'is_keanggotaan_online'    => ['Pendaftaran Keanggotaan Online', '1', '0'],
-		'is_peminjaman_mandiri'    => ['Peminjaman Mandiri', '1', '0'],
-		'is_pengembalian_mandiri'  => ['Pengembalian Mandiri', '1', '0'],
-		'is_perpustakaan_keliling' => ['Perpustakaan Keliling', '1', '0'],
-		'is_populer'               => ['Koleksi Populer', '1', '0'],
-		'is_sering_dipinjam'       => ['Koleksi Sering Dipinjam', '1', '0'],
-		'is_sering_dibaca'         => ['Koleksi Sering Dibaca', '1', '0'],
-		'UsulanKoleksiLKD'         => ['Usulan Koleksi', 'True', 'False'],
-	];
-
+	// Toggle fitur (cache & halaman frontend) dipindah ke modul PengaturanFrontend (master-pengaturan-frontend)
 
 	function __construct()
 	{
@@ -80,15 +65,6 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
 		$this->data['jenis_perpustakaan'] = $this->settingModel->where('Name', 'JenisPerpustakaan')->first()->Value ?? '';
 		$this->data['tulisan_banner'] = $this->settingModel->where('Name', 'TulisanBanner')->first()->Value ?? '';
 		$this->data['tentang_kami'] = $this->settingModel->where('Name', 'TentangKami')->first()->Value ?? '';
-		$this->data['feature_toggles'] = [];
-		foreach (self::FEATURE_TOGGLES as $name => [$label, $on]) {
-			$value = $this->settingModel->where('Name', $name)->first()->Value
-				?? (in_array($name, ['is_peminjaman_mandiri', 'is_pengembalian_mandiri'], true) ? $on : '');
-			$this->data['feature_toggles'][$name] = [
-				'label'   => $label,
-				'checked' => strtoupper(trim((string) $value)) === strtoupper($on),
-			];
-		}
 		$this->data['title'] = 'Nama Perpustakaan';
 
 		echo view('NamaPerpustakaan\Views\update', $this->data);
@@ -291,11 +267,6 @@ class NamaPerpustakaan extends \Base\Controllers\BaseController
                 'KecamatanID' => trim($this->request->getPost('kecamatan_id')),
                 'KelurahanID' => trim($this->request->getPost('kelurahan_id')),
 			];
-
-			$toggles = (array) ($this->request->getPost('feature_toggles') ?? []);
-			foreach (self::FEATURE_TOGGLES as $name => [, $on, $off]) {
-				$dataToUpdate[$name] = !empty($toggles[$name]) ? $on : $off;
-			}
 
 			$success = true;
 			foreach ($dataToUpdate as $name => $value) {

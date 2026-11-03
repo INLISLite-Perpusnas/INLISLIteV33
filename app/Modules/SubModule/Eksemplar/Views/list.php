@@ -309,6 +309,7 @@ $flashMessage = session()->getFlashdata('swal_html') ?? session()->getFlashdata(
     .exemplar-list-page [aria-sort="descending"] .exemplar-sort::after { content: ' \2193'; }
     .exemplar-list-page .table-responsive { min-height: 24rem; }
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>

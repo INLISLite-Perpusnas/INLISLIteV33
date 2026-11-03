@@ -237,13 +237,14 @@ function is_ajax()
 {
 	return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
 }
-function is_allowed($uri, $user_id = null)
+function is_allowed($uri, $user_id = null, $allow_ajax = true)
 {
 	if (getenv('app.checkURL') == 'false') {
 		return true;
 	}
 
-	if (is_ajax()) {
+	// Header X-Requested-With bisa dipalsukan klien; aksi sensitif harus memanggil dengan $allow_ajax = false
+	if ($allow_ajax && is_ajax()) {
 		return true;
 	}
 	// $uri = uri_string();   

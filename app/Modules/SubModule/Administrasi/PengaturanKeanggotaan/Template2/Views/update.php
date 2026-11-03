@@ -11,6 +11,7 @@ $request = service('request'); ?>
 		width: calc(100% - 85px) !important;
 	}
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style') ?>
 
 <?= $this->section('page') ?>
@@ -101,7 +102,7 @@ $request = service('request'); ?>
 				</div>
 
 				<div class="form-group">
-					<button type="submit" class="btn btn-primary" name="submit">Simpan</button>
+					<button type="submit" class="btn btn-catalog-add" name="submit">Simpan</button>
 				</div>
 			</form>
 		</div>

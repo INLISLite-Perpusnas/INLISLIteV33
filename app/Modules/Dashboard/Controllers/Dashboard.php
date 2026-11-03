@@ -54,9 +54,10 @@ class Dashboard extends \Base\Controllers\BaseController
 
         $useCache = setting_enabled('is_dashboard_cache');
         $cacheKey = 'dashboard_stats_data';
-        $cacheTTL = 3600; // 1 Jam
+        $cacheTTL = setting_cache_ttl('dashboard_cache_ttl', 60); // default 1 jam
 
-        $cachedData = cache($cacheKey);
+        // Jangan pakai cache lama bila cache dashboard dinonaktifkan
+        $cachedData = $useCache ? cache($cacheKey) : null;
 
         if ($cachedData === null) {
             $cachedData = [
@@ -68,7 +69,6 @@ class Dashboard extends \Base\Controllers\BaseController
                 'total_anggota' => $this->anggotaModel->countAllResults(),
                 'total_anggota_guest' => $this->memberguestModel->where('NoAnggota !=', null)->countAllResults(),
                 'total_nonanggota_guest' => $this->memberguestModel->where('NoAnggota', null)->countAllResults(),
-                'total_anggota_bebas_pustaka' => $this->anggotaModel->where('StatusAnggota_id', 5)->countAllResults(),
                 'total_katalog' => $this->katalogModel->countAllResults(),
                 'total_koleksi' => $this->koleksiModel->countAllResults(),
                 'total_peminjaman' => $this->peminjamanModel->countAllResults(),

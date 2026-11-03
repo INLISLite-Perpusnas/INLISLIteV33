@@ -6,6 +6,7 @@ $slug = $request->getGet('slug');
 
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style') ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style') ?>
 
 <?= $this->section('page') ?>
@@ -113,7 +114,7 @@ $slug = $request->getGet('slug');
 							<div class="card-header">
 								Kriteria Pencarian
 								<div class="btn-actions-pane-right actions-icon-btn">
-									<button type="button" name="add" data-tbody="item-tbody" class="btn btn-success item-btn-add"><i class="fa fa-plus"></i> Item</button>
+									<button type="button" name="add" data-tbody="item-tbody" class="btn btn-ina-outline item-btn-add"><i class="fa fa-plus"></i> Item</button>
 								</div>
 							</div>
 							<div class="card-body">
@@ -133,7 +134,7 @@ $slug = $request->getGet('slug');
 													<input type="text" class="form-control" name="name0[<?= $index ?>]" placeholder="" value="<?= $row->CRITERIANAME ?>" required />
 												</td>
 												<td class="text-center">
-													<button type="button" class="btn btn-danger item-btn-remove" data-href="<?= base_url('api/master-penyedia-katalog/item_data_delete/' . $row->ID) ?>"><i class="fa fa-times"></i></button>
+													<button type="button" class="btn btn-ina-outline-danger item-btn-remove" data-href="<?= base_url('api/master-penyedia-katalog/item_data_delete/' . $row->ID) ?>"><i class="fa fa-times"></i></button>
 												</td>
 											</tr>
 										<?php endforeach; ?>
@@ -145,7 +146,7 @@ $slug = $request->getGet('slug');
 				</div>
 
 				<div class="form-group">
-					<button type="submit" class="btn btn-primary" name="submit">Simpan</button>
+					<button type="submit" class="btn btn-catalog-add" name="submit">Simpan</button>
 				</div>
 			</form>
 		</div>
@@ -189,7 +190,7 @@ $slug = $request->getGet('slug');
 						<input type="text" class="form-control" name="name0[` + index + `]" placeholder="" required/>
 					</td>
 					<td class="text-center">
-						<button type="button" class="btn btn-danger item-btn-remove" data-href=""><i class="fa fa-times"></i></button>
+						<button type="button" class="btn btn-ina-outline-danger item-btn-remove" data-href=""><i class="fa fa-times"></i></button>
 					</td>
 				</tr>
 			`);

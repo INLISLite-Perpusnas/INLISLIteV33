@@ -57,7 +57,10 @@ $member_type = get_member_type($member->JenisAnggota_id);
 						<div class="widget-heading"><?= substr($member->EndDate, 0, 10) ?? '-' ?></div>
 					</div>
 					<div class="widget-content-right">
-						<a href="<?= base_url('anggota/extend/' . $member_no) ?>" class="btn btn-sm btn-warning">Perpanjang Anggota</a>
+						<form method="post" action="<?= base_url('anggota/extend/' . rawurlencode($member->MemberNo)) ?>" class="d-inline" onsubmit="return confirm('Perpanjang masa berlaku anggota?')">
+							<?= csrf_field() ?>
+							<button type="submit" class="btn btn-sm btn-warning">Perpanjang Anggota</button>
+						</form>
 					</div>
 				</div>
 			</div>

@@ -21,11 +21,17 @@ class AnggotaOnlineController extends \Base\Controllers\BaseController
     // HALAMAN ONLINE ANGGOTA
     // ----------------------------------------------------------------
 
+    /** Slug yang boleh dipakai sebagai nama view section halaman online. */
+    private const ONLINE_SLUGS = ['profile', 'loan', 'violation', 'reserve', 'request', 'extend'];
+
     public function online()
     {
         $slug = $this->request->getGet('slug');
         if (empty($slug)) {
             $slug = 'profile';
+        }
+        if (!in_array($slug, self::ONLINE_SLUGS, true)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
         $this->data['slug'] = $slug;
 
@@ -34,6 +40,12 @@ class AnggotaOnlineController extends \Base\Controllers\BaseController
         $jenisperpustakaan = $db->table('settingparameters')->where('Name', 'JenisPerpustakaan')->get()->getRow()->Value ?: "UMUM";
         $member_no = user()->username;
         $member = get_member($member_no);
+
+        if (empty($member)) {
+            set_message('toastr_msg', 'Akun ini tidak terhubung dengan data anggota');
+            set_message('toastr_type', 'error');
+            return redirect()->to('/dashboard/index');
+        }
 
         $this->data['member_no'] = $member_no;
         $this->data['member'] = $member;
@@ -80,16 +92,40 @@ class AnggotaOnlineController extends \Base\Controllers\BaseController
 
     public function extend($member_no = null)
     {
+        if (!$this->request->is('post')) {
+            return redirect()->back();
+        }
+
+        $own_member_no = user()->username;
         if (empty($member_no)) {
-            $member_no = user()->username;
+            $member_no = $own_member_no;
+        }
+
+        // Anggota hanya boleh memperpanjang dirinya sendiri; anggota lain butuh hak kelola anggota
+        if ($member_no !== $own_member_no && !$this->canManageMembers()) {
+            set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
+            set_message('toastr_type', 'error');
+            return redirect()->back();
         }
 
         $member = get_member($member_no);
-        $jenis_anggota = db_get_single('m_jenis_anggota', 'id = ' . $member->ref_jenisanggota);
-        $start_date = $member->EndDate;
-        $end_date = date('Y-m-d', strtotime($start_date . ' + ' . $jenis_anggota->expiry_days . ' days'));
+        if (empty($member)) {
+            set_message('toastr_msg', 'Data anggota tidak ditemukan');
+            set_message('toastr_type', 'error');
+            return redirect()->back();
+        }
 
-        $updateAnggota = $this->anggotaModel->protect(false)->update($member->id, ['EndDate' => $end_date]);
+        $jenis_anggota = get_ref_single('jenis_anggota', ['id' => $member->JenisAnggota_id], 'data');
+        $masa_berlaku = (int) ($jenis_anggota->MasaBerlakuAnggota ?? 0) ?: 365;
+
+        // Perpanjang dari EndDate lama; jika kosong/tidak valid mulai dari hari ini
+        $start_time = !empty($member->EndDate) ? strtotime($member->EndDate) : false;
+        if ($start_time === false) {
+            $start_time = strtotime(date('Y-m-d') . ' 23:59:59');
+        }
+        $end_date = date('Y-m-d H:i:s', strtotime('+' . $masa_berlaku . ' days', $start_time));
+
+        $updateAnggota = $this->anggotaModel->update($member->ID, ['EndDate' => $end_date]);
 
         if ($updateAnggota) {
             set_message('toastr_msg', 'Perpanjangan Masa Berlaku Anggota berhasil');
@@ -112,79 +148,103 @@ class AnggotaOnlineController extends \Base\Controllers\BaseController
             return $this->response->setJSON([
                 'error' => true,
                 'message' => 'Method tidak diizinkan',
+                'csrf' => csrf_hash(),
+            ]);
+        }
+
+        if (!$this->canManageMembers()) {
+            return $this->response->setStatusCode(403)->setJSON([
+                'error' => true,
+                'message' => 'Maaf, Anda tidak memiliki akses',
+                'csrf' => csrf_hash(),
             ]);
         }
 
         $memberIds = $this->request->getPost('member_ids');
+        if (is_array($memberIds)) {
+            $memberIds = array_values(array_filter(array_map('intval', $memberIds)));
+        }
 
         if (empty($memberIds) || !is_array($memberIds)) {
             return $this->response->setJSON([
                 'error' => true,
                 'message' => 'Tidak ada anggota yang dipilih',
+                'csrf' => csrf_hash(),
             ]);
         }
 
         $db = db_connect('default');
-        $memberModel = $this->anggotaModel;
 
         $successCount = $failCount = 0;
         $errors = [];
         $activatedList = [];
 
-        $members = $memberModel->whereIn('ID', $memberIds)->findAll();
+        $members = $db->table('members')->whereIn('ID', $memberIds)->get()->getResult();
 
         if (empty($members)) {
             return $this->response->setJSON([
                 'error' => true,
                 'message' => 'Data anggota tidak ditemukan',
+                'csrf' => csrf_hash(),
+            ]);
+        }
+
+        $groupId = $this->getMemberGroupId($db);
+        if (empty($groupId)) {
+            return $this->response->setJSON([
+                'error' => true,
+                'message' => 'Grup anggota tidak tersedia',
+                'csrf' => csrf_hash(),
             ]);
         }
 
         foreach ($members as $member) {
             if (empty($member->MemberNo)) {
                 $failCount++;
-                $errors[] = "No anggota " . esc($member->Fullname) . " kosong";
+                $errors[] = "No anggota " . $member->Fullname . " kosong";
                 continue;
             }
 
             $existingUser = $db->table('users')->where('username', $member->MemberNo)->get()->getRow();
+            $password = null;
 
+            $db->transStart();
             if ($existingUser) {
+                // Akun lama hanya diaktifkan; password yang sudah ada tidak diubah
                 $userId = $existingUser->id;
                 $db->table('users')->where('id', $userId)->update(['active' => 1]);
+            } else {
+                $password = $this->generatePassword();
+                $db->table('users')->insert([
+                    'username' => $member->MemberNo,
+                    'email' => $member->Email ?? '',
+                    'category' => 'anggota',
+                    'password_hash' => $this->password->hash($password),
+                    'anggota' => $member->ID,
+                    'activate_hash' => bin2hex(random_bytes(16)),
+                    'active' => 1,
+                ]);
+                $userId = $db->insertID();
+            }
 
-                $alreadyInGroup = $db->table('auth_groups_users')
-                    ->where('group_id', 8)->where('user_id', $userId)->get()->getRow();
-                if (!$alreadyInGroup) {
-                    $db->table('auth_groups_users')->insert(['group_id' => 8, 'user_id' => $userId]);
-                }
+            $alreadyInGroup = $db->table('auth_groups_users')
+                ->where('group_id', $groupId)->where('user_id', $userId)->get()->getRow();
+            if (!$alreadyInGroup) {
+                $db->table('auth_groups_users')->insert(['group_id' => $groupId, 'user_id' => $userId]);
+            }
+            // Satu koneksi agar status anggota ikut transaksi akun
+            $db->table('members')->where('ID', $member->ID)
+                ->update(['IsOnlineActive' => 1, 'UpdateDate' => date('Y-m-d H:i:s')]);
+            $db->transComplete();
 
-                $memberModel->update($member->ID, ['IsOnlineActive' => 1]);
-                $successCount++;
-                $activatedList[] = ['name' => $member->Fullname, 'username' => $member->MemberNo];
+            if (!$db->transStatus()) {
+                $failCount++;
+                $errors[] = "Gagal aktivasi akun untuk " . $member->Fullname;
                 continue;
             }
 
-            $userData = [
-                'username' => $member->MemberNo,
-                'email' => $member->Email ?? '',
-                'category' => 'anggota',
-                'password_hash' => $this->password->hash($member->MemberNo),
-                'anggota' => $member->ID,
-                'activate_hash' => bin2hex(random_bytes(16)),
-                'active' => 1,
-            ];
-
-            if ($db->table('users')->insert($userData)) {
-                $userId = $db->insertID();
-                $db->table('auth_groups_users')->insert(['group_id' => 8, 'user_id' => $userId]);
-                $memberModel->update($member->ID, ['IsOnlineActive' => 1]);
-                $successCount++;
-                $activatedList[] = ['name' => $member->Fullname, 'username' => $member->MemberNo];
-            } else {
-                $failCount++;
-                $errors[] = "Gagal aktivasi akun untuk " . esc($member->Fullname);
-            }
+            $successCount++;
+            $activatedList[] = ['name' => $member->Fullname, 'username' => $member->MemberNo, 'password' => $password];
         }
 
         $message = "<div class='text-left'>
@@ -197,9 +257,12 @@ class AnggotaOnlineController extends \Base\Controllers\BaseController
         $message .= "</ul>";
 
         if (!empty($activatedList)) {
-            $message .= "<hr><p><strong>Info Akun (Username & Password = No Anggota):</strong></p><ul>";
+            $message .= "<hr><p><strong>Info Akun (password hanya ditampilkan sekali, catat sekarang):</strong></p><ul>";
             foreach ($activatedList as $acc) {
-                $message .= "<li><strong>" . esc($acc['name']) . "</strong> — Username: <code>" . esc($acc['username']) . "</code>, Password: <code>" . esc($acc['username']) . "</code></li>";
+                $passwordInfo = $acc['password'] !== null
+                    ? "Password: <code>" . esc($acc['password']) . "</code>"
+                    : "<em>akun sudah ada, password tidak diubah</em>";
+                $message .= "<li><strong>" . esc($acc['name']) . "</strong> — Username: <code>" . esc($acc['username']) . "</code>, " . $passwordInfo . "</li>";
             }
             $message .= "</ul>";
         }
@@ -218,6 +281,45 @@ class AnggotaOnlineController extends \Base\Controllers\BaseController
             'error' => false,
             'message' => $message,
             'data' => ['success' => $successCount, 'failed' => $failCount],
+            'csrf' => csrf_hash(),
         ]);
+    }
+
+    // ----------------------------------------------------------------
+    // HELPER
+    // ----------------------------------------------------------------
+
+    /** Hak kelola anggota; bypass header AJAX sengaja dimatikan. */
+    private function canManageMembers(): bool
+    {
+        return is_allowed('anggota/edit', null, false);
+    }
+
+    /** ID grup 'anggota' di auth_groups; dibuat jika belum ada (sama seperti pendaftaran online). */
+    private function getMemberGroupId($db)
+    {
+        $group = $db->table('auth_groups')->where('name', 'anggota')->get()->getFirstRow();
+        if ($group) {
+            return $group->id;
+        }
+
+        $db->table('auth_groups')->insert([
+            'name' => 'anggota',
+            'description' => 'Anggota perpustakaan',
+        ]);
+
+        return $db->insertID();
+    }
+
+    /** Password awal acak, tanpa karakter yang mirip (0/O, 1/l/I). */
+    private function generatePassword(int $length = 10): string
+    {
+        $chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        $password = '';
+        for ($i = 0; $i < $length; $i++) {
+            $password .= $chars[random_int(0, strlen($chars) - 1)];
+        }
+
+        return $password;
     }
 }

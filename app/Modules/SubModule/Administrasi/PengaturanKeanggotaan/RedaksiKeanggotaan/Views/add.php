@@ -14,6 +14,7 @@ $slug = $request->getGet('slug');
 		width: calc(100% - 85px) !important;
 	}
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style') ?>
 
 <?= $this->section('page') ?>
@@ -88,7 +89,7 @@ $slug = $request->getGet('slug');
 
 
 				<div class="form-group">
-					<button type="submit" class="btn btn-primary" name="submit">Simpan</button>
+					<button type="submit" class="btn btn-catalog-add" name="submit">Simpan</button>
 				</div>
 			</form>
 		</div>
@@ -187,7 +188,7 @@ $slug = $request->getGet('slug');
 						<input type="hidden" name="repeatable0[` + index + `]" value="0"><input type="checkbox" name="repeatable0[` + index + `]" value="1" class="form-control fielddatas_repeatable">			
 					</td>
 					<td class="text-left">
-						<button type="button" class="btn btn-danger subruas-btn-remove" data-href=""><i class="fa fa-times"></i></button>
+						<button type="button" class="btn btn-ina-outline-danger subruas-btn-remove" data-href=""><i class="fa fa-times"></i></button>
 					</td>
 				</tr>
 			`);
@@ -229,7 +230,7 @@ $slug = $request->getGet('slug');
 						<input type="text" class="form-control" name="name1[` + index + `]" placeholder="" />
 					</td>
 					<td class="text-left">
-						<button type="button" class="btn btn-danger indikator1-btn-remove" data-href=""><i class="fa fa-times"></i></button>
+						<button type="button" class="btn btn-ina-outline-danger indikator1-btn-remove" data-href=""><i class="fa fa-times"></i></button>
 					</td>
 				</tr>
 			`);
@@ -272,7 +273,7 @@ $slug = $request->getGet('slug');
 						<input type="text" class="form-control" name="name2[` + index + `]" placeholder="" />
 					</td>
 					<td class="text-left">
-						<button type="button" class="btn btn-danger indikator2-btn-remove" data-href=""><i class="fa fa-times"></i></button>
+						<button type="button" class="btn btn-ina-outline-danger indikator2-btn-remove" data-href=""><i class="fa fa-times"></i></button>
 					</td>
 				</tr>
 			`);

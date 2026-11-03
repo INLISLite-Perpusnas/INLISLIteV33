@@ -1,6 +1,8 @@
 <?= $this->extend('App\Views\layout\main'); ?>
 
 <?= $this->section('style'); ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-table.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-table.css') ?>">
 <style>
     .foto-unit-item {
         position: relative;
@@ -58,7 +60,7 @@
                 </div>
             </div>
             <div class="page-title-actions">
-                <button type="button" class="btn btn-success" id="btn-tambah">
+                <button type="button" class="btn btn-catalog-add" id="btn-tambah">
                     <i class="fa fa-plus"></i> Tambah Unit
                 </button>
             </div>
@@ -129,8 +131,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary" id="btn-simpan">Simpan</button>
+                    <button type="button" class="btn btn-ina-outline" data-dismiss="modal" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-catalog-add" id="btn-simpan">Simpan</button>
                 </div>
             </form>
         </div>
@@ -200,7 +202,7 @@
                 $('#section-foto-existing').show();
                 fotos.forEach(function (f) {
                     var isUtamaClass = f.is_utama == 1 ? 'is-utama' : '';
-                    var badgeUtama = f.is_utama == 1 ? '<span class="badge badge-success badge-utama">Utama</span>' : '';
+                    var badgeUtama = f.is_utama == 1 ? '<span class="ina-badge ina-badge-success badge-utama">Utama</span>' : '';
                     var html = `
                         <div class="foto-unit-item ${isUtamaClass}" data-id="${f.id}" data-unit="${f.unit_id}">
                             <span class="btn-remove-foto" data-id="${f.id}">&times;</span>

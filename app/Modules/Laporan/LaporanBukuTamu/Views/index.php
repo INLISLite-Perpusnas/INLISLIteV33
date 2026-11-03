@@ -26,6 +26,8 @@ $date_to = $request->getGet('date_to') ?? '';
     background-color: #f8f9fa;
 }
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
+<script src="<?= base_url('assets/js/ina-form-enhance.js') . '?v=' . filemtime(FCPATH . 'assets/js/ina-form-enhance.js') ?>" defer></script>
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -230,10 +232,10 @@ $date_to = $request->getGet('date_to') ?? '';
                     <small class="text-muted">Frekuensi dikelompokkan berdasarkan kolom yang dicentang.</small>
                 </div>
                 <div class="text-center mb-3 mt-2">
-                    <button type="submit" class="btn btn-success btn-lg" onclick="setExportAction('excel')">
+                    <button type="submit" class="btn btn-catalog-add btn-lg" onclick="setExportAction('excel')">
                         <i class="fas fa-file-excel"></i> Export Excel
                     </button>
-                    <button type="submit" class="btn btn-danger btn-lg ml-2" onclick="setExportAction('pdf')">
+                    <button type="submit" class="btn btn-ina-outline btn-lg ml-2" onclick="setExportAction('pdf')">
                         <i class="fas fa-file-pdf"></i> Export PDF
                     </button>
                 </div>

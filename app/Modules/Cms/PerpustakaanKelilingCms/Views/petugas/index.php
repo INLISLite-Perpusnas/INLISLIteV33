@@ -1,6 +1,8 @@
 <?= $this->extend('App\Views\layout\main'); ?>
 
 <?= $this->section('style'); ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-table.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-table.css') ?>">
 <style>
     .select2-container {
         width: 100% !important;
@@ -29,7 +31,7 @@
                 </div>
             </div>
             <div class="page-title-actions">
-                <button type="button" class="btn btn-success" id="btn-tambah">
+                <button type="button" class="btn btn-catalog-add" id="btn-tambah">
                     <i class="fa fa-plus"></i> Tambah Petugas
                 </button>
             </div>
@@ -103,9 +105,9 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                    <button type="button" class="btn btn-ina-outline" data-dismiss="modal"
                         data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary" id="btn-simpan">Simpan</button>
+                    <button type="submit" class="btn btn-catalog-add" id="btn-simpan">Simpan</button>
                 </div>
             </form>
         </div>

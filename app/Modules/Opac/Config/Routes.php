@@ -14,15 +14,13 @@ $routes->group('opac', ['namespace' => 'Opac\Controllers'], function ($subroutes
 	$subroutes->add('baca-digital/(:num)', 'Opac::bacaDigital/$1');
 	$subroutes->get('konten-digital/(:num)', 'Opac::kontenDigitalPublik/$1');
 	$subroutes->post('member-login', 'Opac::memberLogin');
+	$subroutes->post('pesan/(:num)', 'Opac::pesan/$1', ['filter' => 'csrf']);
+	$subroutes->get('booking', 'Opac::bookingList');
+	$subroutes->post('booking/cancel/(:num)', 'Opac::bookingCancel/$1', ['filter' => 'csrf']);
+	$subroutes->get('booking/cetak', 'Opac::bookingCetak');
 	$subroutes->add('visitor_export', 'Opac::visitor_export');
 	$subroutes->add('member', 'Opac::member');
 	$subroutes->add('member_export', 'Opac::member_export');
-	
-	// Add recommendation routes
-	$subroutes->add('recommendations', 'Opac::recommendations');
-	$subroutes->add('recommendations/(:any)', 'Opac::recommendations/$1');
-	$subroutes->add('getRecommendations', 'Opac::getRecommendations');
-	$subroutes->add('getRecommendations/(:any)', 'Opac::getRecommendations/$1');
 	
 	// MARC Download Routes - Method terpisah untuk setiap format
 	$subroutes->add('downloadMarcUtf8/(:num)', 'Opac::downloadMarcUtf8/$1');
@@ -43,7 +41,4 @@ $routes->group('api/Opac', ['namespace' => 'Opac\Controllers\Api'], function ($s
 	$subroutes->add('member_datatable', 'Opac::member_datatable');
 	$subroutes->add('member_datatable/(:any)', 'Opac::member_datatable/$1');
 	
-	// Add API recommendation routes - these will need to be in the Api controller
-	$subroutes->add('recommendations', 'Opac::recommendations');
-	$subroutes->add('recommendations/(:any)', 'Opac::recommendations/$1');
 });

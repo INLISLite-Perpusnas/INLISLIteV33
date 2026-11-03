@@ -1,5 +1,6 @@
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -39,7 +40,7 @@
                                           <div class="input-group" id="show_hide_password_old">
                                                 <input type="password" class="form-control" id="password_old" name="password_old" placeholder="Password Lama" value="<?= set_value('password_old') ?>" />
                                                 <div class="input-group-append">
-                                                      <a class="btn btn-primary" href="#"><i class="fa fa-eye-slash" aria-hidden="true"></i></a>
+                                                      <a class="btn btn-light" href="#" title="Tampilkan/sembunyikan kata sandi" aria-label="Tampilkan atau sembunyikan kata sandi"><i class="fa fa-eye-slash" aria-hidden="true"></i></a>
                                                 </div>
                                           </div>
                                     </div>
@@ -53,7 +54,7 @@
                                           <div class="input-group" id="show_hide_password">
                                                 <input type="password" class="form-control" id="password" name="password" placeholder="Password" value="<?= set_value('password') ?>">
                                                 <div class="input-group-append">
-                                                      <a class="btn btn-primary" href="#"><i class="fa fa-eye-slash" aria-hidden="true"></i></a>
+                                                      <a class="btn btn-light" href="#" title="Tampilkan/sembunyikan kata sandi" aria-label="Tampilkan atau sembunyikan kata sandi"><i class="fa fa-eye-slash" aria-hidden="true"></i></a>
                                                 </div>
                                           </div>
                                           <!-- <span id="strength">Type Password</span><br> -->
@@ -74,7 +75,7 @@
                                           <div class="input-group" id="show_hide_password_confirm">
                                                 <input type="password" class="form-control" id="password_confirm" name="password_confirm" placeholder="Konfirmasi Password" value="<?= set_value('password_confirm') ?>" />
                                                 <div class="input-group-append">
-                                                      <a class="btn btn-primary" href="#"><i class="fa fa-eye-slash" aria-hidden="true"></i></a>
+                                                      <a class="btn btn-light" href="#" title="Tampilkan/sembunyikan kata sandi" aria-label="Tampilkan atau sembunyikan kata sandi"><i class="fa fa-eye-slash" aria-hidden="true"></i></a>
                                                 </div>
                                           </div>
                                     </div>
@@ -83,7 +84,7 @@
 
                         <?php echo form_hidden('id', get_user_id()); ?>
                         <div class="form-group">
-                              <button type="submit" class="btn btn-primary" name="submit">Simpan</button>
+                              <button type="submit" class="btn btn-catalog-add" name="submit">Simpan</button>
                         </div>
                   </form>
             </div>

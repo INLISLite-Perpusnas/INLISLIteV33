@@ -19,6 +19,7 @@ class FrontendSettingParametersSeeder extends Seeder
         }
 
         $settings = [
+            'opac_log' => 'FALSE',
             'is_opac_cache' => '1',
             'is_dashboard_cache' => '1',
             'is_home_cache' => '0',
@@ -28,7 +29,21 @@ class FrontendSettingParametersSeeder extends Seeder
             'is_populer' => '1',
             'is_sering_dipinjam' => '1',
             'is_sering_dibaca' => '0',
+            'sering_dibaca_show' => '6',
+            'show_sering_dibaca' => '0',
+            'is_berita' => '1',
+            // Lama cache dalam menit (dibaca lewat setting_cache_ttl())
+            'opac_cache_ttl' => '60',
+            'dashboard_cache_ttl' => '60',
+            'home_cache_ttl' => '5',
+            'is_statistik_cache' => '0',
+            'statistik_cache_ttl' => '60',
         ];
+
+        $currentShow = $db->table('settingparameters')->select('Value')->where('Name', 'is_sering_dibaca')->get()->getRow();
+        if ($currentShow) {
+            $settings['show_sering_dibaca'] = (string) $currentShow->Value;
+        }
 
         foreach ($settings as $name => $value) {
             $existing = $db->table('settingparameters')->where('Name', $name)->get()->getRow();

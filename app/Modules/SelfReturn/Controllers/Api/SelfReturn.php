@@ -115,24 +115,10 @@ class SelfReturn extends \App\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('LateDays', function($row){
-				$periods = \Carbon\CarbonPeriod::create($row->DueDate, $row->ActualReturn);
-				$dates = [];
-				foreach ($periods as $period) {
-					if (in_array($period->format('N'), ['6','7'])) continue;
-					$dates[] = $period->format('Y-m-d');
-				}
-
-				$diff = '+'.count($dates);
-				if(count($dates) <= 3){
-					if(count($dates) == 0){
-						$diff_class = 'info';
-						$diff = count($dates);
-					} else {
-						$diff_class = 'warning';
-					}
-				} else {
-					$diff_class = 'danger';
-				}
+				// Hari terlambat dari helper hari_terlambat() agar sama di semua menu sirkulasi
+				$late = hari_terlambat($row->DueDate, $row->ActualReturn);
+				$diff = $late > 0 ? '+'.$late : $late;
+				$diff_class = $late == 0 ? 'info' : ($late <= 3 ? 'warning' : 'danger');
 
 				$html  =  '<badge class="badge badge-'.$diff_class.' badge-pill">'.$diff.' hari</badge>';
 				return $html;
@@ -220,37 +206,10 @@ class SelfReturn extends \App\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('LateDays', function($row){
-				if($row->DueDate > date('Y-m-d')){
-					$periods = \Carbon\CarbonPeriod::create(date('Y-m-d'), $row->DueDate);
-					$dates = [];
-					foreach ($periods as $period) {
-						if (in_array($period->format('N'), ['6','7'])) continue;
-						$dates[] = $period->format('Y-m-d');
-					}
-
-					$diff = '-'.count($dates);
-					if(count($dates) <= 3){
-						if(count($dates) == 0){
-							$diff_class = 'info';
-							$diff = '+'.count($dates);
-						} else {
-							$diff_class = 'warning';
-						}
-					} else {
-						$diff_class = 'secondary';
-					}
-					
-				} else {
-					$periods = \Carbon\CarbonPeriod::create($row->DueDate, date('Y-m-d'));
-					$dates = [];
-					foreach ($periods as $period) {
-						if (in_array($period->format('N'), ['6','7'])) continue;
-						$dates[] = $period->format('Y-m-d');
-					}
-
-					$diff = '+'.count($dates);
-					$diff_class = 'danger';
-				}
+				// Sisa hari / hari terlambat dari helper hari_terlambat() agar sama di semua menu sirkulasi
+				$status = status_jatuh_tempo($row->DueDate);
+				$diff = $status['text'];
+				$diff_class = $status['class'];
 
 				$html  =  '<badge class="badge badge-'.$diff_class.' badge-pill">'.$diff.' hari</badge>';
 				return $html;

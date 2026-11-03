@@ -5,6 +5,7 @@ $slug = $request->getGet('slug') ?? 'katalog_add';
 
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -24,7 +25,7 @@ $slug = $request->getGet('slug') ?? 'katalog_add';
 					<ol class="breadcrumb">
 						<li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a></li>
 						<li class="breadcrumb-item"><a href="<?= base_url('katalog') ?>">Katalog</a></li>
-						<li class="active breadcrumb-item" aria-current="page">Tambah</li>
+						<li class="breadcrumb-item" aria-current="page">Tambah</li>
 					</ol>
 				</nav>
 			</div>

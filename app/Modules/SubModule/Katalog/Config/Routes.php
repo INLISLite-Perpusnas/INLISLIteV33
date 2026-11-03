@@ -37,6 +37,7 @@ $routes->group('katalog', ['namespace' => 'Katalog\Controllers'], function ($sub
     $subroutes->add('proses_opac',           'KatalogController::proses_opac');
     $subroutes->add('pulihkan_katalog',      'KatalogController::pulihkan_katalog');
     $subroutes->add('hapus_permanen',        'KatalogController::hapus_permanen');
+    $subroutes->get('export_data_tag',       'KatalogController::export_data_tag');
     $subroutes->add('delete-edisi-serial/(:any)/(:any)', 'KatalogController::deleteEdisiSerial/$1/$2');
 
     // === KatalogFormController (form sederhana) ===
@@ -113,6 +114,7 @@ $routes->group('api/katalog', ['namespace' => 'Katalog\Controllers\Api'], functi
     $subroutes->add('get_field_indicator1/(:any)','Katalog::get_field_indicator1/$1');
     $subroutes->add('get_field_indicator2/(:any)','Katalog::get_field_indicator2/$1');
     $subroutes->add('get_field_content/(:any)', 'Katalog::get_field_content/$1');
+    $subroutes->add('get_field_fixed/(:num)', 'Katalog::get_field_fixed/$1');
 
     // Edisi serial
     $subroutes->add('datatable-edisi-serial/(:any)', 'Katalog::datatableEdisiSerial/$1');

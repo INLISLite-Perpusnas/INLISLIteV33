@@ -13,21 +13,18 @@ $pdf->SetMargins(0, 0, 0, true);
 $pdf->SetAutoPageBreak(false, 0);
 $pdf->SetCellPadding(1);
 
-$generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
-
 foreach ($LabelData as $row) {
     $pdf->AddPage();
 
-    $barcodeSrc = 'data:image/png;base64,' . base64_encode(
-        $generator->getBarcode($row['Barcode'], $generator::TYPE_CODE_128, 1, 30)
-    );
+    // Lebar modul tetap 0,25 mm agar bisa discan di printer roll (lihat get_barcode_roll)
+    $barcode = get_barcode_roll($row['Barcode'], 48);
 
     $html = '
     <table cellpadding="2" cellspacing="0" style="width:57mm;">
         <tr>
             <td style="border:solid 1px #CCC; height:20mm; text-align:center; vertical-align:middle;">
-                <img src="' . $barcodeSrc . '" style="width:80%; height:10mm;"><br>
-                <span style="font-size:7pt;">*' . htmlspecialchars($row['Barcode']) . '*</span>
+                <img src="' . $barcode['src'] . '" style="width:' . $barcode['width'] . 'mm; height:10mm;"><br>
+                <span style="font-size:7pt;">*' . htmlspecialchars($barcode['code']) . '*</span>
             </td>
         </tr>
     </table>';

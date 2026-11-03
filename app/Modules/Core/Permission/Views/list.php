@@ -1,6 +1,7 @@
 <?= $this->extend('App\Views\layout\main'); ?>
 
 <?= $this->section('style'); ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -29,7 +30,7 @@
     <div class="main-card mb-3 card">
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Permission
             <div class="btn-actions-pane-right actions-icon-btn">
-              <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-success" title="Tambah Permission">
+              <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create" href="javascript:void(0);" class="btn btn-catalog-add" title="Tambah Permission">
     <i class="fa fa-plus"></i> Tambah Permission
 </a>
             </div>
@@ -59,10 +60,10 @@
                             <td><?= _spec($row->description); ?></td>
                             <td style="min-width: 150px;" class="text-center">
                                 <?php if (is_allowed('permission/edit') ||  is_member('admin')) : ?>
-                                    <a href="javascript:void(0);" data-href="<?= base_url('api/permission/detail/' . $row->id); ?>" data-toggle="tooltip" data-placement="top" title="Edit Permission" class="btn btn-xs btn-warning show-data"><i class="pe-7s-note font-weight-bold"> </i></a>
+                                    <a href="javascript:void(0);" data-href="<?= base_url('api/permission/detail/' . $row->id); ?>" data-toggle="tooltip" data-placement="top" title="Ubah Permission" aria-label="Ubah permission" class="ina-action show-data"><i class="fas fa-pen" aria-hidden="true"></i></a>
                                 <?php endif; ?>
                                 <?php if (is_allowed('permission/delete') ||  is_member('admin')) : ?>
-                                    <a href="javascript:void(0);" data-href="<?= base_url('permission/delete/' . $row->id); ?>" data-toggle="tooltip" data-placement="top" title="Hapus Permission" class="btn btn-xs btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>
+                                    <a href="javascript:void(0);" data-href="<?= base_url('permission/delete/' . $row->id); ?>" data-toggle="tooltip" data-placement="top" title="Hapus Permission" aria-label="Hapus permission" class="ina-action ina-action-danger remove-data"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>
                                 <?php endif; ?>
                             </td>
                         </tr>

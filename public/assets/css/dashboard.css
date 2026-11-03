@@ -1,335 +1,272 @@
- 
- 
-   .app-main__inner {
-        background: #ffffff;
-        min-height: 100vh;
-        padding: 20px;
-        margin: 0;
-    }
+/*
+ * Dashboard bergaya INA Digital (design.inadigital.go.id/pattern/dashboard):
+ * - Disusun berdasarkan prioritas: metrik utama di atas, data pendukung di bawah
+ * - Card Metrics: judul & subteks singkat, angka menonjol
+ * - Visual sederhana, mudah dibaca, hierarki konsisten
+ */
+.app-main__inner {
+    background: transparent;
+    min-height: 0;
+    padding: 0;
+    margin: 0;
+}
 
-    .dashboard-container {
-        max-width: 1400px;
-        margin: 0 auto;
-    }
+.dashboard-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
 
-    .page-header {
-        background: rgba(255, 255, 255, 1);
-        border: 1px solid #e5e7eb;
-        border-radius: 16px;
-        padding: 24px 30px;
-        margin-bottom: 24px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    }
+/* Header halaman */
+.dash-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+}
 
-    .page-title {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
+.dash-header h1 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    color: var(--ina-text, #1f2937);
+}
 
-    .page-icon {
-        width: 52px;
-        height: 52px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 22px;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
-    }
+.dash-subtitle {
+    margin: 6px 0 0;
+    font-size: 16px;
+    color: var(--ina-text-muted, #6b7280);
+}
 
-    .page-title h1 {
-        font-size: 28px;
-        font-weight: 700;
-        color: #111827;
-        margin: 0;
-    }
+.dash-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+}
 
-    .page-subtitle {
-        color: #6b7280;
-        font-size: 14px;
-        margin-top: 2px;
-    }
+.dash-actions small {
+    font-size: 13px;
+    color: var(--ina-text-muted, #6b7280);
+}
 
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
-        margin-bottom: 32px;
-    }
+/* Bagian */
+.dash-section {
+    margin-bottom: 32px;
+}
 
-    .stat-card {
-        border-radius: 16px;
-        padding: 24px;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        transition: all 0.3s ease;
-        cursor: default;
-        min-height: 140px;
-        color: white;
-    }
+.dash-section-title {
+    margin: 0 0 16px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ina-text, #1f2937);
+}
 
-    .stat-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
-    }
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 24px;
+}
 
-    a.stat-card,
-    a.chart-card {
-        color: #fff;
-        cursor: pointer;
-        text-decoration: none;
-    }
+/* Card Metrics */
+.metric-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    padding: 24px;
+    color: var(--ina-text, #1f2937);
+    text-decoration: none;
+    background: var(--ina-surface, #fff);
+    border: 1px solid var(--ina-border, #e5e7eb);
+    border-radius: var(--ina-radius, 12px);
+    box-shadow: var(--ina-shadow, 0 1px 3px rgba(16, 24, 40, .08));
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
 
-    a.stat-card:focus-visible,
-    a.chart-card:focus-visible,
-    .btn-send-api:focus-visible {
-        outline: 4px solid #facc15;
-        outline-offset: 3px;
-    }
+a.metric-card:hover {
+    color: var(--ina-text, #1f2937);
+    text-decoration: none;
+    border-color: #c7d4ea;
+    box-shadow: 0 4px 12px rgba(16, 24, 40, .08);
+}
 
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
+a.metric-card:focus-visible,
+.btn-send-api:focus-visible {
+    outline: 3px solid var(--ina-primary, #1d5fd1);
+    outline-offset: 3px;
+}
+
+.metric-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.metric-label {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ina-text-subtle, #374151);
+}
+
+.metric-value {
+    margin-top: 2px;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--ina-text, #1f2937);
+    font-variant-numeric: tabular-nums;
+}
+
+.metric-sub {
+    margin: 8px 0 0;
+    font-size: 14px;
+    color: var(--ina-text-muted, #6b7280);
+}
+
+.metric-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    font-size: 21px;
+    color: #fff;
+    border-radius: 8px;
+    background: var(--ina-primary, #1d5fd1);
+}
+
+.metric-icon.blue { background: var(--ina-primary, #1d5fd1); }
+.metric-icon.orange { background: var(--ina-warning, #e8700a); }
+.metric-icon.green { background: var(--ina-success, #1f7a36); }
+.metric-icon.teal { background: #0e7490; }
+.metric-icon.red { background: var(--ina-danger, #c62828); }
+.metric-icon.indigo { background: #3f3d9e; }
+
+/* Data pendukung: kartu lebih ringkas */
+.metric-card.compact {
+    padding: 20px 24px;
+}
+
+.metric-card.compact .metric-value {
+    font-size: 26px;
+}
+
+.metric-card.compact .metric-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+}
+
+/* Tooltip penjelasan tombol kirim laporan (muncul saat hover / fokus keyboard) */
+.dash-tooltip {
+    position: relative;
+    display: inline-flex;
+}
+
+.dash-tooltip-box {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    z-index: 50;
+    width: 300px;
+    padding: 10px 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #fff;
+    background: #1f2937;
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(16, 24, 40, .18);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition: opacity .15s ease, transform .15s ease, visibility .15s;
+    pointer-events: none;
+}
+
+.dash-tooltip-box::before {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    right: 24px;
+    border: 6px solid transparent;
+    border-bottom-color: #1f2937;
+}
+
+.dash-tooltip:hover .dash-tooltip-box,
+.dash-tooltip:focus-within .dash-tooltip-box {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+    .dash-tooltip-box {
+        right: auto;
         left: 0;
-        right: 0;
-        height: 100%;
-        background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
-        border-radius: 16px;
+        width: min(300px, calc(100vw - 32px));
     }
 
-    .stat-card.info { 
-        background: linear-gradient(135deg, #0e7490, #155e75);
+    .dash-tooltip-box::before {
+        right: auto;
+        left: 24px;
     }
-    .stat-card.primary { 
-        background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
-    }
-    .stat-card.success { 
-        background: linear-gradient(135deg, #047857, #065f46);
-    }
-    .stat-card.warning { 
-        background: linear-gradient(135deg, #92400e, #78350f);
-    }
-    .stat-card.danger { 
-        background: linear-gradient(135deg, #b91c1c, #991b1b);
-    }
-    .stat-card.dark { 
-        background: linear-gradient(135deg, #4338ca, #3730a3);
+}
+
+/* Tombol kirim laporan */
+.btn-send-api {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--ina-primary, #1d5fd1);
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color .15s ease;
+}
+
+.btn-send-api:hover {
+    background: var(--ina-primary-hover, #174ea9);
+}
+
+.btn-send-api:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .dash-header h1 {
+        font-size: 26px;
     }
 
-    .stat-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0;
+    .dash-actions {
+        align-items: flex-start;
     }
 
-    .stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 20px;
-        background: rgba(255, 255, 255, 0.2);
-        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
-        flex-shrink: 0;
+    .metric-grid {
+        gap: 16px;
     }
 
-    .stat-content h2 {
-        font-size: 13px;
-        color: #ffffff;
-        font-weight: 500;
-        margin-bottom: 4px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+    .metric-value {
+        font-size: 28px;
     }
+}
 
-    .stat-number {
-        font-size: 24px;
-        font-weight: 700;
-        color: white;
-        line-height: 1;
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
     }
-
-    .chart-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-    }
-
-    .chart-card {
-        border-radius: 16px;
-        padding: 24px;
-        position: relative;
-        overflow: hidden;
-        min-height: 140px;
-        color: white;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        transition: all 0.3s ease;
-        cursor: default;
-    }
-
-    .chart-card:nth-child(1) { 
-        background: linear-gradient(135deg, #4c1d95, #5b21b6);
-    }
-    .chart-card:nth-child(2) { 
-        background: linear-gradient(135deg, #9d174d, #be123c);
-    }
-    .chart-card:nth-child(3) { 
-        background: linear-gradient(135deg, #075985, #0369a1);
-    }
-
-    .chart-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
-    }
-
-    .chart-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 16px;
-    }
-
-    .chart-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        font-size: 18px;
-        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
-        flex-shrink: 0;
-    }
-
-    .chart-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: #ffffff;
-    }
-
-    .chart-value {
-        font-size: 32px;
-        font-weight: 700;
-        color: white;
-        text-align: left;
-        margin: 12px 0 0 0;
-    }
-
-    @keyframes slideDown {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @media (max-width: 1200px) {
-        .stats-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
-    }
-
-    @media (max-width: 768px) {
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-        }
-        
-        .chart-grid {
-            grid-template-columns: 1fr;
-            gap: 16px;
-        }
-        
-        .page-header {
-            padding: 20px;
-        }
-        
-        .stat-card {
-            padding: 16px;
-            min-height: 100px;
-        }
-        
-        .chart-card {
-            padding: 20px;
-        }
-        
-        .stat-number {
-            font-size: 20px;
-        }
-        
-        .chart-value {
-            font-size: 28px;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    /* ... Style yang sudah ada ... */
-
-    /* Tambahan Style Tombol Kirim */
-    .btn-send-api {
-        background: linear-gradient(135deg, #047857, #065f46);
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        margin-left: auto; /* Agar tombol mojok ke kanan */
-    }
-
-    .btn-send-api:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4);
-    }
-
-    .btn-send-api:disabled {
-        background: #9e4a58ff;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-        *, *::before, *::after {
-            scroll-behavior: auto !important;
-            transition-duration: .01ms !important;
-            animation-duration: .01ms !important;
-            animation-iteration-count: 1 !important;
-        }
-    }
+}

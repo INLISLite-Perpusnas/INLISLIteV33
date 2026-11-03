@@ -86,10 +86,10 @@ class SumberKoleksi extends \Base\Controllers\BaseResourceController
 			$dataTable->edit('action', function ($row) {
 				// Notice the comparison operator was wrong (= instead of ==)
 				//if ($row->Branch_id == 0) { // This is always true, so admin sees buttons for all records
-					$edit = '<a href="javascript:void(0);" data-href="' . base_url('api/master-sumber-koleksi/detail/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-					$active = '<a href="' . base_url('master-sumber-koleksi/apply_status/' . $row->ID . '?field=active&value=1') . '"  data-id="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Active" class="btn btn-success active-data"><i class="pe-7s-check font-weight-bold"> </i> </a>';
-					$inactive = '<a href="' . base_url('master-sumber-koleksi/apply_status/' . $row->ID . '?field=active&value=0') . '" data-id="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Inactive" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"> </i> </a>';
-					$delete = '<a href="javascript:void(0);" data-href="' . base_url('master-sumber-koleksi/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+					$edit = '<a href="javascript:void(0);" data-href="' . base_url('api/master-sumber-koleksi/detail/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="ina-action show-data"><i class="fas fa-pen" aria-hidden="true"></i></a>';
+					$active = '<a href="' . base_url('master-sumber-koleksi/apply_status/' . $row->ID . '?field=active&value=1') . '"  data-id="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Active" class="ina-action active-data"><i class="fas fa-eye" aria-hidden="true"></i> </a>';
+					$inactive = '<a href="' . base_url('master-sumber-koleksi/apply_status/' . $row->ID . '?field=active&value=0') . '" data-id="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Inactive" class="ina-action draft-data"><i class="fas fa-eye-slash" aria-hidden="true"></i> </a>';
+					$delete = '<a href="javascript:void(0);" data-href="' . base_url('master-sumber-koleksi/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="ina-action ina-action-danger remove-data"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
 					$html = $edit . ' ' . $active . ' ' . $inactive . ' ' . $delete;
 					return $html;
 				//} else {
@@ -100,10 +100,10 @@ class SumberKoleksi extends \Base\Controllers\BaseResourceController
 			$dataTable->edit('action', function ($row) {
 				// Only show action buttons if Branch_id matches the user's branch_id
 				if ($row->Branch_id != 0) {
-					$edit = '<a href="javascript:void(0);" data-href="' . base_url('api/master-sumber-koleksi/detail/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-					$active = '<a href="' . base_url('master-sumber-koleksi/apply_status/' . $row->ID . '?field=active&value=1') . '"  data-id="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Active" class="btn btn-success active-data"><i class="pe-7s-check font-weight-bold"> </i> </a>';
-					$inactive = '<a href="' . base_url('master-sumber-koleksi/apply_status/' . $row->ID . '?field=active&value=0') . '" data-id="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Inactive" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"> </i> </a>';
-					$delete = '<a href="javascript:void(0);" data-href="' . base_url('master-sumber-koleksi/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+					$edit = '<a href="javascript:void(0);" data-href="' . base_url('api/master-sumber-koleksi/detail/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="ina-action show-data"><i class="fas fa-pen" aria-hidden="true"></i></a>';
+					$active = '<a href="' . base_url('master-sumber-koleksi/apply_status/' . $row->ID . '?field=active&value=1') . '"  data-id="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Active" class="ina-action active-data"><i class="fas fa-eye" aria-hidden="true"></i> </a>';
+					$inactive = '<a href="' . base_url('master-sumber-koleksi/apply_status/' . $row->ID . '?field=active&value=0') . '" data-id="' . $row->ID . '" data-toggle="tooltip" data-placement="top" title="Inactive" class="ina-action draft-data"><i class="fas fa-eye-slash" aria-hidden="true"></i> </a>';
+					$delete = '<a href="javascript:void(0);" data-href="' . base_url('master-sumber-koleksi/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="ina-action ina-action-danger remove-data"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
 					$html = $edit . ' ' . $active . ' ' . $inactive . ' ' . $delete;
 					return $html;
 				} else {

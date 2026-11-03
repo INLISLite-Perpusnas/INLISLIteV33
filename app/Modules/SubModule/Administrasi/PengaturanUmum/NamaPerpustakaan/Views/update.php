@@ -86,6 +86,7 @@ $slug = $request->getGet('slug') ?? '';
 		background: rgba(255, 255, 255, 0.6);
 	}
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style') ?>
 
 <?= $this->section('page') ?>
@@ -132,7 +133,7 @@ $slug = $request->getGet('slug') ?? '';
 							<div class="col-md-2">
 								<div class="position-relative form-group">
 									<label>&nbsp;</label>
-									<button class="btn btn-primary btn-block" type="button" id="btn_search_perpus">
+									<button class="btn btn-catalog-add btn-block" type="button" id="btn_search_perpus">
 										<i class="fa fa-search"></i> Cari
 									</button>
 								</div>
@@ -147,7 +148,7 @@ $slug = $request->getGet('slug') ?? '';
 							<div class="alert alert-success">
 								<strong>Data Terpilih:</strong>
 								<div id="preview_content"></div>
-								<button type="button" id="btn_apply_data" class="btn btn-sm btn-success mt-2">
+								<button type="button" id="btn_apply_data" class="btn btn-sm btn-catalog-add mt-2">
 									<i class="fa fa-check"></i> Terapkan Data
 								</button>
 								<button type="button" id="btn_clear_selection" class="btn btn-sm btn-secondary mt-2 ml-2">
@@ -342,21 +343,9 @@ $slug = $request->getGet('slug') ?? '';
 							</div>
 						</div>
 
-						<h6 class="mt-3 mb-3"><i class="fa fa-toggle-on"></i>&nbsp;Aktifkan / Nonaktifkan Fitur</h6>
-						<div class="form-row">
-							<?php foreach ($feature_toggles as $name => $toggle) : ?>
-							<div class="col-md-3 col-sm-6">
-								<div class="form-group">
-									<label for="toggle_<?= esc($name) ?>"><?= esc($toggle['label']) ?></label><br>
-									<input type="checkbox" id="toggle_<?= esc($name) ?>" name="feature_toggles[<?= esc($name) ?>]" value="1" data-toggle="toggle" data-onstyle="success" data-on="Aktif" data-off="Nonaktif" data-size="normal" <?= $toggle['checked'] ? 'checked' : '' ?>>
-								</div>
-							</div>
-							<?php endforeach ?>
-						</div>
-
 						<div class="form-group">
-							<button type="submit" class="btn btn-primary" name="submit">Simpan</button>
-							<button type="button" class="btn btn-success ml-2" id="btn_daftarkan_inlislite">
+							<button type="submit" class="btn btn-catalog-add" name="submit">Simpan</button>
+							<button type="button" class="btn btn-ina-outline ml-2" id="btn_daftarkan_inlislite">
 								<i class="fa fa-paper-plane"></i> Daftarkan InlisLite
 							</button>
 						</div>
@@ -433,12 +422,12 @@ $slug = $request->getGet('slug') ?? '';
 					<form method="post" action="<?= base_url('master-nama-perpustakaan/update-environment') ?>" class="d-inline" onsubmit="return confirm('Aktifkan mode production?');">
 						<?= csrf_field() ?>
 						<input type="hidden" name="environment" value="production">
-						<button type="submit" class="btn btn-success" <?= ENVIRONMENT === 'production' ? 'disabled' : '' ?>><i class="fa fa-shield-alt"></i> Aktifkan Production</button>
+						<button type="submit" class="btn btn-ina-outline" <?= ENVIRONMENT === 'production' ? 'disabled' : '' ?>><i class="fa fa-shield-alt"></i> Aktifkan Production</button>
 					</form>
 					<form method="post" action="<?= base_url('master-nama-perpustakaan/update-environment') ?>" class="d-inline ml-2" onsubmit="return confirm('Aktifkan mode development? Detail error akan terlihat oleh pengunjung.');">
 						<?= csrf_field() ?>
 						<input type="hidden" name="environment" value="development">
-						<button type="submit" class="btn btn-warning" <?= ENVIRONMENT === 'development' ? 'disabled' : '' ?>><i class="fa fa-bug"></i> Aktifkan Development</button>
+						<button type="submit" class="btn btn-ina-outline-danger" <?= ENVIRONMENT === 'development' ? 'disabled' : '' ?>><i class="fa fa-bug"></i> Aktifkan Development</button>
 					</form>
 				</div>
 			</div>
@@ -448,11 +437,11 @@ $slug = $request->getGet('slug') ?? '';
 					<p>Unduh database sebagai file SQL dan folder <code>public/uploads</code> sebagai file ZIP. Simpan kedua file di tempat aman.</p>
 					<form method="post" action="<?= base_url('master-nama-perpustakaan/backup-database') ?>" class="d-inline-block mb-2 mr-2">
 						<?= csrf_field() ?>
-						<button type="submit" class="btn btn-info"><i class="fa fa-database"></i> Backup Database (.sql)</button>
+						<button type="submit" class="btn btn-ina-outline"><i class="fa fa-database"></i> Backup Database (.sql)</button>
 					</form>
 					<form method="post" action="<?= base_url('master-nama-perpustakaan/backup-uploads') ?>" class="d-inline-block mb-2">
 						<?= csrf_field() ?>
-						<button type="submit" class="btn btn-info"><i class="fa fa-file-archive"></i> Backup Uploads (.zip)</button>
+						<button type="submit" class="btn btn-ina-outline"><i class="fa fa-file-archive"></i> Backup Uploads (.zip)</button>
 					</form>
 				</div>
 			</div>

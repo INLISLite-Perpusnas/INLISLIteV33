@@ -980,6 +980,51 @@ class Katalog extends \Base\Controllers\BaseResourceController
 		return $dataTable;
 	}
 
+	/**
+	 * Unsur ruas tetap (006/007/008) per jenis bahan beserta pilihan referensinya
+	 * (setara pengkatalogan/katalog/set-ruas-fixed INLISLite 3).
+	 * GET: worksheet_id, catalog_id (opsional, untuk tanggal entri & tahun terbit bawaan).
+	 */
+	public function get_field_fixed($field_id = null)
+	{
+		$worksheet_id = (int) ($this->request->getGet('worksheet_id') ?? 1);
+		$catalog_id   = (int) ($this->request->getGet('catalog_id') ?? 0);
+
+		$db = db_connect();
+		$items = $db->table('worksheetfielditems wfi')
+			->select('wfi.Name, wfi.RefferenceMode, wfi.StartPosition, wfi.Length, wfi.DefaultValue, wfi.IdemTag, wfi.IdemStartPosition, wfi.Refference_id')
+			->join('worksheetfields wf', 'wf.ID = wfi.WorksheetField_id')
+			->where('wf.Worksheet_id', $worksheet_id)
+			->where('wf.Field_id', (int) $field_id)
+			->orderBy('wfi.StartPosition', 'ASC')
+			->get()->getResult();
+
+		$refIds  = array_filter(array_unique(array_column($items, 'Refference_id')));
+		$options = [];
+		if ($refIds) {
+			$refs = $db->table('refferenceitems')
+				->select('Refference_id, Code, Name')
+				->whereIn('Refference_id', $refIds)
+				->orderBy('RefferenceItemsID', 'ASC')
+				->get()->getResult();
+			foreach ($refs as $ref) {
+				$options[$ref->Refference_id][] = ['Code' => $ref->Code, 'Name' => $ref->Name];
+			}
+		}
+		foreach ($items as $item) {
+			$item->options = $options[$item->Refference_id] ?? [];
+		}
+
+		$catalog = $catalog_id ? $db->table('catalogs')->select('CreateDate, PublishYear')->where('ID', $catalog_id)->get()->getRow() : null;
+
+		return $this->respond([
+			'items'       => $items,
+			'createdate'  => ($catalog && $catalog->CreateDate) ? date('ymd', strtotime($catalog->CreateDate)) : date('ymd'),
+			'publishyear' => ($catalog && strlen((string) $catalog->PublishYear) >= 4) ? substr($catalog->PublishYear, 0, 4) : '',
+			'is_catalog'  => (bool) $catalog,
+		]);
+	}
+
 	public function delete_file($ID)
 	{
 		$file = $this->fileModel->find($ID);

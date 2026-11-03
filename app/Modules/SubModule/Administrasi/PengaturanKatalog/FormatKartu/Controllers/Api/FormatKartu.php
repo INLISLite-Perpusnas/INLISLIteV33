@@ -37,8 +37,8 @@ class FormatKartu extends \Base\Controllers\BaseResourceController
 			})
 		// Di FormatKartu.php, method datatable()
 		->edit('action', function ($row) {
-			$edit = '<a href="javascript:void(0);" data-href="' . base_url('api/master-format-kartu/show/' . $row->id) . '" data-toggle="modal" data-target="#modal_edit" class="btn btn-warning edit-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-			$delete = '<a href="javascript:void(0);" data-href="' . base_url('master-format-kartu/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus Profil" class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+			$edit = '<a href="javascript:void(0);" data-href="' . base_url('api/master-format-kartu/show/' . $row->id) . '" data-toggle="modal" data-target="#modal_edit" class="ina-action edit-data"><i class="fas fa-pen" aria-hidden="true"></i></a>';
+			$delete = '<a href="javascript:void(0);" data-href="' . base_url('master-format-kartu/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus Profil" class="ina-action ina-action-danger remove-data"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
 			return $edit . " " . $delete;
 		})
 		->toJson();

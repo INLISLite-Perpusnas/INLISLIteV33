@@ -253,7 +253,7 @@ $rda = $request->getGet('rda') ?? 1;
 									<div class="col-sm-4">
 										<div class="form-check">
 											<label class="form-check-label">
-												<input class="form-check-input pengarangUtamaRadio" type="radio" data-id="pengarangUtama" name="pengarangUtamaRadio[]" value="2">
+												<input class="form-check-input pengarangUtamaRadio" type="radio" data-id="pengarangUtama" name="pengarangUtamaRadio[]" value="3">
 												Nama Keluarga
 											</label>
 										</div>
@@ -271,7 +271,7 @@ $rda = $request->getGet('rda') ?? 1;
 					<?php foreach (get_catalog_ruas_tags($catalog->ID, ['700', '710', '711']) as $row) : ?>
 						<?php
 						// ← ekstrak $a dan $e dari value tersimpan
-						preg_match('/\$a (.+?)(?:\s+\$e (.+))?$/', $row->Value, $matches);
+						preg_match('/\$a (.+?)(?:\s*\$e (.+))?$/', $row->Value, $matches);
 						$namaValue    = trim($matches[1] ?? '');
 						$relatorValue = trim($matches[2] ?? '');
 						?>
@@ -305,7 +305,7 @@ $rda = $request->getGet('rda') ?? 1;
 								<input type="text"
 									class="form-control"
 									id="pengarangTambahanInput-<?= $idxPengarangTambahan ?>"
-									name="pengarangTambahan[<?= $row->Tag ?>-<?= $idxPengarangTambahan ?>][]"
+									name="pengarangTambahan[<?= $row->Tag ?>-<?= ($row->Indicator1 === null || $row->Indicator1 === '') ? '#' : $row->Indicator1 ?>-<?= $idxPengarangTambahan ?>][]"
 									placeholder=""
 									value="<?= $namaValue ?>" />
 								<!-- ← hidden relator -->
@@ -357,7 +357,7 @@ $rda = $request->getGet('rda') ?? 1;
 														data-select="pengarangTambahanSelect-<?= $idxPengarangTambahan ?>"
 														data-input="pengarangTambahanInput-<?= $idxPengarangTambahan ?>"
 														name="pengarangTambahanRadio[<?= $idxPengarangTambahan ?>][]"
-														value="2" <?= ($row->Indicator1 == 2) ? 'checked' : '' ?>>
+														value="3" <?= ($row->Indicator1 == 3) ? 'checked' : '' ?>>
 													Nama Keluarga
 												</label>
 											</div>
@@ -400,7 +400,7 @@ $rda = $request->getGet('rda') ?? 1;
 							<input type="text"
 								class="form-control"
 								id="pengarangTambahanInput-0"
-								name="pengarangTambahan[700-0][]"
+								name="pengarangTambahan[700-0-0][]"
 								placeholder=""
 								value="" />
 							<input type="hidden"
@@ -442,7 +442,7 @@ $rda = $request->getGet('rda') ?? 1;
 												<input class="form-check-input pengarangTambahanRadio" type="radio"
 													data-select="pengarangTambahanSelect-0"
 													data-input="pengarangTambahanInput-0"
-													name="pengarangTambahanRadio[0][]" value="2">
+													name="pengarangTambahanRadio[0][]" value="3">
 												Nama Keluarga
 											</label>
 										</div>

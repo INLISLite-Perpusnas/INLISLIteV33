@@ -47,7 +47,7 @@
                                     <?php if ($isChoice && empty($question['options'])): ?>
                                         <p class="text-secondary">Pilihan jawaban belum tersedia.</p>
                                     <?php elseif ($isChoice): ?>
-                                        <div class="<?= $question['Orientation'] === 'Horizontal' ? 'd-flex flex-wrap gap-3' : 'd-grid gap-2' ?>">
+                                        <div class="<?= in_array($question['Orientation'], ['Horisontal', 'Horizontal'], true) ?'d-flex flex-wrap gap-3' : 'd-grid gap-2' ?>">
                                             <?php foreach ($question['options'] as $option): ?>
                                                 <?php $optionId = (int) $option['ID']; ?>
                                                 <label class="d-flex align-items-start gap-2 text-dark">

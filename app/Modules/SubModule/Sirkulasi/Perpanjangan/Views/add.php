@@ -5,15 +5,15 @@
 
 <style>
     :root {
-        --blue-900: #0f2356;
-        --blue-800: #1B3878;
-        --blue-500: #2d65d4;
-        --blue-200: #bdd0f5;
-        --blue-100: #dde8fb;
-        --blue-50: #eef3fd;
-        --teal-600: #0d8a6a;
-        --teal-500: #1fba74;
-        --teal-100: #edfaf4;
+        --blue-900: #1f4b78;
+        --blue-800: #2d659e;
+        --blue-500: #2d659e;
+        --blue-200: #b9cde1;
+        --blue-100: #dbe6f1;
+        --blue-50: #eef3f8;
+        --teal-600: #2d659e;
+        --teal-500: #2d659e;
+        --teal-100: #eef3f8;
         --warn-600: #a16207;
         --warn-100: #fefce8;
         --danger: #e8394d;
@@ -25,8 +25,8 @@
         --radius-xl: 20px;
         --radius-lg: 14px;
         --radius-md: 10px;
-        --shadow-card: 0 4px 24px rgba(27, 56, 120, 0.10), 0 1px 4px rgba(27, 56, 120, 0.06);
-        --shadow-btn: 0 4px 14px rgba(27, 56, 120, 0.30);
+        --shadow-card: 0 4px 24px rgba(45, 101, 158, 0.10), 0 1px 4px rgba(45, 101, 158, 0.06);
+        --shadow-btn: 0 4px 14px rgba(45, 101, 158, 0.30);
     }
 
     body {
@@ -51,7 +51,7 @@
     }
 
     .pm-inner-header.teal {
-        background: linear-gradient(135deg, #064e3b, var(--teal-600));
+        background: linear-gradient(135deg, #1f4b78, var(--teal-600));
     }
 
     .pm-inner-header .h-icon {
@@ -155,7 +155,7 @@
     .pm-input:focus {
         border-color: var(--blue-500);
         background: white;
-        box-shadow: 0 0 0 4px rgba(45, 101, 212, .12);
+        box-shadow: 0 0 0 4px rgba(45, 101, 158, .12);
     }
 
     /* ── Extend days selector ── */
@@ -202,7 +202,7 @@
     .extend-opt.selected {
         border-color: var(--blue-500);
         background: var(--blue-50);
-        box-shadow: 0 0 0 3px rgba(45, 101, 212, .15);
+        box-shadow: 0 0 0 3px rgba(45, 101, 158, .15);
     }
 
     .extend-opt.selected .eo-days {
@@ -237,14 +237,14 @@
 
     .pm-btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(27, 56, 120, .35);
+        box-shadow: 0 8px 20px rgba(45, 101, 158, .35);
         color: white;
     }
 
     .pm-btn-teal {
-        background: linear-gradient(135deg, #064e3b, var(--teal-600));
+        background: linear-gradient(135deg, #1f4b78, var(--teal-600));
         color: white;
-        box-shadow: 0 4px 14px rgba(13, 138, 106, .35);
+        box-shadow: 0 4px 14px rgba(45, 101, 158, .35);
     }
 
     .pm-btn-teal:hover {
@@ -308,7 +308,7 @@
     .pm-alert-success {
         background: var(--teal-100);
         color: var(--teal-600);
-        border: 1px solid #a7f3d0;
+        border: 1px solid #b9cde1;
     }
 
     .pm-alert-warn {
@@ -463,8 +463,8 @@
 
     /* ── Summary bar ── */
     .summary-bar {
-        background: linear-gradient(135deg, var(--teal-100), #f0fdf4);
-        border: 1.5px solid #a7f3d0;
+        background: linear-gradient(135deg, var(--teal-100), #f5f8fb);
+        border: 1.5px solid #b9cde1;
         border-radius: var(--radius-lg);
         padding: 16px 20px;
         display: flex;
@@ -651,6 +651,7 @@
         }
     }
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -1060,7 +1061,7 @@
                     icon: 'warning',
                     title: 'Perhatian',
                     text: 'Silakan masukkan barcode buku',
-                    confirmButtonColor: '#1B3878'
+                    confirmButtonColor: '#2d659e'
                 });
                 this.focusInput();
                 return;
@@ -1127,7 +1128,7 @@
                     icon: 'warning',
                     title: 'Perhatian',
                     text: 'Pilih minimal satu buku untuk diperpanjang',
-                    confirmButtonColor: '#1B3878'
+                    confirmButtonColor: '#2d659e'
                 });
                 if (!this.booksData.length) this.focusInput();
                 return;
@@ -1138,7 +1139,7 @@
                 title: 'Konfirmasi Perpanjangan',
                 html: `<b>${selectedIds.length} buku</b> akan diperpanjang selama <b>${this.selectedDays} hari</b>.<br>Lanjutkan?`,
                 showCancelButton: true,
-                confirmButtonColor: '#0d8a6a',
+                confirmButtonColor: '#2d659e',
                 cancelButtonColor: '#6b7489',
                 confirmButtonText: '<i class="fa fa-check"></i> Ya, Perpanjang',
                 cancelButtonText: 'Batal'
@@ -1165,9 +1166,9 @@
                         title: 'Berhasil!',
                         html: data.message,
                         showCancelButton: true,
-                        confirmButtonColor: '#1fba74',
+                        confirmButtonColor: '#2d659e',
                         confirmButtonText: '<i class="fa fa-file-text"></i> Lihat Struk',
-                        cancelButtonColor: '#0d8a6a',
+                        cancelButtonColor: '#6b7489',
                         cancelButtonText: 'Tutup',
                         timer: 6000,
                         timerProgressBar: true

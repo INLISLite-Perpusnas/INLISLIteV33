@@ -26,6 +26,7 @@ $slug = $request->getGet('slug') ?? '';
     }
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.1/dist/sweetalert2.min.css" integrity="sha384-csqwGqQMzMfYK0Eo+IqUNGrlZujHH42RqILi8CiEaDRZHOW1upfFarO+ffrQhnFd" crossorigin="anonymous">
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>

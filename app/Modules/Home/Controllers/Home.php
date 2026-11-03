@@ -35,7 +35,7 @@ class Home extends \Base\Controllers\BaseController
     public function index()
     {
         $this->data['title'] = 'Beranda - Perpustakaan Digital';
-        $this->data['meta_description'] = 'Cari koleksi perpustakaan, lihat buku populer dan terbaru, serta baca berita dan informasi layanan perpustakaan.';
+        $this->data['meta_description'] = 'Cari koleksi perpustakaan, lihat koleksi unggulan dan terbaru, serta baca berita dan informasi layanan perpustakaan.';
         $this->data['is_home_page'] = true;
 
         $useCache = setting_enabled('is_home_cache');
@@ -46,7 +46,7 @@ class Home extends \Base\Controllers\BaseController
         } else {
             $pageData = [
                 'featured_books'       => $this->getFeaturedBooks(),
-                'popular_books'        => $this->getPopularBooks(),
+                'koleksi_unggulan_books' => $this->getKoleksiUnggulanBooks(),
                 'sering_dipinjam_books' => $this->getSeringDipinjamBooks(),
                 'sering_dibaca_books'   => $this->getSeringDibacaBooks(),
                 'statistics'           => $this->getLibraryStatistics(),
@@ -56,27 +56,40 @@ class Home extends \Base\Controllers\BaseController
             ];
 
             if ($useCache) {
-                cache()->save($cacheKey, $pageData, 300);
+                cache()->save($cacheKey, $pageData, setting_cache_ttl('home_cache_ttl', 5));
             }
 
             $this->data = array_merge($this->data, $pageData);
         }
 
-        $this->data['surveys'] = (new \SurveiPemustaka\Models\SurveyFormService())
-            ->activeSurveys($this->surveyMemberNo() !== null);
-
         return view('Home\Views\index', $this->data);
     }
 
     /**
-     * Get featured books from catalog
+     * Get koleksi terbaru (katalog terakhir ditambahkan).
+     * Tampil/tidak dan jumlah maksimal diatur di master-opac-koleksi-terbaru
+     * (settingparameters ShowKoleksiTerbaru & KoleksiTerbaruShow).
      */
     private function getFeaturedBooks()
     {
+        if (strtoupper((string) get_setting_parameter('ShowKoleksiTerbaru')) !== 'TRUE') {
+            return [];
+        }
+
+        $limit = (int) get_setting_parameter('KoleksiTerbaruShow');
+        if ($limit < 1) {
+            $limit = 8;
+        }
+
         try {
-            return $this->db->table('catalogs')
-                ->orderBy('CreateDate', 'DESC')
-                ->limit(8)
+            return $this->db->table('catalogs cat')
+                ->select('cat.ID, cat.Title, cat.Author, cat.PublishYear, cat.CoverURL')
+                // Status_id 1 = "Tersedia" (collectionstatus)
+                ->select('(SELECT COUNT(*) FROM collections c2 WHERE c2.Catalog_id = cat.ID) AS TotalItem', false)
+                ->select('(SELECT COUNT(*) FROM collections c3 WHERE c3.Catalog_id = cat.ID AND c3.Status_id = 1) AS TersediaItem', false)
+                ->where('cat.IsOPAC', 1)
+                ->orderBy('cat.CreateDate', 'DESC')
+                ->limit($limit)
                 ->get()
                 ->getResult();
         } catch (\Exception $e) {
@@ -85,53 +98,66 @@ class Home extends \Base\Controllers\BaseController
     }
 
     /**
-     * Get popular books from catalog (fitur toggle lewat settingparameters is_populer)
+     * Get koleksi unggulan (catalogs.IsPopuler = 1).
+     * Tampil/tidak dan jumlah maksimal diatur di master-opac-koleksi-unggulan
+     * (settingparameters ShowKoleksiUnggulan & KoleksiUnggulanShow).
      */
-    private function getPopularBooks()
+    private function getKoleksiUnggulanBooks()
     {
-        if (!setting_enabled('is_populer')) {
+        if (strtoupper((string) get_setting_parameter('ShowKoleksiUnggulan')) !== 'TRUE') {
             return [];
         }
 
+        $limit = (int) get_setting_parameter('KoleksiUnggulanShow');
+        if ($limit < 1) {
+            $limit = 8;
+        }
+
         try {
-            $popularBooks = $this->db->table('catalogs')
-                ->where('IsOPAC', 1)
-                ->where('ISPopuler', 1)
-                ->orderBy('ID', 'DESC')
+            return $this->db->table('catalogs cat')
+                ->select('cat.ID, cat.Title, cat.Author, cat.Publisher, cat.PublishYear, cat.CoverURL')
+                ->select('(SELECT COUNT(*) FROM collections c2 WHERE c2.Catalog_id = cat.ID) AS TotalItem', false)
+                ->select('(SELECT COUNT(*) FROM collections c3 WHERE c3.Catalog_id = cat.ID AND c3.Status_id = 1) AS TersediaItem', false)
+                ->select('(SELECT COUNT(*) FROM collectionloanitems cli JOIN collections col ON col.ID = cli.Collection_id WHERE col.Catalog_id = cat.ID) AS LoanCount', false)
+                ->where('cat.IsOPAC', 1)
+                ->where('cat.IsPopuler', 1)
+                ->orderBy('cat.ID', 'DESC')
+                ->limit($limit)
                 ->get()
                 ->getResult();
-              
-
-            // Section hanya ditampilkan jika koleksi populer aktif minimal 5
-            if (count($popularBooks) < 5) {
-                return [];
-            }
-
-            return $popularBooks;
         } catch (\Exception $e) {
             return [];
         }
     }
 
     /**
-     * Get 6 buku yang paling sering DIPINJAM, dihitung dari riwayat peminjaman
+     * Get buku yang paling sering DIPINJAM, dihitung dari riwayat peminjaman
      * (collectionloanitems -> collections -> catalogs), bukan dari flag manual.
-     * Fitur toggle lewat settingparameters is_sering_dipinjam (default 0 / nonaktif).
+     * Tampil/tidak dan jumlah maksimal diatur di master-opac-koleksi-sering-dipinjam
+     * (settingparameters ShowKoleksiSeringDipinjam & KoleksiSeringDipinjamShow).
      * Lihat juga: Peminjaman\Controllers\Peminjaman untuk struktur tabel yang sama.
      */
-    private function getSeringDipinjamBooks($limit = 6)
+    private function getSeringDipinjamBooks()
     {
-        if (!setting_enabled('is_sering_dipinjam')) {
+        if (strtoupper((string) get_setting_parameter('ShowKoleksiSeringDipinjam')) !== 'TRUE') {
             return [];
+        }
+
+        $limit = (int) get_setting_parameter('KoleksiSeringDipinjamShow');
+        if ($limit < 1) {
+            $limit = 8;
         }
 
         try {
             return $this->db->table('collectionloanitems cli')
-                ->select('cat.ID, cat.Title, cat.Author, cat.CoverURL, COUNT(cli.ID) as LoanCount')
+                ->select('cat.ID, cat.Title, cat.Author, cat.PublishYear, cat.CoverURL, COUNT(cli.ID) as LoanCount')
+                // Status_id 1 = "Tersedia" (collectionstatus)
+                ->select('(SELECT COUNT(*) FROM collections c2 WHERE c2.Catalog_id = cat.ID) AS TotalItem', false)
+                ->select('(SELECT COUNT(*) FROM collections c3 WHERE c3.Catalog_id = cat.ID AND c3.Status_id = 1) AS TersediaItem', false)
                 ->join('collections col', 'col.ID = cli.Collection_id')
                 ->join('catalogs cat', 'cat.ID = col.Catalog_id')
                 ->where('cat.IsOPAC', 1)
-                ->groupBy('cat.ID, cat.Title, cat.Author, cat.CoverURL')
+                ->groupBy('cat.ID, cat.Title, cat.Author, cat.PublishYear, cat.CoverURL')
                 ->orderBy('LoanCount', 'DESC')
                 ->limit($limit)
                 ->get()
@@ -142,14 +168,18 @@ class Home extends \Base\Controllers\BaseController
     }
 
     /**
-     * Get 6 buku yang paling sering DIBACA DI TEMPAT, dihitung dari tabel
-     * bacaditempat (BacaDitempat\Models\BacaDitempatModel) -> collections -> catalogs.
-     * Fitur toggle lewat settingparameters is_sering_dibaca (default 0 / nonaktif).
+     * Buku yang paling sering dibaca di tempat, berdasarkan bacaditempat.
      */
-    private function getSeringDibacaBooks($limit = 6)
+    private function getSeringDibacaBooks()
     {
-        if (!setting_enabled('is_sering_dibaca')) {
+        $show = get_setting_parameter('show_sering_dibaca');
+        if (!setting_enabled('is_sering_dibaca') || ($show !== null && !in_array(strtoupper(trim((string) $show)), ['1', 'TRUE'], true))) {
             return [];
+        }
+
+        $limit = (int) get_setting_parameter('sering_dibaca_show');
+        if ($limit < 1) {
+            $limit = 6;
         }
 
         try {
@@ -257,6 +287,11 @@ class Home extends \Base\Controllers\BaseController
      */
   private function getNews()
 {
+    // Toggle di master-pengaturan-frontend (default aktif)
+    if (!setting_enabled('is_berita', true)) {
+        return [];
+    }
+
     try {
         return $this->beritaModel
             ->asArray()

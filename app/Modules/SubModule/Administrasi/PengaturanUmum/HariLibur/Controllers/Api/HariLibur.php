@@ -57,10 +57,10 @@ class HariLibur extends \Base\Controllers\BaseResourceController
             return '<badge class="badge badge-info">' . $row->UpdateDate . '</badge>';
         })
         ->edit('action', function ($row) {
-            $edit     = '<a href="javascript:void(0);" data-href="' . base_url('api/hari-libur/detail/' . $row->ID) . '" data-toggle="tooltip" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"></i></a>';
-            $active   = '<a href="' . base_url('master-hari-libur/apply_status/' . $row->ID . '?field=active&value=1') . '" data-toggle="tooltip" title="Active" class="btn btn-success active-data"><i class="pe-7s-check font-weight-bold"></i></a>';
-            $inactive = '<a href="' . base_url('master-hari-libur/apply_status/' . $row->ID . '?field=active&value=0') . '" data-toggle="tooltip" title="Inactive" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"></i></a>';
-            $delete   = '<a href="javascript:void(0);" data-href="' . base_url('master-hari-libur/delete/' . $row->ID) . '" data-toggle="tooltip" title="Hapus" class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"></i></a>';
+            $edit     = '<a href="javascript:void(0);" data-href="' . base_url('api/hari-libur/detail/' . $row->ID) . '" data-toggle="tooltip" title="Ubah" aria-label="Ubah" class="ina-action show-data"><i class="fas fa-pen" aria-hidden="true"></i></a>';
+            $active   = '<a href="' . base_url('master-hari-libur/apply_status/' . $row->ID . '?field=active&value=1') . '" data-toggle="tooltip" title="Aktifkan" aria-label="Aktifkan" class="ina-action active-data"><i class="fas fa-eye" aria-hidden="true"></i></a>';
+            $inactive = '<a href="' . base_url('master-hari-libur/apply_status/' . $row->ID . '?field=active&value=0') . '" data-toggle="tooltip" title="Nonaktifkan" aria-label="Nonaktifkan" class="ina-action draft-data"><i class="fas fa-eye-slash" aria-hidden="true"></i></a>';
+            $delete   = '<a href="javascript:void(0);" data-href="' . base_url('master-hari-libur/delete/' . $row->ID) . '" data-toggle="tooltip" title="Hapus" aria-label="Hapus" class="ina-action ina-action-danger remove-data"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
             return $edit . ' ' . $active . ' ' . $inactive . ' ' . $delete;
         })
         ->toJson();

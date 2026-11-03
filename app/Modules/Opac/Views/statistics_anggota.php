@@ -190,12 +190,7 @@
 
 <div class="container-fluid op-container py-5" style="padding-top: 100px !important; padding-bottom: 40px !important;">
 
-    <!-- Page Header -->
-    <div class="op-page-header">
-        <div class="op-icon-badge"><i class="fas fa-users"></i></div>
-        <h1>Statistik Keanggotaan</h1>
-        <p class="mb-0">Analisis dan statistik data anggota perpustakaan</p>
-    </div>
+    <?= view('Opac\Views\partial\statistics_nav', ['active' => 'anggota']) ?>
 
     <!-- Overview Statistics -->
     <div class="row g-4 mb-5">
@@ -710,14 +705,14 @@
 
 <?= $this->endSection() ?>
 
-<?= $this->section('scripts') ?>
+<?= $this->section('script') ?>
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js" integrity="sha384-9MhbyIRcBVQiiC7FSd7T38oJNj2Zh+EfxS7/vjhBi4OOT78NlHSnzM31EZRWR1LZ" crossorigin="anonymous"></script>
 
 <script>
 // Chart colors
 const chartColors = {
-    primary: '#0d6efd',
+    primary: '#2d659e',
     success: '#198754',
     danger: '#dc3545',
     warning: '#ffc107',
@@ -827,7 +822,7 @@ if (registrationCtx) {
                 label: 'Pendaftaran Anggota',
                 data: monthValues,
                 borderColor: chartColors.primary,
-                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                backgroundColor: 'rgba(45, 101, 158, 0.1)',
                 fill: true,
                 tension: 0.4,
                 pointRadius: 5,

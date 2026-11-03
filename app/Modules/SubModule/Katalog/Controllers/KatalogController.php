@@ -41,6 +41,81 @@ class KatalogController extends \Base\Controllers\BaseController
     }
 
     // ----------------------------------------------------------------
+    // EXPORT DATA TAG (setara pengkatalogan/katalog-export-data-tag INLISLite 3)
+    // ----------------------------------------------------------------
+
+    /**
+     * Unduh ruas MARC (catalog_ruas) katalog sebagai tabel HTML berekstensi .xls.
+     * ID[] = katalog terpilih; tanpa ID[] = semua katalog pada daftar (karantina=1 untuk karantina).
+     */
+    public function export_data_tag()
+    {
+        if (!is_allowed('katalog/export_data_tag', null, false)) {
+            set_message('toastr_msg', 'Maaf, Anda tidak memiliki akses');
+            set_message('toastr_type', 'error');
+            return redirect()->back();
+        }
+
+        $db  = db_connect();
+        $ids = array_values(array_filter(array_map('intval', (array) $this->request->getGet('ID'))));
+        $karantina = $this->request->getGet('karantina') ? 1 : 0;
+
+        $catalogs = $db->table('catalogs')->select('ID, Title')->orderBy('ID');
+        if ($ids) {
+            $catalogs->whereIn('ID', $ids);
+        } else {
+            $catalogs->where('IsQUARANTINE', $karantina);
+        }
+        $catalogs = $catalogs->get()->getResultArray();
+
+        // Ditulis ke file sementara per potongan agar ekspor semua katalog tidak menghabiskan memori
+        $path = tempnam(sys_get_temp_dir(), 'tag');
+        $fh   = fopen($path, 'w');
+        fwrite($fh, '<html><head><meta charset="UTF-8"><style>.num{mso-number-format:General;}.text{mso-number-format:"\@";}</style></head><body>');
+        fwrite($fh, '<table border="1" align="center"><tr><th>No</th><th>Judul</th><th>Katalog ID</th><th>Tag</th><th>Indicator 1</th><th>Indicator 2</th><th>Value</th></tr>');
+
+        $no = 1;
+        foreach (array_chunk($catalogs, 500) as $chunk) {
+            $ruas = [];
+            $rows = $db->table('catalog_ruas')
+                ->select('CatalogId, Tag, Indicator1, Indicator2, Value')
+                ->whereIn('CatalogId', array_column($chunk, 'ID'))
+                ->orderBy('CatalogId')->orderBy('ID')
+                ->get()->getResultArray();
+            foreach ($rows as $row) {
+                $ruas[$row['CatalogId']][] = $row;
+            }
+
+            foreach ($chunk as $catalog) {
+                if (empty($ruas[$catalog['ID']])) {
+                    continue;
+                }
+                $html = '';
+                foreach ($ruas[$catalog['ID']] as $i => $row) {
+                    $html .= '<tr>'
+                        . '<td class="text">' . ($i === 0 ? $no : '') . '</td>'
+                        . '<td class="text">' . ($i === 0 ? esc($catalog['Title']) : '') . '</td>'
+                        . '<td class="text">' . (int) $row['CatalogId'] . '</td>'
+                        . '<td class="text">' . esc($row['Tag']) . '</td>'
+                        . '<td class="num">' . esc($row['Indicator1']) . '</td>'
+                        . '<td class="num">' . esc($row['Indicator2']) . '</td>'
+                        . '<td class="text">' . esc($row['Value']) . '</td>'
+                        . '</tr>';
+                }
+                fwrite($fh, $html . '<tr></tr>');
+                $no++;
+            }
+        }
+
+        fwrite($fh, '</table></body></html>');
+        fclose($fh);
+
+        return $this->response->download($path, null)
+            ->setFileName('SemuaDataKatalog.xls')
+            ->setContentType('application/vnd.ms-excel');
+    }
+
+    // ----------------------------------------------------------------
     // KARANTINA
     // ----------------------------------------------------------------
 

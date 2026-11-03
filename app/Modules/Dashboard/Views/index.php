@@ -6,131 +6,58 @@
 <?= $this->endSection('style') ?>
 
 <?= $this->section('page') ?>
-<div class="app-main__inner" aria-labelledby="dashboard-title">
-   <div class="dashboard-container">
-       <!-- Page Header -->
-    <div class="page-header">
-           <div class="page-title" style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
-               
-               <div style="display: flex; align-items: center; gap: 15px;">
-                   <div class="page-icon">
-                       <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
-                   </div>
-                   <div>
-                       <h1 id="dashboard-title">Dashboard</h1>
-                       <p class="page-subtitle">Sistem Manajemen Perpustakaan Digital</p>
-                   </div>
-               </div>
-               
-               <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 5px;">
-                 <button type="button" class="btn-send-api" id="btnKirimLaporan">
-                    <i class="fas fa-paper-plane" aria-hidden="true"></i> Kirim Laporan
-                </button>
-                   
-                   <small style="color: #dc2626; font-weight: 600; font-size: 11px; background: #fee2e2; padding: 4px 8px; border-radius: 6px;">
-                       <i class="fas fa-exclamation-circle" aria-hidden="true"></i> Setiap Perpustakaan Wajib mengirimkan laporan total data setiap bulan
-                   </small>
-               </div>
+<?php
+// Card Metrics disusun berdasarkan prioritas: koleksi & layanan utama di atas, kunjungan & pengguna di bawah.
+$utama = [
+    ['label' => 'Total Katalog', 'value' => $total_katalog ?? 0, 'sub' => 'Judul terdaftar', 'icon' => 'fas fa-book', 'color' => 'blue', 'url' => 'katalog'],
+    ['label' => 'Total Eksemplar', 'value' => $total_koleksi ?? 0, 'sub' => 'Eksemplar koleksi', 'icon' => 'fas fa-layer-group', 'color' => 'orange', 'url' => 'eksemplar'],
+    ['label' => 'Total Peminjaman', 'value' => $total_peminjaman ?? 0, 'sub' => 'Seluruh transaksi pinjam', 'icon' => 'fas fa-handshake', 'color' => 'green', 'url' => 'sirkulasi-peminjaman'],
+    ['label' => 'Jumlah Anggota', 'value' => $total_anggota ?? 0, 'sub' => 'Anggota terdaftar', 'icon' => 'fas fa-users', 'color' => 'teal', 'url' => 'anggota'],
+];
+$pendukung = [
+    ['label' => 'Kunjungan Anggota', 'value' => $total_anggota_guest ?? 0, 'sub' => 'Tercatat di buku tamu', 'icon' => 'fas fa-door-open', 'color' => 'indigo', 'url' => 'bukutamu'],
+    ['label' => 'Kunjungan Non Anggota', 'value' => $total_nonanggota_guest ?? 0, 'sub' => 'Tercatat di buku tamu', 'icon' => 'fas fa-user-times', 'color' => 'red', 'url' => 'bukutamu/non_anggota'],
+    ['label' => 'User Aktif', 'value' => $total_user_active ?? 0, 'sub' => 'Akun pengguna aktif', 'icon' => 'fas fa-user-check', 'color' => 'blue', 'url' => 'user'],
+];
+?>
+<div class="app-main__inner">
+    <div class="dashboard-container">
+        <header class="dash-header">
+            <div>
+                <h1 id="dashboard-title">Dashboard</h1>
+                <p class="dash-subtitle">Ringkasan data koleksi, layanan, dan kunjungan perpustakaan.</p>
+            </div>
+            <div class="dash-actions">
+                <div class="dash-tooltip">
+                    <button type="button" class="btn-send-api" id="btnKirimLaporan" aria-describedby="tipKirimLaporan">
+                        <i class="fas fa-paper-plane" aria-hidden="true"></i> Kirim Laporan
+                    </button>
+                    <div class="dash-tooltip-box" id="tipKirimLaporan" role="tooltip">
+                        Data dashboard ini akan dikirim ke database Perpusnas, agar Perpusnas mengetahui jumlah katalog, anggota, dan peminjaman dari setiap perpustakaan.
+                    </div>
+                </div> buat
+                <small>Wajib dikirim setiap bulan</small>
+            </div>
+        </header>
 
-           </div>
-       </div>
+        <section class="dash-section" aria-labelledby="dash-utama">
+            <h2 class="dash-section-title" id="dash-utama">Koleksi &amp; Layanan</h2>
+            <div class="metric-grid">
+                <?php foreach ($utama as $m) : ?>
+                    <?= view('Dashboard\Views\metric_card', ['m' => $m]) ?>
+                <?php endforeach; ?>
+            </div>
+        </section>
 
-       <!-- Statistics Cards -->
-       <section class="stats-grid" aria-label="Statistik pengguna dan kunjungan">
-           <a class="stat-card info" href="<?= base_url('anggota') ?>" aria-label="Jumlah anggota: <?= number_format((int) ($total_anggota ?? 0)) ?>">
-               <div class="stat-header">
-                   <div class="stat-content">
-                       <h2>Jumlah Anggota</h2>
-                       <div class="stat-number"><?= number_format((int) ($total_anggota ?? 0)) ?></div>
-                   </div>
-                   <div class="stat-icon">
-                       <i class="fas fa-users" aria-hidden="true"></i>
-                   </div>
-               </div>
-           </a>
-
-           <a class="stat-card success" href="<?= base_url('user') ?>" aria-label="User aktif: <?= number_format((int) ($total_user_active ?? 0)) ?>">
-               <div class="stat-header">
-                   <div class="stat-content">
-                       <h2>User Aktif</h2>
-                       <div class="stat-number"><?= number_format((int) ($total_user_active ?? 0)) ?></div>
-                   </div>
-                   <div class="stat-icon">
-                       <i class="fas fa-user-check" aria-hidden="true"></i>
-                   </div>
-               </div>
-           </a>
-
-           <a class="stat-card warning" href="<?= base_url('bukutamu') ?>" aria-label="Kunjungan anggota: <?= number_format((int) ($total_anggota_guest ?? 0)) ?>">
-               <div class="stat-header">
-                   <div class="stat-content">
-                       <h2>Kunjungan Anggota</h2>
-                       <div class="stat-number"><?= number_format((int) ($total_anggota_guest ?? 0)) ?></div>
-                   </div>
-                   <div class="stat-icon">
-                       <i class="fas fa-door-open" aria-hidden="true"></i>
-                   </div>
-               </div>
-           </a>
-
-           <a class="stat-card danger" href="<?= base_url('bukutamu/non_anggota') ?>" aria-label="Kunjungan non anggota: <?= number_format((int) ($total_nonanggota_guest ?? 0)) ?>">
-               <div class="stat-header">
-                   <div class="stat-content">
-                       <h2>Kunjungan Non Anggota</h2>
-                       <div class="stat-number"><?= number_format((int) ($total_nonanggota_guest ?? 0)) ?></div>
-                   </div>
-                   <div class="stat-icon">
-                       <i class="fas fa-user-times" aria-hidden="true"></i>
-                   </div>
-               </div>
-           </a>
-
-           <div class="stat-card dark" role="group" aria-label="Anggota bebas pustaka: <?= number_format((int) ($total_anggota_bebas_pustaka ?? 0)) ?>">
-               <div class="stat-header">
-                   <div class="stat-content">
-                       <h2>Anggota Bebas Pustaka</h2>
-                       <div class="stat-number"><?= number_format((int) ($total_anggota_bebas_pustaka ?? 0)) ?></div>
-                   </div>
-                   <div class="stat-icon">
-                       <i class="fas fa-graduation-cap" aria-hidden="true"></i>
-                   </div>
-               </div>
-           </div>
-       </section>
-
-       <!-- Chart Cards -->
-       <section class="chart-grid" aria-label="Statistik koleksi dan sirkulasi">
-           <a class="chart-card" href="<?= base_url('katalog') ?>" aria-label="Total katalog: <?= number_format((int) ($total_katalog ?? 0)) ?>">
-               <div class="chart-header">
-                   <div class="chart-icon">
-                       <i class="fas fa-book" aria-hidden="true"></i>
-                   </div>
-                   <h2 class="chart-title">Total Katalog</h2>
-               </div>
-               <div class="chart-value"><?= number_format((int) ($total_katalog ?? 0)) ?></div>
-           </a>
-
-           <a class="chart-card" href="<?= base_url('eksemplar') ?>" aria-label="Total koleksi: <?= number_format((int) ($total_koleksi ?? 0)) ?>">
-               <div class="chart-header">
-                   <div class="chart-icon">
-                       <i class="fas fa-layer-group" aria-hidden="true"></i>
-                   </div>
-                   <h2 class="chart-title">Total Koleksi</h2>
-               </div>
-               <div class="chart-value"><?= number_format((int) ($total_koleksi ?? 0)) ?></div>
-           </a>
-
-           <a class="chart-card" href="<?= base_url('sirkulasi-peminjaman') ?>" aria-label="Total peminjaman: <?= number_format((int) ($total_peminjaman ?? 0)) ?>">
-               <div class="chart-header">
-                   <div class="chart-icon">
-                       <i class="fas fa-handshake" aria-hidden="true"></i>
-                   </div>
-                   <h2 class="chart-title">Total Peminjaman</h2>
-               </div>
-               <div class="chart-value"><?= number_format((int) ($total_peminjaman ?? 0)) ?></div>
-           </a>
-       </section>
-   </div>
+        <section class="dash-section" aria-labelledby="dash-pendukung">
+            <h2 class="dash-section-title" id="dash-pendukung">Kunjungan &amp; Pengguna</h2>
+            <div class="metric-grid">
+                <?php foreach ($pendukung as $m) : ?>
+                    <?= view('Dashboard\Views\metric_card', ['m' => $m, 'compact' => true]) ?>
+                <?php endforeach; ?>
+            </div>
+        </section>
+    </div>
 </div>
 <?= $this->endSection('page') ?>
 

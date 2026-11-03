@@ -89,10 +89,9 @@ class Template extends \Base\Controllers\BaseResourceController
 					data-format=".docx" 
 					data-count="1" 
 					data-max="10" 
-					data-toggle="tooltip" data-placement="top" title="Upload File" class="btn btn-primary upload-data">
-					<i class="fa fa-upload"> </i> </a>';
-                $edit = '<a href="' . base_url('master-template-kartu/edit/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-warning show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-                $delete = '<a href="javascript:void(0);" data-href="' . base_url('master-template-kartu/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+					data-toggle="tooltip" data-placement="top" title="Upload File" aria-label="Upload File" class="ina-action upload-data"><i class="fa fa-upload" aria-hidden="true"></i></a>';
+                $edit = '<a href="' . base_url('master-template-kartu/edit/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Ubah" aria-label="Ubah" class="ina-action show-data"><i class="fas fa-pen" aria-hidden="true"></i></a>';
+                $delete = '<a href="javascript:void(0);" data-href="' . base_url('master-template-kartu/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus" aria-label="Hapus" class="ina-action ina-action-danger remove-data"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
                 return $upload . ' ' . $edit . ' ' . $delete;
             })
             ->toJson();

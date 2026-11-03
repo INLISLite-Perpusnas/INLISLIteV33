@@ -59,36 +59,70 @@ class Berita extends \Base\Controllers\BaseController
         echo view('Berita\Views\view', $this->data);
     }
 
+    /**
+     * Aturan validasi form berita dengan pesan spesifik + solusi.
+     */
+    private function beritaRules(bool $withSort): array
+    {
+        $rules = [
+            'title' => [
+                'label' => 'Judul Berita',
+                'rules' => 'required',
+                'errors' => [
+                    'required' => 'Judul berita wajib diisi.',
+                ]
+            ],
+            'file_cover' => [
+                'label' => 'Cover',
+                'rules' => 'permit_empty|max_size[file_cover,2048]|is_image[file_cover]',
+                'errors' => [
+                    'max_size' => 'Ukuran cover melebihi 2 MB. Kompres gambar atau pilih file yang lebih kecil.',
+                    'is_image' => 'Cover harus berupa gambar. Pilih file JPG, JPEG, atau PNG.',
+                ]
+            ],
+            'file_image.*' => [
+                'label' => 'Galeri',
+                'rules' => 'permit_empty|max_size[file_image,2048]|is_image[file_image]',
+                'errors' => [
+                    'max_size' => 'Ada foto galeri yang melebihi 2 MB. Kompres foto tersebut atau hapus dari daftar.',
+                    'is_image' => 'Ada file galeri yang bukan gambar. Hapus file tersebut dan pilih JPG, JPEG, atau PNG.',
+                ]
+            ],
+        ];
+
+        if ($withSort) {
+            $rules['sort'] = [
+                'label' => 'Urutan',
+                'rules' => 'required|is_natural_no_zero',
+                'errors' => [
+                    'required' => 'Urutan wajib diisi.',
+                    'is_natural_no_zero' => 'Urutan harus berupa angka bulat mulai dari 1.',
+                ]
+            ];
+        }
+
+        return $rules;
+    }
+
+    /**
+     * Error validasi per field; error galeri (file_image.N) digabung ke kunci file_image.
+     */
+    private function fieldErrors(): array
+    {
+        $errors = [];
+        foreach ($this->validation->getErrors() as $key => $message) {
+            $key = strpos($key, 'file_image') === 0 ? 'file_image' : $key;
+            $errors[$key] = $errors[$key] ?? $message;
+        }
+        return $errors;
+    }
+
     public function create()
     {
         $this->data['title'] = 'Tambah Berita';
         $slug = $this->request->getGet('slug');
 
-        $this->validation->setRules([
-            'title' => [
-                'label' => 'Judul Berita',
-                'rules' => 'required',
-                'errors' => [
-                    'required' => 'Judul Berita wajib diisi.',
-                ]
-            ],
-            'file_cover' => [
-                'label' => 'File Cover',
-                'rules' => 'permit_empty|max_size[file_cover,2048]|is_image[file_cover]',
-                'errors' => [
-                    'max_size' => 'Ukuran file cover maksimal 2MB.',
-                    'is_image' => 'File cover harus berupa gambar (jpg, png, gif).',
-                ]
-            ],
-            'file_image.*' => [
-                'label' => 'File Image',
-                'rules' => 'permit_empty|max_size[file_image,2048]|is_image[file_image]',
-                'errors' => [
-                    'max_size' => 'Ukuran salah satu file image maksimal 2MB.',
-                    'is_image' => 'Salah satu file image harus berupa gambar.',
-                ]
-            ]
-        ]);
+        $this->validation->setRules($this->beritaRules(false));
 
         if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
             $db = \Config\Database::connect();
@@ -185,19 +219,8 @@ class Berita extends \Base\Controllers\BaseController
             }
 
         } else {
-            // Tampilkan Form & SweetAlert Error Validasi
-            if ($this->request->getPost() && $this->validation->getErrors()) {
-                $error_msg = '<ul>';
-                foreach ($this->validation->getErrors() as $error) {
-                    $error_msg .= '<li>' . esc($error) . '</li>';
-                }
-                $error_msg .= '</ul>';
-
-                $this->session->setFlashdata('swal_icon', 'error');
-                $this->session->setFlashdata('swal_title', 'Validasi Gagal');
-                $this->session->setFlashdata('swal_html', $error_msg); 
-            }
-
+            // Error validasi ditampilkan langsung di bawah field terkait (state error)
+            $this->data['errors'] = $this->request->getPost() ? $this->fieldErrors() : [];
             $this->data['redirect'] = base_url('berita/create');
             echo view('Berita\Views\add', $this->data);
         }
@@ -241,31 +264,7 @@ class Berita extends \Base\Controllers\BaseController
         $this->data['old_file_image_data'] = $old_file_image_data;
 
         // 2. Set Validasi
-        $this->validation->setRules([
-            'title' => [
-                'label' => 'Judul Berita',
-                'rules' => 'required',
-                'errors' => [
-                    'required' => 'Judul Berita wajib diisi.',
-                ]
-            ],
-            'file_cover' => [
-                'label' => 'File Cover',
-                'rules' => 'permit_empty|max_size[file_cover,2048]|is_image[file_cover]',
-                'errors' => [
-                    'max_size' => 'Ukuran file cover maksimal 2MB.',
-                    'is_image' => 'File cover harus berupa gambar (jpg, png, gif).',
-                ]
-            ],
-            'file_image.*' => [
-                'label' => 'File Image',
-                'rules' => 'permit_empty|max_size[file_image,2048]|is_image[file_image]',
-                'errors' => [
-                    'max_size' => 'Ukuran salah satu file image maksimal 2MB.',
-                    'is_image' => 'Salah satu file image harus berupa gambar.',
-                ]
-            ]
-        ]);
+        $this->validation->setRules($this->beritaRules(true));
 
         // 3. Proses Submit
         if ($this->request->getPost()) {
@@ -417,23 +416,12 @@ class Berita extends \Base\Controllers\BaseController
                     $this->session->setFlashdata('swal_text', $e->getMessage());
                     return redirect()->back()->withInput();
                 }
-            } else {
-                // Tampilkan SweetAlert jika validasi edit gagal
-                $error_msg = '<ul>';
-                foreach ($this->validation->getErrors() as $error) {
-                    $error_msg .= '<li>' . esc($error) . '</li>';
-                }
-                $error_msg .= '</ul>';
-
-                $this->session->setFlashdata('swal_icon', 'error');
-                $this->session->setFlashdata('swal_title', 'Validasi Gagal');
-                $this->session->setFlashdata('swal_html', $error_msg); 
             }
         }
 
-        $this->data['message'] = $this->validation->getErrors()
-            ? $this->validation->listErrors()
-            : $this->session->getFlashdata('message');
+        // Error validasi ditampilkan langsung di bawah field terkait (state error)
+        $this->data['errors'] = $this->request->getPost() ? $this->fieldErrors() : [];
+        $this->data['message'] = $this->session->getFlashdata('message');
             
         $this->data['redirect'] = base_url('cms/berita/edit/' . $id);
         echo view('Berita\Views\update', $this->data);

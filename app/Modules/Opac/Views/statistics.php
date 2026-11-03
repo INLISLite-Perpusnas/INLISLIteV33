@@ -25,6 +25,10 @@
         .op-container { padding-left: 2.5rem; padding-right: 2.5rem; }
     }
 
+    /* Satu warna: biru */
+    .op-bg-blue { background: var(--op-primary) !important; }
+    .op-text-blue { color: var(--op-primary) !important; }
+
     /* Page header */
     .op-page-header {
         text-align: center;
@@ -33,7 +37,7 @@
     .op-page-header .op-icon-badge {
         width: 64px; height: 64px;
         border-radius: 18px;
-        background: linear-gradient(135deg, var(--op-primary), var(--op-primary-light));
+        background: var(--op-primary);
         display: inline-flex; align-items: center; justify-content: center;
         color: #fff; font-size: 1.5rem;
         box-shadow: var(--op-shadow-md);
@@ -68,11 +72,8 @@
         display: flex; align-items: center; justify-content: center;
         font-size: 1.35rem;
         color: #fff;
+        background: var(--op-primary);
     }
-    .op-stat-icon.i-primary { background: linear-gradient(135deg, #1e3a8a, #3b5bdb); }
-    .op-stat-icon.i-success { background: linear-gradient(135deg, #059669, #34d399); }
-    .op-stat-icon.i-info    { background: linear-gradient(135deg, #0891b2, #38bdf8); }
-    .op-stat-icon.i-warning { background: linear-gradient(135deg, #d97706, #fbbf24); }
     .op-stat-value { font-weight: 800; font-size: 1.6rem; color: var(--op-ink); line-height: 1.1; }
     .op-stat-label { color: var(--op-muted); font-size: .85rem; font-weight: 500; }
 
@@ -93,11 +94,12 @@
         color: var(--op-ink);
         font-size: 1rem;
     }
-    .op-card-header .op-header-icon {
+    .op-header-icon {
         width: 34px; height: 34px;
         border-radius: 10px;
         display: flex; align-items: center; justify-content: center;
         color: #fff; font-size: .85rem;
+        background: var(--op-primary);
     }
     .op-card-body { padding: 1.4rem; }
 
@@ -121,7 +123,7 @@
     .op-progress .op-progress-bar {
         height: 100%;
         border-radius: 999px;
-        background: linear-gradient(90deg, var(--op-primary), var(--op-primary-light));
+        background: var(--op-primary);
         transition: width .5s ease;
     }
     .op-progress.lg { height: 26px; border-radius: 999px; }
@@ -130,13 +132,6 @@
         padding-right: .6rem;
         color: #fff; font-size: .78rem; font-weight: 700;
     }
-
-    .op-palette-1 { background: linear-gradient(90deg,#1e3a8a,#3b5bdb) !important; }
-    .op-palette-2 { background: linear-gradient(90deg,#059669,#34d399) !important; }
-    .op-palette-3 { background: linear-gradient(90deg,#0891b2,#38bdf8) !important; }
-    .op-palette-4 { background: linear-gradient(90deg,#d97706,#fbbf24) !important; }
-    .op-palette-5 { background: linear-gradient(90deg,#dc2626,#f87171) !important; }
-    .op-palette-6 { background: linear-gradient(90deg,#4b5563,#9ca3af) !important; }
 
     .op-badge-soft {
         border-radius: 999px;
@@ -170,7 +165,7 @@
 
     /* Quick stats mini */
     .op-mini-stat { text-align: center; padding: .5rem; }
-    .op-mini-stat h4 { font-weight: 800; margin-bottom: .15rem; }
+    .op-mini-stat h4 { font-weight: 800; margin-bottom: .15rem; color: var(--op-primary); }
     .op-mini-stat small { color: var(--op-muted); font-weight: 500; }
     .op-divider-v { border-right: 1px solid var(--op-border); }
 
@@ -191,15 +186,13 @@
     .op-export-btn .op-header-icon { width: 30px; height: 30px; border-radius: 8px; font-size: .78rem; }
 
     /* Growth trend */
-    .op-growth-value { font-weight: 800; font-size: 2rem; }
-    .op-growth-up { color: #059669; }
-    .op-growth-down { color: #dc2626; }
+    .op-growth-value { font-weight: 800; font-size: 2rem; color: var(--op-primary); }
     .op-mini-year-row { display: flex; justify-content: space-between; font-size: .84rem; padding: .35rem 0; border-bottom: 1px dashed var(--op-border); }
     .op-mini-year-row:last-child { border-bottom: none; }
 
     /* Insights */
     .op-insight-header {
-        background: linear-gradient(135deg, #667eea, #764ba2);
+        background: var(--op-primary);
         padding: 1.1rem 1.4rem;
     }
     .op-insight-list { list-style: none; padding: 0; margin: 0; }
@@ -209,8 +202,8 @@
         font-size: .9rem;
         color: var(--op-ink);
     }
-    .op-insight-list li i { margin-top: .2rem; }
-    .op-insight-title { font-weight: 700; font-size: .95rem; display: flex; align-items: center; gap: .5rem; margin-bottom: .75rem; }
+    .op-insight-list li i { margin-top: .2rem; color: var(--op-primary); }
+    .op-insight-title { font-weight: 700; font-size: .95rem; display: flex; align-items: center; gap: .5rem; margin-bottom: .75rem; color: var(--op-primary); }
 
     .op-empty-state { text-align: center; color: var(--op-muted); padding: 2.5rem 1rem; }
     .op-empty-state i { color: #d1d5db; }
@@ -225,18 +218,13 @@
 <section class="hero-section" style="padding-top: 80px !important; padding-bottom: 40px !important;">
 <div class="container-fluid op-container py-5">
 
-    <!-- Page Header -->
-    <div class="op-page-header">
-        <div class="op-icon-badge"><i class="fas fa-chart-bar"></i></div>
-        <h1>Statistik Katalog</h1>
-        <p class="mb-0">Analisis dan statistik koleksi perpustakaan</p>
-    </div>
+    <?= view('Opac\Views\partial\statistics_nav', ['active' => 'katalog']) ?>
 
     <!-- Overview Statistics -->
     <div class="row g-4 mb-4">
         <div class="col-md-3">
             <div class="op-stat-card">
-                <div class="op-stat-icon i-primary"><i class="fas fa-book"></i></div>
+                <div class="op-stat-icon"><i class="fas fa-book"></i></div>
                 <div>
                     <div class="op-stat-value"><?= number_format($total_catalogs ?? 0) ?></div>
                     <div class="op-stat-label">Total Katalog</div>
@@ -246,7 +234,7 @@
 
         <div class="col-md-3">
             <div class="op-stat-card">
-                <div class="op-stat-icon i-success"><i class="fas fa-calendar"></i></div>
+                <div class="op-stat-icon"><i class="fas fa-calendar"></i></div>
                 <div>
                     <div class="op-stat-value"><?= count($by_year ?? []) ?></div>
                     <div class="op-stat-label">Rentang Tahun</div>
@@ -256,7 +244,7 @@
 
         <div class="col-md-3">
             <div class="op-stat-card">
-                <div class="op-stat-icon i-info"><i class="fas fa-globe"></i></div>
+                <div class="op-stat-icon"><i class="fas fa-globe"></i></div>
                 <div>
                     <div class="op-stat-value"><?= count($by_language ?? []) ?></div>
                     <div class="op-stat-label">Bahasa</div>
@@ -266,7 +254,7 @@
 
         <div class="col-md-3">
             <div class="op-stat-card">
-                <div class="op-stat-icon i-warning"><i class="fas fa-building"></i></div>
+                <div class="op-stat-icon"><i class="fas fa-building"></i></div>
                 <div>
                     <div class="op-stat-value"><?= count($by_publisher ?? []) ?></div>
                     <div class="op-stat-label">Penerbit Aktif</div>
@@ -281,7 +269,7 @@
         <div class="col-lg-6">
             <div class="op-card">
                 <div class="op-card-header">
-                    <span class="op-header-icon" style="background: linear-gradient(135deg,#1e3a8a,#3b5bdb);"><i class="fas fa-chart-line"></i></span>
+                    <span class="op-header-icon"><i class="fas fa-chart-line"></i></span>
                     Distribusi Berdasarkan Tahun Terbit
                 </div>
                 <div class="op-card-body">
@@ -342,16 +330,13 @@
         <div class="col-lg-6">
             <div class="op-card">
                 <div class="op-card-header">
-                    <span class="op-header-icon" style="background: linear-gradient(135deg,#059669,#34d399);"><i class="fas fa-chart-pie"></i></span>
+                    <span class="op-header-icon"><i class="fas fa-chart-pie"></i></span>
                     Distribusi Berdasarkan Bahasa
                 </div>
                 <div class="op-card-body">
                     <?php if (!empty($by_language)): ?>
-                        <?php
-                        $paletteClasses = ['op-palette-1','op-palette-2','op-palette-3','op-palette-4','op-palette-5','op-palette-6'];
-                        foreach ($by_language as $index => $language):
+                        <?php foreach ($by_language as $index => $language):
                             $percentage = ($language->total / $total_catalogs) * 100;
-                            $paletteClass = $paletteClasses[$index % count($paletteClasses)];
                         ?>
                             <div class="mb-3">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
@@ -359,7 +344,7 @@
                                     <span class="op-badge-soft op-badge-primary"><?= number_format($language->total) ?></span>
                                 </div>
                                 <div class="op-progress lg">
-                                    <div class="op-progress-bar <?= $paletteClass ?>"
+                                    <div class="op-progress-bar"
                                          style="width: <?= $percentage ?>%"
                                          title="<?= number_format($percentage, 1) ?>%">
                                         <?= number_format($percentage, 1) ?>%
@@ -381,7 +366,7 @@
         <div class="col-12">
             <div class="op-card">
                 <div class="op-card-header">
-                    <span class="op-header-icon" style="background: linear-gradient(135deg,#0891b2,#38bdf8);"><i class="fas fa-building"></i></span>
+                    <span class="op-header-icon"><i class="fas fa-building"></i></span>
                     Top 10 Penerbit
                 </div>
                 <div class="op-card-body">
@@ -428,20 +413,20 @@
         <div class="col-lg-4">
             <div class="op-card">
                 <div class="op-card-header">
-                    <span class="op-header-icon" style="background: linear-gradient(135deg,#d97706,#fbbf24);"><i class="fas fa-tachometer-alt"></i></span>
+                    <span class="op-header-icon"><i class="fas fa-tachometer-alt"></i></span>
                     Statistik Cepat
                 </div>
                 <div class="op-card-body">
                     <div class="row">
                         <div class="col-6 op-divider-v">
                             <div class="op-mini-stat">
-                                <h4 class="text-primary"><?= number_format(($total_catalogs ?? 0) / max(1, count($by_year ?? []))) ?></h4>
+                                <h4><?= number_format(($total_catalogs ?? 0) / max(1, count($by_year ?? []))) ?></h4>
                                 <small>Rata-rata per Tahun</small>
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="op-mini-stat">
-                                <h4 class="text-success"><?= !empty($by_year) ? $by_year[0]->PublishYear : 'N/A' ?></h4>
+                                <h4><?= !empty($by_year) ? $by_year[0]->PublishYear : 'N/A' ?></h4>
                                 <small>Tahun Terbanyak</small>
                             </div>
                         </div>
@@ -452,13 +437,13 @@
                     <div class="row">
                         <div class="col-6 op-divider-v">
                             <div class="op-mini-stat">
-                                <h4 class="text-info"><?= !empty($by_language) ? $by_language[0]->Languages : 'N/A' ?></h4>
+                                <h4><?= !empty($by_language) ? $by_language[0]->Languages : 'N/A' ?></h4>
                                 <small>Bahasa Utama</small>
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="op-mini-stat">
-                                <h4 class="text-warning">
+                                <h4>
                                     <?= (int)date('Y') - (!empty($by_year) ? (int)min(array_map(fn($item) => $item->PublishYear, $by_year)) : (int)date('Y')) ?>
                                 </h4>
                                 <small>Rentang Tahun</small>
@@ -473,25 +458,25 @@
         <div class="col-lg-4">
             <div class="op-card">
                 <div class="op-card-header">
-                    <span class="op-header-icon" style="background: linear-gradient(135deg,#4b5563,#9ca3af);"><i class="fas fa-download"></i></span>
+                    <span class="op-header-icon"><i class="fas fa-download"></i></span>
                     Export Statistik
                 </div>
                 <div class="op-card-body">
                     <div class="d-grid gap-2">
                         <button class="op-export-btn" onclick="exportStatistics('excel')">
-                            <span class="op-header-icon" style="background:#059669;"><i class="fas fa-file-excel"></i></span>
+                            <span class="op-header-icon"><i class="fas fa-file-excel"></i></span>
                             Export ke Excel
                         </button>
                         <button class="op-export-btn" onclick="exportStatistics('csv')">
-                            <span class="op-header-icon" style="background:#0891b2;"><i class="fas fa-file-csv"></i></span>
+                            <span class="op-header-icon"><i class="fas fa-file-csv"></i></span>
                             Export ke CSV
                         </button>
                         <button class="op-export-btn" onclick="exportStatistics('pdf')">
-                            <span class="op-header-icon" style="background:#d97706;"><i class="fas fa-file-pdf"></i></span>
+                            <span class="op-header-icon"><i class="fas fa-file-pdf"></i></span>
                             Export ke PDF
                         </button>
                         <button class="op-export-btn" onclick="window.print()">
-                            <span class="op-header-icon" style="background: linear-gradient(135deg,#1e3a8a,#3b5bdb);"><i class="fas fa-print"></i></span>
+                            <span class="op-header-icon"><i class="fas fa-print"></i></span>
                             Cetak Laporan
                         </button>
                     </div>
@@ -503,7 +488,7 @@
         <div class="col-lg-4">
             <div class="op-card">
                 <div class="op-card-header">
-                    <span class="op-header-icon" style="background: linear-gradient(135deg,#111827,#374151);"><i class="fas fa-chart-area"></i></span>
+                    <span class="op-header-icon"><i class="fas fa-chart-area"></i></span>
                     Tren Pertumbuhan
                 </div>
                 <div class="op-card-body">
@@ -516,7 +501,7 @@
                         ?>
 
                         <div class="text-center mb-3">
-                            <div class="op-growth-value <?= $growthRate >= 0 ? 'op-growth-up' : 'op-growth-down' ?>">
+                            <div class="op-growth-value">
                                 <i class="fas fa-arrow-<?= $growthRate >= 0 ? 'up' : 'down' ?> me-1" style="font-size:1.1rem;"></i><?= $growthRate >= 0 ? '+' : '' ?><?= number_format($growthRate, 1) ?>%
                             </div>
                             <small class="text-muted">Pertumbuhan 5 Tahun Terakhir</small>
@@ -551,43 +536,43 @@
                 <div class="op-card-body">
                     <div class="row g-4">
                         <div class="col-md-6">
-                            <div class="op-insight-title text-primary"><i class="fas fa-chart-line"></i>Analisis Data</div>
+                            <div class="op-insight-title"><i class="fas fa-chart-line"></i>Analisis Data</div>
                             <ul class="op-insight-list">
                                 <?php if (!empty($by_year)): ?>
                                     <li>
-                                        <i class="fas fa-check-circle text-success"></i>
+                                        <i class="fas fa-check-circle"></i>
                                         Tahun <?= $by_year[0]->PublishYear ?> memiliki koleksi terbanyak (<?= number_format($by_year[0]->total) ?> item)
                                     </li>
                                 <?php endif; ?>
 
                                 <?php if (!empty($by_language)): ?>
                                     <li>
-                                        <i class="fas fa-check-circle text-success"></i>
+                                        <i class="fas fa-check-circle"></i>
                                         Bahasa <?= $by_language[0]->Languages ?> mendominasi koleksi (<?= number_format(($by_language[0]->total / $total_catalogs) * 100, 1) ?>%)
                                     </li>
                                 <?php endif; ?>
 
                                 <?php if (!empty($by_publisher)): ?>
                                     <li>
-                                        <i class="fas fa-check-circle text-success"></i>
+                                        <i class="fas fa-check-circle"></i>
                                         <?= $by_publisher[0]->Publisher ?> adalah penerbit terbesar (<?= $by_publisher[0]->total ?> buku)
                                     </li>
                                 <?php endif; ?>
                             </ul>
                         </div>
                         <div class="col-md-6">
-                            <div class="op-insight-title text-warning"><i class="fas fa-star"></i>Rekomendasi</div>
+                            <div class="op-insight-title"><i class="fas fa-star"></i>Rekomendasi</div>
                             <ul class="op-insight-list">
                                 <li>
-                                    <i class="fas fa-arrow-right text-warning"></i>
+                                    <i class="fas fa-arrow-right"></i>
                                     Diversifikasi koleksi dari berbagai penerbit
                                 </li>
                                 <li>
-                                    <i class="fas fa-arrow-right text-warning"></i>
+                                    <i class="fas fa-arrow-right"></i>
                                     Tambah koleksi dalam bahasa lain untuk keseimbangan
                                 </li>
                                 <li>
-                                    <i class="fas fa-arrow-right text-warning"></i>
+                                    <i class="fas fa-arrow-right"></i>
                                     Fokus pada publikasi tahun terbaru untuk update koleksi
                                 </li>
                             </ul>
@@ -602,7 +587,7 @@
 
 <?= $this->endSection() ?>
 
-<?= $this->section('scripts') ?>
+<?= $this->section('script') ?>
 <script>
 // Export statistics functionality
 function exportStatistics(format) {
@@ -686,7 +671,7 @@ function createYearChart(data) {
             datasets: [{
                 label: 'Jumlah Katalog',
                 data: data.map(item => item.total),
-                borderColor: 'rgb(75, 192, 192)',
+                borderColor: '#1e3a8a',
                 tension: 0.1
             }]
         },
@@ -712,14 +697,9 @@ function createLanguageChart(data) {
             labels: data.map(item => item.Languages),
             datasets: [{
                 data: data.map(item => item.total),
-                backgroundColor: [
-                    '#FF6384',
-                    '#36A2EB', 
-                    '#FFCE56',
-                    '#4BC0C0',
-                    '#9966FF',
-                    '#FF9F40'
-                ]
+                backgroundColor: '#1e3a8a',
+                borderColor: '#ffffff',
+                borderWidth: 2
             }]
         },
         options: {

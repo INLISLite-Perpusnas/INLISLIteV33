@@ -8,13 +8,13 @@ $request = service('request'); ?>
 
 <style>
     :root {
-        --blue-900: #0f2356;
-        --blue-800: #1B3878;
-        --blue-700: #1e4494;
-        --blue-500: #2d65d4;
-        --blue-200: #bdd0f5;
-        --blue-100: #dde8fb;
-        --blue-50: #eef3fd;
+        --blue-900: #1f4b78;
+        --blue-800: #2d659e;
+        --blue-700: #2d659e;
+        --blue-500: #2d659e;
+        --blue-200: #b9cde1;
+        --blue-100: #dbe6f1;
+        --blue-50: #eef3f8;
         --success: #1fba74;
         --danger: #e8394d;
         --gray-800: #1e2433;
@@ -25,8 +25,8 @@ $request = service('request'); ?>
         --radius-xl: 20px;
         --radius-lg: 14px;
         --radius-md: 10px;
-        --shadow-card: 0 4px 24px rgba(27, 56, 120, 0.10), 0 1px 4px rgba(27, 56, 120, 0.06);
-        --shadow-btn: 0 4px 14px rgba(27, 56, 120, 0.30);
+        --shadow-card: 0 4px 24px rgba(45, 101, 158, 0.10), 0 1px 4px rgba(45, 101, 158, 0.06);
+        --shadow-btn: 0 4px 14px rgba(45, 101, 158, 0.30);
     }
 
     body {
@@ -68,7 +68,7 @@ $request = service('request'); ?>
         background: linear-gradient(135deg, var(--blue-800), var(--blue-500));
         border-color: transparent;
         color: white;
-        box-shadow: 0 4px 14px rgba(27, 56, 120, .30);
+        box-shadow: 0 4px 14px rgba(45, 101, 158, .30);
     }
 
     .step-circle.done {
@@ -266,7 +266,7 @@ $request = service('request'); ?>
     .pm-input:focus {
         border-color: var(--blue-500);
         background: white;
-        box-shadow: 0 0 0 4px rgba(45, 101, 212, .12);
+        box-shadow: 0 0 0 4px rgba(45, 101, 158, .15);
     }
 
     /* ── Buttons ── */
@@ -293,7 +293,7 @@ $request = service('request'); ?>
 
     .pm-btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(27, 56, 120, .35);
+        box-shadow: 0 8px 20px rgba(45, 101, 158, .35);
         color: white;
     }
 
@@ -359,7 +359,7 @@ $request = service('request'); ?>
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        box-shadow: 0 4px 12px rgba(27, 56, 120, .25);
+        box-shadow: 0 4px 12px rgba(45, 101, 158, .25);
     }
 
     .member-avatar i {
@@ -577,7 +577,7 @@ $request = service('request'); ?>
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 2px 8px rgba(27, 56, 120, .10);
+        box-shadow: 0 2px 8px rgba(45, 101, 158, .10);
     }
 
     .hc-icon i {
@@ -676,6 +676,27 @@ $request = service('request'); ?>
         .confirm-bar {
             flex-direction: column;
         }
+    }
+</style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
+<style>
+    /* Biru halaman entri peminjaman: #2d659e (troli & modal memakai kelas Bootstrap) */
+    .content-wrapper .text-primary,
+    .modal .text-primary {
+        color: #2d659e !important;
+    }
+
+    .content-wrapper .btn-primary,
+    .modal .btn-primary {
+        color: #fff;
+        background-color: #2d659e;
+        border-color: #2d659e;
+    }
+
+    .content-wrapper .btn-primary:hover,
+    .modal .btn-primary:hover {
+        background-color: #24527f;
+        border-color: #24527f;
     }
 </style>
 <?= $this->endSection('style'); ?>
@@ -1039,7 +1060,7 @@ $request = service('request'); ?>
                 text: 'Yakin ingin memproses peminjaman ini?',
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#2d65d4',
+                confirmButtonColor: '#2d659e',
                 cancelButtonColor: '#e8394d',
                 confirmButtonText: '<i class="fa fa-check"></i> Ya, Proses',
                 cancelButtonText: 'Batal'

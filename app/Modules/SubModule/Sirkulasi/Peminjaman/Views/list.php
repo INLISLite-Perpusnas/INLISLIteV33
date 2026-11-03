@@ -169,6 +169,7 @@ $slug = $request->getGet('slug') ?? '';
         border-radius: 4px;
     }
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -218,7 +219,7 @@ $slug = $request->getGet('slug') ?? '';
                 </button>
 
                 <?php if (is_allowed('sirkulasi-peminjaman/create')) : ?>
-                    <a href="<?= base_url('sirkulasi-peminjaman/create') ?>" class="btn btn-success btn-sm" title="Tambah">
+                    <a href="<?= base_url('sirkulasi-peminjaman/create') ?>" class="btn btn-catalog-add btn-sm" title="Tambah">
                         <i class="fa fa-plus"></i> Peminjaman
                     </a>
                 <?php endif; ?>

@@ -84,23 +84,19 @@ class UnitModel extends Model
         $rows = [];
         foreach ($data as $item) {
             $statusBadge = $item['status'] === 'aktif' 
-                ? '<span class="badge bg-success">Aktif</span>' 
-                : '<span class="badge bg-secondary">Nonaktif</span>';
+                ? '<span class="ina-badge ina-badge-success">Aktif</span>' 
+                : '<span class="ina-badge ina-badge-neutral">Nonaktif</span>';
 
-            $totalFotoBadge = '<span class="badge bg-info">' . esc($item['total_foto']) . ' foto</span>';
+            $totalFotoBadge = '<span class="ina-badge ina-badge-info">' . esc($item['total_foto']) . ' foto</span>';
 
-            $statusBtnClass = $item['status'] === 'aktif' ? 'btn-warning' : 'btn-success';
+            $statusBtnIcon  = $item['status'] === 'aktif' ? 'fa-eye-slash' : 'fa-eye';
             $statusBtnText  = $item['status'] === 'aktif' ? 'Nonaktifkan' : 'Aktifkan';
             $newStatus      = $item['status'] === 'aktif' ? 'nonaktif' : 'aktif';
 
-            $action = '
-                <button type="button" class="btn btn-sm btn-info btn-edit" data-id="' . $item['id'] . '" title="Edit Unit / Kelola Foto">
-                    <i class="fa fa-edit"></i> Edit
-                </button>
-                <button type="button" class="btn btn-sm ' . $statusBtnClass . ' btn-toggle-status" data-id="' . $item['id'] . '" data-status="' . $newStatus . '" title="' . $statusBtnText . '">
-                    ' . $statusBtnText . '
-                </button>
-            ';
+            $action = '<div class="ina-actions">'
+                . '<button type="button" class="ina-action btn-edit" data-id="' . $item['id'] . '" title="Edit Unit / Kelola Foto" aria-label="Edit Unit / Kelola Foto"><i class="fas fa-pen" aria-hidden="true"></i></button>'
+                . '<button type="button" class="ina-action btn-toggle-status" data-id="' . $item['id'] . '" data-status="' . $newStatus . '" title="' . $statusBtnText . '" aria-label="' . $statusBtnText . '"><i class="fas ' . $statusBtnIcon . '" aria-hidden="true"></i></button>'
+                . '</div>';
 
             $rows[] = [
                 'id'                  => $item['id'],

@@ -72,6 +72,46 @@ if (!function_exists('get_barcode_png')) {
 	}
 }
 
+if (!function_exists('get_barcode_roll')) {
+	/**
+	 * CODE 128 untuk printer label roll (thermal 203/300 dpi).
+	 *
+	 * Lebar tiap modul (garis tersempit) dikunci 0,25 mm = 2 titik printer 203 dpi, sehingga
+	 * semua garis tercetak dengan ketebalan yang konsisten dan bisa discan. Gambar dibuat
+	 * 4 px per modul agar tidak buram saat diperkecil. Hanya jika kode terlalu panjang untuk
+	 * $maxWidthMm, barcode diperkecil supaya tetap muat.
+	 *
+	 * Spasi di awal/akhir nomor tidak ikut dikodekan (input scan di sirkulasi juga di-trim)
+	 * karena hanya memperpanjang barcode.
+	 *
+	 * @param string $code       Nomor barcode
+	 * @param float  $maxWidthMm Lebar maksimal batang barcode, di luar quiet zone kiri-kanan
+	 * @return array ['src' => data URI PNG, 'width' => lebar mm, 'height' => tinggi mm,
+	 *                'code' => nomor yang dikodekan, 'fits' => muat dengan modul 0,25 mm]
+	 */
+	function get_barcode_roll($code, float $maxWidthMm, float $heightMm = 10.0): array
+	{
+		$code      = trim((string) $code);
+		$generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
+		$png       = $generator->getBarcode($code, $generator::TYPE_CODE_128, 4, 120);
+		$modules   = intdiv(unpack('N', substr($png, 16, 4))[1], 4); // lebar PNG (IHDR) / 4 px
+
+		$moduleMm = 0.25;
+		$fits     = $modules * $moduleMm <= $maxWidthMm;
+		if (!$fits) {
+			$moduleMm = $maxWidthMm / $modules;
+		}
+
+		return [
+			'src'    => 'data:image/png;base64,' . base64_encode($png),
+			'width'  => round($modules * $moduleMm, 2),
+			'height' => $heightMm,
+			'code'   => $code,
+			'fits'   => $fits,
+		];
+	}
+}
+
 if (!function_exists('get_barcode_png_vertical')) {
 	/**
 	 * Generates a vertical (rotated) CODE 128 barcode with the *code* text beneath the

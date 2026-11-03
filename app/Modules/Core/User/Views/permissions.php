@@ -6,6 +6,7 @@
 		column-gap: 4px;
 	}
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 <?= $this->section('page'); ?>
 <div class="app-main__inner">
@@ -46,10 +47,10 @@
 						<button type="button" id="btnUncheckAll" class="btn btn-outline-primary pt-2""><i class=" fa fa-square mr-1"></i> Uncheck All</button>
 					</div>
 					<div class="input-group-append">
-						<button type="button" id="btnReset" class="btn btn-outline-primary pt-2"><i class="fa fa-history mr-1"></i> Reset</button>
+						<button type="button" id="btnReset" class="btn btn-secondary pt-2"><i class="fa fa-history mr-1"></i> Reset</button>
 					</div>
 					<div class="input-group-append">
-						<button type="submit" class="btn btn-primary pt-2"><i class="fa fa-save mr-1"></i> Save</button>
+						<button type="submit" class="btn btn-catalog-add pt-2"><i class="fa fa-save mr-1"></i> Simpan</button>
 					</div>
 				</div>
 			</div>

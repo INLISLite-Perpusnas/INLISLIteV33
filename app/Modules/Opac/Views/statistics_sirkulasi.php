@@ -51,11 +51,7 @@
 </style>
 
 <div class="container-fluid vk-container py-5" style="padding-top: 100px !important;">
-    <div class="vk-header">
-        <div class="vk-icon"><i class="fas fa-exchange-alt"></i></div>
-        <h1>Statistik Sirkulasi</h1>
-        <p class="mb-0">Ringkasan peminjaman dan pengembalian koleksi perpustakaan</p>
-    </div>
+    <?= view('Opac\Views\partial\statistics_nav', ['active' => 'sirkulasi']) ?>
 
     <form class="vk-filter" method="get" action="<?= base_url('opac/statistics_sirkulasi') ?>">
         <label class="vk-filter-label mb-0" for="stat-period"><i class="fas fa-filter me-2 text-primary"></i>Periode Statistik</label>
@@ -224,8 +220,8 @@
                 {
                     label: 'Peminjaman',
                     data: trend.loans,
-                    borderColor: '#1e3a8a',
-                    backgroundColor: 'rgba(59, 91, 219, 0.12)',
+                    borderColor: '#2d659e',
+                    backgroundColor: 'rgba(45, 101, 158, 0.12)',
                     fill: true,
                     tension: 0.3,
                     pointRadius: pointRadius,

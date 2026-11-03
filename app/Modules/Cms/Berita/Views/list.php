@@ -5,6 +5,7 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style') ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-table.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-table.css') ?>">
 <?= $this->endSection('style') ?>
 
 <?= $this->section('page') ?>
@@ -12,60 +13,48 @@ $slug = $request->getGet('slug') ?? '';
     <div class="app-page-title">
         <div class="page-title-wrapper">
             <div class="page-title-heading">
-                <div class="page-title-icon">
-                    <i class="pe-7s-network icon-gradient bg-strong-bliss"></i>
-                </div>
                 <div>Berita <?= ucwords(unslugify($slug)) ?>
-                    <div class="page-title-subheading">Daftar semua Berita
-                    </div>
+                    <div class="page-title-subheading">Kelola daftar berita perpustakaan.</div>
                 </div>
             </div>
             <div class="page-title-actions">
-                <nav class="" aria-label="breadcrumb">
+                <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="<?= base_url(
-                                                                    'dashboard'
-                                                                ) ?>"><i class="fa fa-home"></i> Beranda</a></li>
-                        <li class="breadcrumb-item">Berita </li>
-                        <li class="active breadcrumb-item" aria-current="page"><?= ucwords(
-                                                                                    unslugify($slug)
-                                                                                ) ?> </li>
+                        <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>">Beranda</a></li>
+                        <li class="active breadcrumb-item" aria-current="page">Berita</li>
                     </ol>
                 </nav>
             </div>
         </div>
     </div>
 
-    <div class="main-card mb-3 card">
-        <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate">
-            </i>Tabel Berita <?= ucwords(unslugify($slug)) ?>
-            <div class="btn-actions-pane-right actions-icon-btn">
+    <?= get_message('message') ?>
 
-                <a href="<?= base_url(
-                                'cms/berita/create?slug=' . $slug
-                            ) ?>" class=" btn btn-success" title=""><i class="fa fa-plus"></i>
-                    Tambah Berita </a>
-
+    <div class="ina-table-card">
+        <div class="ina-table-toolbar">
+            <div class="ina-search">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <input type="search" id="berita-search" placeholder="Cari judul berita" aria-label="Cari judul berita" autocomplete="off">
+            </div>
+            <div class="ina-table-actions">
+                <a href="<?= base_url('cms/berita/create?slug=' . $slug) ?>" class="ina-btn-primary">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Tambah Berita
+                </a>
             </div>
         </div>
-        <div class="card-body">
-            <?= get_message('message') ?>
-            <table style="width: 100%;" id="tbl_pages" class="table table-hover table-striped table-bordered">
-                <thead>
-                    <tr>
-                        <th>No. </th>
-                        <!-- <th>Kategori</th> -->
-                        <th>Judul Berita</th>
-                        <th>Keterangan</th>
-                        <th>Urutan</th>
-                        <th>Status</th>
-                        <th width="190">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-        </div>
+        <table id="tbl_pages" class="ina-table">
+            <thead>
+                <tr>
+                    <th>Judul</th>
+                    <th>Keterangan</th>
+                    <th class="ina-num">Urutan</th>
+                    <th>Status</th>
+                    <th class="ina-col-action">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
     </div>
 </div>
 <?= $this->endSection('page') ?>
@@ -91,88 +80,66 @@ $slug = $request->getGet('slug') ?? '';
         t = $('#tbl_pages').DataTable({
             "processing": true,
             "serverSide": true,
-            "scrollCollapse": true,
-            "scrollX": true,
+            "autoWidth": false,
             "ajax": {
                 "url": '<?php echo site_url('api/berita/datatable/' . $slug); ?>',
             },
-            "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
-                "<'row'<'col-md-12'tr>>" +
-                "<'row mt-2'<'col-md-5 col-sm-12 text-left'i><'col-md-7 col-sm-12 d-flex justify-content-end'p>>",
-
-            "pagingType": "full_numbers",
-            "oLanguage": {
-                "sSearch": "<i class='fa fa-search'></i> _INPUT_",
-                "sLengthMenu": "_MENU_",
-                "oPaginate": {
-                    "sNext": "<i class='fa fa-chevron-right'></i>",
-                    "sPrevious": "<i class='fa fa-chevron-left'></i>",
-                    "sLast": "<i class='fa fa-chevron-double-right'></i>",
-                    "sFirst": "<i class='fa fa-chevron-double-left'></i>",
+            // Pencarian memakai input sendiri di toolbar; jumlah baris/info/paginasi di bawah
+            "dom": "<'row'<'col-md-12 table-responsive'tr>>" +
+                "<'ina-table-footer'lip>",
+            "pageLength": 30,
+            "lengthMenu": [[10, 30, 50, 100], [10, 30, 50, 100]],
+            "pagingType": "simple_numbers",
+            "language": {
+                "lengthMenu": "Tampilkan _MENU_ baris",
+                "info": "_START_–_END_ dari _TOTAL_ berita",
+                "infoEmpty": "Tidak ada berita",
+                "infoFiltered": "(disaring dari _MAX_)",
+                "zeroRecords": "Berita tidak ditemukan",
+                "emptyTable": "Belum ada berita",
+                "processing": "Memuat data...",
+                "paginate": {
+                    "next": "<i class='fa fa-chevron-right' aria-hidden='true'></i><span class='sr-only'>Berikutnya</span>",
+                    "previous": "<i class='fa fa-chevron-left' aria-hidden='true'></i><span class='sr-only'>Sebelumnya</span>"
                 }
             },
             "columns": [{
-                    data: 'no',
-                    orderable: false
-                },
-                // {
-                //     data: 'category'
-                // },
-                {
                     data: 'title'
                 },
                 {
-                    data: 'description'
+                    data: 'description',
+                    orderable: false
                 },
                 {
-                    data: 'sort'
+                    data: 'sort',
+                    className: 'ina-num'
                 },
                 {
                     data: 'active'
                 },
                 {
                     data: 'action',
-                    orderable: false
+                    orderable: false,
+                    className: 'ina-col-action'
                 },
             ],
-            "order": [],
-            "drawCallback": function(data, type, full, meta) {
-                var api = this.api();
-                var data = api.rows().data();
-                $.each(data, function(i, row) {
-                    $("#lazy" + row.id).Lazy();
-                });
+            "order": []
+        });
 
-                $('.image-link').magnificPopup({
-                    type: 'image'
-                });
-            },
-            "initComplete": function(settings, json) {
-                var $searchInput = $('div.dataTables_filter input');
-                $searchInput.unbind();
-
-                // 1. Event untuk merespon tombol Enter (untuk mulai mencari)
-                $searchInput.on('keyup', function(e) {
-                    if (e.keyCode == 13) {
-                        t.search(this.value).draw();
-                    }
-                });
-
-                // 2. Event 'input' untuk mendeteksi setiap perubahan teks secara instan
-                // Ini akan langsung merespon saat kolom dihapus sampai kosong,
-                // termasuk jika Anda mengklik tombol 'X' di dalam kolom pencarian.
-                $searchInput.on('input search clear', function() {
-                    if (this.value === '') {
-                        t.search('').draw(); // Langsung reset filter dan load ulang tabel
-                    }
-                });
+        // Enter untuk mencari; kosongkan untuk menampilkan semua lagi
+        $('#berita-search').on('keyup', function(e) {
+            if (e.keyCode == 13) {
+                t.search(this.value).draw();
+            }
+        }).on('input search', function() {
+            if (this.value === '') {
+                t.search('').draw();
             }
         });
     });
 
     $("body").on("click", ".remove-data", function() {
         var url = $(this).attr('data-href');
-        console.log(url);
         Swal.fire({
             title: '<?= lang('App.swal.are_you_sure') ?>',
             text: "<?= lang('App.swal.can_not_be_restored') ?>",

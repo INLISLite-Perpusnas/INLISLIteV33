@@ -26,6 +26,7 @@ $slug = $request->getGet('slug') ?? '';
 		grid-column-start: 2;
 	}
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -67,7 +68,6 @@ $slug = $request->getGet('slug') ?? '';
 						<th class="text-center">Jumlah Pelanggaran</th>
 						<th class="text-center" width="120">Jumlah Suspend</th>
 						<th class="text-center" width="100">Updated Date</th>
-						<th class="text-center" style="min-width:150px" width="100">Aksi</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -82,7 +82,7 @@ $slug = $request->getGet('slug') ?? '';
 <?= $this->include('Pelanggaran\Views\add_modal'); ?>
 <?= $this->include('Pelanggaran\Views\update_modal'); ?>
 <script>
-	var groupColumn = 8;
+	var groupColumn = 7;
 	var t;
 	$(document).ready(function() {
 		t = $('#tbl_data').DataTable({
@@ -176,11 +176,6 @@ $slug = $request->getGet('slug') ?? '';
 					data: 'UpdateDate'
 				},
 				{
-					data: 'action',
-					className: 'text-center',
-					orderable: false
-				},
-				{
 					data: 'CollectionLoan_id',
 					visible: false
 				},
@@ -202,11 +197,11 @@ $slug = $request->getGet('slug') ?? '';
 				},
 			],
 			"columnDefs": [{
-					targets: [0, 7],
+					targets: [0],
 					searchable: false
 				},
 				{
-					targets: [0, 2, 3, 4, 5, 7],
+					targets: [0, 2, 3, 4, 5],
 					orderable: false
 				},
 				{
@@ -234,7 +229,7 @@ $slug = $request->getGet('slug') ?? '';
 						if (last !== group) {
 							$(rows)
 								.eq(i)
-								.before('<tr class="group"><td colspan="10">' + group + '</td></tr>');
+								.before('<tr class="group"><td colspan="7">' + group + '</td></tr>');
 							last = group;
 						}
 					});

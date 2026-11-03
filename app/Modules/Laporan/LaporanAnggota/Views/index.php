@@ -95,6 +95,8 @@ $request = service('request');
     }
 }
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
+<script src="<?= base_url('assets/js/ina-form-enhance.js') . '?v=' . filemtime(FCPATH . 'assets/js/ina-form-enhance.js') ?>" defer></script>
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -224,7 +226,7 @@ $request = service('request');
                     <div class="filter-section criteria-section">
                         <div class="criteria-heading">
                             <h6><i class="fas fa-filter" aria-hidden="true"></i> Kriteria Anggota</h6>
-                            <button type="button" class="btn btn-success" id="addCriterion" title="Tambah kriteria" aria-label="Tambah kriteria">
+                            <button type="button" class="btn btn-ina-outline" id="addCriterion" title="Tambah kriteria" aria-label="Tambah kriteria">
                                 <i class="fas fa-plus-circle" aria-hidden="true"></i>
                             </button>
                         </div>
@@ -370,14 +372,14 @@ $request = service('request');
                     <small class="text-muted">Frekuensi dikelompokkan berdasarkan kriteria yang dipilih (termasuk Semua); jika tanpa kriteria, gunakan kolom yang dicentang.</small>
                 </div>
                 <div class="text-center mb-4">
-                    <button type="submit" class="btn btn-success btn-lg px-5" id="exportBtn" onclick="setExportAction('excel')">
+                    <button type="submit" class="btn btn-catalog-add btn-lg px-5" id="exportBtn" onclick="setExportAction('excel')">
                         <i class="fas fa-file-excel"></i> Export Excel
                     </button>
-                    <button type="submit" class="btn btn-danger btn-lg px-5 ml-2" id="exportPdfBtn" onclick="setExportAction('pdf')">
+                    <button type="submit" class="btn btn-ina-outline btn-lg px-5 ml-2" id="exportPdfBtn" onclick="setExportAction('pdf')">
                         <i class="fas fa-file-pdf"></i> Export PDF
                     </button>
                     <button type="button" class="btn btn-secondary btn-lg px-5 ml-2" id="clearMemberFilters">
-                        <i class="fas fa-eraser"></i> Clear All Filters
+                        <i class="fas fa-eraser"></i> Hapus Filter
                     </button>
                 </div>
 

@@ -9,6 +9,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use Opac\Libraries\Semantic\SemanticSearch;
 
 class Opac extends \Base\Controllers\BaseController
 {
@@ -50,48 +51,138 @@ class Opac extends \Base\Controllers\BaseController
     $this->data['meta_description'] = 'Telusuri judul, pengarang, subjek, penerbit, dan koleksi perpustakaan melalui katalog daring.';
     $this->data['is_opac_index'] = true;
 
-    // ✅ Validasi member_no
-    $memberNo = $this->request->getVar('member_no') ?? '';
-    if (!empty($memberNo) && !preg_match('/^[a-zA-Z0-9\-]{0,50}$/', $memberNo)) {
-        $memberNo = '';
-    }
-    $memberNo = esc($memberNo);
-
-    if ($memberNo) {
-        try {
-            $result = $this->calculateRecommendations($memberNo);
-
-            $this->data['member_no']      = $memberNo;
-            $this->data['recommendations'] = $result['recommendations'];
-            $this->data['is_cold_start']   = $result['is_cold_start'];
-            $this->data['catalogs']        = [];
-            $this->data['pager']           = null;
-            $this->data['search']          = null;
-            $this->data['search_by']       = null;
-            $this->data['total_records']   = 0;
-
-        } catch (\Exception $e) {
-            $this->data['member_no']          = $memberNo;
-            $this->data['recommendations']    = [];
-            $this->data['metrics']            = null;
-            $this->data['is_cold_start']      = true;
-            $this->data['recommendation_error'] = esc($e->getMessage()); // ✅ escape error message
-            $this->loadRegularCatalogs();
-        }
+    if (setting_enabled('is_opac_cache')) {
+        $this->loadRegularCatalogscache();
     } else {
-        if (setting_enabled('is_opac_cache')) {
-            $this->loadRegularCatalogscache();
-        } else {
-            $this->loadRegularCatalogs();
-        }
+        $this->loadRegularCatalogs();
     }
 
+    $this->data['show_collection_tabs'] = !array_diff_key((array) $this->request->getGet(), ['page' => true]);
+    $this->data['collection_tabs'] = $this->data['show_collection_tabs']
+        ? ['latest' => [
+            'label' => 'Koleksi Terbaru',
+            'books' => $this->data['catalogs'] ?? [],
+            'count' => $this->data['total_records'] ?? 0,
+        ]] + $this->getCollectionTabs()
+        : [];
     $this->data['opac_banners'] = $this->getOpacBanners();
     $this->data['worksheets']   = $this->getWorksheets();
+    $this->logOpacSearch();
     $this->data['worksheet_id'] = $this->request->getVar('Worksheet_id') ?? '';
+    $this->data['semantic_enabled'] = SemanticSearch::enabled();
     $endTime = microtime(true);
     $this->data['execution_time'] = $endTime - $startTime;
     return view('Opac\Views\index', $this->data);
+}
+
+private function logOpacSearch(): void
+{
+    $params = (array) $this->request->getGet();
+    $fields = ['search', 'Author', 'Publisher', 'Subject', 'PublishYear', 'PublishLocation', 'Worksheet_id'];
+    if (isset($params['page']) || !array_intersect($fields, array_keys($params))
+        || strtoupper((string) get_setting_parameter('opac_log')) !== 'TRUE') {
+        return;
+    }
+
+    try {
+        if (!$this->db->tableExists('opaclogs')) {
+            return;
+        }
+
+        $terms = [];
+        foreach (['search' => 'Kata kunci', 'Author' => 'Pengarang', 'Publisher' => 'Penerbit', 'Subject' => 'Subjek', 'PublishYear' => 'Tahun', 'PublishLocation' => 'Kota terbit'] as $key => $label) {
+            if (isset($params[$key]) && is_scalar($params[$key]) && trim((string) $params[$key]) !== '') {
+                $terms[] = $label . ': ' . trim((string) $params[$key]);
+            }
+        }
+
+        $worksheetId = $params['Worksheet_id'] ?? '';
+        $worksheetName = '';
+        if (is_scalar($worksheetId) && $worksheetId !== '') {
+            $worksheetName = (string) $worksheetId;
+            foreach ($this->data['worksheets'] as $worksheet) {
+                if ((string) $worksheet->ID === $worksheetName) {
+                    $worksheetName = $worksheet->Name;
+                    break;
+                }
+            }
+            $terms[] = 'Jenis bahan: ' . $worksheetName;
+        }
+
+        $searchBy = $params['search_by'] ?? '';
+        $this->db->table('opaclogs')->insert([
+            'waktu' => date('Y-m-d H:i:s'),
+            'User_id' => session()->get('username') ?: null,
+            'ip' => $this->request->getIPAddress(),
+            'jenis_pencarian' => is_scalar($searchBy) && $searchBy !== '' ? (string) $searchBy : 'Semua Kriteria',
+            'keyword' => mb_substr(implode('; ', $terms) ?: '(tanpa kata kunci)', 0, 2000),
+            'jenis_bahan' => mb_substr($worksheetName, 0, 150),
+            'url' => mb_substr((string) $this->request->getUri(), 0, 2048),
+        ]);
+    } catch (\Throwable $e) {
+        log_message('error', 'Gagal menyimpan log pencarian OPAC.');
+    }
+}
+private function getCollectionTabs(): array
+{
+    $tabSettings = [
+        'featured' => ['label' => 'Koleksi Unggulan', 'show' => strtoupper((string) get_setting_parameter('ShowKoleksiUnggulan')) === 'TRUE', 'limit' => (int) get_setting_parameter('KoleksiUnggulanShow'), 'default' => 8],
+        'borrowed' => ['label' => 'Koleksi Sering Dipinjam', 'show' => strtoupper((string) get_setting_parameter('ShowKoleksiSeringDipinjam')) === 'TRUE', 'limit' => (int) get_setting_parameter('KoleksiSeringDipinjamShow'), 'default' => 8],
+        // Sama seperti Sering Dipinjam: flag tampil + jumlah maksimal, diatur di master-opac-baca-ditempat
+        // (show_sering_dibaca disimpan 1/0, TRUE/FALSE juga diterima)
+        'read' => ['label' => 'Koleksi Sering Baca di Tempat', 'show' => in_array(strtoupper(trim((string) get_setting_parameter('show_sering_dibaca'))), ['1', 'TRUE'], true), 'limit' => (int) get_setting_parameter('sering_dibaca_show'), 'default' => 6],
+    ];
+
+    $tabs = [];
+    foreach ($tabSettings as $type => $settings) {
+        if (!$settings['show']) {
+            continue;
+        }
+        $limit = $settings['limit'] > 0 ? $settings['limit'] : $settings['default'];
+        $books = $this->getCollectionTabBooks($type, $limit);
+        if ($books) {
+            $tabs[$type] = ['label' => $settings['label'], 'books' => $books];
+        }
+    }
+
+    return $tabs;
+}
+
+private function getCollectionTabBooks(string $type, int $limit): array
+{
+    try {
+        if ($type === 'read' && !$this->db->tableExists('bacaditempat')) {
+            return [];
+        }
+
+        if ($type === 'featured') {
+            $builder = $this->db->table('catalogs cat')
+                ->select('cat.ID, cat.Title, cat.Author, cat.Publisher, cat.PublishYear, cat.Subject, cat.CoverURL')
+                ->where('cat.IsOPAC', 1)
+                ->where('cat.IsPopuler', 1)
+                ->orderBy('cat.ID', 'DESC');
+        } elseif ($type === 'borrowed') {
+            $builder = $this->db->table('collectionloanitems cli')
+                ->select('cat.ID, cat.Title, cat.Author, cat.Publisher, cat.PublishYear, cat.Subject, cat.CoverURL, COUNT(cli.ID) AS LoanCount')
+                ->join('collections col', 'col.ID = cli.Collection_id')
+                ->join('catalogs cat', 'cat.ID = col.Catalog_id')
+                ->where('cat.IsOPAC', 1)
+                ->groupBy('cat.ID, cat.Title, cat.Author, cat.Publisher, cat.PublishYear, cat.Subject, cat.CoverURL')
+                ->orderBy('LoanCount', 'DESC');
+        } else {
+            $builder = $this->db->table('bacaditempat bt')
+                ->select('cat.ID, cat.Title, cat.Author, cat.Publisher, cat.PublishYear, cat.Subject, cat.CoverURL, COUNT(bt.ID) AS ReadCount')
+                ->join('collections col', 'col.ID = bt.collection_id')
+                ->join('catalogs cat', 'cat.ID = col.Catalog_id')
+                ->where('cat.IsOPAC', 1)
+                ->groupBy('cat.ID, cat.Title, cat.Author, cat.Publisher, cat.PublishYear, cat.Subject, cat.CoverURL')
+                ->orderBy('ReadCount', 'DESC');
+        }
+
+        return $builder->limit($limit)->get()->getResult();
+    } catch (\Exception $e) {
+        return [];
+    }
 }
 
 private function getOpacBanners()
@@ -115,17 +206,24 @@ private function getWorksheets()
 
 private function loadRegularCatalogs()
 {
-    $perPage     = 12;
+    $perPage     = 14;
     $currentPage = $this->request->getVar('page') ?? 1;
 
-    $builder = $this->katalogModel->select('catalogs.*')->where('IsOPAC', 1)->orderBy("ID", "DESC");
+    $builder = $this->katalogModel->select('catalogs.*')->where('IsOPAC', 1);
 
-    $search = sanitizeSearch($this->request->getVar('search'));
+    $search   = sanitizeSearch($this->request->getVar('search'));
+    $semantic = false;
 
     if ($search) {
         $rawSearch = $this->request->getVar('search');
         $searchBy  = sanitizeSearch($this->request->getVar('search_by') ?? 'Title');
-        $this->applyFulltextSearch($builder, $search, $searchBy, $rawSearch);
+        $semantic  = $this->applySemanticSearch($builder, $search, $searchBy);
+        if (!$semantic) {
+            $this->applyFulltextSearch($builder, $search, $searchBy, $rawSearch);
+        }
+    }
+    if (!$semantic) {
+        $builder->orderBy("ID", "DESC");
     }
 
     $additionalFilters = ['Publisher', 'Author', 'PublishLocation', 'Subject', 'PublishYear'];
@@ -170,13 +268,13 @@ private function loadRegularCatalogs()
 
 private function loadRegularCatalogscache()
 {
-    $cacheTTL    = 3600;
-    $perPage     = 12;
+    $cacheTTL    = setting_cache_ttl('opac_cache_ttl', 60); // default 1 jam
+    $perPage     = 14;
     $currentPage = $this->request->getVar('page') ?? 1;
 
     $requestParams = $this->request->getGet();
     ksort($requestParams);
-    $cacheKey = 'catalog_data_' . md5(http_build_query($requestParams));
+    $cacheKey = 'catalog_data_p' . $perPage . '_' . md5(http_build_query($requestParams));
 
     if ($cachedData = cache($cacheKey)) {
         // ========== CACHE HIT ==========
@@ -190,14 +288,21 @@ private function loadRegularCatalogscache()
 
     } else {
         // ========== CACHE MISS ==========
-        $builder = $this->katalogModel->select('catalogs.*')->where('IsOPAC', 1)->orderBy("ID", "DESC");
+        $builder = $this->katalogModel->select('catalogs.*')->where('IsOPAC', 1);
 
-        $search = sanitizeSearch($this->request->getVar('search'));
+        $search   = sanitizeSearch($this->request->getVar('search'));
+        $semantic = false;
 
         if ($search) {
             $rawSearch = $this->request->getVar('search');
             $searchBy  = sanitizeSearch($this->request->getVar('search_by') ?? 'Title');
-            $this->applyFulltextSearch($builder, $search, $searchBy, $rawSearch);
+            $semantic  = $this->applySemanticSearch($builder, $search, $searchBy);
+            if (!$semantic) {
+                $this->applyFulltextSearch($builder, $search, $searchBy, $rawSearch);
+            }
+        }
+        if (!$semantic) {
+            $builder->orderBy("ID", "DESC");
         }
 
         $additionalFilters = ['Publisher', 'Author', 'PublishLocation', 'Subject', 'PublishYear'];
@@ -240,7 +345,10 @@ private function loadRegularCatalogscache()
             'year_counts'            => array_count_values(array_map(fn($d) => date('Y', strtotime($d)), array_column($catalogs, 'EndDate'))),
         ];
 
-        cache()->save($cacheKey, $dataToCache, $cacheTTL);
+        // Hasil cadangan FULLTEXT saat service semantik mati tidak di-cache, agar tidak bertahan setelah service pulih.
+        if (empty($this->data['semantic_unavailable'])) {
+            cache()->save($cacheKey, $dataToCache, $cacheTTL);
+        }
         $this->data = array_merge($this->data, $dataToCache);
     }
 
@@ -272,6 +380,7 @@ private function loadRegularCatalogscache()
 
         // Get physical books (non-DRM)
         $roweksemplar = $EksemplarModel
+            ->select('collections.ID as CollectionID, collections.Status_id, collections.Rule_id, collections.BookingMemberID, collections.BookingExpiredDate')
             ->select('collections.NomorBarcode, collections.CallNumber, collectionrules.Name as RuleName, locations.Name as LocationName, collectionstatus.Name as StatusName, collections.EDISISERIAL, collections.TANGGAL_TERBIT_EDISI_SERIAL')
             ->join('collectionrules', 'collectionrules.id = collections.Rule_id', 'left')
             ->join('locations', 'locations.id = collections.Location_id', 'left')
@@ -335,6 +444,8 @@ private function loadRegularCatalogscache()
         $this->data['drm_enabled'] = $drmEnabled;
         $this->data['member_active_loan_collections'] = $member_active_loan_collections;
         $this->data['hcaptcha_site_key'] = getenv('HCAPTCHA_SITE_KEY');
+        $this->data['booking_enabled'] = $this->bookingEnabled();
+        $this->data['booking_member_no'] = $this->currentMemberNo();
 
         return view('Opac\Views\detail', $this->data);
     }
@@ -609,39 +720,45 @@ public function browse()
     {
         $this->data['title'] = 'Statistik Katalog';
 
-        // Total katalog
-        $this->data['total_catalogs'] = $this->katalogModel->countAll();
+        $this->data = array_merge($this->data, $this->statisticsCache('katalog', function () {
+            $d = [];
 
-        // Katalog per tahun
-        $this->data['by_year'] = $this->katalogModel
-        ->select('PublishYear, COUNT(*) as total')
-        ->where("PublishYear REGEXP '^[0-9]{4}$'")
-        ->groupBy('PublishYear')
-        ->orderBy('PublishYear', 'DESC')
-        ->findAll();
+            // Total katalog
+            $d['total_catalogs'] = $this->katalogModel->countAll();
 
-
-        // Katalog per bahasa
-        $this->data['by_language'] = $this->katalogModel
-            ->select('Languages, COUNT(*) as total')
-            ->where('Languages IS NOT NULL')
-            ->where('Languages !=', '')
-            ->groupBy('Languages')
-            ->orderBy('total', 'DESC')
+            // Katalog per tahun
+            $d['by_year'] = $this->katalogModel
+            ->select('PublishYear, COUNT(*) as total')
+            ->where("PublishYear REGEXP '^[0-9]{4}$'")
+            ->groupBy('PublishYear')
+            ->orderBy('PublishYear', 'DESC')
             ->findAll();
 
-        // Katalog per penerbit (top 10)
-        $builder = $this->db->table('catalogs');
-        $this->data['by_publisher'] = $builder
-            ->select('Publisher, COUNT(*) as total')
-            ->where('Publisher IS NOT NULL')
-            ->where('Publisher !=', '')
-            ->groupBy('Publisher')
-            ->orderBy('total', 'DESC')
-            ->limit(10)
-            ->get()
-            ->getResult(); // atau getResultArray();
 
+            // Katalog per bahasa
+            $d['by_language'] = $this->katalogModel
+                ->select('Languages, COUNT(*) as total')
+                ->where('Languages IS NOT NULL')
+                ->where('Languages !=', '')
+                ->groupBy('Languages')
+                ->orderBy('total', 'DESC')
+                ->findAll();
+
+            // Katalog per penerbit (top 10)
+            $builder = $this->db->table('catalogs');
+            $d['by_publisher'] = $builder
+                ->select('Publisher, COUNT(*) as total')
+                ->where('Publisher IS NOT NULL')
+                ->where('Publisher !=', '')
+                ->groupBy('Publisher')
+                ->orderBy('total', 'DESC')
+                ->limit(10)
+                ->get()
+                ->getResult(); // atau getResultArray();
+
+
+            return $d;
+        }));
 
         return view('Opac\Views\statistics', $this->data);
     }
@@ -650,216 +767,222 @@ public function browse()
     {
         $this->data['title'] = 'Statistik Anggota';
 
-        // 1. Total anggota
-        $this->data['total_members'] = $this->memberModel
-            ->where('active', 1)
-            ->countAllResults();
+        $this->data = array_merge($this->data, $this->statisticsCache('anggota', function () {
+            $d = [];
 
-        // 2. Anggota aktif (IsOnlineActive = 1)
-        $this->data['active_members'] = $this->memberModel
-            ->where('active', 1)
-            ->where('IsOnlineActive', 1)
-            ->countAllResults();
+            // 1. Total anggota
+            $d['total_members'] = $this->memberModel
+                ->where('active', 1)
+                ->countAllResults();
 
-        // 3. Anggota baru bulan ini
-        $this->data['new_members_this_month'] = $this->memberModel
-            ->where('active', 1)
-            ->where('MONTH(RegisterDate)', date('m'))
-            ->where('YEAR(RegisterDate)', date('Y'))
-            ->countAllResults();
+            // 2. Anggota aktif (IsOnlineActive = 1)
+            $d['active_members'] = $this->memberModel
+                ->where('active', 1)
+                ->where('IsOnlineActive', 1)
+                ->countAllResults();
 
-        // 4. Distribusi berdasarkan jenis kelamin
-        $this->data['by_gender'] = $this->db->query("
-            SELECT 
-                CASE 
-                    WHEN Sex_id = 1 THEN 'Laki-laki'
-                    WHEN Sex_id = 2 THEN 'Perempuan'
-                    ELSE 'Tidak Diketahui'
-                END as gender,
-                COUNT(*) as total
-            FROM members
-            WHERE active = 1
-            GROUP BY Sex_id
-            ORDER BY total DESC
-        ")->getResult();
+            // 3. Anggota baru bulan ini
+            $d['new_members_this_month'] = $this->memberModel
+                ->where('active', 1)
+                ->where('MONTH(RegisterDate)', date('m'))
+                ->where('YEAR(RegisterDate)', date('Y'))
+                ->countAllResults();
 
-        // 5. Distribusi berdasarkan jenjang pendidikan
-        $this->data['by_education'] = $this->db->query("
-            SELECT 
-                mp.Nama as education_level,
-                COUNT(m.ID) as total
-            FROM members m
-            LEFT JOIN master_pendidikan mp ON m.EducationLevel_id = mp.id
-            WHERE m.active = 1
-            GROUP BY m.EducationLevel_id, mp.Nama
-            ORDER BY total DESC
-            LIMIT 10
-        ")->getResult();
+            // 4. Distribusi berdasarkan jenis kelamin
+            $d['by_gender'] = $this->db->query("
+                SELECT 
+                    CASE 
+                        WHEN Sex_id = 1 THEN 'Laki-laki'
+                        WHEN Sex_id = 2 THEN 'Perempuan'
+                        ELSE 'Tidak Diketahui'
+                    END as gender,
+                    COUNT(*) as total
+                FROM members
+                WHERE active = 1
+                GROUP BY Sex_id
+                ORDER BY total DESC
+            ")->getResult();
 
-        // 6. Distribusi berdasarkan pekerjaan
-        // Di Controller (Bagian 6)
-        $this->data['by_job'] = $this->db->query("
-            SELECT 
-                COALESCE(mpk.Pekerjaan, 'Lainnya/Tidak Diisi') as job_name,
-                COUNT(m.ID) as total
-            FROM members m
-            LEFT JOIN master_pekerjaan mpk ON m.Job_id = mpk.id
-            WHERE m.active = 1
-            GROUP BY m.Job_id, mpk.Pekerjaan
-            ORDER BY total DESC
-            LIMIT 10
-        ")->getResult();
-    
-       
+            // 5. Distribusi berdasarkan jenjang pendidikan
+            $d['by_education'] = $this->db->query("
+                SELECT 
+                    mp.Nama as education_level,
+                    COUNT(m.ID) as total
+                FROM members m
+                LEFT JOIN master_pendidikan mp ON m.EducationLevel_id = mp.id
+                WHERE m.active = 1
+                GROUP BY m.EducationLevel_id, mp.Nama
+                ORDER BY total DESC
+                LIMIT 10
+            ")->getResult();
 
-        // 7. Registrasi anggota per bulan (12 bulan terakhir)
-        $this->data['by_month'] = $this->db->query("
-            SELECT 
-                DATE_FORMAT(RegisterDate, '%Y-%m') as month,
-                DATE_FORMAT(RegisterDate, '%b %Y') as month_name,
-                COUNT(*) as total
-            FROM members
-            WHERE active = 1
-            AND RegisterDate >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
-            GROUP BY DATE_FORMAT(RegisterDate, '%Y-%m'), DATE_FORMAT(RegisterDate, '%b %Y')
-            ORDER BY month DESC
-        ")->getResult();
+            // 6. Distribusi berdasarkan pekerjaan
+            // Di Controller (Bagian 6)
+            $d['by_job'] = $this->db->query("
+                SELECT 
+                    COALESCE(mpk.Pekerjaan, 'Lainnya/Tidak Diisi') as job_name,
+                    COUNT(m.ID) as total
+                FROM members m
+                LEFT JOIN master_pekerjaan mpk ON m.Job_id = mpk.id
+                WHERE m.active = 1
+                GROUP BY m.Job_id, mpk.Pekerjaan
+                ORDER BY total DESC
+                LIMIT 10
+            ")->getResult();
+        
+           
 
-        // 8. Distribusi berdasarkan tahun registrasi
-        $this->data['by_year'] = $this->db->query("
-            SELECT 
-                YEAR(RegisterDate) as year,
-                COUNT(*) as total
-            FROM members
-            WHERE active = 1
-            AND RegisterDate IS NOT NULL
-            GROUP BY YEAR(RegisterDate)
-            ORDER BY year DESC
-            LIMIT 10
-        ")->getResult();
+            // 7. Registrasi anggota per bulan (12 bulan terakhir)
+            $d['by_month'] = $this->db->query("
+                SELECT 
+                    DATE_FORMAT(RegisterDate, '%Y-%m') as month,
+                    DATE_FORMAT(RegisterDate, '%b %Y') as month_name,
+                    COUNT(*) as total
+                FROM members
+                WHERE active = 1
+                AND RegisterDate >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+                GROUP BY DATE_FORMAT(RegisterDate, '%Y-%m'), DATE_FORMAT(RegisterDate, '%b %Y')
+                ORDER BY month DESC
+            ")->getResult();
 
-        // 9. Distribusi berdasarkan rentang usia
-        $this->data['by_age_range'] = $this->db->query("
-            SELECT 
-                CASE 
-                    WHEN TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE()) < 13 THEN '< 13 tahun'
-                    WHEN TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE()) BETWEEN 13 AND 17 THEN '13-17 tahun'
-                    WHEN TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE()) BETWEEN 18 AND 25 THEN '18-25 tahun'
-                    WHEN TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE()) BETWEEN 26 AND 35 THEN '26-35 tahun'
-                    WHEN TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE()) BETWEEN 36 AND 45 THEN '36-45 tahun'
-                    WHEN TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE()) BETWEEN 46 AND 55 THEN '46-55 tahun'
-                    WHEN TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE()) > 55 THEN '> 55 tahun'
-                    ELSE 'Tidak Diketahui'
-                END as age_range,
-                COUNT(*) as total
-            FROM members
-            WHERE active = 1
-            AND DateOfBirth IS NOT NULL
-            GROUP BY age_range
-            ORDER BY 
-                CASE age_range
-                    WHEN '< 13 tahun' THEN 1
-                    WHEN '13-17 tahun' THEN 2
-                    WHEN '18-25 tahun' THEN 3
-                    WHEN '26-35 tahun' THEN 4
-                    WHEN '36-45 tahun' THEN 5
-                    WHEN '46-55 tahun' THEN 6
-                    WHEN '> 55 tahun' THEN 7
-                    ELSE 8
-                END
-        ")->getResult();
+            // 8. Distribusi berdasarkan tahun registrasi
+            $d['by_year'] = $this->db->query("
+                SELECT 
+                    YEAR(RegisterDate) as year,
+                    COUNT(*) as total
+                FROM members
+                WHERE active = 1
+                AND RegisterDate IS NOT NULL
+                GROUP BY YEAR(RegisterDate)
+                ORDER BY year DESC
+                LIMIT 10
+            ")->getResult();
 
-        // 10. Distribusi berdasarkan kota/provinsi (top 10)
-        $this->data['by_province'] = $this->db->query("
-            SELECT 
-                COALESCE(Province, 'Tidak Diketahui') as province,
-                COUNT(*) as total
-            FROM members
-            WHERE active = 1
-            GROUP BY Province
-            ORDER BY total DESC
-            LIMIT 10
-        ")->getResult();
+            // 9. Distribusi berdasarkan rentang usia
+            $d['by_age_range'] = $this->db->query("
+                SELECT 
+                    CASE 
+                        WHEN TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE()) < 13 THEN '< 13 tahun'
+                        WHEN TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE()) BETWEEN 13 AND 17 THEN '13-17 tahun'
+                        WHEN TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE()) BETWEEN 18 AND 25 THEN '18-25 tahun'
+                        WHEN TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE()) BETWEEN 26 AND 35 THEN '26-35 tahun'
+                        WHEN TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE()) BETWEEN 36 AND 45 THEN '36-45 tahun'
+                        WHEN TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE()) BETWEEN 46 AND 55 THEN '46-55 tahun'
+                        WHEN TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE()) > 55 THEN '> 55 tahun'
+                        ELSE 'Tidak Diketahui'
+                    END as age_range,
+                    COUNT(*) as total
+                FROM members
+                WHERE active = 1
+                AND DateOfBirth IS NOT NULL
+                GROUP BY age_range
+                ORDER BY 
+                    CASE age_range
+                        WHEN '< 13 tahun' THEN 1
+                        WHEN '13-17 tahun' THEN 2
+                        WHEN '18-25 tahun' THEN 3
+                        WHEN '26-35 tahun' THEN 4
+                        WHEN '36-45 tahun' THEN 5
+                        WHEN '46-55 tahun' THEN 6
+                        WHEN '> 55 tahun' THEN 7
+                        ELSE 8
+                    END
+            ")->getResult();
 
-        // 11. Distribusi berdasarkan status perkawinan
-        $this->data['by_marital_status'] = $this->db->query("
-            SELECT 
-                CASE 
-                    WHEN MaritalStatus_id = 1 THEN 'Belum Menikah'
-                    WHEN MaritalStatus_id = 2 THEN 'Menikah'
-                    WHEN MaritalStatus_id = 3 THEN 'Cerai'
-                    ELSE 'Tidak Diketahui'
-                END as marital_status,
-                COUNT(*) as total
-            FROM members
-            WHERE active = 1
-            GROUP BY MaritalStatus_id
-            ORDER BY total DESC
-        ")->getResult();
+            // 10. Distribusi berdasarkan kota/provinsi (top 10)
+            $d['by_province'] = $this->db->query("
+                SELECT 
+                    COALESCE(Province, 'Tidak Diketahui') as province,
+                    COUNT(*) as total
+                FROM members
+                WHERE active = 1
+                GROUP BY Province
+                ORDER BY total DESC
+                LIMIT 10
+            ")->getResult();
 
-        // 12. Anggota dengan keterlambatan pengembalian
-        $this->data['late_return_stats'] = $this->db->query("
-            SELECT 
-                CASE 
-                    WHEN LoanReturnLateCount = 0 THEN 'Tidak Pernah'
-                    WHEN LoanReturnLateCount BETWEEN 1 AND 3 THEN '1-3 kali'
-                    WHEN LoanReturnLateCount BETWEEN 4 AND 6 THEN '4-6 kali'
-                    WHEN LoanReturnLateCount > 6 THEN '> 6 kali'
-                END as late_category,
-                COUNT(*) as total
-            FROM members
-            WHERE active = 1
-            GROUP BY late_category
-            ORDER BY 
-                CASE late_category
-                    WHEN 'Tidak Pernah' THEN 1
-                    WHEN '1-3 kali' THEN 2
-                    WHEN '4-6 kali' THEN 3
-                    WHEN '> 6 kali' THEN 4
-                END
-        ")->getResult();
+            // 11. Distribusi berdasarkan status perkawinan
+            $d['by_marital_status'] = $this->db->query("
+                SELECT 
+                    CASE 
+                        WHEN MaritalStatus_id = 1 THEN 'Belum Menikah'
+                        WHEN MaritalStatus_id = 2 THEN 'Menikah'
+                        WHEN MaritalStatus_id = 3 THEN 'Cerai'
+                        ELSE 'Tidak Diketahui'
+                    END as marital_status,
+                    COUNT(*) as total
+                FROM members
+                WHERE active = 1
+                GROUP BY MaritalStatus_id
+                ORDER BY total DESC
+            ")->getResult();
 
-        // 13. Distribusi berdasarkan jenis identitas
-        $this->data['by_identity_type'] = $this->db->query("
-            SELECT 
-                mji.Nama as identity_type,
-                COUNT(m.ID) as total
-            FROM members m
-            LEFT JOIN master_jenis_identitas mji ON m.IdentityType_id = mji.id
-            WHERE m.active = 1
-            GROUP BY m.IdentityType_id, mji.Nama
-            ORDER BY total DESC
-        ")->getResult();
+            // 12. Anggota dengan keterlambatan pengembalian
+            $d['late_return_stats'] = $this->db->query("
+                SELECT 
+                    CASE 
+                        WHEN LoanReturnLateCount = 0 THEN 'Tidak Pernah'
+                        WHEN LoanReturnLateCount BETWEEN 1 AND 3 THEN '1-3 kali'
+                        WHEN LoanReturnLateCount BETWEEN 4 AND 6 THEN '4-6 kali'
+                        WHEN LoanReturnLateCount > 6 THEN '> 6 kali'
+                    END as late_category,
+                    COUNT(*) as total
+                FROM members
+                WHERE active = 1
+                GROUP BY late_category
+                ORDER BY 
+                    CASE late_category
+                        WHEN 'Tidak Pernah' THEN 1
+                        WHEN '1-3 kali' THEN 2
+                        WHEN '4-6 kali' THEN 3
+                        WHEN '> 6 kali' THEN 4
+                    END
+            ")->getResult();
 
-        // 14. Statistik tambahan
-        $this->data['avg_age'] = $this->db->query("
-            SELECT 
-                ROUND(AVG(TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE())), 1) as avg_age
-            FROM members
-            WHERE active = 1 
-            AND DateOfBirth IS NOT NULL
-        ")->getRow()->avg_age ?? 0;
+            // 13. Distribusi berdasarkan jenis identitas
+            $d['by_identity_type'] = $this->db->query("
+                SELECT 
+                    mji.Nama as identity_type,
+                    COUNT(m.ID) as total
+                FROM members m
+                LEFT JOIN master_jenis_identitas mji ON m.IdentityType_id = mji.id
+                WHERE m.active = 1
+                GROUP BY m.IdentityType_id, mji.Nama
+                ORDER BY total DESC
+            ")->getResult();
 
-        // 15. Anggota terdaftar hari ini
-        $this->data['today_registrations'] = $this->memberModel
-            ->where('active', 1)
-            ->where('DATE(RegisterDate)', date('Y-m-d'))
-            ->countAllResults();
+            // 14. Statistik tambahan
+            $d['avg_age'] = $this->db->query("
+                SELECT 
+                    ROUND(AVG(TIMESTAMPDIFF(YEAR, DateOfBirth, CURDATE())), 1) as avg_age
+                FROM members
+                WHERE active = 1 
+                AND DateOfBirth IS NOT NULL
+            ")->getRow()->avg_age ?? 0;
 
-        // 16. Growth rate (perbandingan dengan tahun lalu)
-        $currentYearMembers = $this->memberModel
-            ->where('active', 1)
-            ->where('YEAR(RegisterDate)', date('Y'))
-            ->countAllResults();
+            // 15. Anggota terdaftar hari ini
+            $d['today_registrations'] = $this->memberModel
+                ->where('active', 1)
+                ->where('DATE(RegisterDate)', date('Y-m-d'))
+                ->countAllResults();
 
-        $lastYearMembers = $this->memberModel
-            ->where('active', 1)
-            ->where('YEAR(RegisterDate)', date('Y') - 1)
-            ->countAllResults();
+            // 16. Growth rate (perbandingan dengan tahun lalu)
+            $currentYearMembers = $this->memberModel
+                ->where('active', 1)
+                ->where('YEAR(RegisterDate)', date('Y'))
+                ->countAllResults();
 
-        $this->data['growth_rate'] = $lastYearMembers > 0 
-            ? (($currentYearMembers - $lastYearMembers) / $lastYearMembers) * 100 
-            : 0;
+            $lastYearMembers = $this->memberModel
+                ->where('active', 1)
+                ->where('YEAR(RegisterDate)', date('Y') - 1)
+                ->countAllResults();
+
+            $d['growth_rate'] = $lastYearMembers > 0 
+                ? (($currentYearMembers - $lastYearMembers) / $lastYearMembers) * 100 
+                : 0;
+
+            return $d;
+        }));
 
         return view('Opac\Views\statistics_anggota', $this->data);
     }  
@@ -871,38 +994,44 @@ public function browse()
         [$startDate, $endDate] = $this->resolveStatisticsPeriod();
         $periodCondition = $this->statisticsPeriodCondition('visits.CreateDate', $startDate, $endDate);
 
-        $visitTables = "
-            SELECT CreateDate,
-                CASE
-                    WHEN NoAnggota IS NULL OR TRIM(NoAnggota) = '' THEN 'Non Anggota'
-                    ELSE 'Anggota'
-                END AS visit_type,
-                1 AS visitor_count
-            FROM memberguesses
-            WHERE CreateDate IS NOT NULL
-            UNION ALL
-            SELECT CreateDate, 'Rombongan' AS visit_type,
-                GREATEST(COALESCE(CountPersonel, 0), 1) AS visitor_count
-            FROM groupguesses
-            WHERE CreateDate IS NOT NULL
-        ";
+        $this->data = array_merge($this->data, $this->statisticsCache('kunjungan_' . $startDate->format('Ymd') . '_' . $endDate->format('Ymd'), function () use ($startDate, $endDate, $periodCondition) {
+            $d = [];
 
-        $this->data['total_visits'] = $this->db->query("SELECT COUNT(*) AS total FROM ({$visitTables}) visits WHERE {$periodCondition}")->getRow()->total ?? 0;
-        $this->data['total_visitors'] = $this->db->query("SELECT COALESCE(SUM(visitor_count), 0) AS total FROM ({$visitTables}) visits WHERE {$periodCondition}")->getRow()->total ?? 0;
-        $this->data['today_visits'] = $this->db->query("SELECT COUNT(*) AS total FROM ({$visitTables}) visits WHERE {$periodCondition} AND DATE(visits.CreateDate) = CURDATE()")->getRow()->total ?? 0;
-        $this->data['today_visitors'] = $this->db->query("SELECT COALESCE(SUM(visitor_count), 0) AS total FROM ({$visitTables}) visits WHERE {$periodCondition} AND DATE(visits.CreateDate) = CURDATE()")->getRow()->total ?? 0;
-        $this->data['month_visitors'] = $this->db->query("SELECT COALESCE(SUM(visitor_count), 0) AS total FROM ({$visitTables}) visits WHERE {$periodCondition} AND YEAR(visits.CreateDate) = YEAR(CURDATE()) AND MONTH(visits.CreateDate) = MONTH(CURDATE())")->getRow()->total ?? 0;
+            $visitTables = "
+                SELECT CreateDate,
+                    CASE
+                        WHEN NoAnggota IS NULL OR TRIM(NoAnggota) = '' THEN 'Non Anggota'
+                        ELSE 'Anggota'
+                    END AS visit_type,
+                    1 AS visitor_count
+                FROM memberguesses
+                WHERE CreateDate IS NOT NULL
+                UNION ALL
+                SELECT CreateDate, 'Rombongan' AS visit_type,
+                    GREATEST(COALESCE(CountPersonel, 0), 1) AS visitor_count
+                FROM groupguesses
+                WHERE CreateDate IS NOT NULL
+            ";
 
-        $this->data['visit_types'] = $this->db->query("SELECT visit_type, COUNT(*) AS visits, COALESCE(SUM(visitor_count), 0) AS visitors FROM ({$visitTables}) visits WHERE {$periodCondition} GROUP BY visit_type ORDER BY visitors DESC")->getResult();
-        $axis = $this->statisticsTrendAxis($startDate, $endDate);
-        $trendRows = $this->db->query("SELECT DATE_FORMAT(visits.CreateDate, '{$axis['sql_format']}') AS bucket, COUNT(*) AS visits, COALESCE(SUM(visitor_count), 0) AS visitors FROM ({$visitTables}) visits WHERE {$periodCondition} GROUP BY bucket ORDER BY bucket ASC")->getResult();
-        $this->data['trend'] = [
-            'labels' => $axis['labels'],
-            'visitors' => $this->statisticsTrendSeries($axis['keys'], $trendRows, 'visitors'),
-            'visits' => $this->statisticsTrendSeries($axis['keys'], $trendRows, 'visits'),
-        ];
-        $this->data['trend_granularity'] = $axis['granularity'];
-        $this->data['hourly_visits'] = $this->db->query("SELECT DAYOFWEEK(visits.CreateDate) AS day_number, HOUR(visits.CreateDate) AS visit_hour, COALESCE(SUM(visitor_count), 0) AS visitors FROM ({$visitTables}) visits WHERE {$periodCondition} AND HOUR(visits.CreateDate) BETWEEN 7 AND 20 GROUP BY day_number, visit_hour ORDER BY day_number, visit_hour")->getResult();
+            $d['total_visits'] = $this->db->query("SELECT COUNT(*) AS total FROM ({$visitTables}) visits WHERE {$periodCondition}")->getRow()->total ?? 0;
+            $d['total_visitors'] = $this->db->query("SELECT COALESCE(SUM(visitor_count), 0) AS total FROM ({$visitTables}) visits WHERE {$periodCondition}")->getRow()->total ?? 0;
+            $d['today_visits'] = $this->db->query("SELECT COUNT(*) AS total FROM ({$visitTables}) visits WHERE {$periodCondition} AND DATE(visits.CreateDate) = CURDATE()")->getRow()->total ?? 0;
+            $d['today_visitors'] = $this->db->query("SELECT COALESCE(SUM(visitor_count), 0) AS total FROM ({$visitTables}) visits WHERE {$periodCondition} AND DATE(visits.CreateDate) = CURDATE()")->getRow()->total ?? 0;
+            $d['month_visitors'] = $this->db->query("SELECT COALESCE(SUM(visitor_count), 0) AS total FROM ({$visitTables}) visits WHERE {$periodCondition} AND YEAR(visits.CreateDate) = YEAR(CURDATE()) AND MONTH(visits.CreateDate) = MONTH(CURDATE())")->getRow()->total ?? 0;
+
+            $d['visit_types'] = $this->db->query("SELECT visit_type, COUNT(*) AS visits, COALESCE(SUM(visitor_count), 0) AS visitors FROM ({$visitTables}) visits WHERE {$periodCondition} GROUP BY visit_type ORDER BY visitors DESC")->getResult();
+            $axis = $this->statisticsTrendAxis($startDate, $endDate);
+            $trendRows = $this->db->query("SELECT DATE_FORMAT(visits.CreateDate, '{$axis['sql_format']}') AS bucket, COUNT(*) AS visits, COALESCE(SUM(visitor_count), 0) AS visitors FROM ({$visitTables}) visits WHERE {$periodCondition} GROUP BY bucket ORDER BY bucket ASC")->getResult();
+            $d['trend'] = [
+                'labels' => $axis['labels'],
+                'visitors' => $this->statisticsTrendSeries($axis['keys'], $trendRows, 'visitors'),
+                'visits' => $this->statisticsTrendSeries($axis['keys'], $trendRows, 'visits'),
+            ];
+            $d['trend_granularity'] = $axis['granularity'];
+            $d['hourly_visits'] = $this->db->query("SELECT DAYOFWEEK(visits.CreateDate) AS day_number, HOUR(visits.CreateDate) AS visit_hour, COALESCE(SUM(visitor_count), 0) AS visitors FROM ({$visitTables}) visits WHERE {$periodCondition} AND HOUR(visits.CreateDate) BETWEEN 7 AND 20 GROUP BY day_number, visit_hour ORDER BY day_number, visit_hour")->getResult();
+
+            return $d;
+        }));
 
         $export = $this->request->getPost('export');
         if (in_array($export, ['excel', 'pdf'], true)) {
@@ -945,26 +1074,32 @@ public function browse()
         $loanCondition = $this->statisticsPeriodCondition('cli.LoanDate', $startDate, $endDate);
         $returnCondition = $this->statisticsPeriodCondition('cli.ActualReturn', $startDate, $endDate);
 
-        $this->data['total_loans'] = $this->db->query("SELECT COUNT(*) AS total FROM collectionloanitems cli WHERE {$loanCondition}")->getRow()->total ?? 0;
-        $this->data['total_returns'] = $this->db->query("SELECT COUNT(*) AS total FROM collectionloanitems cli WHERE {$returnCondition}")->getRow()->total ?? 0;
-        $this->data['total_borrowers'] = $this->db->query("SELECT COUNT(DISTINCT cli.member_id) AS total FROM collectionloanitems cli WHERE {$loanCondition}")->getRow()->total ?? 0;
-        $onLoan = $this->db->query("SELECT COUNT(*) AS total, COALESCE(SUM(DATE(cli.DueDate) < CURDATE()), 0) AS overdue FROM collectionloanitems cli WHERE cli.LoanStatus = 'Loan'")->getRow();
-        $this->data['on_loan'] = $onLoan->total ?? 0;
-        $this->data['on_loan_overdue'] = $onLoan->overdue ?? 0;
+        $this->data = array_merge($this->data, $this->statisticsCache('sirkulasi_' . $startDate->format('Ymd') . '_' . $endDate->format('Ymd'), function () use ($startDate, $endDate, $loanCondition, $returnCondition) {
+            $d = [];
 
-        $this->data['return_status'] = $this->db->query("SELECT CASE WHEN cli.DueDate IS NOT NULL AND DATE(cli.ActualReturn) > DATE(cli.DueDate) THEN 'Terlambat' ELSE 'Tepat Waktu' END AS return_status, COUNT(*) AS total FROM collectionloanitems cli WHERE {$returnCondition} GROUP BY return_status ORDER BY total DESC")->getResult();
-        $this->data['top_collections'] = $this->db->query("SELECT cat.Title AS title, cat.Author AS author, COUNT(*) AS total FROM collectionloanitems cli INNER JOIN collections col ON col.ID = cli.Collection_id INNER JOIN catalogs cat ON cat.ID = col.Catalog_id WHERE {$loanCondition} GROUP BY cat.ID, cat.Title, cat.Author ORDER BY total DESC LIMIT 10")->getResult();
-        $this->data['hourly_loans'] = $this->db->query("SELECT DAYOFWEEK(cli.LoanDate) AS day_number, HOUR(cli.LoanDate) AS loan_hour, COUNT(*) AS total FROM collectionloanitems cli WHERE {$loanCondition} AND HOUR(cli.LoanDate) BETWEEN 7 AND 20 GROUP BY day_number, loan_hour ORDER BY day_number, loan_hour")->getResult();
+            $d['total_loans'] = $this->db->query("SELECT COUNT(*) AS total FROM collectionloanitems cli WHERE {$loanCondition}")->getRow()->total ?? 0;
+            $d['total_returns'] = $this->db->query("SELECT COUNT(*) AS total FROM collectionloanitems cli WHERE {$returnCondition}")->getRow()->total ?? 0;
+            $d['total_borrowers'] = $this->db->query("SELECT COUNT(DISTINCT cli.member_id) AS total FROM collectionloanitems cli WHERE {$loanCondition}")->getRow()->total ?? 0;
+            $onLoan = $this->db->query("SELECT COUNT(*) AS total, COALESCE(SUM(DATE(cli.DueDate) < CURDATE()), 0) AS overdue FROM collectionloanitems cli WHERE cli.LoanStatus = 'Loan'")->getRow();
+            $d['on_loan'] = $onLoan->total ?? 0;
+            $d['on_loan_overdue'] = $onLoan->overdue ?? 0;
 
-        $axis = $this->statisticsTrendAxis($startDate, $endDate);
-        $loanRows = $this->db->query("SELECT DATE_FORMAT(cli.LoanDate, '{$axis['sql_format']}') AS bucket, COUNT(*) AS total FROM collectionloanitems cli WHERE {$loanCondition} GROUP BY bucket")->getResult();
-        $returnRows = $this->db->query("SELECT DATE_FORMAT(cli.ActualReturn, '{$axis['sql_format']}') AS bucket, COUNT(*) AS total FROM collectionloanitems cli WHERE {$returnCondition} GROUP BY bucket")->getResult();
-        $this->data['trend'] = [
-            'labels' => $axis['labels'],
-            'loans' => $this->statisticsTrendSeries($axis['keys'], $loanRows, 'total'),
-            'returns' => $this->statisticsTrendSeries($axis['keys'], $returnRows, 'total'),
-        ];
-        $this->data['trend_granularity'] = $axis['granularity'];
+            $d['return_status'] = $this->db->query("SELECT CASE WHEN cli.DueDate IS NOT NULL AND DATE(cli.ActualReturn) > DATE(cli.DueDate) THEN 'Terlambat' ELSE 'Tepat Waktu' END AS return_status, COUNT(*) AS total FROM collectionloanitems cli WHERE {$returnCondition} GROUP BY return_status ORDER BY total DESC")->getResult();
+            $d['top_collections'] = $this->db->query("SELECT cat.Title AS title, cat.Author AS author, COUNT(*) AS total FROM collectionloanitems cli INNER JOIN collections col ON col.ID = cli.Collection_id INNER JOIN catalogs cat ON cat.ID = col.Catalog_id WHERE {$loanCondition} GROUP BY cat.ID, cat.Title, cat.Author ORDER BY total DESC LIMIT 10")->getResult();
+            $d['hourly_loans'] = $this->db->query("SELECT DAYOFWEEK(cli.LoanDate) AS day_number, HOUR(cli.LoanDate) AS loan_hour, COUNT(*) AS total FROM collectionloanitems cli WHERE {$loanCondition} AND HOUR(cli.LoanDate) BETWEEN 7 AND 20 GROUP BY day_number, loan_hour ORDER BY day_number, loan_hour")->getResult();
+
+            $axis = $this->statisticsTrendAxis($startDate, $endDate);
+            $loanRows = $this->db->query("SELECT DATE_FORMAT(cli.LoanDate, '{$axis['sql_format']}') AS bucket, COUNT(*) AS total FROM collectionloanitems cli WHERE {$loanCondition} GROUP BY bucket")->getResult();
+            $returnRows = $this->db->query("SELECT DATE_FORMAT(cli.ActualReturn, '{$axis['sql_format']}') AS bucket, COUNT(*) AS total FROM collectionloanitems cli WHERE {$returnCondition} GROUP BY bucket")->getResult();
+            $d['trend'] = [
+                'labels' => $axis['labels'],
+                'loans' => $this->statisticsTrendSeries($axis['keys'], $loanRows, 'total'),
+                'returns' => $this->statisticsTrendSeries($axis['keys'], $returnRows, 'total'),
+            ];
+            $d['trend_granularity'] = $axis['granularity'];
+
+            return $d;
+        }));
 
         $export = $this->request->getPost('export');
         if (in_array($export, ['excel', 'pdf'], true)) {
@@ -1004,6 +1139,27 @@ public function browse()
         }
 
         return view('Opac\Views\statistics_sirkulasi', $this->data);
+    }
+
+    /**
+     * Cache data statistik OPAC (diatur di master-pengaturan-frontend: is_statistik_cache &
+     * statistik_cache_ttl). Kunci memuat tanggal hari ini agar angka "hari ini" tidak terbawa ke hari berikutnya.
+     */
+    private function statisticsCache(string $key, callable $build): array
+    {
+        if (!setting_enabled('is_statistik_cache')) {
+            return $build();
+        }
+
+        $cacheKey = 'opac_stat_' . $key . '_' . date('Ymd');
+        $cached = cache($cacheKey);
+        if (is_array($cached)) {
+            return $cached;
+        }
+
+        $data = $build();
+        cache()->save($cacheKey, $data, setting_cache_ttl('statistik_cache_ttl', 60));
+        return $data;
     }
 
     /**
@@ -1112,321 +1268,6 @@ public function browse()
 
         return array_map(static fn($key) => (int) ($byBucket[$key]->{$field} ?? 0), $keys);
     }
-
-        // Anggota peminjam per jenis kelamin
-
-
-  
-   private function calculateRecommendations($memberNo)
-    {
-        // Get loan data with catalog information
-        $loanQuery = "
-            SELECT cl.member_id, cl.Collection_id, c.Catalog_id, cat.Title, cat.Author, cat.Subject, cat.CoverURL
-            FROM collectionloanitems cl
-            JOIN collections c ON cl.Collection_id = c.ID
-            JOIN catalogs cat ON c.Catalog_id = cat.ID
-        ";
-        
-        $loanData = $this->db->query($loanQuery)->getResultArray();
-
-        // Check if member exists
-        $member = $this->memberModel->where('MemberNo', $memberNo)->first();
-        if (!$member) {
-            return [
-                'recommendations' => [],
-                'is_cold_start' => true
-            ];
-        }
-
-        $memberId = $member->ID;
-
-        // Get user's loan history
-        $userLoans = array_filter($loanData, function($loan) use ($memberId) {
-            return $loan['member_id'] == $memberId;
-        });
-
-        // Cold start: If user has no loan history, recommend popular books
-        if (empty($userLoans)) {
-            $popularBooks = $this->getPopularBooks();
-            return [
-                'recommendations' => $popularBooks,
-                'is_cold_start' => true
-            ];
-        }
-
-        // Create pivot table (member_id -> catalog_id -> loan_count)
-        $pivotTable = $this->createPivotTable($loanData);
-
-        // Calculate cosine similarity
-        $similarityMatrix = $this->calculateCosineSimilarity($pivotTable);
-
-        // Get similar members
-        $similarMembers = $this->getSimilarMembers($memberId, $similarityMatrix, 10);
-
-        // Get book recommendations
-        $recommendations = $this->getBookRecommendations($loanData, $similarMembers, 10);
-
-        // Calculate evaluation metrics
-        $userBooks = array_column($userLoans, 'Catalog_id');
-        $recommendedBooks = array_column($recommendations, 'ID');
-        
-        $metrics = $this->calculateMetrics($userBooks, $recommendedBooks);
-
-        return [
-            'recommendations' => $recommendations,
-            'is_cold_start' => false
-        ];
-    }
-
-    /**
-     * Get popular books for cold start
-     */
-    private function getPopularBooks($limit = 10)
-    {
-        $query = "
-            SELECT cat.ID, cat.ControlNumber, cat.BIBID, cat.Title, cat.Author, 
-                   cat.Edition, cat.Publisher, cat.PublishLocation, cat.PublishYear, 
-                   cat.Subject, cat.PhysicalDescription, cat.ISBN, cat.CallNumber, 
-                   cat.Languages, cat.CoverURL, cat.IsOPAC, COUNT(*) AS LoanCount
-            FROM collectionloanitems cl
-            JOIN collections c ON cl.Collection_id = c.ID
-            JOIN catalogs cat ON c.Catalog_id = cat.ID
-            GROUP BY cat.ID, cat.ControlNumber, cat.BIBID, cat.Title, cat.Author, 
-                     cat.Edition, cat.Publisher, cat.PublishLocation, cat.PublishYear, 
-                     cat.Subject, cat.PhysicalDescription, cat.ISBN, cat.CallNumber, 
-                     cat.Languages, cat.CoverURL, cat.IsOPAC
-            ORDER BY LoanCount DESC
-            LIMIT ?
-        ";
-        
-        return $this->db->query($query, [$limit])->getResultArray();
-    }
-
-    /**
-     * Create pivot table from loan data
-     */
-    private function createPivotTable($loanData)
-    {
-        $pivotTable = [];
-        
-        foreach ($loanData as $loan) {
-            $memberId = $loan['member_id'];
-            $catalogId = $loan['Catalog_id'];
-            
-            if (!isset($pivotTable[$memberId])) {
-                $pivotTable[$memberId] = [];
-            }
-            
-            if (!isset($pivotTable[$memberId][$catalogId])) {
-                $pivotTable[$memberId][$catalogId] = 0;
-            }
-            
-            $pivotTable[$memberId][$catalogId]++;
-        }
-        
-        return $pivotTable;
-    }
-
-    /**
-     * Calculate cosine similarity between members
-     */
-    private function calculateCosineSimilarity($pivotTable)
-    {
-        $memberIds = array_keys($pivotTable);
-        $allCatalogIds = [];
-        
-        // Get all unique catalog IDs
-        foreach ($pivotTable as $memberData) {
-            $allCatalogIds = array_merge($allCatalogIds, array_keys($memberData));
-        }
-        $allCatalogIds = array_unique($allCatalogIds);
-        
-        $similarity = [];
-        
-        foreach ($memberIds as $memberId1) {
-            $similarity[$memberId1] = [];
-            
-            foreach ($memberIds as $memberId2) {
-                if ($memberId1 == $memberId2) {
-                    $similarity[$memberId1][$memberId2] = 1.0;
-                    continue;
-                }
-                
-                // Create vectors for both members
-                $vector1 = [];
-                $vector2 = [];
-                
-                foreach ($allCatalogIds as $catalogId) {
-                    $vector1[] = $pivotTable[$memberId1][$catalogId] ?? 0;
-                    $vector2[] = $pivotTable[$memberId2][$catalogId] ?? 0;
-                }
-                
-                // Calculate cosine similarity
-                $similarity[$memberId1][$memberId2] = $this->cosineSimilarity($vector1, $vector2);
-            }
-        }
-        
-        return $similarity;
-    }
-
-    /**
-     * Calculate cosine similarity between two vectors
-     */
-    private function cosineSimilarity($vector1, $vector2)
-    {
-        $dotProduct = 0;
-        $magnitude1 = 0;
-        $magnitude2 = 0;
-        
-        for ($i = 0; $i < count($vector1); $i++) {
-            $dotProduct += $vector1[$i] * $vector2[$i];
-            $magnitude1 += $vector1[$i] * $vector1[$i];
-            $magnitude2 += $vector2[$i] * $vector2[$i];
-        }
-        
-        $magnitude1 = sqrt($magnitude1);
-        $magnitude2 = sqrt($magnitude2);
-        
-        if ($magnitude1 == 0 || $magnitude2 == 0) {
-            return 0;
-        }
-        
-        return $dotProduct / ($magnitude1 * $magnitude2);
-    }
-
-    /**
-     * Get similar members sorted by similarity score
-     */
-    private function getSimilarMembers($memberId, $similarityMatrix, $limit)
-    {
-        if (!isset($similarityMatrix[$memberId])) {
-            return [];
-        }
-        
-        $similarities = $similarityMatrix[$memberId];
-        unset($similarities[$memberId]); // Remove self
-        
-        arsort($similarities);
-        
-        return array_slice(array_keys($similarities), 0, $limit, true);
-    }
-
-    /**
-     * Get book recommendations based on similar members
-     */
-    private function getBookRecommendations($loanData, $similarMembers, $limit)
-    {
-        // Count books borrowed by similar members
-        $bookCounts = [];
-        
-        foreach ($loanData as $loan) {
-            if (in_array($loan['member_id'], $similarMembers)) {
-                $catalogId = $loan['Catalog_id'];
-                if (!isset($bookCounts[$catalogId])) {
-                    $bookCounts[$catalogId] = 0;
-                }
-                $bookCounts[$catalogId]++;
-            }
-        }
-        
-        // Sort by count
-        arsort($bookCounts);
-        
-        // Get top books
-        $topBookIds = array_slice(array_keys($bookCounts), 0, $limit);
-        
-        if (empty($topBookIds)) {
-            return [];
-        }
-        
-        // Get complete book details from catalogs table
-        $placeholders = str_repeat('?,', count($topBookIds) - 1) . '?';
-        $query = "
-            SELECT ID, ControlNumber, BIBID, Title, Author, Edition, Publisher, 
-                   PublishLocation, PublishYear, Subject, PhysicalDescription, 
-                   ISBN, CallNumber, Languages, CoverURL, IsOPAC
-            FROM catalogs 
-            WHERE ID IN ($placeholders)
-        ";
-        
-        $results = $this->db->query($query, $topBookIds)->getResultArray();
-        
-        // Maintain the order based on recommendation score
-        $orderedResults = [];
-        foreach ($topBookIds as $bookId) {
-            foreach ($results as $book) {
-                if ($book['ID'] == $bookId) {
-                    $orderedResults[] = $book;
-                    break;
-                }
-            }
-        }
-        
-        return $orderedResults;
-    }
-
-    /**
-     * Calculate evaluation metrics
-     */
-    private function calculateMetrics($userBooks, $recommendedBooks)
-    {
-        $userBooksSet = array_flip($userBooks);
-        $recommendedBooksSet = array_flip($recommendedBooks);
-        
-        // Find intersection (relevant recommended books)
-        $relevantRecommended = array_intersect_key($recommendedBooksSet, $userBooksSet);
-        
-        // Precision = relevant recommended / total recommended
-        $precision = count($recommendedBooks) > 0 ? count($relevantRecommended) / count($recommendedBooks) : 0.0;
-        
-        // Recall = relevant recommended / total relevant
-        $recall = count($userBooks) > 0 ? count($relevantRecommended) / count($userBooks) : 0.0;
-        
-        // Accuracy (same as recall in this context)
-        $accuracy = $recall;
-        
-        // NDCG calculation
-        $ndcg = $this->calculateNDCG($userBooks, $recommendedBooks);
-        
-        return [
-            'precision' => round($precision, 4),
-            'recall' => round($recall, 4),
-            'accuracy' => round($accuracy, 4),
-            'ndcg' => round($ndcg, 4)
-        ];
-    }
-
-    /**
-     * Calculate NDCG (Normalized Discounted Cumulative Gain)
-     */
-    private function calculateNDCG($userBooks, $recommendedBooks)
-    {
-        $userBooksSet = array_flip($userBooks);
-        
-        // Create relevance scores for recommended books
-        $relevanceScores = [];
-        foreach ($recommendedBooks as $bookId) {
-            $relevanceScores[] = isset($userBooksSet[$bookId]) ? 1 : 0;
-        }
-        
-        // Calculate DCG
-        $dcg = 0;
-        for ($i = 0; $i < count($relevanceScores); $i++) {
-            $dcg += $relevanceScores[$i] / log(2 + $i, 2);
-        }
-        
-        // Calculate IDCG (ideal DCG)
-        $idealRelevanceScores = $relevanceScores;
-        rsort($idealRelevanceScores);
-        
-        $idcg = 0;
-        for ($i = 0; $i < count($idealRelevanceScores); $i++) {
-            $idcg += $idealRelevanceScores[$i] / log(2 + $i, 2);
-        }
-        
-        return $idcg > 0 ? $dcg / $idcg : 0.0;
-    }
- 
 
     public function downloadMarcUtf8($id)
     {
@@ -1894,6 +1735,34 @@ public function browse()
     }
 
     /**
+     * Pencarian semantik (opsi semantic=1 di form OPAC): ID katalog termirip dari service `spark semantic:serve`,
+     * urutan kemiripan dipertahankan; filter tambahan tetap berlaku. Mengembalikan false bila tidak diminta, kriteria
+     * ISBN, atau service tidak tersedia, sehingga pemanggil memakai FULLTEXT.
+     */
+    private function applySemanticSearch($builder, string $search, string $searchBy): bool
+    {
+        if ($this->request->getVar('semantic') !== '1' || $searchBy === 'ISBN' || !SemanticSearch::enabled()) {
+            return false;
+        }
+
+        $hasFilters = false;
+        foreach (['Publisher', 'Author', 'PublishLocation', 'Subject', 'PublishYear', 'Worksheet_id'] as $filter) {
+            $hasFilters = $hasFilters || !empty($this->request->getVar($filter));
+        }
+        $config = config('Semantic');
+        $ids    = SemanticSearch::search($search, $hasFilters ? $config->filteredCandidates : $config->maxResults);
+        if ($ids === null) {
+            $this->data['semantic_unavailable'] = true;
+            return false;
+        }
+
+        $ids = $ids ?: [0];
+        $builder->whereIn('catalogs.ID', $ids)
+                ->orderBy('FIELD(catalogs.ID, ' . implode(',', $ids) . ')', '', false);
+        return true;
+    }
+
+    /**
      * Apply FULLTEXT search to query builder, fallback to LIKE when term is too short.
      * Requires FULLTEXT indexes on catalogs table — see app/Database/opac_fulltext_indexes.sql
      */
@@ -2256,6 +2125,280 @@ public function browse()
             'error'   => false,
             'message' => 'Login berhasil.',
         ]);
+    }
+
+    // ----------------------------------------------------------------
+    // PEMESANAN (BOOKING) KOLEKSI
+    // Aturan mengikuti OPAC INLISLite 3 (DetailOpacController + OpacHelpers::cekBooking).
+    // ----------------------------------------------------------------
+
+    /** Status koleksi "Tersedia" dan aturan akses "Dapat dipinjam". */
+    private const BOOKING_STATUS_TERSEDIA = 1;
+    private const BOOKING_RULE_DAPAT_DIPINJAM = 1;
+    private const STATUS_ANGGOTA_AKTIF = 3;
+
+    private function bookingEnabled(): bool
+    {
+        return (string) get_setting_parameter('IsBookingActivated') === '1';
+    }
+
+    /** Nomor anggota dari akun yang sedang login, null jika tamu atau akun staf. */
+    private function currentMemberNo(): ?string
+    {
+        if (!logged_in()) {
+            return null;
+        }
+        try {
+            $username = (string) (user()->username ?? '');
+        } catch (\Throwable $e) {
+            return null;
+        }
+        if ($username === '') {
+            return null;
+        }
+        return $this->memberModel->where('MemberNo', $username)->countAllResults() > 0 ? $username : null;
+    }
+
+    public function pesan(int $collectionId = 0)
+    {
+        $reply = function (bool $error, string $message, array $extra = []) {
+            return $this->response->setJSON(['error' => $error, 'message' => $message, 'csrf' => csrf_hash()] + $extra);
+        };
+
+        if (!$this->bookingEnabled()) {
+            return $reply(true, 'Fitur pemesanan koleksi sedang tidak aktif.');
+        }
+        if (!logged_in()) {
+            return $reply(true, 'Silakan login sebagai anggota untuk memesan koleksi.', ['login_required' => true]);
+        }
+        $memberNo = $this->currentMemberNo();
+        if ($memberNo === null) {
+            return $reply(true, 'Pemesanan koleksi khusus untuk anggota perpustakaan.');
+        }
+
+        $collection = $this->db->table('collections')
+            ->select('ID, Catalog_id, Status_id, Rule_id, ISDRM, Category_id, Location_Library_id, NomorBarcode, BookingMemberID, BookingExpiredDate')
+            ->where('ID', $collectionId)->get()->getRow();
+        if (!$collection || (int) $collection->ISDRM !== 0) {
+            return $reply(true, 'Koleksi tidak ditemukan.');
+        }
+
+        $now = new \DateTimeImmutable('now');
+        $nowText = $now->format('Y-m-d H:i:s');
+        if (!empty($collection->BookingMemberID) && (string) $collection->BookingExpiredDate > $nowText) {
+            return $reply(true, $collection->BookingMemberID === $memberNo
+                ? 'Koleksi ini sudah Anda pesan sampai ' . $collection->BookingExpiredDate . '.'
+                : 'Koleksi ini sudah dipesan anggota lain sampai ' . $collection->BookingExpiredDate . '.');
+        }
+        if ((int) $collection->Status_id !== self::BOOKING_STATUS_TERSEDIA
+            || (int) $collection->Rule_id !== self::BOOKING_RULE_DAPAT_DIPINJAM) {
+            return $reply(true, 'Koleksi ini tidak dapat dipesan.');
+        }
+
+        $errors = $this->bookingErrors($memberNo, $collection, $nowText);
+        if ($errors) {
+            return $reply(true, 'Gagal memesan: ' . implode(', ', $errors) . '.');
+        }
+
+        $expired = $this->bookingExpiredAt($now, (string) get_setting_parameter('BookingExpired'))->format('Y-m-d H:i:s');
+
+        $this->db->transStart();
+        // Update bersyarat agar dua anggota tidak bisa memesan eksemplar yang sama bersamaan
+        $this->db->table('collections')
+            ->where('ID', $collection->ID)
+            ->where('Status_id', self::BOOKING_STATUS_TERSEDIA)
+            ->groupStart()
+                ->where('BookingMemberID', null)
+                ->orWhere('BookingMemberID', '')
+                ->orWhere('BookingExpiredDate', null)
+                ->orWhere('BookingExpiredDate <=', $nowText)
+            ->groupEnd()
+            ->update(['BookingMemberID' => $memberNo, 'BookingExpiredDate' => $expired]);
+        $booked = $this->db->affectedRows() > 0;
+        if ($booked) {
+            $this->db->table('bookinglogs')->insert([
+                'memberId' => $memberNo,
+                'collectionId' => $collection->ID,
+                'bookingDate' => $nowText,
+                'bookingExpired' => $expired,
+                'Branch_id' => branch_id() ?: null,
+                'active' => 1,
+            ]);
+        }
+        $this->db->transComplete();
+
+        if (!$booked) {
+            return $reply(true, 'Koleksi ini baru saja dipesan anggota lain.');
+        }
+        if (!$this->db->transStatus()) {
+            return $reply(true, 'Pemesanan gagal disimpan. Silakan coba lagi.');
+        }
+
+        return $reply(false, 'Koleksi ' . $collection->NomorBarcode . ' berhasil dipesan. Silakan ambil di perpustakaan sebelum ' . $expired . '.', [
+            'expired' => $expired,
+        ]);
+    }
+
+    // ----------------------------------------------------------------
+    // KERANJANG PESAN ANGGOTA (setara opac/BookingController INLISLite 3)
+    // ----------------------------------------------------------------
+
+    /** Pesanan aktif anggota: koleksi yang masih ditahan dan belum lewat batas waktu. */
+    private function memberActiveBookings(string $memberNo): array
+    {
+        return $this->db->table('collections col')
+            ->select('col.ID, col.NomorBarcode, col.BookingExpiredDate, cat.ID as CatalogID, cat.Title')
+            ->join('catalogs cat', 'cat.ID = col.Catalog_id', 'left')
+            ->where('col.BookingMemberID', $memberNo)
+            ->where('col.BookingExpiredDate >', date('Y-m-d H:i:s'))
+            ->orderBy('col.BookingExpiredDate')
+            ->get()->getResult();
+    }
+
+    /** Isi modal "Keranjang Pesan" (action=showBookingDetail di versi lama). */
+    public function bookingList()
+    {
+        $memberNo = $this->currentMemberNo();
+        return view('Opac\Views\booking\list', [
+            'memberNo' => $memberNo,
+            'booking' => $memberNo ? $this->memberActiveBookings($memberNo) : [],
+        ]);
+    }
+
+    /** Batalkan pesanan milik anggota yang login (action=cancelBooking di versi lama). */
+    public function bookingCancel(int $collectionId = 0)
+    {
+        $memberNo = $this->currentMemberNo();
+        if ($memberNo === null) {
+            return $this->response->setJSON(['error' => true, 'message' => 'Silakan login sebagai anggota.', 'csrf' => csrf_hash()]);
+        }
+
+        $collection = $this->db->table('collections')->select('BookingExpiredDate')
+            ->where('ID', $collectionId)->where('BookingMemberID', $memberNo)->get()->getRow();
+        if (!$collection) {
+            return $this->response->setJSON(['error' => true, 'message' => 'Pesanan tidak ditemukan.', 'csrf' => csrf_hash()]);
+        }
+
+        $this->db->transStart();
+        // Hanya koleksi yang dipesan anggota ini yang boleh dilepas
+        $this->db->table('collections')
+            ->where('ID', $collectionId)->where('BookingMemberID', $memberNo)
+            ->update(['BookingMemberID' => null, 'BookingExpiredDate' => null]);
+        $this->db->table('bookinglogs')
+            ->where('memberId', $memberNo)->where('collectionId', $collectionId)
+            ->where('bookingExpired', $collection->BookingExpiredDate)
+            ->update(['active' => 0]);
+        $this->db->transComplete();
+
+        return $this->response->setJSON([
+            'error' => !$this->db->transStatus(),
+            'message' => $this->db->transStatus() ? 'Item telah dihapus dari keranjang pesan.' : 'Pesanan gagal dibatalkan.',
+            'csrf' => csrf_hash(),
+        ]);
+    }
+
+    /** Tanda terima pemesanan koleksi untuk dicetak (actionCetak di versi lama). */
+    public function bookingCetak()
+    {
+        $memberNo = $this->currentMemberNo();
+        if ($memberNo === null) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        return view('Opac\Views\booking\cetak', [
+            'anggota' => $this->db->table('members')->select('MemberNo, Fullname')->where('MemberNo', $memberNo)->get()->getRow(),
+            'booking' => $this->memberActiveBookings($memberNo),
+            'namaPerpustakaan' => get_setting_parameter('NamaPerpustakaan'),
+        ]);
+    }
+
+    /** Validasi anggota terhadap koleksi (setara OpacHelpers::cekBooking INLISLite 3). */
+    private function bookingErrors(string $memberNo, object $collection, string $nowText): array
+    {
+        $errors = [];
+        $member = $this->db->table('members')->select('ID, StatusAnggota_id, EndDate')
+            ->where('MemberNo', $memberNo)->get()->getRow();
+
+        $max = (int) get_setting_parameter('JumlahBookingMaksimal');
+        $active = $this->db->table('collections')
+            ->where('BookingMemberID', $memberNo)->where('BookingExpiredDate >', $nowText)->countAllResults();
+        if ($max > 0 && $active >= $max) {
+            $errors[] = 'jumlah pesanan aktif sudah mencapai batas ' . $max . ' eksemplar';
+        }
+        if ((int) $member->StatusAnggota_id !== self::STATUS_ANGGOTA_AKTIF) {
+            $errors[] = 'status keanggotaan belum aktif';
+        }
+        if (empty($member->EndDate) || $member->EndDate < $nowText) {
+            $errors[] = 'masa berlaku keanggotaan sudah habis';
+        }
+
+        $locations = array_column($this->db->table('memberloanauthorizelocation')->select('LocationLoan_id')
+            ->where('Member_id', $member->ID)->get()->getResultArray(), 'LocationLoan_id');
+        if (!in_array((string) $collection->Location_Library_id, array_map('strval', $locations), true)) {
+            $errors[] = 'Anda tidak mempunyai akses peminjaman di lokasi ini';
+        }
+
+        $categories = array_column($this->db->table('memberloanauthorizecategory')->select('CategoryLoan_id')
+            ->where('Member_id', $member->ID)->get()->getResultArray(), 'CategoryLoan_id');
+        if (!in_array((string) $collection->Category_id, array_map('strval', $categories), true)) {
+            $errors[] = 'Anda tidak mempunyai akses peminjaman kategori koleksi ini';
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Batas waktu pesanan: durasi BookingExpired (HH:MM:SS) yang hanya dihitung
+     * pada jam buka perpustakaan (master_jam_buka), melewati hari tutup dan hari libur.
+     */
+    private function bookingExpiredAt(\DateTimeImmutable $now, string $duration): \DateTimeImmutable
+    {
+        $parts = array_map('intval', explode(':', $duration)) + [0, 0, 0];
+        $remaining = $parts[0] * 3600 + $parts[1] * 60 + $parts[2];
+        if ($remaining <= 0) {
+            $remaining = 3 * 3600;
+        }
+
+        $schedule = [];
+        foreach ($this->db->table('master_jam_buka')->get()->getResultArray() as $row) {
+            $schedule[strtolower($row['hari'])] = $row;
+        }
+        $fallback = $now->modify('+' . $remaining . ' seconds');
+        if (!$schedule) {
+            return $fallback;
+        }
+
+        $holidays = [];
+        foreach ($this->db->table('holidays')->select('Dates')->where('Dates >=', $now->format('Y-m-d'))
+            ->get()->getResultArray() as $row) {
+            $holidays[substr($row['Dates'], 0, 10)] = true;
+        }
+
+        $dayNames = ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
+        $cursor = $now;
+        for ($i = 0; $i < 60; $i++) {
+            $date = $cursor->format('Y-m-d');
+            $row = $schedule[$dayNames[(int) $cursor->format('w')]] ?? null;
+            if ($row && !isset($holidays[$date])) {
+                $open = new \DateTimeImmutable($date . ' ' . $row['jam_buka']);
+                $close = new \DateTimeImmutable($date . ' ' . $row['jam_tutup']);
+                if ($close > $open) {
+                    if ($cursor < $open) {
+                        $cursor = $open;
+                    }
+                    if ($cursor < $close) {
+                        $available = $close->getTimestamp() - $cursor->getTimestamp();
+                        if ($remaining <= $available) {
+                            return $cursor->modify('+' . $remaining . ' seconds');
+                        }
+                        $remaining -= $available;
+                    }
+                }
+            }
+            $cursor = (new \DateTimeImmutable($date))->modify('+1 day');
+        }
+
+        return $fallback;
     }
 
     /**

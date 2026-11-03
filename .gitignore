@@ -69,6 +69,8 @@ writable/uploads/*
 
 writable/debugbar/*
 
+writable/exports/*
+
 php_errors.log
 
 #-------------------------
@@ -132,3 +134,6 @@ nb-configuration.xml
 /phpunit*.xml
 /.phpunit.*.cache
 
+
+# Model dan data pencarian semantik OPAC
+writable/semantic/*

@@ -16,25 +16,69 @@ $actions = array(
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
 <style>
-.btn-header-argon {
-    margin-left: 8px; /* jarak antar tombol */
-}
-.btn-header-argon.active {
-    color: #182d52;
-    font-weight: 600;
+/* Tombol tab edit katalog (KATALOG, EKSEMPLAR, COVER, ...): biru #2d659e,
+   tab aktif berwarna penuh, tab lain bergaris biru */
+.catalog-edit-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
 }
 
-.btn-header-argon.active::after {
-    content: "";
-    position: absolute;
-    left: 10px;
-    right: 10px;
-    bottom: -4px;
-    height: 3px;
-    background: #5e72e4;
-    border-radius: 3px;
+.catalog-edit-tabs .btn-header-argon {
+    display: inline-flex;
+    align-items: center;
+    height: 40px;
+    margin: 0;
+    padding: 0 18px !important;
+    font-size: 14px;
+    font-weight: 600;
+    color: #2d659e;
+    text-decoration: none;
+    background: #fff;
+    border: 1px solid #2d659e;
+    border-radius: 8px;
+    transform: none;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+.catalog-edit-tabs .btn-header-argon:hover {
+    color: #2d659e;
+    background: #eaf1f8;
+    border-color: #2d659e;
+    transform: none;
+}
+
+.catalog-edit-tabs .btn-header-argon.active,
+.catalog-edit-tabs .btn-header-argon.active:hover {
+    color: #fff;
+    background: #2d659e;
+}
+
+/* Tombol "Tambah File" di tab Cover & Konten Digital */
+.content-wrapper .btn.btn-catalog-add {
+    color: #fff;
+    background-color: #2d659e;
+    border-color: #2d659e;
+}
+
+.content-wrapper .btn.btn-catalog-add:hover {
+    color: #fff;
+    background-color: #24527f;
+    border-color: #24527f;
+}
+
+.content-wrapper .btn.btn-catalog-add:focus-visible {
+    outline: 2px solid #2d659e;
+    outline-offset: 2px;
+}
+
+.catalog-edit-tabs .btn-header-argon:focus-visible {
+    outline: 2px solid #2d659e;
+    outline-offset: 2px;
 }
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -43,7 +87,7 @@ $actions = array(
 
 	<ul class="body-tabs body-tabs-layout tabs-animated body-tabs-animated nav mb-3 flex-nowrap">
 		<li class="nav-item">
-	<div class="d-flex flex-wrap gap-2 mb-3">
+	<div class="catalog-edit-tabs">
 
     <!-- KATALOG -->
     <?php if ($catalog->Worksheet_id == 4): ?> 
@@ -52,7 +96,7 @@ $actions = array(
             <span>KATALOG</span>
         </a>
     <?php else: ?>
-        <a style="padding-left: 10px;" href="<?= base_url('katalog/edit/' . $catalog->ID) ?>"
+        <a href="<?= base_url('katalog/edit/' . $catalog->ID) ?>"
            class="btn-header-argon <?= ($slug == 'katalog_edit') ? 'active' : '' ?>">
             <span>KATALOG</span>
         </a>

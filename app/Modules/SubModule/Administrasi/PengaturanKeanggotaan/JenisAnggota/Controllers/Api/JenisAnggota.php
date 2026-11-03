@@ -64,13 +64,13 @@ class JenisAnggota extends \Base\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('DefaultLokasi', function ($row) {
-				$editlokasi = '<a href="' . base_url('master-jenis-anggota/defaultlokasi/' . $row->id) . '"  data-placement="top" title="Ubah" class="btn btn-primary show-data">Default Lokasi</a><br>';
+				$editlokasi = '<a href="' . base_url('master-jenis-anggota/defaultlokasi/' . $row->id) . '"  data-placement="top" title="Ubah" class="btn btn-ina-outline btn-sm show-data">Default Lokasi</a><br>';
 
 				return $editlokasi;
 			})
 			->edit('DefaultBahan', function ($row) {
 
-				$editbahan = '<a href="' . base_url('master-jenis-anggota/defaultbahan/' . $row->id) . '"  data-placement="top" title="Ubah" class="btn btn-primary show-data">Default Bahan</a>';
+				$editbahan = '<a href="' . base_url('master-jenis-anggota/defaultbahan/' . $row->id) . '"  data-placement="top" title="Ubah" class="btn btn-ina-outline btn-sm show-data">Default Bahan</a>';
 				return $editbahan;
 			})
 			->edit('active', function ($row) {
@@ -80,10 +80,10 @@ class JenisAnggota extends \Base\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('action', function ($row) {
-				$edit = '<a href="javascript:void(0);" data-href="' . base_url('api/master-jenis-anggota/detail/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Ubah" class="btn btn-primary show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-				$active = '<a href="' . base_url('master-jenis-anggota/apply_status/' . $row->id . '?field=active&value=1') . '"  data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Active" class="btn btn-success active-data"><i class="pe-7s-check font-weight-bold"> </i> </a>';
-				$inactive = '<a href="' . base_url('master-jenis-anggota/apply_status/' . $row->id . '?field=active&value=0') . '" data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Inactive" class="btn btn-warning draft-data"><i class="pe-7s-close font-weight-bold"> </i> </a>';
-				$delete = '<a href="javascript:void(0);" data-href="' . base_url('master-jenis-anggota/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+				$edit = '<a href="javascript:void(0);" data-href="' . base_url('api/master-jenis-anggota/detail/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Ubah" aria-label="Ubah" class="ina-action show-data"><i class="fas fa-pen" aria-hidden="true"></i></a>';
+				$active = '<a href="' . base_url('master-jenis-anggota/apply_status/' . $row->id . '?field=active&value=1') . '"  data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Aktifkan" aria-label="Aktifkan" class="ina-action active-data"><i class="fas fa-eye" aria-hidden="true"></i></a>';
+				$inactive = '<a href="' . base_url('master-jenis-anggota/apply_status/' . $row->id . '?field=active&value=0') . '" data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Nonaktifkan" aria-label="Nonaktifkan" class="ina-action draft-data"><i class="fas fa-eye-slash" aria-hidden="true"></i></a>';
+				$delete = '<a href="javascript:void(0);" data-href="' . base_url('master-jenis-anggota/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus" aria-label="Hapus" class="ina-action ina-action-danger remove-data"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
 				return $edit . ' ' . $active . ' ' . $inactive . ' ' . $delete;
 			})
 			->toJson();

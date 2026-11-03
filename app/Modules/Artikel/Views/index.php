@@ -2,148 +2,215 @@
 
 <?= $this->section('style') ?>
 <style>
+    /* Artikel - gaya INA Digital (Inter, skala 28/36, 18/26, 16/24, 14/20, 12/16; biru #2d659e) */
     :root {
-        --op-primary: #1e3a8a;
-        --op-primary-light: #3b5bdb;
-        --op-primary-soft: #eef2ff;
-        --op-ink: #111827;
+        --op-primary: #2d659e;
+        --op-primary-light: #2d659e;
+        --op-primary-hover: #24527f;
+        --op-primary-soft: #eef4fa;
+        --op-ink: #1f2937;
+        --op-ink-subtle: #374151;
         --op-muted: #6b7280;
         --op-border: #e5e7eb;
-        --op-bg: #f6f7fb;
-        --op-radius-lg: 20px;
-        --op-radius-md: 14px;
-        --op-radius-sm: 10px;
-        --op-shadow-sm: 0 1px 3px rgba(17, 24, 39, 0.06), 0 1px 2px rgba(17, 24, 39, 0.04);
-        --op-shadow-md: 0 10px 30px -12px rgba(30, 58, 138, 0.18);
+        --op-border-strong: #d1d5db;
+        --op-bg: #f7f7f8;
+        --op-radius-lg: 12px;
+        --op-radius-md: 12px;
+        --op-radius-sm: 8px;
+        --op-shadow-sm: 0 1px 3px rgba(16, 24, 40, .08), 0 1px 2px rgba(16, 24, 40, .04);
+        --op-shadow-md: 0 8px 24px rgba(16, 24, 40, .12);
+        --op-focus: 0 0 0 3px rgba(45, 101, 158, .2);
     }
 
     body { background: var(--op-bg); }
 
-    .op-container { max-width: 1600px; margin-left: auto; margin-right: auto; }
+    .op-container { max-width: 1600px; margin-left: auto; margin-right: auto; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--op-ink); }
     @media (min-width: 1400px) {
-        .op-container { padding-left: 2.5rem; padding-right: 2.5rem; }
+        .op-container { padding-left: 2rem; padding-right: 2rem; }
     }
 
-    .op-page-header { text-align: center; margin-bottom: 2.5rem; }
-    .op-page-header .op-icon-badge {
-        width: 64px; height: 64px;
-        border-radius: 18px;
-        background: linear-gradient(135deg, var(--op-primary), var(--op-primary-light));
-        display: inline-flex; align-items: center; justify-content: center;
-        color: #fff; font-size: 1.5rem;
-        box-shadow: var(--op-shadow-md);
-        margin-bottom: 1rem;
-    }
-    .op-page-header h1 { font-weight: 800; letter-spacing: -0.02em; color: var(--op-ink); font-size: 2.15rem; }
-    .op-page-header p { color: var(--op-muted); font-size: 1.02rem; }
+    /* Header halaman: rata kiri, H4 */
+    .op-page-header { text-align: left; margin-bottom: 24px; }
+    .op-page-header .op-icon-badge { display: none; }
+    .op-page-header h1 { font-size: 28px; line-height: 36px; font-weight: 700; letter-spacing: 0; color: var(--op-ink); margin: 0 0 4px; }
+    .op-page-header p { font-size: 16px; line-height: 24px; color: var(--op-muted); }
 
+    /* Breadcrumb INA: teks polos */
+    .op-breadcrumb .breadcrumb {
+        background: transparent;
+        padding: 0;
+        border-radius: 0;
+        box-shadow: none;
+        display: flex;
+        flex-wrap: wrap;
+        margin-bottom: 0;
+        font-size: 14px;
+        line-height: 20px;
+    }
+    .op-breadcrumb .breadcrumb-item a { color: var(--op-primary); text-decoration: none; font-weight: 500; }
+    .op-breadcrumb .breadcrumb-item a:hover { text-decoration: underline; }
+    .op-breadcrumb .breadcrumb-item.active { color: var(--op-ink); font-weight: 600; }
+
+    /* Tombol: utama solid, sekunder bergaris, sudut 8px */
+    .btn-op-primary,
+    .btn-op-soft {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 40px;
+        padding: 8px 16px;
+        font-size: 14px;
+        line-height: 20px;
+        font-weight: 600;
+        border-radius: var(--op-radius-sm) !important;
+        box-shadow: none;
+    }
+    .btn-op-primary.btn-sm,
+    .btn-op-soft.btn-sm { min-height: 32px; padding: 4px 12px; }
+    .btn-op-primary.btn-lg,
+    .btn-op-soft.btn-lg { min-height: 44px; padding: 10px 20px; font-size: 16px; line-height: 24px; }
+    .btn-op-primary { background: var(--op-primary); border: 1px solid var(--op-primary); color: #fff; }
+    .btn-op-primary:hover { background: var(--op-primary-hover); border-color: var(--op-primary-hover); color: #fff; filter: none; }
+    .btn-op-soft { background: #fff; border: 1px solid var(--op-primary); color: var(--op-primary); }
+    .btn-op-soft:hover { background: var(--op-primary-soft); border-color: var(--op-primary-hover); color: var(--op-primary-hover); }
+    .btn-op-primary:focus-visible,
+    .btn-op-soft:focus-visible { outline: none; box-shadow: var(--op-focus); }
+
+    /* Pencarian: Text Input INA + tombol */
     .op-search-card {
         background: #fff;
         border: 1px solid var(--op-border);
         border-radius: var(--op-radius-lg);
         box-shadow: var(--op-shadow-sm);
-        padding: 1.25rem 1.5rem;
-        margin-bottom: 2rem;
+        padding: 16px 24px;
+        margin-bottom: 24px;
     }
-    .op-search-card .input-group-text {
-        background: #fff; border-right: none; color: var(--op-muted);
+    .op-search-card .input-group { gap: 8px; flex-wrap: nowrap; }
+    .op-search-card .op-search-field { position: relative; flex: 1; min-width: 0; }
+    .op-search-card .op-search-field i {
+        position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+        color: var(--op-muted); pointer-events: none;
     }
     .op-search-card .form-control {
-        border-left: none; box-shadow: none;
+        width: 100%;
+        min-height: 44px;
+        padding: 10px 14px 10px 40px;
+        font-size: 16px;
+        line-height: 24px;
+        color: var(--op-ink);
+        border: 1px solid var(--op-border-strong);
+        border-radius: var(--op-radius-sm) !important;
+        box-shadow: none;
     }
-    .op-search-card .form-control:focus { border-color: var(--op-border); box-shadow: none; }
+    .op-search-card .form-control:hover { border-color: #9ca3af; }
+    .op-search-card .form-control:focus { border-color: var(--op-primary); box-shadow: var(--op-focus); }
+    .op-search-card .btn-op-primary,
+    .op-search-card .btn-op-soft { min-height: 44px; }
 
-    .btn-op-primary {
-        background: linear-gradient(135deg, var(--op-primary), var(--op-primary-light));
-        border: none; color: #fff; font-weight: 600;
-        border-radius: 999px;
-        box-shadow: 0 6px 16px -6px rgba(30,58,138,.5);
-    }
-    .btn-op-primary:hover { color: #fff; filter: brightness(1.05); }
-    .btn-op-soft {
-        background: #fff; border: 1px solid var(--op-border); color: var(--op-ink);
-        border-radius: 999px; font-weight: 600;
-    }
-    .btn-op-soft:hover { border-color: var(--op-primary-light); color: var(--op-primary); }
-
-    .op-results-title { font-weight: 800; color: var(--op-ink); font-size: 1.35rem; }
+    /* Header hasil */
+    .op-results-title { font-size: 18px; line-height: 26px; font-weight: 600; color: var(--op-ink); }
+    .op-results-title > i { display: none; }
     .op-count-badge {
         background: var(--op-primary-soft); color: var(--op-primary);
-        border-radius: 999px; padding: .35rem .85rem; font-weight: 700; font-size: .82rem;
-        display: inline-flex; align-items: center; gap: .3rem;
+        border-radius: 999px; padding: 2px 10px;
+        font-size: 12px; line-height: 16px; font-weight: 600;
+        display: inline-flex; align-items: center; gap: 4px;
+        vertical-align: middle;
     }
 
+    /* Kartu artikel */
     .article-card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        background: #fff;
         border: 1px solid var(--op-border);
         border-radius: var(--op-radius-md);
-        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color .25s ease;
         box-shadow: var(--op-shadow-sm);
         overflow: hidden;
-        background: #fff;
-        height: 100%;
+        transition: border-color .15s ease, box-shadow .15s ease;
     }
-    .article-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--op-shadow-md);
-        border-color: #c7d2fe;
-    }
+    .article-card:hover { border-color: var(--op-primary); box-shadow: 0 4px 12px rgba(16, 24, 40, .08); }
     .article-card .ac-header {
-        padding: .7rem 1rem;
-        color: #fff;
-        display: flex; align-items: center; gap: .5rem;
-        font-size: .78rem; font-weight: 700;
-        background: linear-gradient(135deg, #1e3a8a, #3b5bdb);
+        padding: 12px 16px 0;
+        display: flex; align-items: center; gap: 6px;
+        font-size: 12px; line-height: 16px; font-weight: 600;
+        color: var(--op-muted);
+        background: transparent;
     }
-    .article-card .ac-body { padding: 1.1rem; }
+    .article-card .ac-header i { color: var(--op-primary); }
+    .article-card .ac-body { flex: 1; padding: 8px 16px 16px; }
     .article-card .ac-title {
-        font-weight: 700; color: var(--op-ink); font-size: 1rem;
-        margin-bottom: .6rem; line-height: 1.35;
+        font-size: 16px; line-height: 24px; font-weight: 600; color: var(--op-ink);
+        margin-bottom: 12px;
         display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
-    .article-card .ac-meta { font-size: .8rem; color: var(--op-muted); display: flex; align-items: flex-start; gap: .45rem; margin-bottom: .3rem; }
-    .article-card .ac-meta i { color: var(--op-primary-light); margin-top: .15rem; width: 14px; }
-    .article-card .ac-footer { padding: .8rem 1.1rem; border-top: 1px solid var(--op-border); background: #fafbfd; display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
-
-    .op-chip-pdf {
-        background: #ecfdf3; color: #027a48; border: 1px solid #abefc6;
-        border-radius: 999px; padding: .3rem .7rem; font-weight: 700; font-size: .74rem;
-        display: inline-flex; align-items: center; gap: .3rem;
+    .article-card .ac-meta { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 4px; font-size: 14px; line-height: 20px; color: var(--op-muted); }
+    .article-card .ac-meta i { width: 14px; margin-top: 3px; color: #9ca3af; }
+    .article-card .ac-footer {
+        display: flex; justify-content: space-between; align-items: center; gap: 8px;
+        padding: 12px 16px;
+        border-top: 1px solid var(--op-border);
+        background: #fff;
     }
+
+    /* Badge ketersediaan PDF */
+    .op-chip-pdf,
     .op-chip-nopdf {
-        background: #f4f4f5; color: #71717a; border: 1px solid #e4e4e7;
-        border-radius: 999px; padding: .3rem .7rem; font-weight: 600; font-size: .74rem;
-        display: inline-flex; align-items: center; gap: .3rem;
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 2px 10px;
+        font-size: 12px; line-height: 16px; font-weight: 600;
+        border-radius: 999px;
+        border: 1px solid transparent;
     }
+    .op-chip-pdf { background: #e9f6ec; color: #1f7a36; border-color: #a7d9b3; }
+    .op-chip-nopdf { background: #f3f4f6; color: var(--op-muted); border-color: var(--op-border); }
 
+    /* Empty state */
     .op-empty-panel {
         text-align: center;
-        padding: 3.5rem 1.5rem;
+        padding: 48px 24px;
         background: #fff;
         border: 1px solid var(--op-border);
         border-radius: var(--op-radius-lg);
         box-shadow: var(--op-shadow-sm);
     }
-    .op-empty-panel i { color: #d1d5db; }
+    .op-empty-panel i { color: #9ca3af; }
+    .op-empty-panel h4 { font-size: 18px; line-height: 26px; color: var(--op-ink) !important; }
+    .op-empty-panel p { font-size: 14px; line-height: 20px; }
 
-    .custom-pagination .pagination { justify-content: center; gap: .25rem; }
+    /* Pagination INA */
+    .custom-pagination .pagination { justify-content: center; gap: 4px; }
     .custom-pagination .page-link {
-        border-radius: 10px !important;
-        border: 1px solid var(--op-border) !important;
-        color: var(--op-ink) !important;
-        font-weight: 600;
-        margin: 0 2px;
+        min-width: 40px; height: 40px;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: var(--op-radius-sm) !important;
+        border: 1px solid var(--op-border-strong) !important;
+        color: var(--op-ink-subtle) !important;
+        background: #fff !important;
+        font-size: 14px; font-weight: 600;
+        margin: 0;
     }
+    .custom-pagination .page-link:hover { border-color: var(--op-primary) !important; color: var(--op-primary) !important; }
     .custom-pagination .page-item.active .page-link {
-        background: linear-gradient(135deg, var(--op-primary), var(--op-primary-light)) !important;
-        border-color: transparent !important;
+        background: var(--op-primary) !important;
+        border-color: var(--op-primary) !important;
         color: #fff !important;
+    }
+
+    @media (max-width: 576px) {
+        .op-page-header h1 { font-size: 24px; line-height: 32px; }
+        .op-search-card { padding: 16px; }
+        .op-search-card .input-group { flex-wrap: wrap; }
+        .op-search-card .op-search-field { flex-basis: 100%; }
     }
 </style>
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
 
-<div class="container-fluid op-container py-5" style="padding-top: 100px !important;">
+<div class="container-fluid op-container py-5" style="padding-top: 110px !important;">
 
     <!-- Page Header -->
     <div class="op-page-header">
@@ -155,12 +222,14 @@
     <!-- Search -->
     <div class="op-search-card">
         <form method="get" action="<?= base_url('artikel') ?>">
-            <div class="input-group input-group-lg">
-                <span class="input-group-text"><i class="fas fa-search"></i></span>
-                <input type="text" name="search" class="form-control" placeholder="Cari judul artikel, penulis, atau subjek..." value="<?= esc($search ?? '') ?>">
+            <div class="input-group">
+                <div class="op-search-field">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <input type="text" name="search" class="form-control" placeholder="Cari judul artikel, penulis, atau subjek..." aria-label="Cari artikel" value="<?= esc($search ?? '') ?>">
+                </div>
                 <button type="submit" class="btn btn-op-primary px-4">Cari</button>
                 <?php if (!empty($search)) : ?>
-                    <a href="<?= base_url('artikel') ?>" class="btn btn-op-soft px-3">
+                    <a href="<?= base_url('artikel') ?>" class="btn btn-op-soft px-3" aria-label="Hapus pencarian">
                         <i class="fas fa-times"></i>
                     </a>
                 <?php endif; ?>

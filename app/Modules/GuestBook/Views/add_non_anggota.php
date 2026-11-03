@@ -352,14 +352,15 @@
 	.content-wrapper > *:nth-child(3) { animation-delay: 0.3s; }
 	.content-wrapper > *:nth-child(4) { animation-delay: 0.4s; }
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-guestbook.css') ?>?v=<?= @filemtime(FCPATH . 'assets/css/ina-guestbook.css') ?>">
 
-<div class="page-container" style="padding-top: 100px !important; padding-bottom: 40px !important;">
+<div class="page-container gb-ina" style="padding-top: 100px !important; padding-bottom: 40px !important;">
 	<div class="content-wrapper">
 		<!-- Header Section -->
 		<div class="page-header">
 			<div class="library-info">
-				<h1><?= $data->Name ?? 'Perpustakaan' ?></h1>
-				<div class="library-location"><?= $data->LocationLibrary_name ?? 'Dinas Perpustakaan dan Kearsipan' ?></div>
+				<h1><?= esc($data->Name ?? 'Perpustakaan') ?></h1>
+				<div class="library-location"><?= esc($data->LocationLibrary_name ?? 'Dinas Perpustakaan dan Kearsipan') ?></div>
 				<nav class="breadcrumb-custom">
 					<a href="<?= base_url() ?>"><i class="fas fa-home"></i> Beranda</a>
 					<span>/</span>
@@ -368,7 +369,7 @@
 					<span class="active">Bukan Anggota</span>
 				</nav>
 			</div><br>
-				<h2 style="background-color: #1b3878; color: #fff; padding: 10px; border-radius: 5px;">Total Kunjungan Hari ini <?=$totalKunjungan ?? '0'?></h2>
+				<div class="gb-visit-total" role="status"><span>Total Kunjungan Hari Ini</span><strong><?=$totalKunjungan ?? '0'?></strong></div>
 		</div>
 
 		<!-- Navigation Tabs -->
@@ -705,7 +706,7 @@ document.head.appendChild(style);
 		Swal.fire({
 			icon: 'success',
 			title: 'Berhasil!',
-			text: '<?= session()->getFlashdata('success') ?>',
+			text: <?= json_encode((string) session()->getFlashdata('success'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
 			showConfirmButton: false,
 			timer: 2000
 		});

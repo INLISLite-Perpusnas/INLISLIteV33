@@ -78,7 +78,44 @@ $page_title = ucfirst($segment2 ?: $segment1);
         <link rel="stylesheet" href="<?= base_url('assets/vendors/fontawesome-pro-5/css/all.min.css') ?>">
     <?php endif; ?>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+
     <style>
+        /* Token desain admin (gaya INA Digital) */
+        :root {
+            --ina-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --ina-primary: #1d5fd1;
+            --ina-primary-hover: #174ea9;
+            --ina-primary-subtle: #eef4ff;
+            --ina-text: #1f2937;
+            --ina-text-subtle: #374151;
+            --ina-text-muted: #6b7280;
+            --ina-icon: #4b5563;
+            --ina-border: #e5e7eb;
+            --ina-hover: #f3f4f6;
+            --ina-surface: #ffffff;
+            --ina-page: #f7f7f8;
+            --ina-success: #1f7a36;
+            --ina-warning: #e8700a;
+            --ina-danger: #c62828;
+            --ina-danger-subtle: #fdecec;
+            --ina-sidebar-width: 280px;
+            /* Tinggi header kiri (logo sidebar) = header kanan (bar atas), termasuk garis bawah */
+            --ina-header-height: 77px;
+            --ina-sidebar-collapsed: 76px;
+            --ina-radius: 12px;
+            --ina-shadow: 0 1px 3px rgba(16, 24, 40, .08), 0 1px 2px rgba(16, 24, 40, .04);
+            /* Skala tipografi INA Digital (font-size / line-height, letter-spacing 0%) */
+            --ina-h4: 28px / 36px var(--ina-font);
+            --ina-h5: 24px / 32px var(--ina-font);
+            --ina-body: 18px / 26px var(--ina-font);
+            --ina-body-sm: 16px / 24px var(--ina-font);
+            --ina-caption: 14px / 20px var(--ina-font);
+            --ina-caption-sm: 12px / 16px var(--ina-font);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -86,29 +123,164 @@ $page_title = ucfirst($segment2 ?: $segment1);
         }
 
         body {
-            background-color: #f8f9fa;
-            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--ina-surface);
+            color: var(--ina-text);
+            font-family: var(--ina-font);
             margin: 0;
             overflow-x: hidden;
-        }
-
-        /* Background Gradient Top */
-        .argon-bg-gradient {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 350px;
-            background: linear-gradient(135deg, #4054b2 0%, #243f7e 100%);
-            z-index: 0;
         }
 
         .app-container {
             position: relative;
             z-index: 1;
             min-height: 100vh;
-            padding-left: 290px;
-            transition: padding-left 0.3s;
+            padding-left: var(--ina-sidebar-width);
+            transition: padding-left .2s ease;
+        }
+
+        body.sidebar-collapsed .app-container {
+            padding-left: var(--ina-sidebar-collapsed);
+        }
+
+        .app-main__outer {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Judul halaman: teks gelap di atas latar terang */
+        .app-page-title {
+            color: var(--ina-text) !important;
+            background: transparent !important;
+            margin: 0 0 24px !important;
+            padding: 8px 0 0 !important;
+        }
+
+        .app-page-title .page-title-heading,
+        .app-page-title .page-title-heading h1 {
+            font: var(--ina-h4);
+            font-weight: 700;
+            color: var(--ina-text);
+            letter-spacing: 0;
+        }
+
+        .app-page-title .page-title-subheading,
+        .app-page-title .page-title-heading .page-title-subheading {
+            font: var(--ina-body-sm);
+            font-weight: 400;
+            letter-spacing: 0;
+            color: var(--ina-text-muted);
+            opacity: 1;
+        }
+
+        .app-page-title .page-title-icon {
+            display: none !important;
+        }
+
+        .breadcrumb {
+            background: transparent !important;
+        }
+
+        .breadcrumb-item,
+        .breadcrumb-item.active {
+            color: var(--ina-text-muted) !important;
+        }
+
+        .breadcrumb-item a {
+            color: var(--ina-primary) !important;
+            text-decoration: none;
+        }
+
+        .breadcrumb-item a:hover {
+            text-decoration: underline;
+        }
+
+        /* Kartu konten */
+        .main-card,
+        .card {
+            border: 1px solid var(--ina-border) !important;
+            border-radius: var(--ina-radius) !important;
+            box-shadow: var(--ina-shadow) !important;
+        }
+
+        /* Bar atas desktop: nama perpustakaan & jam di kanan */
+        .app-topbar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            box-sizing: border-box;
+            height: var(--ina-header-height);
+            padding: 0 36px;
+            background: var(--ina-surface);
+            border-bottom: 1px solid var(--ina-border);
+        }
+
+        /* Nama perpustakaan di kiri, jam di kanan */
+        .app-topbar-info {
+            display: flex;
+            flex: 1;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            min-width: 0;
+            font: var(--ina-caption);
+            font-weight: 500;
+            letter-spacing: 0;
+            color: var(--ina-text-subtle);
+        }
+
+        .app-topbar-library,
+        .app-topbar-clock {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+            white-space: nowrap;
+        }
+
+        .app-topbar-library {
+            font: var(--ina-body-sm);
+            font-weight: 600;
+            color: var(--ina-text);
+        }
+
+        .app-topbar-library > span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 40vw;
+        }
+
+        .app-topbar-library svg,
+        .app-topbar-clock svg {
+            flex-shrink: 0;
+            color: #2d659e;
+        }
+
+        .app-topbar-clock time {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .app-topbar-divider {
+            display: none;
+        }
+
+        /* Bar atas versi mobile */
+        .mobile-topbar {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            padding: 12px 16px;
+            background: var(--ina-surface);
+            border-bottom: 1px solid var(--ina-border);
+        }
+
+        .mobile-topbar strong {
+            font: var(--ina-body);
+            font-weight: 700;
+            color: var(--ina-primary);
         }
 
 
@@ -129,7 +301,7 @@ $page_title = ucfirst($segment2 ?: $segment1);
         }
 
         .breadcrumb-argon {
-            font-size: 14px;
+            font: var(--ina-caption);
             opacity: 0.9;
             margin-bottom: 8px;
             font-weight: 400;
@@ -152,14 +324,13 @@ $page_title = ucfirst($segment2 ?: $segment1);
         }
 
         .page-title-argon {
-            font-size: 32px;
+            font: var(--ina-h4);
             font-weight: 700;
             margin: 0;
-            line-height: 1.2;
         }
 
         .page-subtitle-argon {
-            font-size: 14px;
+            font: var(--ina-caption);
             opacity: 0.9;
             margin-top: 5px;
             font-weight: 400;
@@ -239,22 +410,20 @@ $page_title = ucfirst($segment2 ?: $segment1);
 
         /* Content Cards */
         .content-wrapper {
+            flex: 1;
             background: transparent;
             position: relative;
             z-index: 1;
-
-            padding-left: 20px;
-            padding-right: 30px;
-            min-height: 100vh;
-            transition: padding-left 0.3s ease;
+            padding: 32px 36px 0;
         }
 
         .card-argon {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.05);
-            margin-bottom: 25px;
+            background: var(--ina-surface);
+            border: 1px solid var(--ina-border);
+            border-radius: var(--ina-radius);
+            padding: 24px;
+            box-shadow: var(--ina-shadow);
+            margin-bottom: 24px;
         }
 
         .card-header-argon {
@@ -275,39 +444,54 @@ $page_title = ucfirst($segment2 ?: $segment1);
 
         /* Footer */
         .footer-argon {
-            margin-top: 50px;
-            padding: 25px 0;
+            margin: 40px 36px 0;
+            padding: 20px 0;
             text-align: center;
-            color: #526079;
-            font-size: 14px;
+            color: var(--ina-text-muted);
+            font-size: 13px;
+            border-top: 1px solid var(--ina-border);
         }
 
         .footer-argon a {
-            color: #5e72e4;
+            color: var(--ina-primary);
             text-decoration: none;
             font-weight: 600;
         }
 
         .footer-argon a:hover {
-            color: #4c5fd6;
+            color: var(--ina-primary-hover);
         }
 
-        /* Mobile Toggle Button */
+        /* Tombol menu mobile */
         .mobile-menu-toggle {
-            display: none;
-            position: fixed;
-            top: 30px;
-            left: 20px;
-            z-index: 1001;
-            background: white;
-            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             width: 40px;
             height: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 0;
+            color: var(--ina-text-subtle);
+            background: transparent;
+            border: 1px solid var(--ina-border);
+            border-radius: 8px;
             cursor: pointer;
-            color: #344767;
-            font-size: 18px;
+        }
+
+        .mobile-menu-toggle svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            background: rgba(15, 23, 42, .45);
+        }
+
+        .mobile-overlay.active {
+            display: block;
         }
 
         /* Stats Cards */
@@ -319,40 +503,41 @@ $page_title = ucfirst($segment2 ?: $segment1);
         }
 
         .stat-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.05);
+            background: var(--ina-surface);
+            border: 1px solid var(--ina-border);
+            border-radius: var(--ina-radius);
+            padding: 24px;
+            box-shadow: var(--ina-shadow);
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 16px;
         }
 
         .stat-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
+            width: 56px;
+            height: 56px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-            color: white;
+            font-size: 22px;
+            color: #fff;
         }
 
         .stat-icon.blue {
-            background: linear-gradient(135deg, #5e72e4, #825ee4);
+            background: var(--ina-primary);
         }
 
         .stat-icon.green {
-            background: linear-gradient(135deg, #2dce89, #2dcecc);
+            background: var(--ina-success);
         }
 
         .stat-icon.orange {
-            background: linear-gradient(135deg, #fb6340, #fbb140);
+            background: var(--ina-warning);
         }
 
         .stat-icon.red {
-            background: linear-gradient(135deg, #f5365c, #f56036);
+            background: var(--ina-danger);
         }
 
         .stat-content {
@@ -360,34 +545,59 @@ $page_title = ucfirst($segment2 ?: $segment1);
         }
 
         .stat-label {
-            font-size: 13px;
-            color: #8392ab;
-            margin-bottom: 5px;
-            font-weight: 600;
-            text-transform: uppercase;
+            font-size: 15px;
+            color: var(--ina-text-subtle);
+            margin-bottom: 6px;
+            font-weight: 500;
         }
 
         .stat-value {
-            font-size: 24px;
+            font-size: 32px;
             font-weight: 700;
-            color: #344767;
-            line-height: 1;
+            color: var(--ina-text);
+            line-height: 1.1;
         }
 
         /* Responsive Design */
         @media (max-width: 992px) {
-            .app-container {
+            .app-container,
+            body.sidebar-collapsed .app-container {
                 padding-left: 0;
             }
 
-            .mobile-menu-toggle {
+            .mobile-topbar {
                 display: flex;
-                align-items: center;
-                justify-content: center;
             }
 
-            .app-main__outer {
-                padding: 80px 20px 20px 20px;
+            .app-topbar {
+                height: 44px;
+                padding: 0 16px;
+                justify-content: flex-start;
+            }
+
+            .app-topbar-info {
+                gap: 10px;
+                font: var(--ina-caption-sm);
+                font-weight: 500;
+            }
+
+            .app-topbar-library {
+                font: var(--ina-caption);
+                font-weight: 600;
+            }
+
+            .app-page-title .page-title-heading,
+            .app-page-title .page-title-heading h1 {
+                font: var(--ina-h5);
+                font-weight: 700;
+            }
+
+            .content-wrapper {
+                padding: 20px 16px 0;
+            }
+
+            .footer-argon {
+                margin: 32px 16px 0;
             }
 
             .argon-header {
@@ -408,7 +618,8 @@ $page_title = ucfirst($segment2 ?: $segment1);
             }
 
             .page-title-argon {
-                font-size: 18px;
+                font: var(--ina-body);
+                font-weight: 700;
             }
         }
 
@@ -416,14 +627,6 @@ $page_title = ucfirst($segment2 ?: $segment1);
             .stats-container {
                 grid-template-columns: 1fr;
             }
-        }
-
-        .app-page-title {
-            color: #fff;
-        }
-
-        .breadcrumb-item a {
-            color: #fff !important;
         }
 
         <?php if ($isLightweightBackendPage): ?>
@@ -447,21 +650,6 @@ $page_title = ucfirst($segment2 ?: $segment1);
         .lightweight-backend-page [class^="fe-"]::before,
         .lightweight-backend-page [class*=" fe-"]::before { content: "\25C6"; }
         .lightweight-backend-page .text-danger { color: #b42318 !important; }
-        .lightweight-backend-page .mobile-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 999;
-            background: rgba(15, 23, 42, .55);
-        }
-        @media (max-width: 992px) {
-            .lightweight-backend-page .sidebar-argon {
-                transform: translateX(-120%);
-                transition: transform .25s ease;
-            }
-            .lightweight-backend-page .sidebar-argon.open { transform: translateX(0); }
-            .lightweight-backend-page .mobile-overlay.active { display: block; }
-        }
         <?php endif; ?>
     </style>
     <?= $this->renderSection('style'); ?>
@@ -496,40 +684,104 @@ $page_title = ucfirst($segment2 ?: $segment1);
 </script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const body = document.body;
         const toggleBtn = document.getElementById('sidebarToggle');
-		if (!toggleBtn) return;
+        const readPref = function() {
+            try { return localStorage.getItem('sidebar'); } catch (e) { return null; }
+        };
+        const savePref = function(value) {
+            try { localStorage.setItem('sidebar', value); } catch (e) {}
+        };
+        const syncToggle = function() {
+            if (!toggleBtn) return;
+            const collapsed = body.classList.contains('sidebar-collapsed');
+            toggleBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+            toggleBtn.setAttribute('title', collapsed ? 'Lebarkan sidebar' : 'Ciutkan sidebar');
+        };
 
-        // Restore state
-        if (localStorage.getItem('sidebar') === 'collapsed') {
-            document.body.classList.add('sidebar-collapsed');
-			toggleBtn.setAttribute('aria-expanded', 'false');
+        // Expand untuk desktop; Collapse otomatis di layar sempit (tablet/laptop kecil)
+        // bila pengguna belum pernah memilih sendiri.
+        const pref = readPref();
+        if (pref === 'collapsed' || (pref === null && window.innerWidth > 992 && window.innerWidth < 1280)) {
+            body.classList.add('sidebar-collapsed');
+        }
+        syncToggle();
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function() {
+                body.classList.toggle('sidebar-collapsed');
+                savePref(body.classList.contains('sidebar-collapsed') ? 'collapsed' : 'expanded');
+                syncToggle();
+            });
         }
 
-        toggleBtn.addEventListener('click', function() {
-            document.body.classList.toggle('sidebar-collapsed');
-			toggleBtn.setAttribute('aria-expanded', document.body.classList.contains('sidebar-collapsed') ? 'false' : 'true');
-
-            // Save state
-            localStorage.setItem(
-                'sidebar',
-                document.body.classList.contains('sidebar-collapsed') ?
-                'collapsed' :
-                'expanded'
-            );
+        // Label menu tampil sebagai tooltip saat sidebar diciutkan; tandai halaman aktif
+        document.querySelectorAll('.nav-menu-argon li a').forEach(function(link) {
+            const label = link.querySelector('span');
+            if (label && !link.getAttribute('title')) link.setAttribute('title', label.textContent.trim());
+            if (link.classList.contains('active') && !link.classList.contains('submenu-toggle')) {
+                link.setAttribute('aria-current', 'page');
+            }
         });
+
+        // Saat diciutkan, klik menu induk melebarkan sidebar agar submenu terlihat
+        document.querySelectorAll('.submenu-toggle').forEach(function(toggle) {
+            toggle.addEventListener('click', function() {
+                if (body.classList.contains('sidebar-collapsed') && window.innerWidth > 992) {
+                    body.classList.remove('sidebar-collapsed');
+                    this.closest('.has-submenu').classList.add('open');
+                    this.setAttribute('aria-expanded', 'true');
+                    savePref('expanded');
+                    syncToggle();
+                }
+            });
+        });
+    });
+
+    // Jam real-time di bar atas (zona waktu Jakarta)
+    (function() {
+        var dateFmt = new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta' });
+        var timeFmt = new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Asia/Jakarta' });
+
+        function tick() {
+            var clock = document.getElementById('live-clock');
+            if (!clock) return;
+            var now = new Date();
+            clock.textContent = dateFmt.format(now) + ' · ' + timeFmt.format(now).replace(/\./g, ':') + ' WIB';
+            clock.setAttribute('datetime', now.toISOString());
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            tick();
+            setInterval(tick, 1000);
+        });
+    })();
+
+    // Sidebar off-canvas di mobile
+    function toggleSidebar(force) {
+        const sidebar = document.getElementById('dashboard-sidebar');
+        const overlay = document.querySelector('.mobile-overlay');
+        const toggle = document.querySelector('.mobile-menu-toggle');
+        if (!sidebar) return;
+
+        const open = typeof force === 'boolean' ? force : !sidebar.classList.contains('open');
+        sidebar.classList.toggle('open', open);
+        if (overlay) overlay.classList.toggle('active', open);
+        if (toggle) toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    document.addEventListener('click', function(event) {
+        if (event.target.closest('.mobile-overlay')) toggleSidebar(false);
+    });
+
+    document.addEventListener('keydown', function(event) {
+        const sidebar = document.getElementById('dashboard-sidebar');
+        if (event.key === 'Escape' && sidebar && sidebar.classList.contains('open')) toggleSidebar(false);
     });
 </script>
 
 
 <body class="<?= $isDashboardPage ? 'dashboard-page lightweight-backend-page' : ($isCatalogListPage ? 'catalog-list-page lightweight-backend-page' : ($isExemplarListPage ? 'exemplar-list-page lightweight-backend-page' : ($isMemberListPage ? 'member-list-page lightweight-backend-page' : ''))) ?>">
-    <!-- Background Gradient -->
-    <div class="argon-bg-gradient" aria-hidden="true"></div>
-
-    <!-- Mobile Menu Toggle -->
-    <button class="mobile-menu-toggle" type="button" onclick="toggleSidebar()"
-        aria-label="Buka menu navigasi" aria-controls="dashboard-sidebar" aria-expanded="false">
-        <i class="fas fa-bars" aria-hidden="true"></i>
-    </button>
     <div class="mobile-overlay" aria-hidden="true"></div>
 
     <div class="app-container">
@@ -538,26 +790,36 @@ $page_title = ucfirst($segment2 ?: $segment1);
 
         <!-- Main Content -->
         <div class="app-main__outer">
-            <!-- Header -->
-            <header class="argon-header" style="padding-left: 20px;">
-                <div class="header-left">
+            <!-- Bar atas (hanya mobile) -->
+            <header class="mobile-topbar">
+                <button class="mobile-menu-toggle" type="button" onclick="toggleSidebar()"
+                    aria-label="Buka menu navigasi" aria-controls="dashboard-sidebar" aria-expanded="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                        <path d="M4 7h16M4 12h16M4 17h16" />
+                    </svg>
+                </button>
+                <strong>INLISLite</strong>
+            </header>
 
-
-                    <p class="page-title-argon"><?= esc($nama_perpustakaan) ?></p>
-                </div>
-
-                <div class="header-actions" style="padding-right: 50px;">
-                    <div id="clock-wrapper" style="display: flex; align-items: center; color: #fff; margin-right: 20px; font-size: 14px;">
-                        <i class="fas fa-clock" style="margin-right: 10px;" aria-hidden="true"></i>
-                        <span id="live-clock" role="timer" style="font-weight: 600; white-space: nowrap;">
-                            Memuat waktu...
-                        </span>
-                    </div>
-
-                    <a href="<?= base_url('user/profile') ?>" class="btn-header-argon">
-                        <i class="fas fa-user" aria-hidden="true"></i>
-                        <span>Profile</span>
-                    </a>
+            <!-- Bar atas desktop: nama perpustakaan & jam real-time -->
+            <header class="app-topbar">
+                <div class="app-topbar-info">
+                    <span class="app-topbar-library" title="<?= esc($nama_perpustakaan, 'attr') ?>">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M3 21h18" />
+                            <path d="M5 21V10l7-5 7 5v11" />
+                            <path d="M9 21v-6h6v6" />
+                        </svg>
+                        <span><?= esc($nama_perpustakaan) ?></span>
+                    </span>
+                    <span class="app-topbar-divider" aria-hidden="true"></span>
+                    <span class="app-topbar-clock">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9" />
+                            <path d="M12 7v5l3 2" />
+                        </svg>
+                        <time id="live-clock" datetime="">Memuat waktu...</time>
+                    </span>
                 </div>
             </header>
 
@@ -646,90 +908,8 @@ $page_title = ucfirst($segment2 ?: $segment1);
                 }
             });
         });
-
-        // Toggle sidebar on mobile
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar-argon');
-            const overlay = document.querySelector('.mobile-overlay');
-
-            if (sidebar && overlay) {
-                sidebar.classList.toggle('open');
-                overlay.classList.toggle('active');
-            }
-        }
-
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(e) {
-            if (window.innerWidth <= 992) {
-                const sidebar = document.querySelector('.sidebar-argon');
-                const toggle = document.querySelector('.mobile-menu-toggle');
-
-                if (sidebar && toggle &&
-                    !sidebar.contains(e.target) &&
-                    !toggle.contains(e.target) &&
-                    sidebar.classList.contains('open')) {
-                    toggleSidebar();
-                }
-            }
-        });
     </script>
     <?php endif; ?>
-    <?php if ($isLightweightBackendPage): ?>
-    <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('dashboard-sidebar');
-            const overlay = document.querySelector('.mobile-overlay');
-            const toggle = document.querySelector('.mobile-menu-toggle');
-            if (!sidebar) return;
-
-            sidebar.classList.toggle('open');
-            if (overlay) overlay.classList.toggle('active');
-            if (toggle) toggle.setAttribute('aria-expanded', sidebar.classList.contains('open') ? 'true' : 'false');
-        }
-
-        document.addEventListener('click', function(event) {
-            if (window.innerWidth > 992) return;
-            const sidebar = document.getElementById('dashboard-sidebar');
-            const toggle = document.querySelector('.mobile-menu-toggle');
-            if (sidebar && toggle && sidebar.classList.contains('open') &&
-                !sidebar.contains(event.target) && !toggle.contains(event.target)) {
-                toggleSidebar();
-            }
-        });
-    </script>
-    <?php endif; ?>
-    <script>
-        function updateClock() {
-            const now = new Date();
-
-            // Pengaturan format untuk zona waktu Jakarta
-            const dateOptions = {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-                timeZone: 'Asia/Jakarta'
-            };
-
-            const timeOptions = {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false,
-                timeZone: 'Asia/Jakarta'
-            };
-
-            const dateString = now.toLocaleDateString('id-ID', dateOptions);
-            const timeString = now.toLocaleTimeString('id-ID', timeOptions);
-
-            // Update elemen teks
-            const clock = document.getElementById('live-clock');
-            if (clock) clock.textContent = `${dateString} | ${timeString.replace(/\./g, ':')} WIB`;
-        }
-
-        // Update setiap 1 detik
-        setInterval(updateClock, 1000);
-        updateClock();
-    </script>
     <?= $this->renderSection('script'); ?>
 </body>
 

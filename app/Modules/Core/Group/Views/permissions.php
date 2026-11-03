@@ -7,6 +7,7 @@
         height: 100%;
     }
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -45,10 +46,10 @@
                     <input type="text" name="keyword" id="keyword" class="form-control" placeholder="Kata kunci...">
                     
                     <div class="input-group-append">
-                        <button type="button" id="btnCheckAll" class="btn btn-primary pt-2"><i class="fa fa-check-square mr-1"></i> Check All</button>
-                        <button type="button" id="btnUncheckAll" class="btn btn-primary pt-2"><i class="fa fa-square mr-1"></i> Uncheck All</button>
-                        <button type="button" id="btnReset" class="btn btn-primary pt-2"><i class="fa fa-history mr-1"></i> Reset</button>
-                        <button type="submit" class="btn btn-primary pt-2"><i class="fa fa-save mr-1"></i> Save</button>
+                        <button type="button" id="btnCheckAll" class="btn btn-ina-outline pt-2"><i class="fa fa-check-square mr-1"></i> Check All</button>
+                        <button type="button" id="btnUncheckAll" class="btn btn-ina-outline pt-2"><i class="fa fa-square mr-1"></i> Uncheck All</button>
+                        <button type="button" id="btnReset" class="btn btn-secondary pt-2"><i class="fa fa-history mr-1"></i> Reset</button>
+                        <button type="submit" class="btn btn-catalog-add pt-2"><i class="fa fa-save mr-1"></i> Simpan</button>
                     </div>
                 </div>
             </div>

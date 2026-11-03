@@ -83,8 +83,9 @@ class SelfReturn extends \App\Controllers\BaseController
         $items = [];
 
         foreach ($allItems as $item) {
-            $dueDate = new \DateTime($item->DueDate);
-            $isOverdue = $today > $dueDate;
+            // Hari kerja terlambat (jam diabaikan); terlambat hanya jika > 0
+            $daysOverdue = hari_terlambat($item->DueDate, $today->format('Y-m-d'));
+            $isOverdue = $daysOverdue > 0;
 
             $items[] = [
                 'id' => $item->ID, // Primary key collectionloanitems
@@ -94,7 +95,7 @@ class SelfReturn extends \App\Controllers\BaseController
                 'loan_date' => $item->LoanDate,
                 'due_date' => $item->DueDate,
                 'is_overdue' => $isOverdue,
-                'days_overdue' => $isOverdue ? $today->diff($dueDate)->days : 0
+                'days_overdue' => $daysOverdue
             ];
         }
 
@@ -158,10 +159,9 @@ class SelfReturn extends \App\Controllers\BaseController
             $loanCounts = [];
 
             foreach ($loanItems as $item) {
-                $dueDate = new \DateTime($item->DueDate);
-                $actualReturnDate = new \DateTime($returnDate);
-                $isOverdue = $actualReturnDate > $dueDate;
-                $lateDays = $isOverdue ? $actualReturnDate->diff($dueDate)->days : 0;
+                // Hari kerja terlambat (jam diabaikan, libur dilewati); sama dengan tampilan daftar
+                $lateDays  = hari_terlambat($item->DueDate, $returnDate);
+                $isOverdue = $lateDays > 0;
 
                 $this->db->table('collectionloanitems')
                     ->where('ID', $item->ID)

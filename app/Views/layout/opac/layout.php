@@ -26,6 +26,17 @@ $bootstrapFile = $isHomePage
     : ($isOpacIndex
         ? 'opac-bootstrap.min.css'
         : ($isGuestBookLocation ? 'guestbook-bootstrap.min.css' : 'bootstrap.min.css'));
+// Keranjang pesan anggota: tautan hanya tampil jika ada pesanan aktif (seperti INLISLite 3)
+$bookingCount = 0;
+$sessionUsername = (string) (session()->get('username') ?? '');
+if ($sessionUsername !== '' && session()->get('logged_in')
+    && (string) get_setting_parameter('IsBookingActivated') === '1') {
+    $bookingCount = $db->table('collections')
+        ->where('BookingMemberID', $sessionUsername)
+        ->where('BookingExpiredDate >', date('Y-m-d H:i:s'))
+        ->countAllResults();
+}
+$currentNavPath = trim(uri_string(), '/');
 $pageTitle = isset($title) ? $title : 'OPAC - ' . $nama_perpustakaan;
 $pageDescription = isset($meta_description)
     ? $meta_description
@@ -118,111 +129,107 @@ $pageDescription = isset($meta_description)
         }
 
         /* ─── Navbar ─── */
-        .navbar-custom {
-            background-color: var(--brand-600);
-            border-bottom: none;
+        .site-header .navbar-custom {
+            background: #2d659e;
             padding: 12px 0;
-            transition: all 0.3s;
+            box-shadow: 0 2px 12px rgba(15, 23, 42, .14);
         }
 
-        /* ✅ Brand area */
-        .navbar-brand {
-            max-width: 320px;
-            flex-shrink: 1;
-            min-width: 0;
-            /* wajib agar clamp bekerja di flexbox */
-        }
-
-        .navbar-brand img {
-            width: auto;
-            /* ✅ lebar menyesuaikan */
-            height: 52px;
-            /* ✅ sesuaikan dengan tinggi 2 baris h1 + p */
-            max-width: 52px;
-            border-radius: 10px;
-            object-fit: cover;
-            flex-shrink: 0;
-        }
-
-        /* ✅ Wrapper teks brand */
-        .navbar-brand .brand-text {
-            min-width: 0;
-        }
-
-        /* ✅ Nama perpustakaan: maksimal 2 baris, tidak dipotong dengan ellipsis */
-        .navbar-brand h1 {
+        .site-header .navbar-brand { max-width: 340px; min-width: 0; flex-shrink: 1; }
+        .site-header .navbar-brand img { width: auto; height: 52px; max-width: 52px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+        .site-header .brand-text { display: block; min-width: 0; }
+        .site-header .brand-name {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+            /* .navbar-brand Bootstrap = nowrap; nama panjang harus bisa turun ke baris kedua */
+            white-space: normal;
+            overflow-wrap: anywhere;
+            color: #fff;
             font-size: 1rem;
             font-weight: 700;
-            margin: 0;
-            color: #ffffff;
-            white-space: normal;
             line-height: 1.3;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
         }
-
-        .navbar-brand p {
-            font-size: 0.65rem;
-            margin: 0;
-            font-weight: 600;
-            text-transform: uppercase;
+        .site-header .brand-subtitle {
+            display: block;
             color: #e2e8f0;
+            font-size: .65rem;
+            font-weight: 600;
             letter-spacing: 1px;
-            white-space: nowrap;
+            text-transform: uppercase;
         }
-
-        /* ✅ Nav link */
-        /* ✅ Nav link — lebih besar */
-        .nav-link {
-            color: #f8fafc;
-            font-weight: 500;
-            font-size: 1rem;
-            /* ✅ naik dari 0.875rem */
-            margin: 0 6px;
-            /* ✅ sedikit lebih lega */
-            transition: 0.3s;
-            white-space: nowrap;
+        .site-header .navbar-nav { gap: .1rem; }
+        .site-header .navbar-nav .nav-link {
+            display: block;
+            margin: 0;
+            padding: .65rem .75rem;
+            border: 0;
+            border-radius: 6px;
+            background: transparent;
+            color: #fff;
+            font-size: .95rem;
+            text-decoration: none;
+            transition: background-color .2s ease;
         }
-
-        .nav-link:hover,
-        .nav-link.active {
-            color: #93c5fd;
+        .site-header .navbar-nav .nav-link:hover,
+        .site-header .navbar-nav .nav-link:focus-visible,
+        .site-header .navbar-nav .nav-link.active {
+            background: rgba(255, 255, 255, .16);
+            color: #fff;
         }
-
-        /* ✅ Responsif */
-        @media (max-width: 1200px) {
-            .navbar-brand {
-                max-width: 260px;
-            }
-
-            .navbar-brand h1 {
-                font-size: 0.875rem;
-            }
-
-            .nav-link {
-                font-size: 0.95rem;
-                margin: 0 4px;
-            }
+        .site-header .navbar-nav .nav-link.active { box-shadow: inset 0 -2px #fff; }
+        .site-header .dropdown-menu {
+            min-width: 220px;
+            padding: .4rem;
+            border: 1px solid #dbe4f0;
+            border-radius: 8px;
+            box-shadow: 0 12px 24px rgba(15, 23, 42, .13);
         }
-
-        @media (max-width: 992px) {
-            .navbar-brand {
-                max-width: 200px;
-            }
-
-            .navbar-brand h1 {
-                font-size: 0.8rem;
-            }
-
-            .nav-link {
-                font-size: 0.9rem;
-                margin: 0 2px;
-            }
+        .site-header .dropdown-item { padding: .65rem .75rem; border-radius: 5px; color: #1e293b; white-space: normal; }
+        .site-header .dropdown-item:hover,
+        .site-header .dropdown-item:focus-visible { background: #eff6ff; color: #1b3878; }
+        .site-header .dropdown-item.active { background: #1b3878; color: #fff; }
+        .site-header .navbar-toggler { border: 1px solid rgba(255, 255, 255, .8); color: #fff; padding: .5rem .7rem; }
+        .site-header .nav-actions .btn { border-radius: 8px !important; box-shadow: none !important; padding: .55rem .8rem !important; }
+        .site-header .nav-actions .btn-light { color: #1b3878 !important; }
+        .site-header .navbar-brand:focus-visible,
+        .site-header .navbar-toggler:focus-visible,
+        .site-header .nav-link:focus-visible,
+        .site-header .dropdown-item:focus-visible,
+        .site-header .nav-actions .btn:focus-visible,
+        .skip-link:focus-visible { outline: 3px solid #ffcd5b; outline-offset: 3px; }
+        .skip-link {
+            position: fixed;
+            top: -100px;
+            left: 12px;
+            z-index: 1100;
+            padding: .65rem 1rem;
+            background: #fff;
+            color: #1b3878;
         }
+        .skip-link:focus { top: 12px; }
+        #main-content { scroll-margin-top: 90px; }
 
-        /* ─── Footer ─── */
+        @media (min-width: 1400px) {
+            .site-header .navbar-toggler { display: none; }
+            .site-header .navbar-collapse { display: flex !important; flex-basis: auto; align-items: center; }
+            .site-header .navbar-nav { flex-direction: row; margin-left: auto; margin-right: auto; }
+            .site-header .navbar-nav .dropdown-menu { position: absolute; }
+            .site-header .nav-actions { margin-top: 0 !important; }
+        }
+        @media (max-width: 1399.98px) {
+            .site-header .navbar-brand { max-width: calc(100% - 68px); }
+            .site-header .navbar-collapse {
+                max-height: calc(100dvh - 85px);
+                overflow-y: auto;
+                padding: .75rem 0 1rem;
+            }
+            .site-header .navbar-nav { gap: 0; }
+            .site-header .navbar-nav .nav-link { padding: .75rem; }
+            .site-header .dropdown-menu { margin: 0 .75rem .5rem; box-shadow: none; }
+            .site-header .nav-actions { flex-wrap: wrap; padding: 0 .75rem; }
+        }
         .footer-custom {
             background-color: var(--slate-900);
             color: white;
@@ -329,159 +336,116 @@ $pageDescription = isset($meta_description)
     </style>
 
     <?= $this->renderSection('style') ?>
+    <?php if ($currentNavPath === 'opac' || str_starts_with($currentNavPath, 'opac/')): ?>
+    <style>
+        :root {
+            --opac-button-blue: #2d659e;
+            --opac-button-hover: #23517f;
+        }
+
+        #main-content .btn-primary,
+        #main-content .btn-brand,
+        #main-content .btn-primary-custom,
+        #main-content .btn-op-primary,
+        #modalBooking .btn-primary {
+            background: var(--opac-button-blue);
+            border-color: var(--opac-button-blue);
+            color: #fff;
+        }
+
+        #main-content .btn-primary:hover,
+        #main-content .btn-brand:hover,
+        #main-content .btn-primary-custom:hover,
+        #main-content .btn-op-primary:hover,
+        #modalBooking .btn-primary:hover {
+            background: var(--opac-button-hover);
+            border-color: var(--opac-button-hover);
+            color: #fff;
+            filter: none;
+        }
+
+        #main-content .btn-outline-primary {
+            border-color: var(--opac-button-blue);
+            color: var(--opac-button-blue);
+        }
+
+        #main-content .btn-outline-primary:hover,
+        #main-content .btn-outline-primary:focus-visible {
+            background: var(--opac-button-blue);
+            border-color: var(--opac-button-blue);
+            color: #fff;
+        }
+    </style>
+    <?php endif; ?>
 </head>
 
 <body>
 
     <!-- ─── Navbar ─── -->
-    <nav class="navbar navbar-expand-lg fixed-top navbar-custom shadow-sm">
+    <a class="skip-link" href="#main-content">Lewati ke konten utama</a>
+    <header class="site-header">
+    <nav class="navbar navbar-expand-xxl fixed-top navbar-custom" aria-label="Navigasi utama">
         <div class="container">
-
-            <!-- ✅ Brand: gap-2 lebih rapat, title tooltip untuk nama panjang -->
-            <a class="navbar-brand d-flex align-items-center gap-2"
-                href="<?= base_url('home') ?>"
-                title="<?= esc($nama_perpustakaan) ?>">
-                <img src="<?= !empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png') ?>"
-                    alt="Logo <?= esc($nama_perpustakaan) ?>" class="bg-white p-1 shadow-sm" width="52" height="52" fetchpriority="high">
-                <div class="brand-text">
-                    <h1><?= esc($nama_perpustakaan) ?></h1>
-                    <p>INLISLIte 3.3</p>
-                </div>
+            <a class="navbar-brand d-flex align-items-center gap-2" href="<?= base_url('home') ?>" title="<?= esc($nama_perpustakaan, 'attr') ?>">
+                <img src="<?= esc(!empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png'), 'attr') ?>"
+                     alt="Logo <?= esc($nama_perpustakaan, 'attr') ?>" class="bg-white p-1" width="52" height="52" fetchpriority="high">
+                <span class="brand-text">
+                    <span class="brand-name"><?= esc($nama_perpustakaan) ?></span>
+                    <span class="brand-subtitle">INLISLite 3.3</span>
+                </span>
             </a>
-
-            <button class="navbar-toggler border-0" type="button"
-                data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <i class="fa-solid fa-bars navbar-toggler-icon-custom"></i>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Menu navigasi">
+                <i class="fa-solid fa-bars" aria-hidden="true"></i>
             </button>
-
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mx-auto">
-
+                <ul class="navbar-nav mx-xxl-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= base_url('home') ?>">
-                            <i class="fa-solid fa-home me-1"></i>Beranda
-                        </a>
+                        <a class="nav-link<?= in_array($currentNavPath, ['', 'home', 'home/index'], true) ? ' active' : '' ?>"
+                           href="<?= base_url('home') ?>"<?= in_array($currentNavPath, ['', 'home', 'home/index'], true) ? ' aria-current="page"' : '' ?>>Beranda</a>
                     </li>
-
                     <li class="nav-item">
-                        <a class="nav-link<?= in_array(uri_string(), ['profil', 'profil/index'], true) ? ' active' : '' ?>"
-                            href="<?= base_url('profil') ?>">
-                            <i class="fa-solid fa-building me-1"></i>Profil
-                        </a>
+                        <a class="nav-link<?= in_array($currentNavPath, ['opac', 'opac/index'], true) ? ' active' : '' ?>"
+                           href="<?= base_url('opac') ?>"<?= in_array($currentNavPath, ['opac', 'opac/index'], true) ? ' aria-current="page"' : '' ?>>OPAC</a>
                     </li>
-
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= base_url('opac') ?>">
-                            <i class="fa-solid fa-magnifying-glass me-1"></i>OPAC
-                        </a>
+                        <a class="nav-link<?= str_starts_with($currentNavPath, 'profil') ? ' active' : '' ?>"
+                           href="<?= base_url('profil') ?>"<?= str_starts_with($currentNavPath, 'profil') ? ' aria-current="page"' : '' ?>>Profil</a>
                     </li>
-
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= base_url('opac/browse') ?>">
-                            <i class="fa-solid fa-compass me-1"></i>Browse
-                        </a>
+                        <a class="nav-link<?= str_starts_with($currentNavPath, 'opac/browse') ? ' active' : '' ?>"
+                           href="<?= base_url('opac/browse') ?>"<?= str_starts_with($currentNavPath, 'opac/browse') ? ' aria-current="page"' : '' ?>>Browse</a>
                     </li>
-
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= base_url('artikel') ?>">
-                            <i class="fa-solid fa-newspaper me-1"></i>Artikel
-                        </a>
+                        <a class="nav-link<?= str_starts_with($currentNavPath, 'artikel') ? ' active' : '' ?>"
+                           href="<?= base_url('artikel') ?>"<?= str_starts_with($currentNavPath, 'artikel') ? ' aria-current="page"' : '' ?>>Artikel</a>
                     </li>
                     <?php if (setting_enabled('is_perpustakaan_keliling')): ?>
-                    <li class="nav-item">
-                        <a class="nav-link<?= str_starts_with(uri_string(), 'perpustakaan-keliling') ? ' active' : '' ?>"
-                            href="<?= site_url('perpustakaan-keliling') ?>">
-                            <i class="fa-solid fa-van-shuttle me-1"></i>Perpustakaan Keliling
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a class="nav-link<?= str_starts_with($currentNavPath, 'perpustakaan-keliling') ? ' active' : '' ?>"
+                               href="<?= site_url('perpustakaan-keliling') ?>"<?= str_starts_with($currentNavPath, 'perpustakaan-keliling') ? ' aria-current="page"' : '' ?>>Perpustakaan Keliling</a>
+                        </li>
                     <?php endif; ?>
-
+                    <?php $isStatisticsActive = str_starts_with($currentNavPath, 'opac/statistics'); ?>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#"
-                            id="navbarDropdownLayanan" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fa-solid fa-desktop me-1"></i>Layanan Mandiri
-                        </a>
-                        <ul class="dropdown-menu shadow-sm border-0" aria-labelledby="navbarDropdownLayanan">
-                            <li>
-                                <a class="dropdown-item" href="<?= base_url('baca-ditempat') ?>">
-                                    <i class="fa-solid fa-book-reader fa-fw text-secondary me-2"></i>Baca Ditempat
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="<?= base_url('buku-tamu') ?>">
-                                    <i class="fa-solid fa-address-book fa-fw text-secondary me-2"></i>Buku Tamu
-                                </a>
-                            </li>
-                            <?php if (setting_enabled('is_peminjaman_mandiri', true)): ?>
-                            <li>
-                                <a class="dropdown-item" href="<?= base_url('peminjaman-mandiri') ?>">
-                                    <i class="fa-solid fa-hand-holding-hand fa-fw text-secondary me-2"></i>Peminjaman Mandiri
-                                </a>
-                            </li>
-                            <?php endif; ?>
-                            <?php if (setting_enabled('is_pengembalian_mandiri', true)): ?>
-                            <li>
-                                <a class="dropdown-item" href="<?= base_url('pengembalian-mandiri') ?>">
-                                    <i class="fa-solid fa-rotate-left fa-fw text-secondary me-2"></i>Pengembalian Mandiri
-                                </a>
-                            </li>
-                            <?php endif; ?>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <?php if (strtoupper(trim((string) ($settings['UsulanKoleksiLKD'] ?? ''))) === 'TRUE'): ?>
-                            <li>
-                                <a class="dropdown-item" href="<?= site_url('home/usulan-koleksi') ?>">
-                                    <i class="fa-solid fa-book-medical fa-fw text-secondary me-2"></i>Usulan Koleksi
-                                </a>
-                            </li>
-                            <?php endif; ?>
-                            <li><a class="dropdown-item" href="<?= site_url('home/survey') ?>"><i class="fa-solid fa-clipboard-list fa-fw text-secondary me-2"></i>Survei Pemustaka</a></li>
-                            <?php if (setting_enabled('is_keanggotaan_online')): ?>
-                            <li>
-                                <a class="dropdown-item" href="<?= base_url('home/pendaftaran-online') ?>">
-                                    <i class="fa-solid fa-id-card fa-fw text-secondary me-2"></i>Keanggotaan Online
-                                </a>
-                            </li>
-                            <?php endif; ?>
+                        <button class="nav-link dropdown-toggle<?= $isStatisticsActive ? ' active' : '' ?>" type="button"
+                                id="navbarDropdownStatistik" data-bs-toggle="dropdown" aria-expanded="false">Statistik</button>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownStatistik">
+                            <li><a class="dropdown-item<?= $currentNavPath === 'opac/statistics' ? ' active' : '' ?>" href="<?= base_url('opac/statistics') ?>"<?= $currentNavPath === 'opac/statistics' ? ' aria-current="page"' : '' ?>>Statistik Katalog</a></li>
+                            <li><a class="dropdown-item<?= $currentNavPath === 'opac/statistics_anggota' ? ' active' : '' ?>" href="<?= base_url('opac/statistics_anggota') ?>"<?= $currentNavPath === 'opac/statistics_anggota' ? ' aria-current="page"' : '' ?>>Statistik Anggota</a></li>
+                            <li><a class="dropdown-item<?= $currentNavPath === 'opac/statistics_kunjungan' ? ' active' : '' ?>" href="<?= base_url('opac/statistics_kunjungan') ?>"<?= $currentNavPath === 'opac/statistics_kunjungan' ? ' aria-current="page"' : '' ?>>Statistik Kunjungan</a></li>
+                            <li><a class="dropdown-item<?= $currentNavPath === 'opac/statistics_sirkulasi' ? ' active' : '' ?>" href="<?= base_url('opac/statistics_sirkulasi') ?>"<?= $currentNavPath === 'opac/statistics_sirkulasi' ? ' aria-current="page"' : '' ?>>Statistik Sirkulasi</a></li>
                         </ul>
                     </li>
-
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#"
-                            id="navbarDropdownStatistik" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fa-solid fa-chart-pie me-1"></i>Statistik
-                        </a>
-                        <ul class="dropdown-menu shadow-sm border-0" aria-labelledby="navbarDropdownStatistik">
-                            <li>
-                                <a class="dropdown-item" href="<?= base_url('opac/statistics') ?>">
-                                    <i class="fa-solid fa-book-bookmark fa-fw text-secondary me-2"></i>Statistik Katalog
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="<?= base_url('opac/statistics_anggota') ?>">
-                                    <i class="fa-solid fa-users fa-fw text-secondary me-2"></i>Statistik Anggota
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="<?= base_url('opac/statistics_kunjungan') ?>">
-                                    <i class="fa-solid fa-person-walking fa-fw text-secondary me-2"></i>Statistik Kunjungan
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="<?= base_url('opac/statistics_sirkulasi') ?>">
-                                    <i class="fa-solid fa-arrow-right-arrow-left fa-fw text-secondary me-2"></i>Statistik Sirkulasi
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
                 </ul>
-
-                <div class="d-flex align-items-center gap-3 mt-3 mt-lg-0">
+                <div class="nav-actions d-flex align-items-center gap-3 mt-3 mt-xxl-0">
+                    <?php if ($bookingCount > 0): ?>
+                        <a href="javascript:void(0)" onclick="tampilBooking()"
+                            class="btn btn-warning rounded-pill px-3 py-2 fw-bold shadow-sm"
+                            style="font-size: 0.9rem; white-space: nowrap;">
+                            <i class="fa-solid fa-bookmark me-2"></i>Keranjang (<?= $bookingCount ?>)
+                        </a>
+                    <?php endif; ?>
                     <?php if (session()->get('logged_in')): ?>
                         <a href="<?= base_url('dashboard') ?>"
                             class="btn btn-light text-primary rounded-pill px-4 py-2 fw-bold shadow-sm"
@@ -497,12 +461,12 @@ $pageDescription = isset($meta_description)
                     <?php endif; ?>
                 </div>
             </div>
-
         </div>
     </nav>
+    </header>
 
     <!-- ─── Main Content ─── -->
-    <main style="min-height: 80vh;">
+    <main id="main-content" style="min-height: 80vh;">
         <?= $this->renderSection('content') ?>
     </main>
 
@@ -556,6 +520,62 @@ $pageDescription = isset($meta_description)
         <script src="<?= base_url('assets/js'); ?>/sweetalert2@8.js"></script>
     <?php endif; ?>
     <script src="<?= base_url('assets/js'); ?>/bootstrap.min.js"></script>
+
+    <?php if ($bookingCount > 0): ?>
+        <!-- Keranjang Pesan (Booking Detail) -->
+        <div class="modal fade" id="modalBooking" tabindex="-1" aria-labelledby="modalBookingLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalBookingLabel"><i class="fa-solid fa-bookmark me-2"></i>Keranjang Pesan</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    </div>
+                    <div class="modal-body" id="BookingShow"></div>
+                    <div class="modal-footer">
+                        <a href="<?= base_url('opac/booking/cetak') ?>" target="_blank" rel="noopener" class="btn btn-primary">
+                            <i class="fa-solid fa-print me-1"></i>Cetak
+                        </a>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            function tampilBooking() {
+                var body = document.getElementById('BookingShow');
+                body.innerHTML = '<p class="text-muted mb-0">Memuat...</p>';
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('modalBooking')).show();
+                fetch(<?= json_encode(base_url('opac/booking')) ?>, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(function (res) { return res.text(); })
+                    .then(function (html) { body.innerHTML = html; })
+                    .catch(function () { body.innerHTML = '<p class="text-danger mb-0">Gagal memuat keranjang pesan.</p>'; });
+            }
+
+            (function () {
+                var csrfHash = <?= json_encode(csrf_hash()) ?>;
+                document.addEventListener('click', function (e) {
+                    var btn = e.target.closest('[data-booking-cancel]');
+                    if (!btn || !confirm('Hapus koleksi ini dari keranjang pesan?')) return;
+                    btn.disabled = true;
+                    fetch(<?= json_encode(base_url('opac/booking/cancel')) ?> + '/' + encodeURIComponent(btn.getAttribute('data-booking-cancel')), {
+                        method: 'POST',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest', <?= json_encode(config('Security')->headerName) ?>: csrfHash },
+                    })
+                        .then(function (res) { return res.json(); })
+                        .then(function (data) {
+                            if (data.csrf) csrfHash = data.csrf;
+                            alert(data.message);
+                            if (!data.error) window.location.reload();
+                            else btn.disabled = false;
+                        })
+                        .catch(function () {
+                            btn.disabled = false;
+                            alert('Terjadi kesalahan. Muat ulang halaman lalu coba lagi.');
+                        });
+                });
+            })();
+        </script>
+    <?php endif; ?>
 
     <?= $this->renderSection('script') ?>
 </body>

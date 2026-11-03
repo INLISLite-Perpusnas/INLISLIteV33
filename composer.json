@@ -27,7 +27,8 @@
     "scriptotek/marc": "^3.0",
     "endroid/qr-code": "^5.1",
     "twbs/bootstrap": "5.0.2",
-    "phpoffice/phpword": "^1.4"
+    "phpoffice/phpword": "^1.4",
+    "codewithkyrian/transformers": "^0.6.2"
   },
   "require-dev": {
     "fakerphp/faker": "^1.9",
@@ -61,5 +62,11 @@
     "source": "https://github.com/codeigniter4/CodeIgniter4",
     "slack": "https://codeigniterchat.slack.com"
   },
-  "repositories": {}
+  "repositories": {},
+  "config": {
+    "allow-plugins": {
+      "codewithkyrian/platform-package-installer": true
+    },
+    "platform-check": "php-only"
+  }
 }

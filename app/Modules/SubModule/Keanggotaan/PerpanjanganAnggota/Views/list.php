@@ -1,5 +1,6 @@
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -32,7 +33,7 @@
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Perpanajangan Anggota
             <div class="btn-actions-pane-right actions-icon-btn">
                 <?php if (is_allowed('perpanjangan-anggota/create')): ?>
-                    <a href="<?= base_url('perpanjangan-anggota/create') ?>" class=" btn btn-success" title=""><i
+                    <a href="<?= base_url('perpanjangan-anggota/create') ?>" class="btn btn-catalog-add" title=""><i
                             class="fa fa-plus"></i>
                         Tambah Perpanjangan Anggota
                     </a>

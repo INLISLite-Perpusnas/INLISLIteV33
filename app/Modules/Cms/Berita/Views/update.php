@@ -1,76 +1,19 @@
 <?php
 $request = service('request');
+$errors = $errors ?? [];
+$err = static fn(string $field) => $errors[$field] ?? null;
+$asset = static fn(string $path) => base_url($path) . '?v=' . filemtime(FCPATH . $path);
+$permalink = permalink('berita/' . $berita->slug);
+$currentCover = !empty($berita->file_cover) ? base_url('uploads/berita/' . $berita->file_cover) : '';
+$gallery = array_map(static fn($img) => [
+    'name' => $img['name'],
+    'url'  => base_url('uploads/berita/' . $img['name']),
+], $old_file_image_data ?? []);
 ?>
 
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style') ?>
-<style>
-    /* .tox.tox-tinymce.tox-fullscreen {
-        z-index: 1050;
-        top: 60px !important;
-        left: 85px !important;
-        width: calc(100% - 85px) !important;
-    }
-
-    /* Style untuk Preview Image */
-    .preview-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 10px;
-    }
-
-    .img-preview-box {
-        position: relative;
-        width: 120px;
-        height: 120px;
-        border: 1px solid #ddd;
-        padding: 5px;
-        border-radius: 5px;
-        overflow: hidden;
-        background: #f9f9f9;
-    }
-
-    .img-preview-box img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    /* Style untuk Existing Image (Foto Lama) */
-    .existing-file-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-        margin-bottom: 15px;
-        padding: 10px;
-        background: #f1f4f6;
-        border-radius: 5px;
-        border: 1px dashed #ccc;
-    }
-
-    .existing-item {
-        position: relative;
-        width: 130px;
-        text-align: center;
-    }
-
-    .existing-item img {
-        width: 100%;
-        height: 100px;
-        object-fit: cover;
-        border-radius: 4px;
-        border: 1px solid #ddd;
-    }
-    
-    .remove-checkbox {
-        margin-top: 5px;
-        font-size: 12px;
-        color: #d92550;
-        font-weight: bold;
-        display: block;
-    }
-</style>
+<link rel="stylesheet" href="<?= $asset('assets/css/ina-form.css') ?>">
 <?= $this->endSection('style') ?>
 
 <?= $this->section('page') ?>
@@ -79,222 +22,118 @@ $request = service('request');
     <div class="app-page-title">
         <div class="page-title-wrapper">
             <div class="page-title-heading">
-                <div class="page-title-icon">
-                    <i class="pe-7s-photo icon-gradient bg-strong-bliss"></i>
-                </div>
-                <div>Berita <?= $berita->category ?>
-                    <div class="page-title-subheading">Mohon lengkapi data pada form berikut.</div>
+                <div>Ubah Berita
+                    <div class="page-title-subheading">Perbarui data berita berikut.</div>
                 </div>
             </div>
             <div class="page-title-actions">
-                <nav class="" aria-label="breadcrumb">
+                <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Beranda</a></li>
-                        <li class="breadcrumb-item"><a href="<?= base_url('cms/berita') ?>"><?= lang('Berita') ?></a></li>
-                        <li class="active breadcrumb-item" aria-current="page">Ubah <?= $berita->category ?> </li>
+                        <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>">Beranda</a></li>
+                        <li class="breadcrumb-item"><a href="<?= base_url('cms/berita') ?>">Berita</a></li>
+                        <li class="active breadcrumb-item" aria-current="page">Ubah</li>
                     </ol>
                 </nav>
             </div>
         </div>
     </div>
-    
-    <div class="main-card mb-3 card">
-        <div class="card-header">
-            <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Form Ubah Berita
+
+    <?= get_message('message') ?>
+
+    <form id="frm" class="ina-form-card" method="post" enctype="multipart/form-data" action="" novalidate>
+        <div class="ina-form-card-header">
+            <h2>Data Berita</h2>
+            <p>Kolom bertanda <span class="ina-required" aria-hidden="true">*</span> wajib diisi.</p>
         </div>
-        <div class="card-body">
-            <div id="infoMessage"><?= $message ?? '' ?></div>
-            <?= get_message('message') ?>
 
-            <form id="frm" class="col-md-12 mx-auto" method="post" enctype="multipart/form-data" action="">
-                
-                <div class="form-row">
-                    <div class="col-md-8">
-                        <div class="position-relative form-group">
-                            <label for="title">Judul Berita*</label>
-                            <div>
-                                <input type="text" class="form-control" id="title" name="title" placeholder="Judul Berita" value="<?= set_value('title', $berita->title) ?>" />
-                                <small class="info help-block text-muted">Permalink: <a href="<?= permalink('berita/' . $berita->slug) ?>" target="_blank"><?= permalink('berita/' . $berita->slug) ?></a></small>
-                            </div>
-                        </div>
-                    </div>
+        <div class="ina-form-body">
+            <!-- Text Field: Judul -->
+            <div class="ina-field ina-col-8<?= $err('title') ? ' has-error' : '' ?>">
+                <label class="ina-label" for="title">Judul Berita<span class="ina-required" aria-hidden="true">*</span></label>
+                <input type="text" class="ina-input" id="title" name="title" placeholder="Contoh: Perpustakaan Gelar Lomba Bercerita"
+                    value="<?= esc(set_value('title', $berita->title)) ?>" required aria-required="true"
+                    aria-describedby="title_error title_help"<?= $err('title') ? ' aria-invalid="true"' : '' ?> />
+                <p class="ina-error" id="title_error" <?= $err('title') ? '' : 'hidden' ?>><span><?= esc($err('title') ?? '') ?></span></p>
+                <p class="ina-helper" id="title_help">Permalink: <a href="<?= esc($permalink, 'attr') ?>" target="_blank" rel="noopener"><?= esc($permalink) ?></a></p>
+            </div>
 
-                    <div class="col-md-4">
-                        <div class="position-relative form-group">
-                            <label for="sort">Urutan</label>
-                            <div>
-                                <input type="number" min="1" step="1" class="form-control" name="sort" id="sort" placeholder="Urutan " oninput="this.value = this.value.replace(/[^0-9]/g, '');" value="<?= set_value('sort', $berita->sort) ?>" />
-                            </div>
-                        </div>
+            <!-- Text Field: Urutan (angka) -->
+            <div class="ina-field ina-col-4<?= $err('sort') ? ' has-error' : '' ?>">
+                <label class="ina-label" for="sort">Urutan<span class="ina-required" aria-hidden="true">*</span></label>
+                <input type="number" class="ina-input" name="sort" id="sort" min="1" step="1" inputmode="numeric" placeholder="Contoh: 1"
+                    value="<?= esc(set_value('sort', $berita->sort)) ?>" required aria-required="true"
+                    aria-describedby="sort_error sort_help"<?= $err('sort') ? ' aria-invalid="true"' : '' ?> />
+                <p class="ina-error" id="sort_error" <?= $err('sort') ? '' : 'hidden' ?>><span><?= esc($err('sort') ?? '') ?></span></p>
+                <p class="ina-helper" id="sort_help">Angka 1 tampil paling awal.</p>
+            </div>
+
+            <!-- Text Area (editor): Uraian -->
+            <div class="ina-field ina-col-12">
+                <label class="ina-label" for="content">Uraian<span class="ina-optional">(opsional)</span></label>
+                <textarea id="content" name="content" aria-describedby="content_help"><?= set_value('content', $berita->content) ?></textarea>
+                <p class="ina-helper" id="content_help">Isi lengkap berita. Gunakan toolbar untuk format teks, tautan, dan gambar.</p>
+            </div>
+
+            <!-- Text Area: Keterangan -->
+            <div class="ina-field ina-col-12">
+                <label class="ina-label" for="description">Keterangan<span class="ina-optional">(opsional)</span></label>
+                <textarea class="ina-textarea" id="description" name="description" placeholder="Tulis ringkasan singkat berita" aria-describedby="description_help"><?= esc(set_value('description', $berita->description)) ?></textarea>
+                <p class="ina-helper" id="description_help">Ringkasan tampil di daftar berita.</p>
+            </div>
+
+            <!-- File Upload (satu file): Cover; cover tersimpan tampil sebagai upload item -->
+            <div class="ina-field ina-col-6<?= $err('file_cover') ? ' has-error' : '' ?>">
+                <span class="ina-label" id="file_cover_label">Cover<span class="ina-optional">(kosongkan jika tidak diganti)</span></span>
+                <div class="ina-upload" data-accept="jpg,jpeg,png" data-max-mb="2" data-label="Cover"
+                    data-current-url="<?= esc($currentCover, 'attr') ?>" data-current-name="<?= esc($berita->file_cover ?? '', 'attr') ?>"
+                    data-error="<?= esc($err('file_cover') ?? '', 'attr') ?>">
+                    <div class="ina-upload-base">
+                        <button type="button" class="ina-upload-btn" aria-labelledby="file_cover_label file_cover_btn" aria-describedby="file_cover_desc file_cover_error">
+                            <i class="fas fa-upload" aria-hidden="true"></i> <span id="file_cover_btn">Pilih File</span>
+                        </button>
+                        <p class="ina-upload-desc" id="file_cover_desc">
+                            Seret gambar ke sini atau pilih file.<br>
+                            <strong>Format:</strong> JPG, JPEG, PNG · <strong>Maks.:</strong> 2 MB
+                        </p>
+                        <input type="file" class="ina-upload-input" name="file_cover" id="file_cover" accept=".jpg,.jpeg,.png" tabindex="-1" aria-hidden="true">
                     </div>
+                    <div class="ina-upload-list" aria-live="polite"></div>
+                    <p class="ina-error" id="file_cover_error" hidden><span></span></p>
                 </div>
+            </div>
 
-                <div class="form-group">
-                    <label for="content">Uraian</label>
-                    <div>
-                        <textarea id="content" name="content" placeholder="" rows="1" class="form-control autosize-input"><?= set_value('content', $berita->content) ?></textarea>
+            <!-- File Upload (banyak file): Galeri; foto tersimpan bisa ditandai hapus -->
+            <div class="ina-field ina-col-6<?= $err('file_image') ? ' has-error' : '' ?>">
+                <span class="ina-label" id="file_image_label">Galeri Foto<span class="ina-optional">(opsional)</span></span>
+                <div class="ina-upload" data-accept="jpg,jpeg,png" data-max-mb="2" data-multiple="1" data-label="Foto galeri"
+                    data-existing="<?= esc(json_encode($gallery), 'attr') ?>" data-remove-name="remove_gallery[]"
+                    data-error="<?= esc($err('file_image') ?? '', 'attr') ?>">
+                    <div class="ina-upload-base">
+                        <button type="button" class="ina-upload-btn" aria-labelledby="file_image_label file_image_btn" aria-describedby="file_image_desc file_image_error">
+                            <i class="fas fa-upload" aria-hidden="true"></i> <span id="file_image_btn">Pilih File</span>
+                        </button>
+                        <p class="ina-upload-desc" id="file_image_desc">
+                            Tambah beberapa foto sekaligus. Klik ikon × untuk menghapus foto.<br>
+                            <strong>Format:</strong> JPG, JPEG, PNG · <strong>Maks.:</strong> 2 MB per foto
+                        </p>
+                        <input type="file" class="ina-upload-input" name="file_image[]" id="file_image" multiple accept=".jpg,.jpeg,.png" tabindex="-1" aria-hidden="true">
                     </div>
+                    <div class="ina-upload-list" aria-live="polite"></div>
+                    <p class="ina-error" id="file_image_error" hidden><span></span></p>
                 </div>
-
-                <div class="form-group">
-                    <label for="description">Keterangan</label>
-                    <div>
-                        <textarea id="description" name="description" placeholder="Keterangan" rows="2" class="form-control autosize-input" style="min-height: 38px;"><?= set_value('description', $berita->description) ?></textarea>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="position-relative form-group p-3 border rounded">
-                            <label for="file_cover" class="font-weight-bold">Cover (Single)</label>
-                            
-                            <?php if (!empty($berita->file_cover)): ?>
-                                <div class="existing-file-container">
-                                    <div class="existing-item">
-                                        <p class="mb-1 text-muted text-left"><small>Cover Saat Ini:</small></p>
-                                        <img src="<?= base_url('uploads/berita/' . $berita->file_cover) ?>" alt="Current Cover">
-                                        <small class="text-muted d-block text-truncate"><?= $berita->file_cover ?></small>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
-
-                            <div class="mt-2">
-                                <label><small>Ganti Cover (Biarkan kosong jika tidak ingin mengubah):</small></label>
-                                <input type="file" class="form-control-file" name="file_cover" id="file_cover" accept=".jpg,.jpeg,.png" onchange="previewFile(this, 'preview_cover_container')">
-                            </div>
-
-                            <div id="preview_cover_container" class="preview-container"></div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="position-relative form-group p-3 border rounded">
-                            <label for="file_image" class="font-weight-bold">Images Gallery (Multiple)</label>
-                            
-                            <?php if (!empty($old_file_image_data)): ?>
-                                <p class="mb-1 text-muted"><small>Gallery Saat Ini (Centang "Hapus" untuk membuang gambar):</small></p>
-                                <div class="existing-file-container">
-                                    <?php foreach ($old_file_image_data as $img): ?>
-                                        <div class="existing-item">
-                                            <img src="<?= base_url('uploads/berita/' . $img['name']) ?>" alt="Gallery">
-                                            
-                                            <label class="remove-checkbox">
-                                                <input type="checkbox" name="remove_gallery[]" value="<?= $img['name'] ?>"> Hapus
-                                            </label>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            <?php endif; ?>
-
-                            <div class="mt-2">
-                                <label><small>Tambah Foto Baru:</small></label>
-                                <input type="file" class="form-control-file" name="file_image[]" id="file_image" multiple accept=".jpg,.jpeg,.png" onchange="previewMultipleFiles(this, 'preview_image_container')">
-                                <small class="text-muted">Tahan CTRL untuk memilih banyak foto.</small>
-                            </div>
-
-                            <div id="preview_image_container" class="preview-container"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group mt-4">
-                    <button type="submit" class="btn btn-primary" name="submit">Simpan Perubahan</button>
-                    <a href="<?= base_url('cms/berita') ?>" class="btn btn-secondary">Kembali</a>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+
+        <div class="ina-form-footer">
+            <a href="<?= base_url('cms/berita') ?>" class="ina-btn ina-btn-secondary">Batal</a>
+            <button type="submit" class="ina-btn ina-btn-primary-solid" name="submit">Simpan Perubahan</button>
+        </div>
+    </form>
 </div>
 
 <?= $this->endSection('page') ?>
 
 <?= $this->section('script') ?>
-<script>
-    // 1. Fungsi Preview Single File (Cover)
-    function previewFile(input, previewId) {
-        var previewContainer = document.getElementById(previewId);
-        // Menggunakan jQuery untuk clearing, asumsikan jQuery tersedia
-        $(previewContainer).empty();
-
-        if (input.files && input.files[0]) {
-            var reader = new FileReader();
-
-            reader.onload = function(e) {
-                var html = `
-                    <div class="img-preview-box">
-                        <div class="text-center text-success mb-1" style="font-size:10px;"><b>Akan Diupload</b></div>
-                        <img src="${e.target.result}" title="${input.files[0].name}">
-                    </div>`;
-                $(previewContainer).html(html);
-            }
-
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
-    // 2. Fungsi Preview Multiple Files (Gallery)
-    // Perbaikan: Menggunakan 'let' untuk 'i', 'reader', dan 'file' untuk fix closure/scope
-    function previewMultipleFiles(input, previewId) {
-        var previewContainer = document.getElementById(previewId);
-        $(previewContainer).empty(); // Hapus preview sebelumnya
-
-        if (input.files) {
-            var filesAmount = input.files.length;
-
-            for (let i = 0; i < filesAmount; i++) {
-                let reader = new FileReader();
-                let file = input.files[i]; // Tangkap file saat ini untuk closure yang benar
-
-                reader.onload = function(event) {
-                    var html = `
-                        <div class="img-preview-box">
-                             <div class="text-center text-success mb-1" style="font-size:10px;"><b>Akan Diupload</b></div>
-                            <img src="${event.target.result}" title="${file.name}">
-                        </div>`;
-                    $(previewContainer).append(html);
-                }
-
-                reader.readAsDataURL(file);
-            }
-        }
-    }
-
-     if (!jQuery.now) {
-    jQuery.now = function() {
-        return Date.now();
-    }};
-    $(document).ready(function() {
-        // TinyMCE Init (Summernote)
-        $('#content').summernote({
-            height: 430,
-            minHeight: null,
-            maxHeight: null,
-            focus: true,
-            toolbar: [
-                ['style', ['style', 'undo', 'redo', 'codeview']],
-                ['font', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
-                ['fontname', ['fontname']],
-                ['fontsize', ['fontsize']],
-                ['color', ['color']],
-                ['para', ['ul', 'ol', 'paragraph', 'table']],
-                ['insert', ['link', 'picture', 'video', 'hr']],
-            ],
-            fontNames: ['System Font',
-                'Dosis', 'Andale Mono', 'Arial', 'Arial Black', 'Book Antiqua',
-                'Comic Sans MS', 'Courier New', 'Georgia', 'Helvetica', 'Impact',
-                'Symbol', 'Tahoma', 'Times New Roman', 'Trebuchet MS', 'Verdana'
-            ],
-            fontSizes: [
-                '12', '13', '14', '15', '16', '17', '18', '19', '20', '24',
-                '28', '32', '34', '36', '72'
-            ],
-            styleTags: ['p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-            callbacks: {
-                onInit: function() {
-                    console.log('Summernote is initialized on #content');
-                }
-            },
-        });
-    });
-</script>
+<script src="<?= $asset('assets/js/ina-upload.js') ?>"></script>
+<?= $this->include('Berita\Views\form_script') ?>
 <?= $this->endSection('script') ?>

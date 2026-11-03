@@ -13,6 +13,7 @@ $slug = $request->getGet('slug') ?? 'katalog_add_marc';
 		width: calc(100% - 85px) !important;
 	}
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -53,6 +54,8 @@ $slug = $request->getGet('slug') ?? 'katalog_add_marc';
 <?= $this->include('Katalog\Views\modal_indicator1'); ?>
 <?= $this->include('Katalog\Views\modal_indicator2'); ?>
 <?= $this->include('Katalog\Views\modal_content'); ?>
+<?= $this->include('Katalog\Views\modal_fixed'); ?>
+<?= $this->include('Katalog\Views\marc_script'); ?>
 <script>
     $(document).ready(function() {
         <?php if (session()->getFlashdata('swal_icon')) : ?>
@@ -133,161 +136,12 @@ $slug = $request->getGet('slug') ?? 'katalog_add_marc';
 			$('#modal_indicator2').modal('show');
 		});
 
-		$(document).on('click', '.btn-value', function() {
-			var id = $(this).data('id');
-			var field_id = $(this).data('field_id');
-			var tag = $(this).data('tag');
-			var name = $(this).data('name');
-
-			$('#title_content').html(`Tag ${tag} - ${name} `);
-			$('#field_id_content').val(id);
-			$('#dom_id_content').val(field_id);
-			$('#modal_content').modal('show');
-		});
-
-
-		const getTags = async (url, dom, selected = false, label = '-All-') => {
-			await axios.get(url)
-				.then(res => {
-					// console.log(res)
-					$(dom).html('<option value="">Loading...</option>');
-					var output = '<option value="">' + label + '</option>';
-					$.each(res.data, function(key, val) {
-						output += '<option value="' + val.code + '" data-text="' + val.name + '">[' + val.tag + '] ' + val.name + '</option>';
-					});
-
-					$(dom).html(output);
-					$(dom).select2({
-						width: "resolve"
-					});
-
-					if (selected) {
-						$(dom).val(selected);
-					}
-				})
-				.catch(err => {
-					console.log(err)
-				});
-		}
-
+		initMarcForm("");
 
 		$(".worksheet-btn-load").click(function() {
 			var worksheet_id = $("#worksheet_id").val();
 			var url = `<?= base_url('katalog/create_marc') ?>?worksheet_id=${worksheet_id}&fullscreen=1`;
 			window.location.href = url;
-		});
-
-		var worksheet_id = $("#worksheet_id").val();
-		var url = `<?= base_url('api/katalog/get_all_tags') ?>/${worksheet_id}`;
-		getTags(url, `#field_id`, false, `-Pilih-`);
-
-		$.ajax({
-			url: url,
-			type: 'GET',
-			dataType: 'json',
-			success: function(response) {
-				// console.log(response);
-				$('#field_id').find('option:selected').remove();
-				// $(".select2").trigger('update');
-			},
-			error: function(xhr, status, error) {
-				console.error('API call error:', status, error);
-			}
-		});
-
-		$(document).on('click', '.marc-btn-remove', function() {
-			var field_id = $(this).data('field_id');
-			var url = "<?= base_url('api/katalog/remove_from_session') ?>" + "/" + field_id;
-
-			var $this = $(this); // Capture the context
-
-			$.ajax({
-				url: url,
-				type: 'GET',
-				dataType: 'json',
-				success: function(response) {
-					console.log(response);
-					var row = $this.closest('tr');
-					row.remove();
-
-					var tag = $('<option>', {
-						value: response.ID,
-						text: '[' + response.Tag + '] ' + response.Name
-					});
-					$('#field_id').append(tag);
-
-					return false;
-				},
-				error: function(xhr, status, error) {
-					console.error('API call error:', status, error);
-				}
-			});
-		});
-
-		$(".marc-btn-add").click(function() {
-			var index = Date.now();
-			var field_id = $('#field_id').val();
-			var url = "<?= base_url('api/katalog/add_to_session') ?>" + "/" + field_id;
-			$.ajax({
-				url: url,
-				type: 'GET',
-				dataType: 'json',
-				success: function(response) {
-					console.log(response);
-
-					if (response.Repeatable < 1) {
-						$('#field_id').find('option:selected').remove();
-					}
-
-					$('#marc-tbody').append(`
-						<tr class="rm-row">
-							<td class="text-center">
-								<button type="button" class="btn btn-danger marc-btn-remove" data-field_id="` + response.ID + ` "><i class="fa fa-trash"></i></button>
-							</td>
-							<td>
-								<input type="hidden" name="index0[]" value="` + index + `">
-								<input type="hidden" name="Index[` + response.Tag + `][]" value="Index_` + response.Tag + `_` + index + `">
-								` + response.Tag + ` 
-							</td>
-							<td>
-								` + response.Name + ` 
-							</td>
-							<td>
-								<div class="input-group">
-									<input type="text" class="form-control" name="Indicator1[` + response.Tag + `][]" id="Indicator1_` + response.Tag + `_` + index + `"  placeholder="" value="#" />
-									<div class="input-group-append">
-										<button class="btn btn bg-primary text-white btn-indicator1" data-id="` + response.ID + `" data-field_id="Indicator1_` + response.Tag + `_` + index + `" data-tag="` + response.Tag + `" data-name="` + response.Name + `" type="button"><i class="fa fa-list"></i></button>
-									</div>
-								</div>
-							</td>
-							<td>
-								<div class="input-group">
-									<input type="text" class="form-control" name="Indicator2[` + response.Tag + `][]" id="Indicator2_` + response.Tag + `_` + index + `"  placeholder="" value="#" />
-									<div class="input-group-append">
-										<button class="btn btn bg-primary text-white btn-indicator2" data-id="` + response.ID + `" data-field_id="Indicator2_` + response.Tag + `_` + index + `" data-tag="` + response.Tag + `" data-name="` + response.Name + `" type="button"><i class="fa fa-list"></i></button>
-									</div>
-								</div>  
-							</td>
-							<td>
-								<div class="input-group">
-									<input type="text" class="form-control" name="Value[` + response.Tag + `][]" id="Value_` + response.Tag + `_` + index + `"  placeholder="" value="$a" />
-									<div class="input-group-append">
-										<button class="btn btn bg-primary text-white btn-value" data-id="` + response.ID + `" data-field_id="Value_` + response.Tag + `_` + index + `" data-tag="` + response.Tag + `" data-name="` + response.Name + `" type="button"><i class="fa fa-list"></i></button>
-									</div>
-								</div>
-							</td>
-						</tr>
-					`);
-					window.scrollTo({
-						left: 0,
-						top: document.body.scrollHeight,
-						behavior: "smooth"
-					});
-				},
-				error: function(xhr, status, error) {
-					console.error('API call error:', status, error);
-				}
-			});
 		});
 	});
 </script>

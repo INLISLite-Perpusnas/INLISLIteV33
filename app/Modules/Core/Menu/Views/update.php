@@ -39,6 +39,7 @@ if (!($category = read_cache($cacheName = 'list_menu_category_' . md5($slug)))) 
 
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 <?= $this->section('page'); ?>
 <div class="app-main__inner">
@@ -158,7 +159,7 @@ if (!($category = read_cache($cacheName = 'list_menu_category_' . md5($slug)))) 
 					</div>
 				</div>
 				<div class="form-group">
-					<button type="submit" class="btn btn-primary" name="submit">Simpan</button>
+					<button type="submit" class="btn btn-catalog-add" name="submit">Simpan</button>
 				</div>
 			</form>
 		</div>

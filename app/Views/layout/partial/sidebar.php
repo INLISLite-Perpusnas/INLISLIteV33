@@ -34,330 +34,436 @@ if (!is_string($menuHtml)) {
         cache()->save($menuCacheKey, $menuHtml, 300);
     }
 }
+
+$username = (string) ($user->username ?? 'Pengguna');
+$initials = strtoupper(mb_substr(preg_replace('/[^A-Za-z0-9]/', '', $username) ?: 'U', 0, 2));
 ?>
 
 <style>
+    /*
+     * Sidebar mengikuti pola INA Digital (design.inadigital.go.id/pattern/sidebar):
+     * - Expand: ikon + label + status aktif (desktop)
+     * - Collapse: hanya ikon (tablet / laptop kecil), label tampil sebagai tooltip
+     * - State: default, hover (sorotan), selected (halaman aktif)
+     * - Hirarki menu maksimal 2 level
+     */
     .sidebar-argon {
-        width: 250px;
-        background: white;
-        height: calc(100vh - 40px);
         position: fixed;
-        top: 20px;
-        left: 20px;
-        border-radius: 15px;
-        box-shadow: 0 4px 20px 0 rgba(0,0,0,0.05);
+        inset: 0 auto 0 0;
         z-index: 1000;
-        overflow-y: auto;
-        padding: 20px;
-        transition: width 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        width: var(--ina-sidebar-width);
+        background: var(--ina-surface);
+        border-right: 1px solid var(--ina-border);
+        transition: width .2s ease, transform .25s ease;
+    }
+
+    /* Header: logo + aksi */
+    .sidebar-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-sizing: border-box;
+        flex-shrink: 0;
+        /* Sejajar dengan bar atas di area konten */
+        height: var(--ina-header-height, 77px);
+        padding: 0 16px 0 20px;
+        margin: 0 4px;
+        border-bottom: 1px solid var(--ina-border);
     }
 
     .sidebar-brand {
-        position: relative;
-        padding: 10px 45px 10px 15px;
-        margin-bottom: 8px;
         display: flex;
         align-items: center;
-        gap: 12px;
-        font-weight: 700;
-        color: #344767;
-        font-size: 16px;
+        gap: 10px;
+        min-width: 0;
+        flex: 1;
+        color: var(--ina-text);
+        text-decoration: none;
     }
 
-    .brand-icon {
-        width: 32px;
-        height: 32px;
-        background: linear-gradient(135deg, #5e72e4, #825ee4);
+    .sidebar-brand img {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        object-fit: contain;
         border-radius: 8px;
     }
 
-    .nav-menu-argon {
-        list-style: none;
+    .sidebar-brand-text {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        line-height: 1.2;
+    }
+
+    .sidebar-brand-text strong {
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: -.02em;
+        color: var(--ina-primary);
+    }
+
+    .sidebar-brand-text small {
+        font-size: 12px;
+        color: var(--ina-text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .sidebar-icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 36px;
+        height: 36px;
         padding: 0;
+        color: var(--ina-text-subtle);
+        background: transparent;
+        border: 0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color .15s ease, color .15s ease;
+    }
+
+    .sidebar-icon-btn:hover {
+        background: var(--ina-hover);
+        color: var(--ina-text);
+    }
+
+    .sidebar-icon-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Area menu */
+    .sidebar-nav {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 16px 20px;
+    }
+
+    .nav-menu-argon,
+    .submenu-argon {
+        list-style: none;
         margin: 0;
+        padding: 0;
     }
 
     .nav-label-argon {
-        font-size: 11px;
-        font-weight: 700;
-        color: #526079;
+        margin: 20px 12px 8px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: .04em;
         text-transform: uppercase;
-        margin: 20px 0 10px 10px;
-        letter-spacing: 0.5px;
+        color: var(--ina-text-muted);
+    }
+
+    .nav-menu-argon > .nav-label-argon:first-child {
+        margin-top: 4px;
     }
 
     .nav-menu-argon li a {
         display: flex;
         align-items: center;
-        padding: 12px 15px;
-        color: #526079;
+        gap: 12px;
+        min-height: 44px;
+        padding: 10px 12px;
+        margin-bottom: 4px;
+        color: var(--ina-text-subtle);
+        font-size: 15px;
+        font-weight: 500;
+        line-height: 1.3;
         text-decoration: none;
         border-radius: 8px;
-        font-size: 16px;
-        transition: all 0.2s;
-        margin-bottom: 4px;
+        transition: background-color .15s ease, color .15s ease;
     }
 
-    .nav-menu-argon li a:hover, .nav-menu-argon li a.active {
-        background-color: #f6f9fc;
-        color: #344767;
+    .nav-menu-argon li a > i:first-child {
+        flex-shrink: 0;
+        width: 22px;
+        font-size: 17px;
+        text-align: center;
+        color: var(--ina-icon);
+        transition: color .15s ease;
     }
 
+    .nav-menu-argon li a > span {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Hover: sorot item yang ditunjuk */
+    .nav-menu-argon li a:hover {
+        background: var(--ina-hover);
+        color: var(--ina-text);
+    }
+
+    .nav-menu-argon li a:hover > i:first-child {
+        color: var(--ina-text);
+    }
+
+    /* Selected: halaman aktif */
     .nav-menu-argon li a.active {
-        background: #f6f9fc;
+        background: var(--ina-primary-subtle);
+        color: var(--ina-primary);
         font-weight: 600;
     }
 
-    .nav-menu-argon li a i {
-        width: 30px;
-        height: 30px;
-        background: white;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 12px;
-        color: #5e72e4;
-        font-size: 12px;
+    .nav-menu-argon li a.active > i:first-child {
+        color: var(--ina-primary);
     }
 
-    .nav-menu-argon li a.active i {
-        background: linear-gradient(135deg, #5e72e4, #825ee4);
-        color: white;
+    /* Induk menu yang anaknya aktif: cukup teks biru, latar tetap netral */
+    .has-submenu > a.submenu-toggle.active {
+        background: transparent;
     }
 
-    /* Parent menu highlight when child is active */
-    .has-submenu.open > a.submenu-toggle.active {
-        background: #f6f9fc;
-        color: #344767;
-        font-weight: 600;
+    .has-submenu > a.submenu-toggle.active:hover {
+        background: var(--ina-hover);
     }
 
-    .has-submenu.open > a.submenu-toggle.active i:first-child {
-        background: linear-gradient(135deg, #5e72e4, #825ee4);
-        color: white;
+    .nav-menu-argon li a:focus-visible,
+    .sidebar-icon-btn:focus-visible,
+    .sidebar-footer a:focus-visible {
+        outline: 2px solid var(--ina-primary);
+        outline-offset: 2px;
     }
 
-    /* Active submenu item highlight */
-    .submenu-argon li a.active {
-        color: #5e72e4;
-        font-weight: 600;
-        background: #eef0fd;
-        border-radius: 8px;
-    }
-
-    /* Submenu */
+    /* Submenu (level 2) */
     .submenu-argon {
         display: none;
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        padding-left: 20px;
-        margin-top: 5px;
+        margin: 0 0 4px 23px;
+        padding-left: 12px;
+        border-left: 1px solid var(--ina-border);
     }
 
-    .submenu-argon li a {
-        font-size: 15px;
-        padding: 8px 15px;
-    }
-
-    /* Open state */
     .has-submenu.open > .submenu-argon {
         display: block;
     }
 
-    /* Caret */
-    .caret {
-        margin-left: auto;
-        font-size: 12px;
-        transition: transform .3s;
+    .submenu-argon li a {
+        min-height: 38px;
+        padding: 8px 12px;
+        font-size: 14px;
     }
 
-    .has-submenu.open .caret {
+    .caret {
+        margin-left: auto;
+        font-size: 11px !important;
+        width: auto !important;
+        color: var(--ina-text-muted);
+        transition: transform .2s ease;
+    }
+
+    .has-submenu.open > a > .caret {
         transform: rotate(180deg);
     }
 
-    /* Toggle button - selalu visible */
-    .sidebar-toggle {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        background: none;
-        border: none;
-        font-size: 18px;
-        cursor: pointer;
-        color: #5e72e4;
-        z-index: 10;
-        padding: 8px;
-        transition: all 0.3s ease;
-        border-radius: 6px;
-        width: 34px;
-        height: 34px;
+    /* Footer: pengguna */
+    .sidebar-footer {
         display: flex;
         align-items: center;
-        justify-content: center;
+        gap: 12px;
+        padding: 16px 20px;
+        margin: 0 4px;
+        border-top: 1px solid var(--ina-border);
     }
 
-    .sidebar-toggle:hover {
-        background: #f6f9fc;
-        color: #344767;
-    }
-
-    /* Logo container */
-    .sidebar-brand > div {
-        display: flex;
+    .sidebar-avatar {
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.3s ease;
+        flex-shrink: 0;
+        width: 36px;
+        height: 36px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--ina-primary);
+        background: var(--ina-primary-subtle);
+        border-radius: 50%;
     }
 
-    .sidebar-brand > div img {
-        transition: all 0.3s ease;
+    .sidebar-user {
+        flex: 1;
+        min-width: 0;
+        line-height: 1.3;
     }
 
-    /* ===== Collapsed State ===== */
+    .sidebar-user strong,
+    .sidebar-user a {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .sidebar-user strong {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ina-text);
+    }
+
+    .sidebar-user a {
+        font-size: 13px;
+        color: var(--ina-text-muted);
+        text-decoration: none;
+    }
+
+    .sidebar-user a:hover {
+        color: var(--ina-primary);
+    }
+
+    .sidebar-logout {
+        color: var(--ina-danger);
+    }
+
+    .sidebar-logout:hover {
+        background: var(--ina-danger-subtle);
+        color: var(--ina-danger);
+    }
+
+    /* Scrollbar */
+    .sidebar-nav::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .sidebar-nav::-webkit-scrollbar-thumb {
+        background: var(--ina-border);
+        border-radius: 10px;
+    }
+
+    /* ===== Collapse: hanya ikon ===== */
     body.sidebar-collapsed .sidebar-argon {
-        width: 80px;
+        width: var(--ina-sidebar-collapsed);
     }
 
-    body.sidebar-collapsed .app-container {
-        padding-left: 100px;
+    body.sidebar-collapsed .sidebar-header {
+        flex-direction: column;
+        height: auto;
+        padding: 16px 8px;
     }
 
-    /* Hide text */
-    body.sidebar-collapsed .nav-menu-argon span,
-    body.sidebar-collapsed .brand-text {
-        display: none;
+    body.sidebar-collapsed .sidebar-brand {
+        flex: none;
     }
 
-    /* Center icons */
-    body.sidebar-collapsed .nav-menu-argon a {
-        justify-content: center;
-        padding: 12px 10px;
-    }
-
-    body.sidebar-collapsed .nav-menu-argon i {
-        margin-right: 0;
-    }
-
-    /* Submenu behavior */
+    body.sidebar-collapsed .sidebar-brand-text,
+    body.sidebar-collapsed .nav-menu-argon li a > span,
+    body.sidebar-collapsed .caret,
+    body.sidebar-collapsed .sidebar-user,
     body.sidebar-collapsed .submenu-argon {
         display: none !important;
     }
 
-    body.sidebar-collapsed .caret {
-        display: none;
+    body.sidebar-collapsed .sidebar-nav {
+        padding: 16px 12px;
     }
 
-    /* Center logo saat collapsed */
-    body.sidebar-collapsed .sidebar-brand {
+    body.sidebar-collapsed .nav-label-argon {
+        height: 1px;
+        margin: 12px 8px;
+        overflow: hidden;
+        color: transparent;
+        background: var(--ina-border);
+    }
+
+    body.sidebar-collapsed .nav-menu-argon li a {
         justify-content: center;
-        padding: 10px 15px;
-        flex-direction: column;
-        align-items: center;
+        padding: 10px 0;
     }
 
-    body.sidebar-collapsed .sidebar-brand > div {
-        margin: 0 auto;
-    }
-
-    body.sidebar-collapsed .sidebar-brand > div img {
-        width: 45px !important;
-        height: 45px !important;
-        margin-bottom: 10px !important;
-    }
-
-    /* Toggle button saat collapsed - tetap di kanan atas */
-    body.sidebar-collapsed .sidebar-toggle {
-        top: 15px;
-        right: 15px;
-        left: auto;
-        transform: none;
-    }
-
-    /* Sidebar footer */
-    .sidebar-footer {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 15px;
-        margin-top: 20px;
-        border-top: 1px solid #e9ecef;
-    }
-
-    .sidebar-footer img {
-        border-radius: 50%;
-    }
-
-    .sidebar-footer div {
-        flex: 1;
-    }
-
-    .sidebar-footer strong {
-        display: block;
-        font-size: 14px;
-        color: #344767;
-        margin-bottom: 3px;
-    }
-
-    .sidebar-footer a {
-        font-size: 13px;
-        text-decoration: none;
+    body.sidebar-collapsed .has-submenu > a.submenu-toggle.active {
+        background: var(--ina-primary-subtle);
     }
 
     body.sidebar-collapsed .sidebar-footer {
         flex-direction: column;
-        text-align: center;
+        padding: 16px 8px;
     }
 
-    body.sidebar-collapsed .sidebar-footer div {
-        display: none;
+    body.sidebar-collapsed .sidebar-toggle svg {
+        transform: scaleX(-1);
     }
 
-    /* Scrollbar styling */
-    .sidebar-argon::-webkit-scrollbar {
-        width: 6px;
-    }
+    /* ===== Mobile: sidebar off-canvas ===== */
+    @media (max-width: 992px) {
+        .sidebar-argon {
+            width: var(--ina-sidebar-width) !important;
+            transform: translateX(-100%);
+        }
 
-    .sidebar-argon::-webkit-scrollbar-track {
-        background: transparent;
-    }
+        .sidebar-argon.open {
+            transform: translateX(0);
+            box-shadow: 0 10px 30px rgba(15, 23, 42, .15);
+        }
 
-    .sidebar-argon::-webkit-scrollbar-thumb {
-        background: #e9ecef;
-        border-radius: 10px;
-    }
+        .sidebar-toggle {
+            display: none;
+        }
 
-    .sidebar-argon::-webkit-scrollbar-thumb:hover {
-        background: #cbd5e0;
+        body.sidebar-collapsed .sidebar-header,
+        body.sidebar-collapsed .sidebar-footer {
+            flex-direction: row;
+            padding: 16px 20px;
+        }
+
+        body.sidebar-collapsed .sidebar-brand-text,
+        body.sidebar-collapsed .nav-menu-argon li a > span,
+        body.sidebar-collapsed .sidebar-user {
+            display: flex !important;
+        }
+
+        body.sidebar-collapsed .nav-menu-argon li a {
+            justify-content: flex-start;
+            padding: 10px 12px;
+        }
     }
 </style>
 
 <aside class="sidebar-argon" id="dashboard-sidebar" aria-label="Navigasi utama">
-    <div class="sidebar-brand">
-        <!-- Toggle button - posisi absolute di kanan atas -->
-        <button class="sidebar-toggle" id="sidebarToggle" type="button"
-            title="Buka atau tutup sidebar" aria-label="Buka atau tutup sidebar"
+    <div class="sidebar-header">
+        <a class="sidebar-brand" href="<?= base_url('dashboard') ?>" title="<?= esc($nama_perpustakaan) ?>">
+            <img src="<?= esc($sidebarLogoUrl) ?>" alt="Logo <?= esc($nama_perpustakaan) ?>" width="40" height="40" fetchpriority="high">
+            <span class="sidebar-brand-text">
+                <strong>INLISLite</strong>
+                <small><?= esc($nama_perpustakaan) ?></small>
+            </span>
+        </a>
+        <button class="sidebar-icon-btn sidebar-toggle" id="sidebarToggle" type="button"
+            title="Ciutkan sidebar" aria-label="Ciutkan atau lebarkan sidebar"
             aria-controls="dashboard-sidebar" aria-expanded="true">
-            <i class="fas fa-bars" aria-hidden="true"></i>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="16" rx="2" />
+                <path d="M9 4v16" />
+                <path d="M15 10l-2 2 2 2" />
+            </svg>
         </button>
-        
-        <div>
-            <img src="<?= esc($sidebarLogoUrl) ?>"
-                alt="Logo <?= esc($nama_perpustakaan ?? 'perpustakaan') ?>" width="80" height="80"
-                style="width:80px;height:80px;object-fit:contain;border-radius:16px;margin-bottom:20px;" fetchpriority="high">
-        </div>
-        <span class="brand-text">INLISLite</span>
     </div>
 
-    <?= $menuHtml ?>
+    <nav class="sidebar-nav" aria-label="Menu">
+        <?= $menuHtml ?>
+    </nav>
 
     <div class="sidebar-footer">
-        <img src="<?= base_url('themes/uigniter/images/avatars/2.jpg') ?>" width="35" height="35" alt="Avatar pengguna" loading="lazy">
-        <div>
-            <strong><?= esc(user()->username) ?></strong>
-            <a href="<?= base_url('logout') ?>" class="text-danger">Logout</a>
+        <span class="sidebar-avatar" aria-hidden="true"><?= esc($initials) ?></span>
+        <div class="sidebar-user">
+            <strong><?= esc($username) ?></strong>
+            <a href="<?= base_url('user/profile') ?>">Profil Saya</a>
         </div>
+        <a href="<?= base_url('logout') ?>" class="sidebar-icon-btn sidebar-logout" title="Keluar" aria-label="Keluar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" />
+                <path d="M10 17l-5-5 5-5" />
+                <path d="M5 12h11" />
+            </svg>
+        </a>
     </div>
 </aside>

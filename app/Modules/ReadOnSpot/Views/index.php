@@ -2,252 +2,411 @@
 
 <?= $this->section('content') ?>
 
- <style>
-        .card-header {
-            font-weight: 600;
-        }
-        .status-section {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        .info-icon {
-            background: #6c757d;
-            color: white;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #6c757d;
-        }
-        .table-container {
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .table-header {
-            background: #495057;
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .btn-scan {
-            background: #1b3878;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-        }
-        .form-section {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .section-title {
-            color: white;
-            font-weight: 600;
-            margin-bottom: 15px;
-            padding: 10px 15px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .section-title.member-section {
-            background: #1b3878;
-        }
-        .section-title.book-section {
-            background: #1b3878;
-        }
-        .section-title.status-section-header {
-            background: #1b3878;
-        }
-    </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-guestbook.css') ?>?v=<?= @filemtime(FCPATH . 'assets/css/ina-guestbook.css') ?>">
+<style>
+	/* Baca di Tempat - gaya INA Digital (token & komponen dasar dari ina-guestbook.css) */
+	.rs-page {
+		min-height: 100vh;
+		padding: 110px 0 40px;
+	}
 
-    <div class="container-fluid py-4" style="padding-top: 100px !important; padding-bottom: 40px !important;">
-        <div class="row">
+	.rs-wrap {
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 0 20px;
+	}
 
-            <!-- Tab Toggle -->
-            <div class="col-12 mb-3">
-                <div class="d-flex gap-2">
-                    <button class="btn btn-primary" id="tabAnggota" onclick="switchTab('anggota')">
-                        <i class="fas fa-id-card"></i> Anggota
-                    </button>
-                    <button class="btn btn-outline-secondary" id="tabNonAnggota" onclick="switchTab('non-anggota')">
-                        <i class="fas fa-user"></i> Non Anggota
-                    </button>
-                </div>
-            </div>
+	.rs-title {
+		font-size: 28px;
+		line-height: 36px;
+		font-weight: 700;
+		color: var(--gb-text);
+		margin: 0 0 4px;
+	}
 
-            <!-- ===== FORM ANGGOTA ===== -->
-            <div id="formAnggota">
-                <div class="col-lg-6" style="display:inline-block; vertical-align:top; width:49%">
-                    <div class="form-section">
-                        <div class="section-title member-section">
-                            <i class="fas fa-users"></i>
-                            Data Anggota
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Nomor Anggota</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="memberNumber"
-                                       placeholder="Masukkan nomor anggota..." autofocus>
-                                <button class="btn btn-outline-secondary" type="button" id="searchMemberBtn">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
-                            <small class="text-muted">Masukkan nomor anggota (otomatis cari nama)</small>
-                        </div>
-                        <div id="memberInfo" class="mt-3" style="display: none;">
-                            <div class="alert alert-info">
-                                <strong>Nama Anggota:</strong> <span id="memberName"></span><br>
-                                <strong>No. Anggota:</strong> <span id="memberNum"></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6" style="display:inline-block; vertical-align:top; width:49%">
-                    <div class="form-section">
-                        <div class="section-title book-section">
-                            <i class="fas fa-book"></i>
-                            Data Buku
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Nomor Barcode Buku</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="bookBarcode"
-                                       placeholder="Scan atau ketik barcode buku...">
-                                <button class="btn btn-success btn-scan" type="button" id="addBookBtn">
-                                    <i class="fas fa-camera"></i>
-                                </button>
-                            </div>
-                            <small class="text-muted">Scan barcode buku (otomatis simpan)</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
+	.rs-subtitle {
+		font-size: 16px;
+		line-height: 24px;
+		color: var(--gb-text-muted);
+		margin: 0 0 24px;
+	}
 
-            <!-- ===== FORM NON ANGGOTA ===== -->
-            <div id="formNonAnggota" style="display:none;">
-                <div class="col-lg-6" style="display:inline-block; vertical-align:top; width:49%">
-                    <div class="form-section">
-                        <div class="section-title member-section">
-                            <i class="fas fa-user"></i>
-                            Data Pengunjung
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Nama Lengkap</label>
-                            <input type="text" class="form-control" id="namaNonAnggota"
-                                   placeholder="Masukkan nama lengkap...">
-                            <small class="text-muted">Ketik nama pengunjung secara manual</small>
-                        </div>
-                        <div id="nonAnggotaInfo" class="mt-3" style="display:none;">
-                            <div class="alert alert-success">
-                                <i class="fas fa-check-circle"></i>
-                                Nama: <strong><span id="nonAnggotaNamaDisplay"></span></strong>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6" style="display:inline-block; vertical-align:top; width:49%">
-                    <div class="form-section">
-                        <div class="section-title book-section">
-                            <i class="fas fa-book"></i>
-                            Data Buku
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Nomor Barcode Buku</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="bookBarcodeNon"
-                                       placeholder="Scan atau ketik barcode buku...">
-                                <button class="btn btn-success btn-scan" type="button" id="addBookBtnNon">
-                                    <i class="fas fa-camera"></i>
-                                </button>
-                            </div>
-                            <small class="text-muted">Scan barcode buku (otomatis simpan)</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
+	.gb-ina .nav-tabs-custom {
+		display: flex;
+	}
 
-            <!-- Status Section (shared) -->
-            <div class="col-12">
-                <div class="form-section">
-                    <div class="section-title status-section-header">
-                        <i class="fas fa-check-circle"></i>
-                        Status Penyimpanan
-                    </div>
-                    <div class="status-section">
-                        <div class="info-icon">
-                            <i class="fas fa-info"></i>
-                        </div>
-                        <div class="text-center mt-3">
-                            <div class="text-info" id="statusMessage">
-                                Pilih tipe pengunjung, isi data, lalu scan barcode buku
-                            </div>
-                        </div>
-                    </div>
-                    <div class="text-center mt-3">
-                        <button class="btn btn-secondary" id="resetFormBtn">
-                            <i class="fas fa-redo"></i> Reset Form
-                        </button>
-                    </div>
-                </div>
-            </div>
+	.gb-ina .nav-tab {
+		flex: 1;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		cursor: pointer;
+	}
 
-            <!-- Data Table Section -->
-            <div class="col-lg-12 mt-4">
-                <div class="table-container">
-                    <div class="table-header">
-                        <div>
-                            <i class="fas fa-clock"></i>
-                            Data Baca Ditempat Hari Ini
-                        </div>
-                        <button class="btn btn-light btn-sm" id="refreshDataBtn">
-                            <i class="fas fa-sync-alt"></i> Refresh
-                        </button>
-                    </div>
-                    
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>#</th>
-                                    <th>Waktu</th>
-                                    <th>No. Anggota</th>
-                                    <th>Nama</th>
-                                    <th>Tipe</th>
-                                    <th>Barcode</th>
-                                    <th>Judul Buku</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="dataTableBody">
-                                <tr>
-                                    <td colspan="7" class="empty-state">
-                                        <i class="fas fa-inbox fa-3x mb-3"></i>
-                                        <div>Belum ada data baca ditempat hari ini</div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+	.rs-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 24px;
+		margin-bottom: 24px;
+	}
+
+	.rs-card {
+		background: var(--gb-surface);
+		border: 1px solid var(--gb-border);
+		border-radius: var(--gb-radius);
+		box-shadow: var(--gb-shadow);
+		padding: 24px;
+	}
+
+	.rs-card-title {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		font-size: 18px;
+		line-height: 26px;
+		font-weight: 600;
+		color: var(--gb-text);
+		padding-bottom: 12px;
+		margin-bottom: 20px;
+		border-bottom: 1px solid var(--gb-border);
+	}
+
+	.rs-card-title i {
+		color: var(--gb-primary);
+	}
+
+	.rs-field {
+		display: flex;
+		gap: 8px;
+	}
+
+	.rs-field .form-control {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.rs-icon-btn {
+		flex-shrink: 0;
+		width: 44px;
+		min-height: 44px;
+		padding: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		color: var(--gb-primary);
+		background: var(--gb-surface);
+		border: 1px solid var(--gb-primary);
+		border-radius: var(--gb-radius-sm);
+	}
+
+	.rs-icon-btn:hover {
+		background: var(--gb-primary-subtle);
+	}
+
+	.rs-icon-btn:focus-visible {
+		outline: none;
+		box-shadow: var(--gb-focus);
+	}
+
+	.rs-help {
+		display: block;
+		margin-top: 6px;
+		font-size: 12px;
+		line-height: 16px;
+		color: var(--gb-text-muted);
+	}
+
+	.rs-info {
+		margin-top: 16px;
+		padding: 12px 16px;
+		font-size: 14px;
+		line-height: 20px;
+		color: var(--gb-text-subtle);
+		background: var(--gb-primary-subtle);
+		border: 1px solid #cfdeee;
+		border-radius: var(--gb-radius-sm);
+	}
+
+	/* Status penyimpanan: alert INA (info / sukses / error) */
+	.rs-status {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		flex-wrap: wrap;
+		margin-bottom: 24px;
+	}
+
+	.rs-status-msg {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		min-width: 240px;
+		padding: 12px 16px;
+		font-size: 14px;
+		line-height: 20px;
+		border: 1px solid #cfdeee;
+		border-radius: var(--gb-radius-sm);
+		background: var(--gb-primary-subtle);
+		color: var(--gb-primary);
+	}
+
+	.rs-status-msg.is-success {
+		background: var(--gb-success-subtle);
+		border-color: #a7d9b3;
+		color: var(--gb-success);
+	}
+
+	.rs-status-msg.is-error {
+		background: var(--gb-danger-subtle);
+		border-color: #f3b4b4;
+		color: var(--gb-danger);
+	}
+
+	.rs-outline-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		min-height: 44px;
+		padding: 10px 20px;
+		font-size: 16px;
+		line-height: 24px;
+		font-weight: 600;
+		color: var(--gb-primary);
+		background: var(--gb-surface);
+		border: 1px solid var(--gb-primary);
+		border-radius: var(--gb-radius-sm);
+	}
+
+	.rs-outline-btn:hover {
+		background: var(--gb-primary-subtle);
+	}
+
+	.rs-outline-btn.is-sm {
+		min-height: 36px;
+		padding: 6px 14px;
+		font-size: 14px;
+		line-height: 20px;
+	}
+
+	/* Tabel INA */
+	.rs-table-card {
+		padding: 0;
+		overflow: hidden;
+	}
+
+	.rs-table-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		padding: 16px 24px;
+		border-bottom: 1px solid var(--gb-border);
+	}
+
+	.rs-table-head h2 {
+		margin: 0;
+		font-size: 18px;
+		line-height: 26px;
+		font-weight: 600;
+		color: var(--gb-text);
+	}
+
+	.rs-table {
+		width: 100%;
+		margin: 0;
+		border-collapse: collapse;
+		font-size: 14px;
+		line-height: 20px;
+	}
+
+	.rs-table th {
+		padding: 12px 16px;
+		text-align: left;
+		font-weight: 600;
+		color: var(--gb-text-subtle);
+		background: #f9fafb;
+		border-bottom: 1px solid var(--gb-border);
+		white-space: nowrap;
+	}
+
+	.rs-table td {
+		padding: 12px 16px;
+		color: var(--gb-text);
+		border-bottom: 1px solid var(--gb-border);
+		vertical-align: top;
+	}
+
+	.rs-table tbody tr:hover td {
+		background: #f9fafb;
+	}
+
+	.rs-table .num {
+		width: 56px;
+		text-align: right;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.rs-table .empty-state {
+		padding: 40px 20px;
+		text-align: center;
+		color: var(--gb-text-muted);
+	}
+
+	.rs-table .empty-state i {
+		display: block;
+		font-size: 32px;
+		margin-bottom: 12px;
+		color: #9ca3af;
+	}
+
+	.rs-badge {
+		display: inline-block;
+		padding: 2px 10px;
+		font-size: 12px;
+		line-height: 16px;
+		font-weight: 600;
+		border-radius: 999px;
+		white-space: nowrap;
+	}
+
+	.rs-badge.is-info { background: var(--gb-primary-subtle); color: var(--gb-primary); }
+	.rs-badge.is-warning { background: var(--gb-warning-subtle); color: var(--gb-warning); }
+	.rs-badge.is-success { background: var(--gb-success-subtle); color: var(--gb-success); }
+
+	@media (max-width: 768px) {
+		.rs-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.rs-card,
+		.rs-table-head {
+			padding: 20px;
+		}
+
+		.rs-title {
+			font-size: 24px;
+			line-height: 32px;
+		}
+	}
+</style>
+
+<div class="rs-page page-container gb-ina">
+	<div class="rs-wrap">
+		<h1 class="rs-title">Baca di Tempat</h1>
+		<p class="rs-subtitle">Catat koleksi yang dibaca pengunjung di ruang perpustakaan.</p>
+
+		<!-- Tab tipe pengunjung -->
+		<div class="nav-tabs-custom" role="tablist" aria-label="Tipe pengunjung">
+			<button type="button" class="nav-tab active" id="tabAnggota" role="tab" aria-selected="true" aria-controls="formAnggota" onclick="switchTab('anggota')">
+				<i class="fas fa-id-card" aria-hidden="true"></i> Anggota
+			</button>
+			<button type="button" class="nav-tab" id="tabNonAnggota" role="tab" aria-selected="false" aria-controls="formNonAnggota" onclick="switchTab('non-anggota')">
+				<i class="fas fa-user" aria-hidden="true"></i> Non Anggota
+			</button>
+		</div>
+
+		<!-- ===== FORM ANGGOTA ===== -->
+		<div id="formAnggota" class="rs-grid" role="tabpanel" aria-labelledby="tabAnggota">
+			<div class="rs-card">
+				<div class="rs-card-title"><i class="fas fa-users" aria-hidden="true"></i> Data Anggota</div>
+				<label for="memberNumber">Nomor Anggota</label>
+				<div class="rs-field">
+					<input type="text" class="form-control" id="memberNumber" placeholder="Masukkan nomor anggota..." autocomplete="off" autofocus>
+					<button class="rs-icon-btn" type="button" id="searchMemberBtn" aria-label="Cari anggota">
+						<i class="fas fa-search" aria-hidden="true"></i>
+					</button>
+				</div>
+				<small class="rs-help">Nama anggota dicari otomatis setelah 3 karakter.</small>
+				<div id="memberInfo" class="rs-info" style="display: none;">
+					<strong>Nama Anggota:</strong> <span id="memberName"></span><br>
+					<strong>No. Anggota:</strong> <span id="memberNum"></span>
+				</div>
+			</div>
+			<div class="rs-card">
+				<div class="rs-card-title"><i class="fas fa-book" aria-hidden="true"></i> Data Buku</div>
+				<label for="bookBarcode">Nomor Barcode Buku</label>
+				<div class="rs-field">
+					<input type="text" class="form-control" id="bookBarcode" placeholder="Scan atau ketik barcode buku..." autocomplete="off">
+					<button class="rs-icon-btn" type="button" id="addBookBtn" aria-label="Simpan barcode buku">
+						<i class="fas fa-barcode" aria-hidden="true"></i>
+					</button>
+				</div>
+				<small class="rs-help">Data tersimpan otomatis setelah barcode dipindai.</small>
+			</div>
+		</div>
+
+		<!-- ===== FORM NON ANGGOTA ===== -->
+		<div id="formNonAnggota" class="rs-grid" role="tabpanel" aria-labelledby="tabNonAnggota" style="display:none;">
+			<div class="rs-card">
+				<div class="rs-card-title"><i class="fas fa-user" aria-hidden="true"></i> Data Pengunjung</div>
+				<label for="namaNonAnggota">Nama Lengkap</label>
+				<input type="text" class="form-control" id="namaNonAnggota" placeholder="Masukkan nama lengkap..." autocomplete="off" maxlength="255">
+				<small class="rs-help">Ketik nama pengunjung secara manual.</small>
+				<div id="nonAnggotaInfo" class="rs-info" style="display:none;">
+					<strong>Nama:</strong> <span id="nonAnggotaNamaDisplay"></span>
+				</div>
+			</div>
+			<div class="rs-card">
+				<div class="rs-card-title"><i class="fas fa-book" aria-hidden="true"></i> Data Buku</div>
+				<label for="bookBarcodeNon">Nomor Barcode Buku</label>
+				<div class="rs-field">
+					<input type="text" class="form-control" id="bookBarcodeNon" placeholder="Scan atau ketik barcode buku..." autocomplete="off">
+					<button class="rs-icon-btn" type="button" id="addBookBtnNon" aria-label="Simpan barcode buku">
+						<i class="fas fa-barcode" aria-hidden="true"></i>
+					</button>
+				</div>
+				<small class="rs-help">Data tersimpan otomatis setelah barcode dipindai.</small>
+			</div>
+		</div>
+
+		<!-- Status penyimpanan (bersama) -->
+		<div class="rs-status">
+			<div class="rs-status-msg" id="statusMessage" role="status" aria-live="polite">
+				Pilih tipe pengunjung, isi data, lalu scan barcode buku
+			</div>
+			<button class="rs-outline-btn" type="button" id="resetFormBtn">
+				<i class="fas fa-redo" aria-hidden="true"></i> Reset Form
+			</button>
+		</div>
+
+		<!-- Data hari ini -->
+		<div class="rs-card rs-table-card">
+			<div class="rs-table-head">
+				<h2>Data Baca di Tempat Hari Ini</h2>
+				<button class="rs-outline-btn is-sm" type="button" id="refreshDataBtn">
+					<i class="fas fa-sync-alt" aria-hidden="true"></i> Refresh
+				</button>
+			</div>
+			<div class="table-responsive">
+				<table class="rs-table">
+					<thead>
+						<tr>
+							<th class="num">No</th>
+							<th>Judul Buku</th>
+							<th>Nama</th>
+							<th>No. Anggota</th>
+							<th>Tipe</th>
+							<th>Barcode</th>
+							<th>Waktu</th>
+							<th>Status</th>
+						</tr>
+					</thead>
+					<tbody id="dataTableBody">
+						<tr>
+							<td colspan="8" class="empty-state">
+								<i class="fas fa-inbox" aria-hidden="true"></i>
+								Belum ada data baca di tempat hari ini
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
 
 <?= $this->endSection() ?>
 
@@ -259,21 +418,25 @@
 
         function switchTab(tab) {
             currentTab = tab;
-            if (tab === 'anggota') {
-                $('#formAnggota').show();
-                $('#formNonAnggota').hide();
-                $('#tabAnggota').removeClass('btn-outline-secondary').addClass('btn-primary');
-                $('#tabNonAnggota').removeClass('btn-primary').addClass('btn-outline-secondary');
-                resetForm();
-                setTimeout(() => $('#memberNumber').focus(), 100);
-            } else {
-                $('#formAnggota').hide();
-                $('#formNonAnggota').show();
-                $('#tabNonAnggota').removeClass('btn-outline-secondary').addClass('btn-primary');
-                $('#tabAnggota').removeClass('btn-primary').addClass('btn-outline-secondary');
-                resetForm();
-                setTimeout(() => $('#namaNonAnggota').focus(), 100);
-            }
+            const anggota = tab === 'anggota';
+            $('#formAnggota').toggle(anggota);
+            $('#formNonAnggota').toggle(!anggota);
+            $('#tabAnggota').toggleClass('active', anggota).attr('aria-selected', anggota);
+            $('#tabNonAnggota').toggleClass('active', !anggota).attr('aria-selected', !anggota);
+            resetForm();
+            setTimeout(() => $(anggota ? '#memberNumber' : '#namaNonAnggota').focus(), 100);
+        }
+
+        // Data tabel berasal dari input pengunjung (mis. nama non anggota): selalu escape sebelum dirender
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+        }
+
+        function updateStatus(message, type) {
+            $('#statusMessage')
+                .removeClass('is-success is-error')
+                .addClass(type === 'success' ? 'is-success' : type === 'error' ? 'is-error' : '')
+                .text(message);
         }
 
         $(document).ready(function() {
@@ -420,8 +583,8 @@
 
                 if (!data || data.length === 0) {
                     tbody.append(`<tr><td colspan="8" class="empty-state">
-                        <i class="fas fa-inbox fa-3x mb-3"></i>
-                        <div>Belum ada data baca ditempat hari ini</div>
+                        <i class="fas fa-inbox" aria-hidden="true"></i>
+                        Belum ada data baca di tempat hari ini
                     </td></tr>`);
                     return;
                 }
@@ -429,32 +592,25 @@
                 data.forEach((item, index) => {
                     const time      = new Date(item.CreateDate).toLocaleTimeString('id-ID');
                     const status    = item.Is_return == '1'
-                        ? '<span class="badge bg-success">Dikembalikan</span>'
-                        : '<span class="badge bg-primary">Sedang Baca</span>';
+                        ? '<span class="rs-badge is-success">Dikembalikan</span>'
+                        : '<span class="rs-badge is-info">Sedang Baca</span>';
                     const tipeBadge = item.IsNonAnggota == 1
-                        ? '<span class="badge bg-warning text-dark">Non Anggota</span>'
-                        : '<span class="badge bg-info">Anggota</span>';
+                        ? '<span class="rs-badge is-warning">Non Anggota</span>'
+                        : '<span class="rs-badge is-info">Anggota</span>';
 
                     tbody.append(`
                         <tr>
-                            <td>${index + 1}</td>
-                            <td>${time}</td>
-                            <td>${item.NoAnggota || '-'}</td>
-                            <td>${item.NamaAnggota || '-'}</td>
+                            <td class="num">${index + 1}</td>
+                            <td>${escapeHtml(item.JudulBuku || '-')}</td>
+                            <td>${escapeHtml(item.NamaAnggota || '-')}</td>
+                            <td>${escapeHtml(item.NoAnggota || '-')}</td>
                             <td>${tipeBadge}</td>
-                            <td>${item.Barcode || '-'}</td>
-                            <td>${item.JudulBuku || '-'}</td>
+                            <td>${escapeHtml(item.Barcode || '-')}</td>
+                            <td>${escapeHtml(time)}</td>
                             <td>${status}</td>
                         </tr>
                     `);
                 });
-            }
-
-            function updateStatus(message, type) {
-                const el = $('#statusMessage');
-                el.removeClass('text-info text-success text-danger');
-                el.addClass(type === 'success' ? 'text-success' : type === 'error' ? 'text-danger' : 'text-info');
-                el.text(message);
             }
         });
 
@@ -466,11 +622,9 @@
             $('#namaNonAnggota').val('');
             $('#bookBarcodeNon').val('');
             $('#nonAnggotaInfo').hide();
-            const msg = currentTab === 'anggota'
+            updateStatus(currentTab === 'anggota'
                 ? 'Masukkan nomor anggota, lalu scan barcode buku'
-                : 'Masukkan nama pengunjung, lalu scan barcode buku';
-            const el = $('#statusMessage');
-            el.removeClass('text-success text-danger').addClass('text-info').text(msg);
+                : 'Masukkan nama pengunjung, lalu scan barcode buku', 'info');
         }
     </script>
 <?= $this->endSection('script') ?>

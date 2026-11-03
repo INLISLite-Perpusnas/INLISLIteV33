@@ -3,7 +3,7 @@
     <div class="btn-actions-pane-right actions-icon-btn">
         <?php // Katalog non-artikel hanya boleh punya SATU konten digital (bukan multiple seperti konten_digital_artikel). ?>
         <?php if (empty($files)) : ?>
-            <a href="javascript:void(0);" data-id="" data-ref-id="<?= $catalog->ID ?>" data-field="FileURL" data-title-header="Upload Konten Digital" data-title-file="File Konten Digital" data-dropzone-url="<?= base_url('katalog/do_upload') ?>" data-upload-url="<?= base_url('api/katalog/upload_file') ?>" data-max-files="1" data-max-size="12" data-format=".pdf" data-format-title="Format (PDF). Max 12MB" data-redirect-url="<?= base_url('katalog/edit/' . $catalog->ID . '?slug=konten_digital') ?>" title="" class="btn btn-success upload-data">
+            <a href="javascript:void(0);" data-id="" data-ref-id="<?= $catalog->ID ?>" data-field="FileURL" data-title-header="Upload Konten Digital" data-title-file="File Konten Digital" data-dropzone-url="<?= base_url('katalog/do_upload') ?>" data-upload-url="<?= base_url('api/katalog/upload_file') ?>" data-max-files="1" data-max-size="12" data-format=".pdf" data-format-title="Format (PDF). Max 12MB" data-redirect-url="<?= base_url('katalog/edit/' . $catalog->ID . '?slug=konten_digital') ?>" title="" class="btn btn-catalog-add upload-data">
                 <i class="fa fa-plus"></i> Tambah File
             </a>
         <?php endif; ?>

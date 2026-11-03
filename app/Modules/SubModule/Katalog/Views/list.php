@@ -191,6 +191,7 @@ $flashClass = in_array($flashIcon, ['success', 'info'], true) ? 'alert-success' 
         }
     }
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -240,6 +241,8 @@ $flashClass = in_array($flashIcon, ['success', 'info'], true) ? 'alert-success' 
             <div class="d-block mb-3 pb-3 border-bottom">
                 <button type="button" id="proses_karantina" class="btn btn-warning" title="Memproses katalog yang dipilih"><i class="fa fa-shopping-cart" aria-hidden="true"></i> Pindahkan ke Karantina</button>
                 <button type="button" id="proses_opac" class="btn btn-primary ml-2" title="Memproses katalog yang dipilih"><i class="fa fa-check-square" aria-hidden="true"></i> Tampilkan di OPAC</button>
+                <button type="button" id="export_data_tag" class="btn btn-success ml-2" title="Export data tag katalog yang dipilih ke Excel"><i class="fa fa-file-excel" aria-hidden="true"></i> Export Data Tag</button>
+                <a href="<?= base_url('katalog/export_data_tag') ?>" class="btn btn-outline-success ml-2" title="Export data tag semua katalog ke Excel"><i class="fa fa-file-excel" aria-hidden="true"></i> Export Semua Data Tag</a>
             </div>
 
             <div class="catalog-controls d-flex align-items-end flex-wrap mb-3">
@@ -404,15 +407,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const actionCell = document.createElement('td');
             actionCell.className = 'text-center';
+            // Tombol ikon "Ubah" seragam dengan tabel CMS (Berita/Banner)
             const editLink = document.createElement('a');
             editLink.href = item.editUrl;
-            editLink.className = 'btn btn-primary';
-            editLink.title = 'Ubah katalog';
+            editLink.className = 'ina-action';
+            editLink.title = 'Ubah';
             editLink.setAttribute('aria-label', 'Ubah katalog ' + (item.BIBID || item.ID));
-            const editIcon = document.createElement('i');
-            editIcon.className = 'pe-7s-note font-weight-bold';
-            editIcon.setAttribute('aria-hidden', 'true');
-            editLink.appendChild(editIcon);
+            editLink.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
             actionCell.appendChild(editLink);
             row.appendChild(actionCell);
             fragment.appendChild(row);
@@ -616,6 +617,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     document.getElementById('proses_opac').addEventListener('click', function() {
         processSelected(opacUrl, 'Tampilkan katalog yang dipilih di OPAC?');
+    });
+    document.getElementById('export_data_tag').addEventListener('click', function() {
+        const query = selectedQuery();
+        if (!query) {
+            window.alert('Pilih minimal satu katalog terlebih dahulu.');
+            return;
+        }
+        window.location.assign(<?= json_encode(base_url('katalog/export_data_tag')) ?> + '?' + query);
     });
 
     requestAnimationFrame(function() { loadRows(); });

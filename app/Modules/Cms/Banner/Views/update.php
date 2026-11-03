@@ -1,48 +1,15 @@
 <?php
 $request = service('request');
+$errors = $errors ?? [];
+$err = static fn(string $field) => $errors[$field] ?? null;
+$asset = static fn(string $path) => base_url($path) . '?v=' . filemtime(FCPATH . $path);
+$permalink = permalink('banner/' . slugify($banner->category) . '/' . $banner->slug);
+$currentCover = !empty($banner->file_cover) ? base_url('uploads/banner/' . $banner->file_cover) : '';
 ?>
 
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
-<style>
-    .tox.tox-tinymce.tox-fullscreen {
-        z-index: 1050;
-        top: 60px !important;
-        left: 85px !important;
-        width: calc(100% - 85px) !important;
-    }
-
-    /* Style untuk Preview Image */
-    .preview-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 10px;
-    }
-    .img-preview-box {
-        position: relative;
-        width: 100%;
-        max-width: 400px; /* Banner biasanya lebar */
-        border: 1px solid #ddd;
-        padding: 5px;
-        border-radius: 5px;
-        overflow: hidden;
-        background: #f9f9f9;
-    }
-    .img-preview-box img {
-        width: 100%;
-        height: auto;
-        object-fit: cover;
-    }
-    
-    .current-image-box {
-        padding: 10px;
-        background: #f1f4f6;
-        border: 1px dashed #ccc;
-        border-radius: 5px;
-        margin-bottom: 10px;
-    }
-</style>
+<link rel="stylesheet" href="<?= $asset('assets/css/ina-form.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -51,107 +18,101 @@ $request = service('request');
     <div class="app-page-title">
         <div class="page-title-wrapper">
             <div class="page-title-heading">
-                <div class="page-title-icon">
-                    <i class="pe-7s-photo icon-gradient bg-strong-bliss"></i>
-                </div>
-                <div>Banner <?= $banner->category ?>
-                    <div class="page-title-subheading">Mohon lengkapi data pada form berikut.</div>
+                <div>Ubah Banner
+                    <div class="page-title-subheading">Perbarui data banner berikut.</div>
                 </div>
             </div>
             <div class="page-title-actions">
-                <nav class="" aria-label="breadcrumb">
+                <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Beranda</a></li>
-                        <li class="breadcrumb-item">Banner </li>
-                        <li class="active breadcrumb-item" aria-current="page">Ubah <?= $banner->category ?> </li>
+                        <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>">Beranda</a></li>
+                        <li class="breadcrumb-item"><a href="<?= base_url('cms/banner') ?>">Banner</a></li>
+                        <li class="active breadcrumb-item" aria-current="page">Ubah</li>
                     </ol>
                 </nav>
             </div>
         </div>
     </div>
-    <div class="main-card mb-3 card">
-        <div class="card-header">
-            <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Form Ubah Banner
+
+    <?= get_message('message'); ?>
+
+    <form id="frm" class="ina-form-card" method="post" enctype="multipart/form-data" action="" novalidate>
+        <div class="ina-form-card-header">
+            <h2>Data Banner</h2>
+            <p>Kolom bertanda <span class="ina-required" aria-hidden="true">*</span> wajib diisi.</p>
         </div>
-        <div class="card-body">
-            <div id="infoMessage"><?= $message ?? ''; ?></div>
-            <?= get_message('message'); ?>
 
-            <form id="frm" class="col-md-12 mx-auto" method="post" enctype="multipart/form-data" action="">
-                <div class="form-row">
-                    <div class="col-md-12">
-                        <div class="position-relative form-group">
-                            <label for="name">Judul Banner*</label>
-                            <div>
-                                <input type="text" class="form-control" id="title" name="title" placeholder="Judul Banner" value="<?= set_value('title', $banner->title); ?>" required />
-                                <small class="info help-block text-muted">Permalink: <a href="<?= permalink('banner/' . slugify($banner->category) . '/' . $banner->slug) ?>" target="_blank"><?= permalink('banner/' . slugify($banner->category) . '/' . $banner->slug) ?></a></small>
-                            </div>
-                        </div>
+        <div class="ina-form-body">
+            <!-- Text Field: Judul -->
+            <div class="ina-field ina-col-12<?= $err('title') ? ' has-error' : '' ?>">
+                <label class="ina-label" for="title">Judul Banner<span class="ina-required" aria-hidden="true">*</span></label>
+                <input type="text" class="ina-input" id="title" name="title" placeholder="Contoh: Pekan Literasi 2026"
+                    value="<?= esc(set_value('title', $banner->title)) ?>" required aria-required="true"
+                    aria-describedby="title_error title_help"<?= $err('title') ? ' aria-invalid="true"' : '' ?> />
+                <p class="ina-error" id="title_error" <?= $err('title') ? '' : 'hidden' ?>><span><?= esc($err('title') ?? '') ?></span></p>
+                <p class="ina-helper" id="title_help">Permalink: <a href="<?= esc($permalink, 'attr') ?>" target="_blank" rel="noopener"><?= esc($permalink) ?></a></p>
+            </div>
+
+            <!-- Pilihan: Kategori -->
+            <div class="ina-field ina-col-6">
+                <label class="ina-label" for="category">Kategori<span class="ina-required" aria-hidden="true">*</span></label>
+                <select class="ina-select" name="category" id="category" required aria-required="true">
+                    <?php foreach (get_ref('ref-banner', 'slug') as $row) : ?>
+                        <option value="<?= esc($row->name) ?>" <?= set_select('category', $row->name, $row->name == $banner->category) ?>><?= esc($row->name) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- Text Field: Urutan (angka) -->
+            <div class="ina-field ina-col-6<?= $err('sort') ? ' has-error' : '' ?>">
+                <label class="ina-label" for="sort">Urutan<span class="ina-required" aria-hidden="true">*</span></label>
+                <input type="number" class="ina-input" name="sort" id="sort" min="1" step="1" inputmode="numeric" placeholder="Contoh: 1"
+                    value="<?= esc(set_value('sort', $banner->sort)) ?>" required aria-required="true"
+                    aria-describedby="sort_error sort_help"<?= $err('sort') ? ' aria-invalid="true"' : '' ?> />
+                <p class="ina-error" id="sort_error" <?= $err('sort') ? '' : 'hidden' ?>><span><?= esc($err('sort') ?? '') ?></span></p>
+                <p class="ina-helper" id="sort_help">Angka 1 tampil paling awal.</p>
+            </div>
+
+            <!-- Text Area: Keterangan -->
+            <div class="ina-field ina-col-12">
+                <label class="ina-label" for="description">Keterangan<span class="ina-optional">(opsional)</span></label>
+                <textarea class="ina-textarea" id="description" name="description" placeholder="Tulis keterangan singkat tentang banner ini" aria-describedby="description_help"><?= esc(set_value('description', $banner->description)) ?></textarea>
+                <p class="ina-helper" id="description_help">Keterangan membantu pengelola mengenali isi banner.</p>
+            </div>
+
+            <!-- File Upload: varian Button di dalam form; file saat ini tampil sebagai upload item -->
+            <div class="ina-field ina-col-12<?= $err('file_cover') ? ' has-error' : '' ?>">
+                <span class="ina-label" id="file_cover_label">Gambar Banner<span class="ina-optional">(kosongkan jika tidak diganti)</span></span>
+                <div class="ina-upload" data-accept="jpg,jpeg,png" data-max-mb="2" data-label="Gambar banner"
+                    data-current-url="<?= esc($currentCover, 'attr') ?>" data-current-name="<?= esc($banner->file_cover ?? '', 'attr') ?>"
+                    data-error="<?= esc($err('file_cover') ?? '', 'attr') ?>">
+                    <div class="ina-upload-base">
+                        <button type="button" class="ina-upload-btn" aria-labelledby="file_cover_label file_cover_btn" aria-describedby="file_cover_desc file_cover_error">
+                            <i class="fas fa-upload" aria-hidden="true"></i> <span id="file_cover_btn">Pilih File</span>
+                        </button>
+                        <p class="ina-upload-desc" id="file_cover_desc">
+                            Seret gambar ke sini atau pilih file.<br>
+                            <strong>Format:</strong> JPG, JPEG, PNG · <strong>Ukuran maks.:</strong> 2 MB
+                        </p>
+                        <input type="file" class="ina-upload-input" name="file_cover" id="file_cover" accept=".jpg,.jpeg,.png" tabindex="-1" aria-hidden="true">
                     </div>
-                    <div class="col-md-4">
-                        <div class="position-relative form-group">
-                            <label>Kategori*</label>
-                            <select class="form-control" name="category" id="category" tabindex="-1" aria-hidden="true">
-                                <?php foreach (get_ref('ref-banner', 'slug') as $row) : ?>
-                                    <option value="<?= $row->name ?>" <?= ($row->name == $banner->category) ? 'selected' : '' ?>><?= $row->name ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="position-relative form-group">
-                            <label for="sort">Urutan</label>
-                            <div>
-                                <input type="number" class="form-control" name="sort" id="sort" placeholder="Urutan " value="<?= set_value('sort', $banner->sort); ?>" />
-                            </div>
-                        </div>
-                    </div>
+                    <div class="ina-upload-list" aria-live="polite"></div>
+                    <p class="ina-error" id="file_cover_error" hidden><span></span></p>
                 </div>
-
-                <div class="form-group">
-                    <label for="description">Keterangan</label>
-                    <div>
-                        <textarea id="description" name="description" placeholder="Keterangan" rows="2" class="form-control autosize-input" style="min-height: 38px;"><?= set_value('description', $banner->description) ?></textarea>
-                    </div>
-                </div>
-
-                <hr>
-                
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="position-relative form-group p-3 border rounded">
-                            <label for="file_cover" class="font-weight-bold">File Banner</label>
-                            
-                            <?php if (!empty($banner->file_cover)): ?>
-                                <div class="current-image-box">
-                                    <p class="mb-1 text-muted"><small>Banner Saat Ini:</small></p>
-                                    <img src="<?= base_url('uploads/banner/' . $banner->file_cover) ?>" style="max-width: 100%; height: auto; border-radius: 4px;" alt="Current Banner">
-                                </div>
-                            <?php endif; ?>
-
-                            <div class="mt-2">
-                                <label><small>Ganti Banner (Biarkan kosong jika tidak ingin mengubah):</small></label>
-                                <input type="file" class="form-control-file" name="file_cover" id="file_cover" accept=".jpg,.jpeg,.png" onchange="previewFile(this, 'preview_cover_container')">
-                                <small class="text-muted">Format (JPG|PNG). Max 2MB.</small>
-                            </div>
-
-                            <div id="preview_cover_container" class="preview-container"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group mt-3">
-                    <button type="submit" class="btn btn-primary" name="submit">Simpan Perubahan</button>
-                    <a href="<?= base_url('cms/banner') ?>" class="btn btn-secondary">Kembali</a>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+
+        <div class="ina-form-footer">
+            <a href="<?= base_url('cms/banner') ?>" class="ina-btn ina-btn-secondary">Batal</a>
+            <button type="submit" class="ina-btn ina-btn-primary-solid" name="submit">Simpan Perubahan</button>
+        </div>
+    </form>
 </div>
 
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
+<script src="<?= $asset('assets/js/ina-upload.js') ?>"></script>
 <script>
     $(document).ready(function() {
         <?php if (session()->getFlashdata('swal_icon')) : ?>
@@ -164,26 +125,37 @@ $request = service('request');
                 icon:'error'
             });
         <?php endif; ?>
-    });
-</script>
-<script>
-    // Fungsi Preview Gambar
-    function previewFile(input, previewId) {
-        var previewContainer = document.getElementById(previewId);
-        previewContainer.innerHTML = ''; 
 
-        if (input.files && input.files[0]) {
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                var html = `
-                    <div class="img-preview-box">
-                        <div class="text-center text-success mb-1" style="font-size:10px;"><b>Akan Diupload</b></div>
-                        <img src="${e.target.result}" title="${input.files[0].name}">
-                    </div>`;
-                $(previewContainer).html(html);
+        // Validasi field wajib di browser; pesan tampil di bawah field terkait
+        var form = document.getElementById('frm');
+        var rules = [
+            { el: document.getElementById('title'), check: function(v) { return v.trim() === '' ? 'Judul banner wajib diisi.' : ''; } },
+            { el: document.getElementById('sort'), check: function(v) { return !/^[1-9]\d*$/.test(v.trim()) ? 'Urutan harus berupa angka bulat mulai dari 1.' : ''; } }
+        ];
+        var setError = function(el, message) {
+            var box = document.getElementById(el.id + '_error');
+            el.closest('.ina-field').classList.toggle('has-error', !!message);
+            box.hidden = !message;
+            box.querySelector('span').textContent = message || '';
+            if (message) el.setAttribute('aria-invalid', 'true'); else el.removeAttribute('aria-invalid');
+        };
+        form.addEventListener('submit', function(e) {
+            var first = null;
+            rules.forEach(function(rule) {
+                var message = rule.check(rule.el.value);
+                setError(rule.el, message);
+                if (message && !first) first = rule.el;
+            });
+            if (first) {
+                e.preventDefault();
+                first.focus();
             }
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
+        });
+        rules.forEach(function(rule) {
+            rule.el.addEventListener('input', function() {
+                if (!rule.check(rule.el.value)) setError(rule.el, '');
+            });
+        });
+    });
 </script>
 <?= $this->endSection('script'); ?>

@@ -71,6 +71,8 @@ $request = service('request');
     #filterForm .criterion-control:first-child { grid-column: 1 / -1; }
 }
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
+<script src="<?= base_url('assets/js/ina-form-enhance.js') . '?v=' . filemtime(FCPATH . 'assets/js/ina-form-enhance.js') ?>" defer></script>
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -90,7 +92,7 @@ $request = service('request');
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('auth') ?>"><i class="fa fa-home"></i> Home</a></li>
                         <li class="breadcrumb-item"><a href="#">Laporan</a></li>
-                        <li class="active breadcrumb-item" aria-current="page">Laporan Katalog</li>
+                        <li class="breadcrumb-item" aria-current="page">Laporan Katalog</li>
                     </ol>
                 </nav>
             </div>
@@ -200,7 +202,7 @@ $request = service('request');
                     <div class="filter-section criteria-section">
                         <div class="criteria-heading">
                             <h6><i class="fas fa-filter" aria-hidden="true"></i> Kriteria Katalog</h6>
-                            <button type="button" class="btn btn-success" id="addCriterion" title="Tambah kriteria" aria-label="Tambah kriteria">
+                            <button type="button" class="btn btn-ina-outline" id="addCriterion" title="Tambah kriteria" aria-label="Tambah kriteria">
                                 <i class="fas fa-plus-circle" aria-hidden="true"></i>
                             </button>
                         </div>
@@ -220,14 +222,14 @@ $request = service('request');
                     <small class="text-muted">Frekuensi dikelompokkan berdasarkan kriteria yang dipilih (termasuk Semua); jika tidak ada kriteria, gunakan kolom yang dicentang.</small>
                 </div>
                 <div class="text-center mb-4">
-                    <button type="submit" class="btn btn-success btn-lg px-5" id="exportBtn" onclick="setExportAction('excel')">
+                    <button type="submit" class="btn btn-catalog-add btn-lg px-5" id="exportBtn" onclick="setExportAction('excel')">
                         <i class="fas fa-file-excel"></i> Export Excel
                     </button>
-                    <button type="submit" class="btn btn-danger btn-lg px-5 ml-2" id="exportPdfBtn" onclick="setExportAction('pdf')">
+                    <button type="submit" class="btn btn-ina-outline btn-lg px-5 ml-2" id="exportPdfBtn" onclick="setExportAction('pdf')">
                         <i class="fas fa-file-pdf"></i> Export PDF
                     </button>
                     <button type="button" class="btn btn-secondary btn-lg px-5 ml-2" id="clearCatalogFilters">
-                        <i class="fas fa-eraser"></i> Clear All Filters
+                        <i class="fas fa-eraser"></i> Hapus Filter
                     </button>
                 </div>
 
@@ -245,7 +247,7 @@ $request = service('request');
 
             <!-- Preview Section -->
             <div class="preview-container">
-                <h5><i class="fas fa-eye"></i> Preview Data (100 Baris Pertama)</h5>
+                <h5><i class="fas fa-eye"></i> Pratinjau 100 Data</h5>
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle"></i> Preview akan otomatis terupdate setiap kali Anda mengubah pilihan kolom atau filter.
                 </div>

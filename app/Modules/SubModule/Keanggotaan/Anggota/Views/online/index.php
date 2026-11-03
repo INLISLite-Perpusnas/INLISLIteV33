@@ -39,6 +39,7 @@ if ($slug == 'extend') {
 
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -51,7 +52,7 @@ if ($slug == 'extend') {
 					<i class="pe-7s-user icon-gradient bg-strong-bliss"></i>
 				</div>
 				<div>Keanggotaan
-					<div class="page-title-subheading"><?= $label_title ?></div>
+					<div class="page-title-subheading"><?= esc($label_title) ?></div>
 				</div>
 			</div>
 			<div class="page-title-actions">

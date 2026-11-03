@@ -215,4 +215,63 @@ div.dataTables_wrapper div.dataTables_paginate {
 	.swal2-popup {
 		font-family: inherit;
 	}
+
+	/* Tooltip CSS murni (tanpa Popper): <span class="has-tip" data-tip="keterangan">…</span>.
+	   Tooltip Bootstrap 5 di layout ini tidak jalan karena Popper tidak dimuat. */
+	.has-tip {
+		position: relative;
+		display: inline-block;
+	}
+
+	.has-tip::after {
+		content: attr(data-tip);
+		position: absolute;
+		left: 50%;
+		bottom: calc(100% + 8px);
+		transform: translateX(-50%) translateY(4px);
+		width: max-content;
+		max-width: 260px;
+		padding: 6px 10px;
+		border-radius: 6px;
+		background: #1e293b;
+		color: #ffffff;
+		font-size: 12px;
+		font-weight: 400;
+		line-height: 1.4;
+		text-align: left;
+		white-space: normal;
+		box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
+		opacity: 0;
+		visibility: hidden;
+		pointer-events: none;
+		transition: opacity 0.15s ease, transform 0.15s ease;
+		z-index: 1080;
+	}
+
+	.has-tip::before {
+		content: '';
+		position: absolute;
+		left: 50%;
+		bottom: calc(100% + 2px);
+		transform: translateX(-50%);
+		border: 6px solid transparent;
+		border-top-color: #1e293b;
+		opacity: 0;
+		visibility: hidden;
+		transition: opacity 0.15s ease;
+		z-index: 1080;
+	}
+
+	.has-tip:hover::after,
+	.has-tip:hover::before,
+	.has-tip:focus-within::after,
+	.has-tip:focus-within::before {
+		opacity: 1;
+		visibility: visible;
+	}
+
+	.has-tip:hover::after,
+	.has-tip:focus-within::after {
+		transform: translateX(-50%) translateY(0);
+	}
 </style>

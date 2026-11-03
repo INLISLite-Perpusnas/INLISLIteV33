@@ -5,6 +5,7 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -42,7 +43,7 @@ $slug = $request->getGet('slug') ?? '';
                 <select class="form-control select2" name="field_id" id="field_id">
                 </select>
                 <div class="input-group-append">
-                    <button class="btn btn-primary marc-btn-add" type="button">
+                    <button class="btn btn-catalog-add marc-btn-add" type="button">
                         <i class="fa fa-plus"></i> Tambah Tag 
                     </button>
                 </div>

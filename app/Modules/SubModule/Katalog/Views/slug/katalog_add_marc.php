@@ -60,6 +60,10 @@ $select2 = select_two();
 				<td>
 					<div class="input-group select-wrapper">
 						<select class="form-control" name="field_id" id="field_id">
+							<option value="">-Pilih-</option>
+							<?php foreach ($filtered_tags as $ft) : ?>
+								<option value="<?= $ft['ID'] ?>">[<?= $ft['Tag'] ?>] <?= esc($ft['Name']) ?></option>
+							<?php endforeach; ?>
 						</select>
 						<div class="input-group-append">
 							<button class="btn btn bg-primary text-white marc-btn-add" type="button" style="min-width:80px"><i class="fa fa-plus"></i> Tambah Tag </button>
@@ -69,49 +73,8 @@ $select2 = select_two();
 			</tr>
 		</thead>
 		<tbody id="marc-tbody">
-			<?php foreach ($session_tags as $row) : $index = random_string('numeric', 13); ?>
-				<tr class="rm-row">
-					<td class="text-center">
-						<?php if ($row['Mandatory'] <> 1) : ?>
-							<button type="button" class="btn btn-danger marc-btn-remove" data-field_id="<?= $row['ID'] ?>"><i class="fa fa-trash"></i></button>
-						<?php endif; ?>
-					</td>
-					<td>
-						<input type="hidden" name="Index[<?= $row['Tag'] ?>][]" value="Index_<?= $row['Tag'] ?>_<?= $index ?>">
-						<?= $row['Tag'] ?>
-					</td>
-					<td>
-						<?= $row['Name'] ?>
-					</td>
-					<td>
-						<?php if ($row['Fixed'] <> 1) : ?>
-							<div class="input-group">
-								<input type="text" class="form-control" name="Indicator1[<?= $row['Tag'] ?>]<?= ($row['Repeatable'] == 1) ? '[]' : '' ?>" id="Indicator1_<?= $row['Tag'] ?>_<?= $index ?>" placeholder="" value="#" />
-								<div class="input-group-append">
-									<button class="btn btn bg-primary text-white btn-indicator1" data-id="<?= $row['ID'] ?>" data-field_id="Indicator1_<?= $row['Tag'] ?>_<?= $index ?>" data-tag="<?= $row['Tag'] ?>" data-name="<?= $row['Name'] ?>" type="button"><i class="fa fa-list"></i></button>
-								</div>
-							</div>
-						<?php endif; ?>
-					</td>
-					<td>
-						<?php if ($row['Fixed'] <> 1) : ?>
-							<div class="input-group">
-								<input type="text" class="form-control" name="Indicator2[<?= $row['Tag'] ?>]<?= ($row['Repeatable'] == 1) ? '[]' : '' ?>" id="Indicator2_<?= $row['Tag'] ?>_<?= $index ?>" placeholder="" value="#" />
-								<div class="input-group-append">
-									<button class="btn btn bg-primary text-white btn-indicator2" data-id="<?= $row['ID'] ?>" data-field_id="Indicator2_<?= $row['Tag'] ?>_<?= $index ?>" data-tag="<?= $row['Tag'] ?>" data-name="<?= $row['Name'] ?>" type="button"><i class="fa fa-list"></i></button>
-								</div>
-							</div>
-						<?php endif; ?>
-					</td>
-					<td>
-						<div class="input-group">
-							<input type="text" class="form-control" name="Value[<?= $row['Tag'] ?>]<?= ($row['Repeatable'] == 1) ? '[]' : '' ?>" id="Value_<?= $row['Tag'] ?>_<?= $index ?>" placeholder="" value="$a" />
-							<div class="input-group-append">
-								<button class="btn btn bg-primary text-white btn-value" data-id="<?= $row['ID'] ?>" data-field_id="Value_<?= $row['Tag'] ?>_<?= $index ?>" data-tag="<?= $row['Tag'] ?>" data-name="<?= $row['Name'] ?>" type="button"><i class="fa fa-list"></i></button>
-							</div>
-						</div>
-					</td>
-				</tr>
+			<?php foreach ($session_tags as $row) : ?>
+				<?= view('Katalog\Views\slug\marc_row', ['row' => $row, 'value' => marc_default_value($row, $worksheet_id), 'ind1' => '#', 'ind2' => '#']) ?>
 			<?php endforeach; ?>
 		</tbody>
 	</table>

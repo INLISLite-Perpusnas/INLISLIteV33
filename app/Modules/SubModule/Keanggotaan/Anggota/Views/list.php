@@ -6,6 +6,7 @@ $request = service('request');
 <?= $this->extend('App\Views\layout\main'); ?>
 
 <?= $this->section('style'); ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -36,7 +37,7 @@ $request = service('request');
     <div class="main-card mb-3 card">
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate" aria-hidden="true"> </i>Tabel Anggota
             <div class="btn-actions-pane-right actions-icon-btn">
-                <a href="<?= base_url('anggota/create') ?>" class="btn btn-success"><i class="fa fa-plus" aria-hidden="true"></i>
+                <a href="<?= base_url('anggota/create') ?>" class="btn btn-catalog-add"><i class="fa fa-plus" aria-hidden="true"></i>
                     Tambah Anggota
                 </a>
             </div>
@@ -635,7 +636,7 @@ $request = service('request');
         Swal.fire({
             title: 'Konfirmasi Aktivasi Online',
             html: `Akan mengaktifkan akses online untuk <strong>${selectedIds.length}</strong> anggota yang dipilih.<br><br>
-                   <small class="text-muted">Username akan sama dengan No. Anggota, dan password default sama dengan username.</small>`,
+                   <small class="text-muted">Username akan sama dengan No. Anggota. Password acak hanya ditampilkan sekali setelah proses selesai.</small>`,
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -651,6 +652,9 @@ $request = service('request');
         
         return false;
     });
+
+    // Token CSRF diperbarui dari tiap respons karena token di-regenerate setelah dipakai
+    var aktivasiCsrfHash = '<?= csrf_hash() ?>';
 
     // Fungsi untuk mengirim data aktivasi online ke controller
     function aktifkanAnggotaOnline(ids) {
@@ -670,12 +674,15 @@ $request = service('request');
             url: '<?= base_url('anggota/aktifkan_online') ?>',
             type: 'POST',
             data: {
-                '<?= csrf_token() ?>': '<?= csrf_hash() ?>',
+                '<?= csrf_token() ?>': aktivasiCsrfHash,
                 member_ids: ids
             },
             dataType: 'json'
         })
         .done(function(response) {
+            if (response.csrf) {
+                aktivasiCsrfHash = response.csrf;
+            }
             if (response.error === false) {
                 Swal.fire({
                     title: 'Berhasil!',
@@ -698,9 +705,13 @@ $request = service('request');
             }
         })
         .fail(function(jqXHR, textStatus, errorThrown) {
+            var res = jqXHR.responseJSON || {};
+            if (res.csrf) {
+                aktivasiCsrfHash = res.csrf;
+            }
             Swal.fire({
                 title: 'Oops!',
-                text: 'Terjadi kesalahan saat memproses data. Silakan coba lagi.',
+                text: res.message || 'Terjadi kesalahan saat memproses data. Muat ulang halaman lalu coba lagi.',
                 icon: 'error',
                 confirmButtonText: 'OK'
             });

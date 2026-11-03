@@ -61,7 +61,7 @@ class DetailKatalog extends \Base\Controllers\BaseResourceController
 				return $html;
 			})
 			->edit('action', function ($row) {
-				$delete = '<a href="javascript:void(0);" data-href="' . base_url('master-detail-katalog/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus " class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+				$delete = '<a href="javascript:void(0);" data-href="' . base_url('master-detail-katalog/delete/' . $row->ID) . '" data-toggle="tooltip" data-placement="top" title="Hapus" aria-label="Hapus" class="ina-action ina-action-danger remove-data"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
 				$html = '' . $delete . '';
 				return $html;
 			})

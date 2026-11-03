@@ -313,6 +313,48 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 		transform: scale(1.05);
 	}
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
+<style>
+	/* Warna biru halaman ubah anggota: #2d659e (setelah ina-skin agar menimpa warna lama) */
+	.content-wrapper .dropdown-menu-header-inner.bg-night-sky {
+		background: #2d659e !important;
+	}
+
+	.content-wrapper .dropdown-menu-header-inner.bg-night-sky .menu-header-image {
+		opacity: .12;
+	}
+
+	.content-wrapper .text-primary {
+		color: #2d659e !important;
+	}
+
+	.content-wrapper .btn-primary,
+	.content-wrapper .btn-primary:not(:disabled):not(.disabled):active {
+		color: #fff;
+		background-color: #2d659e;
+		border-color: #2d659e;
+	}
+
+	.content-wrapper .btn-primary:hover:not(:disabled) {
+		background-color: #24527f;
+		border-color: #24527f;
+	}
+
+	.content-wrapper .card-header .nav .nav-link.active,
+	.content-wrapper .card-header .nav .nav-link:hover {
+		color: #2d659e;
+	}
+
+	/* Garis bawah tab aktif (tema menggambarnya lewat ::before) */
+	.content-wrapper .card-header .nav .nav-link::before {
+		background: #2d659e !important;
+	}
+
+	.content-wrapper .spinner,
+	.content-wrapper .loader {
+		border-top-color: #2d659e;
+	}
+</style>
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>

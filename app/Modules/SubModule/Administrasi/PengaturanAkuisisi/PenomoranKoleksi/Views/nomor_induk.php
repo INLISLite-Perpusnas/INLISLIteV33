@@ -21,6 +21,7 @@ $slug = $request->getGet('slug') ?? 'katalog_add';
         box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
     }
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -233,7 +234,7 @@ $slug = $request->getGet('slug') ?? 'katalog_add';
                 <div class="row">
                     <div class="col-md-12">
                         <div class="form-group">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-catalog-add">
                                 <i class="fa fa-save"></i> Simpan
                             </button>
                             <a href="<?= base_url('katalog') ?>" class="btn btn-secondary ml-2">

@@ -46,8 +46,8 @@ class Parameter extends \Base\Controllers\BaseResourceController
 			->edit('Value', function($row) { return esc($row->Value ?? ''); })
 			->edit('Branch_id', function($row) { return esc($row->Branch_id ?? ''); })
 			->edit('action', function($row){
-				$edit = '<a href="javascript:void(0);" data-href="'.base_url('api/parameter/show/'.$row->ID).'" data-toggle="tooltip" data-placement="top" title="Ubah Parameter" class="btn btn-warning show-data"><i class="pe-7s-note font-weight-bold"> </i></a>';
-				$delete = '<a href="javascript:void(0);" data-href="'.base_url('parameter/delete/'.$row->ID).'" data-toggle="tooltip" data-placement="top" title="Hapus Parameter" class="btn btn-danger remove-data"><i class="pe-7s-trash font-weight-bold"> </i></a>';
+				$edit = '<a href="javascript:void(0);" data-href="'.base_url('api/parameter/show/'.$row->ID).'" data-toggle="tooltip" data-placement="top" title="Ubah Parameter" aria-label="Ubah Parameter" class="ina-action show-data"><i class="fas fa-pen" aria-hidden="true"></i></a>';
+				$delete = '<a href="javascript:void(0);" data-href="'.base_url('parameter/delete/'.$row->ID).'" data-toggle="tooltip" data-placement="top" title="Hapus Parameter" aria-label="Hapus Parameter" class="ina-action ina-action-danger remove-data"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
 				return $edit ." ". $delete;
 			})
 			->toJson();

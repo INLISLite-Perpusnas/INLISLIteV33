@@ -1,0 +1,638 @@
+/*
+ * Buku Tamu publik (/buku-tamu, /non_anggota, /rombongan, /lokasi) - gaya INA Digital.
+ * Dimuat setelah <style> inline tiap view; semua aturan dibatasi .gb-ina agar tidak bocor ke layout OPAC.
+ * Skala huruf INA: H4 28/36, H5 24/32, Body 18/26, Body Small 16/24, Caption 14/20, Caption Small 12/16.
+ */
+.gb-ina {
+	--gb-primary: #2d659e;
+	--gb-primary-hover: #24527f;
+	--gb-primary-subtle: #eef4fa;
+	--gb-text: #1f2937;
+	--gb-text-subtle: #374151;
+	--gb-text-muted: #6b7280;
+	--gb-border: #e5e7eb;
+	--gb-border-strong: #d1d5db;
+	--gb-surface: #ffffff;
+	--gb-page: #f7f7f8;
+	--gb-danger: #c62828;
+	--gb-danger-subtle: #fdecec;
+	--gb-success: #1f7a36;
+	--gb-success-subtle: #e9f6ec;
+	--gb-warning: #8a4b00;
+	--gb-warning-subtle: #fff4e5;
+	--gb-radius: 12px;
+	--gb-radius-sm: 8px;
+	--gb-shadow: 0 1px 3px rgba(16, 24, 40, .08), 0 1px 2px rgba(16, 24, 40, .04);
+	--gb-focus: 0 0 0 3px rgba(45, 101, 158, .2);
+	font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	color: var(--gb-text);
+	letter-spacing: 0;
+}
+
+.gb-ina.page-container {
+	background: var(--gb-page);
+}
+
+/* ---------- Kartu & header halaman ---------- */
+.gb-ina .page-header,
+.gb-ina .search-section,
+.gb-ina .action-section,
+.gb-ina .member-profile,
+.gb-ina .form-section,
+.gb-ina.location-card,
+.gb-ina .location-card {
+	background: var(--gb-surface);
+	border: 1px solid var(--gb-border);
+	border-left: 1px solid var(--gb-border);
+	border-radius: var(--gb-radius);
+	box-shadow: var(--gb-shadow);
+}
+
+.gb-ina .page-header {
+	padding: 24px;
+	margin-bottom: 24px;
+}
+
+.gb-ina .page-header > br {
+	display: none;
+}
+
+.gb-ina .library-info h1 {
+	font-size: 28px;
+	line-height: 36px;
+	font-weight: 700;
+	color: var(--gb-text);
+	margin: 0 0 4px;
+}
+
+.gb-ina .library-location {
+	font-size: 16px;
+	line-height: 24px;
+	color: var(--gb-text-muted);
+	margin-bottom: 16px;
+}
+
+/* Breadcrumb INA: teks polos, tautan biru, pemisah abu */
+.gb-ina .breadcrumb-custom {
+	background: transparent;
+	padding: 0;
+	border-radius: 0;
+	gap: 8px;
+	font-size: 14px;
+	line-height: 20px;
+	color: var(--gb-text-muted);
+}
+
+.gb-ina .breadcrumb-custom a {
+	color: var(--gb-primary);
+	font-weight: 500;
+	text-decoration: none;
+}
+
+.gb-ina .breadcrumb-custom a:hover {
+	text-decoration: underline;
+}
+
+.gb-ina .breadcrumb-custom .active {
+	color: var(--gb-text);
+	font-weight: 600;
+}
+
+/* Total kunjungan hari ini: Card Metrics */
+.gb-ina .gb-visit-total {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-top: 20px;
+	padding: 16px 20px;
+	background: var(--gb-primary-subtle);
+	border: 1px solid #cfdeee;
+	border-radius: var(--gb-radius-sm);
+}
+
+.gb-ina .gb-visit-total span {
+	font-size: 16px;
+	line-height: 24px;
+	font-weight: 500;
+	color: var(--gb-text-subtle);
+}
+
+.gb-ina .gb-visit-total strong {
+	font-size: 28px;
+	line-height: 36px;
+	font-weight: 700;
+	color: var(--gb-primary);
+	font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Tab Anggota / Bukan Anggota / Rombongan ---------- */
+.gb-ina .nav-tabs-custom {
+	background: var(--gb-surface);
+	border: 1px solid var(--gb-border);
+	border-radius: var(--gb-radius);
+	box-shadow: none;
+	padding: 4px;
+	gap: 4px;
+	margin-bottom: 24px;
+}
+
+.gb-ina .nav-tab {
+	border-radius: var(--gb-radius-sm);
+	padding: 10px 16px;
+	font-size: 16px;
+	line-height: 24px;
+	font-weight: 500;
+	color: var(--gb-text-subtle);
+	background: transparent;
+	border: 0;
+	box-shadow: none;
+	transform: none;
+}
+
+.gb-ina .nav-tab:hover {
+	background: #f3f4f6;
+	color: var(--gb-text);
+	transform: none;
+}
+
+.gb-ina .nav-tab.active,
+.gb-ina .nav-tab.active:hover {
+	background: var(--gb-primary);
+	color: #fff;
+	font-weight: 600;
+	box-shadow: none;
+}
+
+.gb-ina .nav-tab:focus-visible {
+	outline: none;
+	box-shadow: var(--gb-focus);
+}
+
+/* ---------- Judul bagian ---------- */
+.gb-ina .search-section,
+.gb-ina .form-section {
+	padding: 32px;
+	margin-bottom: 24px;
+}
+
+.gb-ina .search-title,
+.gb-ina .form-title,
+.gb-ina .welcome-header h2 {
+	font-size: 24px;
+	line-height: 32px;
+	font-weight: 700;
+	color: var(--gb-text);
+}
+
+.gb-ina .search-subtitle,
+.gb-ina .form-subtitle {
+	font-size: 16px;
+	line-height: 24px;
+	color: var(--gb-text-muted);
+}
+
+.gb-ina .section-header {
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+	padding-left: 0;
+	border-bottom: 1px solid var(--gb-border);
+	padding-bottom: 12px;
+	margin-bottom: 20px;
+}
+
+.gb-ina .section-header h3 {
+	font-size: 18px;
+	line-height: 26px;
+	font-weight: 600;
+	color: var(--gb-text);
+}
+
+.gb-ina .section-header i {
+	color: var(--gb-primary);
+}
+
+/* ---------- Text Input / Select / Textarea ---------- */
+.gb-ina label,
+.gb-ina .form-group label {
+	font-size: 14px;
+	line-height: 20px;
+	font-weight: 600;
+	color: var(--gb-text-subtle);
+	margin-bottom: 6px;
+}
+
+.gb-ina .form-control,
+.gb-ina .search-input {
+	min-height: 44px;
+	padding: 10px 14px;
+	font-size: 16px;
+	line-height: 24px;
+	color: var(--gb-text);
+	background-color: var(--gb-surface);
+	border: 1px solid var(--gb-border-strong);
+	border-radius: var(--gb-radius-sm);
+	box-shadow: none;
+	transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.gb-ina textarea.form-control {
+	min-height: 96px;
+}
+
+.gb-ina .form-control::placeholder,
+.gb-ina .search-input::placeholder {
+	color: #9ca3af;
+}
+
+.gb-ina .form-control:hover,
+.gb-ina .search-input:hover {
+	border-color: #9ca3af;
+}
+
+.gb-ina .form-control:focus,
+.gb-ina .search-input:focus {
+	border-color: var(--gb-primary);
+	box-shadow: var(--gb-focus);
+	outline: none;
+}
+
+.gb-ina .form-control[readonly],
+.gb-ina .form-control:disabled {
+	background: #f3f4f6;
+	color: var(--gb-text-muted);
+	border-color: var(--gb-border);
+}
+
+.gb-ina .form-control.is-invalid {
+	border-color: var(--gb-danger);
+}
+
+.gb-ina .form-control.is-invalid:focus {
+	box-shadow: 0 0 0 3px rgba(198, 40, 40, .15);
+}
+
+.gb-ina .invalid-feedback {
+	font-size: 14px;
+	line-height: 20px;
+	color: var(--gb-danger);
+}
+
+.gb-ina .text-danger,
+.gb-ina .required-marker {
+	color: var(--gb-danger) !important;
+}
+
+.gb-ina .form-text,
+.gb-ina small.text-muted {
+	font-size: 12px;
+	line-height: 16px;
+	color: var(--gb-text-muted) !important;
+}
+
+/* Pencarian nomor anggota: input + tombol menyatu */
+.gb-ina .search-input-group {
+	border: 0;
+	border-radius: var(--gb-radius-sm);
+	box-shadow: none;
+	gap: 8px;
+	overflow: visible;
+}
+
+.gb-ina .search-input-group .search-input {
+	flex: 1;
+}
+
+/* Tujuan kunjungan setelah anggota ditemukan */
+.gb-ina .gb-purpose {
+	max-width: 480px;
+	margin: 0 auto;
+	text-align: left;
+}
+
+.gb-ina .gb-autosave {
+	text-align: center;
+	font-size: 14px;
+	line-height: 20px;
+	color: var(--gb-text-muted);
+	margin: 16px 0 0;
+}
+
+.gb-ina .gb-autosave strong {
+	color: var(--gb-primary);
+}
+
+/* ---------- Tombol ---------- */
+.gb-ina .search-btn,
+.gb-ina .save-btn,
+.gb-ina .btn-primary {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-height: 44px;
+	padding: 10px 20px;
+	font-size: 16px;
+	line-height: 24px;
+	font-weight: 600;
+	color: #fff;
+	background: var(--gb-primary);
+	border: 1px solid var(--gb-primary);
+	border-radius: var(--gb-radius-sm);
+	box-shadow: none;
+	transform: none;
+}
+
+.gb-ina .search-btn:hover,
+.gb-ina .save-btn:hover,
+.gb-ina .btn-primary:hover {
+	background: var(--gb-primary-hover);
+	border-color: var(--gb-primary-hover);
+	color: #fff;
+	box-shadow: none;
+	transform: none;
+}
+
+.gb-ina .search-btn:focus-visible,
+.gb-ina .save-btn:focus-visible,
+.gb-ina .btn:focus-visible {
+	outline: none;
+	box-shadow: var(--gb-focus);
+}
+
+.gb-ina .save-btn:disabled,
+.gb-ina .save-btn:disabled:hover,
+.gb-ina .btn-primary:disabled {
+	background: #e5e7eb;
+	border-color: #e5e7eb;
+	color: #9ca3af;
+	opacity: 1;
+	cursor: not-allowed;
+}
+
+/* Tombol sekunder (Reset): outline netral, bukan merah */
+.gb-ina .btn-outline-secondary,
+.gb-ina .btn-danger[type="reset"] {
+	min-height: 44px;
+	padding: 10px 20px;
+	font-size: 16px;
+	line-height: 24px;
+	font-weight: 600;
+	color: var(--gb-primary);
+	background: var(--gb-surface);
+	border: 1px solid var(--gb-primary);
+	border-radius: var(--gb-radius-sm);
+}
+
+.gb-ina .btn-outline-secondary:hover,
+.gb-ina .btn-danger[type="reset"]:hover {
+	background: var(--gb-primary-subtle);
+	color: var(--gb-primary-hover);
+	border-color: var(--gb-primary-hover);
+}
+
+.gb-ina .submit-section {
+	border-top: 1px solid var(--gb-border);
+	padding-top: 24px;
+}
+
+.gb-ina .submit-section p {
+	font-size: 14px;
+	line-height: 20px;
+	color: var(--gb-text-muted) !important;
+}
+
+/* ---------- Alert ---------- */
+.gb-ina .alert-custom {
+	align-items: flex-start;
+	gap: 12px;
+	padding: 16px;
+	font-size: 14px;
+	line-height: 20px;
+	border: 1px solid;
+	border-left-width: 1px;
+	border-radius: var(--gb-radius-sm);
+	box-shadow: none;
+}
+
+.gb-ina .alert-custom strong {
+	font-size: 16px;
+	line-height: 24px;
+}
+
+.gb-ina .alert-warning-custom {
+	background: var(--gb-warning-subtle);
+	border-color: #f5c58a;
+	color: var(--gb-warning);
+}
+
+.gb-ina .alert-success-custom {
+	background: var(--gb-success-subtle);
+	border-color: #a7d9b3;
+	color: var(--gb-success);
+}
+
+.gb-ina .alert-error-custom {
+	background: var(--gb-danger-subtle);
+	border-color: #f3b4b4;
+	color: var(--gb-danger);
+}
+
+.gb-ina .alert-close {
+	color: inherit;
+	opacity: .7;
+}
+
+.gb-ina .alert-close:hover {
+	opacity: 1;
+}
+
+/* ---------- Rombongan: input jumlah & ringkasan ---------- */
+.gb-ina .summary-box {
+	background: var(--gb-primary-subtle);
+	border: 1px solid #cfdeee;
+	border-radius: var(--gb-radius-sm);
+	color: var(--gb-text-subtle);
+}
+
+.gb-ina .summary-total {
+	color: var(--gb-primary);
+	font-weight: 700;
+}
+
+/* ---------- Profil anggota ---------- */
+.gb-ina .member-profile {
+	padding: 24px;
+}
+
+.gb-ina .welcome-header {
+	background: transparent;
+	color: var(--gb-text);
+	padding: 0 0 16px;
+	border-bottom: 1px solid var(--gb-border);
+	margin-bottom: 20px;
+}
+
+.gb-ina .welcome-header .member-number {
+	font-size: 14px;
+	line-height: 20px;
+	color: var(--gb-text-muted);
+	opacity: 1;
+}
+
+/* Partial Member\Views\member_profile memakai kelas tema admin (bg-night-sky) yang tidak ada di layout OPAC */
+.gb-ina .member-profile .card {
+	border: 1px solid var(--gb-border);
+	border-radius: var(--gb-radius-sm);
+	box-shadow: none;
+}
+
+.gb-ina .member-profile .dropdown-menu-header-inner {
+	background: var(--gb-primary);
+	color: #fff;
+	padding: 20px 24px;
+	border-radius: var(--gb-radius-sm) var(--gb-radius-sm) 0 0;
+}
+
+.gb-ina .member-profile .menu-header-image {
+	display: none;
+}
+
+.gb-ina .member-profile .menu-header-title {
+	font-size: 18px;
+	line-height: 26px;
+	font-weight: 700;
+	color: #fff;
+	margin: 0;
+}
+
+.gb-ina .member-profile .menu-header-subtitle {
+	font-size: 16px;
+	line-height: 24px;
+	color: #fff;
+	margin: 0 0 12px;
+}
+
+.gb-ina .member-profile #nav_profile {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+}
+
+.gb-ina .member-profile #nav_profile .nav-link {
+	padding: 6px 12px;
+	font-size: 14px;
+	line-height: 20px;
+	color: #fff;
+	border-radius: var(--gb-radius-sm);
+}
+
+.gb-ina .member-profile #nav_profile .nav-link.active,
+.gb-ina .member-profile #nav_profile .nav-link:hover {
+	background: rgba(255, 255, 255, .18);
+}
+
+.gb-ina .member-profile .list-group-item {
+	padding: 12px 0;
+	border-color: var(--gb-border);
+}
+
+.gb-ina .member-profile .widget-heading {
+	font-size: 14px;
+	line-height: 20px;
+	color: var(--gb-text-muted);
+}
+
+.gb-ina .member-profile .widget-subheading,
+.gb-ina .member-profile .widget-content-left a,
+.gb-ina .member-profile .text-primary {
+	font-size: 16px;
+	line-height: 24px;
+	font-weight: 600;
+	color: var(--gb-text) !important;
+}
+
+.gb-ina .member-profile .img-square-wrapper img {
+	max-width: 100%;
+	height: auto;
+	border-radius: var(--gb-radius-sm);
+}
+
+/* ---------- Atur lokasi ---------- */
+.gb-ina.location-settings {
+	background: var(--gb-page);
+}
+
+.gb-ina .location-card {
+	padding: 32px;
+}
+
+.gb-ina .location-card h2 {
+	font-size: 28px;
+	line-height: 36px;
+	font-weight: 700;
+	color: var(--gb-text);
+	margin-bottom: 4px;
+}
+
+.gb-ina .location-card > p {
+	font-size: 16px;
+	line-height: 24px;
+	color: var(--gb-text-muted) !important;
+}
+
+.gb-ina .location-card .form-control:focus,
+.gb-ina .location-card .btn:focus-visible {
+	outline: none;
+	outline-offset: 0;
+}
+
+.gb-ina .location-card .alert-danger {
+	background: var(--gb-danger-subtle);
+	border: 1px solid #f3b4b4;
+	border-radius: var(--gb-radius-sm);
+	color: var(--gb-danger);
+	font-size: 14px;
+	line-height: 20px;
+}
+
+.gb-ina .form-status {
+	font-size: 14px;
+	line-height: 20px;
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 768px) {
+	.gb-ina .page-header,
+	.gb-ina .search-section,
+	.gb-ina .form-section,
+	.gb-ina .location-card {
+		padding: 20px;
+	}
+
+	.gb-ina .library-info h1 {
+		font-size: 24px;
+		line-height: 32px;
+	}
+
+	.gb-ina .gb-visit-total strong {
+		font-size: 24px;
+		line-height: 32px;
+	}
+
+	.gb-ina .nav-tab {
+		font-size: 14px;
+		line-height: 20px;
+		padding: 8px;
+	}
+
+	.gb-ina .search-input-group {
+		flex-direction: column;
+	}
+
+	.gb-ina .search-btn,
+	.gb-ina .save-btn {
+		width: 100%;
+	}
+}

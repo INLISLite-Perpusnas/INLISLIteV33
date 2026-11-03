@@ -53,19 +53,7 @@ class GuestBook extends \App\Controllers\BaseController
 		if (!$location) {
 			return redirect()->to('buku-tamu/lokasi');
 		}
-		$today = date('Y-m-d');
-		$builderAnggota = $this->db->table('memberguesses');
-		$builderAnggota->where('DATE(CreateDate)', $today);
-		$totalAnggota = $builderAnggota->countAllResults();
-		$builderRombongan = $this->db->table('groupguesses');
-		$builderRombongan->selectSum('CountPersonel', 'total_personel');
-		$builderRombongan->where('DATE(CreateDate)', $today);
-		$resultRombongan = $builderRombongan->get()->getRow();
-		$totalRombongan = (int) ($resultRombongan->total_personel ?? 0);
-		$totalKunjungan = $totalAnggota + $totalRombongan;
-
-		$this->data['totalKunjungan'] = $totalKunjungan;
-
+		$this->data['totalKunjungan'] = $this->countTodayVisits((int) $location->ID);
 
 		// Set data for view
 		$this->data['title'] = 'Buku Tamu - Anggota';
@@ -81,6 +69,9 @@ class GuestBook extends \App\Controllers\BaseController
 		$this->data['message'] = $this->validation->getErrors()
 			? $this->validation->listErrors()
 			: $this->session->getFlashdata('message');
+		if ($member_no !== '' && !$member && empty($this->data['message'])) {
+			$this->data['message'] = 'Nomor Anggota ' . $member_no . ' tidak ditemukan.';
+		}
 
 		// Render view
 		return view('GuestBook\Views\add', $this->data);
@@ -159,6 +150,31 @@ class GuestBook extends \App\Controllers\BaseController
 			->join('branchs as c', 'c.ID = a.Branch_id', 'left');
 	}
 
+	/**
+	 * Total kunjungan hari ini di ruang ini: pengunjung perorangan + jumlah personel rombongan.
+	 */
+	private function countTodayVisits(int $locationId): int
+	{
+		$start = date('Y-m-d 00:00:00');
+		$end = date('Y-m-d 00:00:00', strtotime('+1 day'));
+
+		$totalPerorangan = $this->db->table('memberguesses')
+			->where('Location_Id', $locationId)
+			->where('CreateDate >=', $start)
+			->where('CreateDate <', $end)
+			->countAllResults();
+
+		$rombongan = $this->db->table('groupguesses')
+			->selectSum('CountPersonel', 'total_personel')
+			->where('Location_ID', $locationId)
+			->where('CreateDate >=', $start)
+			->where('CreateDate <', $end)
+			->get()
+			->getRow();
+
+		return $totalPerorangan + (int) ($rombongan->total_personel ?? 0);
+	}
+
 	private function getSelectedLocation(): ?object
 	{
 		$locationId = filter_var(
@@ -202,17 +218,20 @@ class GuestBook extends \App\Controllers\BaseController
 					'Nama' => $member->Fullname,
 					'PendidikanTerakhir_id' => $member->EducationLevel_id,
 					'Profesi_id' => $member->Job_id,
+					'JenisKelamin_id' => $member->Sex_id,
 					'Alamat' => $member->Address,
 					'Location_id' => $locationId,
 					'Branch_id' => $member->Branch_id,
+					'CreateTerminal' => $this->request->getIPAddress(),
 				];
 
 				// 2. Periksa setting dari database
 				$SettingBukuTamu = $this->settingModel->where('Name', 'SettingBukuTamu')->first()->Value ?? '0';
 
 				// 3. HANYA JIKA setting = 1, tambahkan 'TujuanKunjungan_id' ke dalam array
+				//    (tidak dipilih saat simpan otomatis -> NULL, bukan tujuan pertama)
 				if ($SettingBukuTamu == '1') {
-					$save_data['TujuanKunjungan_id'] = $this->request->getPost('TujuanKunjungan_id');
+					$save_data['TujuanKunjungan_id'] = $this->request->getPost('TujuanKunjungan_id') ?: null;
 				}
 
 				// 4. Simpan array yang sudah final ke database
@@ -247,33 +266,49 @@ class GuestBook extends \App\Controllers\BaseController
 		$this->data['title'] = 'Buku Tamu - Non Anggota';
 		$this->data['data'] = $location;
 		$branch_id = $location->Branch_id;
+		$this->data['totalKunjungan'] = $this->countTodayVisits((int) $locationId);
 
-		$today = date('Y-m-d');
-		$builderAnggota = $this->db->table('memberguesses');
-		$builderAnggota->where('DATE(CreateDate)', $today);
-		$totalAnggota = $builderAnggota->countAllResults();
-		$builderRombongan = $this->db->table('groupguesses');
-		$builderRombongan->selectSum('CountPersonel', 'total_personel');
-		$builderRombongan->where('DATE(CreateDate)', $today);
-		$resultRombongan = $builderRombongan->get()->getRow();
-		$totalRombongan = (int) ($resultRombongan->total_personel ?? 0);
-		$totalKunjungan = $totalAnggota + $totalRombongan;
-		$this->data['totalKunjungan'] = $totalKunjungan;
-
-
+		// Field bertanda * di form juga wajib di server (tidak hanya atribut required di browser)
 		$this->validation->setRules(
 			[
 				'Nama' => [
 					'label' => 'Nama Pengunjung',
-					'rules' => 'required',
+					'rules' => 'required|max_length[100]',
 					'errors' => [
 						'required' => 'Nama Pengunjung tidak boleh kosong',
 					],
 				],
+				'Profesi_id' => [
+					'label' => 'Pekerjaan',
+					'rules' => 'required|is_natural_no_zero',
+					'errors' => ['required' => 'Pekerjaan wajib dipilih', 'is_natural_no_zero' => 'Pekerjaan wajib dipilih'],
+				],
+				'PendidikanTerakhir_id' => [
+					'label' => 'Pendidikan Terakhir',
+					'rules' => 'required|is_natural_no_zero',
+					'errors' => ['required' => 'Pendidikan Terakhir wajib dipilih', 'is_natural_no_zero' => 'Pendidikan Terakhir wajib dipilih'],
+				],
+				'JenisKelamin_id' => [
+					'label' => 'Jenis Kelamin',
+					'rules' => 'required|is_natural_no_zero',
+					'errors' => ['required' => 'Jenis Kelamin wajib dipilih', 'is_natural_no_zero' => 'Jenis Kelamin wajib dipilih'],
+				],
+				'Alamat' => [
+					'label' => 'Alamat',
+					'rules' => 'permit_empty|max_length[255]',
+				],
+				'TujuanKunjungan_id' => [
+					'label' => 'Tujuan Kunjungan',
+					'rules' => 'permit_empty|is_natural_no_zero',
+				],
 			]
 		);
 
-		if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
+		if ($this->request->getMethod() === 'POST') {
+			// Gagal validasi: kembali ke form dengan isian lama (old()) dan daftar error
+			if (!$this->validation->withRequest($this->request)->run()) {
+				return redirect()->back()->withInput()->with('message', implode('<br>', array_map('esc', $this->validation->getErrors())));
+			}
 
 			$save_data = [
 				'Nama' => $this->request->getPost('Nama'),
@@ -284,13 +319,14 @@ class GuestBook extends \App\Controllers\BaseController
 				'Location_id' => $locationId,
 				'Branch_id' => $branch_id,
 				'CreateBy' => user_id(),
+				'CreateTerminal' => $this->request->getIPAddress(),
 			];
 			// 2. Periksa setting dari database
 			$SettingBukuTamu = $this->settingModel->where('Name', 'SettingBukuTamu')->first()->Value ?? '0';
 
 			// 3. HANYA JIKA setting = 1, tambahkan 'TujuanKunjungan_id' ke dalam array
 			if ($SettingBukuTamu == '1') {
-				$save_data['TujuanKunjungan_id'] = $this->request->getPost('TujuanKunjungan_id');
+				$save_data['TujuanKunjungan_id'] = $this->request->getPost('TujuanKunjungan_id') ?: null;
 			}
 
 			$newRombonganId = $this->memberguestModel->insert($save_data);
@@ -316,17 +352,7 @@ class GuestBook extends \App\Controllers\BaseController
 			return redirect()->to('buku-tamu/lokasi');
 		}
 		$locationId = $location->ID;
-		$today = date('Y-m-d');
-		$builderAnggota = $this->db->table('memberguesses');
-		$builderAnggota->where('DATE(CreateDate)', $today);
-		$totalAnggota = $builderAnggota->countAllResults();
-		$builderRombongan = $this->db->table('groupguesses');
-		$builderRombongan->selectSum('CountPersonel', 'total_personel');
-		$builderRombongan->where('DATE(CreateDate)', $today);
-		$resultRombongan = $builderRombongan->get()->getRow();
-		$totalRombongan = (int) ($resultRombongan->total_personel ?? 0);
-		$totalKunjungan = $totalAnggota + $totalRombongan;
-		$this->data['totalKunjungan'] = $totalKunjungan;
+		$this->data['totalKunjungan'] = $this->countTodayVisits((int) $locationId);
 		$this->data['title'] = 'Buku Tamu - Rombongan';
 		$this->data['data'] = $location;
 		$branch_id = $location->Branch_id;
@@ -411,7 +437,11 @@ class GuestBook extends \App\Controllers\BaseController
 			],
 		]);
 
-		if ($this->request->getPost() && $this->validation->withRequest($this->request)->run()) {
+		if ($this->request->getMethod() === 'POST') {
+			// Gagal validasi: kembali ke form dengan isian lama (old()) dan daftar error
+			if (!$this->validation->withRequest($this->request)->run()) {
+				return redirect()->back()->withInput()->with('message', implode('<br>', array_map('esc', $this->validation->getErrors())));
+			}
 			try {
 				// Generate nomor pengunjung (optional)
 				$noPengunjung = date('Ymd') . sprintf('%04d', rand(1, 9999));
@@ -472,7 +502,7 @@ class GuestBook extends \App\Controllers\BaseController
 				// Check gender total
 				$genderTotal = $save_data['CountLaki'] + $save_data['CountPerempuan'];
 				if ($genderTotal > $totalPersonel) {
-					$this->session->setFlashdata('error', 'Total laki-laki + perempuan (' . $genderTotal . ') tidak boleh melebihi total anggota (' . $totalPersonel . ')');
+					$this->session->setFlashdata('message', 'Total laki-laki + perempuan (' . $genderTotal . ') tidak boleh melebihi total anggota (' . $totalPersonel . ')');
 					return redirect()->back()->withInput();
 				}
 
@@ -483,7 +513,7 @@ class GuestBook extends \App\Controllers\BaseController
 					$save_data['CountMahasiswa'] + $save_data['CountLainnya'];
 
 				if ($professionTotal > $totalPersonel) {
-					$this->session->setFlashdata('error', 'Total berdasarkan profesi (' . $professionTotal . ') tidak boleh melebihi total anggota (' . $totalPersonel . ')');
+					$this->session->setFlashdata('message', 'Total berdasarkan profesi (' . $professionTotal . ') tidak boleh melebihi total anggota (' . $totalPersonel . ')');
 					return redirect()->back()->withInput();
 				}
 
@@ -493,7 +523,7 @@ class GuestBook extends \App\Controllers\BaseController
 					$save_data['CountS1'] + $save_data['CountS2'] + $save_data['CountS3'];
 
 				if ($educationTotal > $totalPersonel) {
-					$this->session->setFlashdata('error', 'Total berdasarkan pendidikan (' . $educationTotal . ') tidak boleh melebihi total anggota (' . $totalPersonel . ')');
+					$this->session->setFlashdata('message', 'Total berdasarkan pendidikan (' . $educationTotal . ') tidak boleh melebihi total anggota (' . $totalPersonel . ')');
 					return redirect()->back()->withInput();
 				}
 
@@ -521,14 +551,14 @@ class GuestBook extends \App\Controllers\BaseController
 						'created_by' => user_id()
 					]));
 				} else {
-					$this->session->setFlashdata('error', 'Buku Tamu Rombongan gagal disimpan. Silakan coba lagi.');
+					$this->session->setFlashdata('message', 'Buku Tamu Rombongan gagal disimpan. Silakan coba lagi.');
 				}
 
 			} catch (\Exception $e) {
 				// Log the error
 				log_message('error', 'Error saving group guest book: ' . $e->getMessage());
 
-				$this->session->setFlashdata('error', 'Terjadi kesalahan sistem. Silakan hubungi administrator.');
+				$this->session->setFlashdata('message', 'Terjadi kesalahan sistem. Silakan hubungi administrator.');
 			}
 
 			return redirect()->to('/buku-tamu/rombongan');
@@ -545,25 +575,4 @@ class GuestBook extends \App\Controllers\BaseController
 		echo view('GuestBook\Views\add_rombongan', $this->data);
 	}
 
-	public function getKnownFaces($prefix = '')
-	{
-		$db = \Config\Database::connect();
-
-		$query = $db->query("SELECT id, name, PhotoUrl FROM members");
-		$results = $query->getResult();
-
-		$knownFaces = [];
-		foreach ($results as $row) {
-			$photoPath = FCPATH . 'uploads/anggota/' . $row->PhotoUrl;
-			if (file_exists($photoPath)) {
-				$knownFaces[] = [
-					'id' => $row->id,
-					'name' => $row->name,
-					'photoUrl' => base_url('uploads/anggota/' . $row->PhotoUrl)
-				];
-			}
-		}
-
-		return $this->response->setJSON($knownFaces);
-	}
 }

@@ -1,0 +1,840 @@
+/*
+ * INA Skin: menyelaraskan markup Bootstrap/ArchitectUI lama dengan gaya INA Digital
+ * (Text Input, File Upload, Table, Button) tanpa menulis ulang markup halaman.
+ * Hanya dimuat di halaman yang membutuhkannya (mis. modul Katalog).
+ * Cakupan: area konten (.content-wrapper) dan modal (.modal).
+ */
+
+/* ===== Judul halaman: breadcrumb gelap (CSS lama memaksanya putih untuk header gradien) ===== */
+.content-wrapper .app-page-title .breadcrumb-item,
+.content-wrapper .app-page-title .breadcrumb-item::before {
+    color: var(--ina-text-muted, #6b7280) !important;
+}
+
+.content-wrapper .app-page-title .breadcrumb-item a {
+    color: var(--ina-primary, #1d5fd1) !important;
+}
+
+/* ===== Kartu ===== */
+.content-wrapper .card,
+.content-wrapper .main-card {
+    border: 1px solid var(--ina-border, #e5e7eb) !important;
+    border-radius: var(--ina-radius, 12px) !important;
+    box-shadow: var(--ina-shadow, 0 1px 3px rgba(16, 24, 40, .08)) !important;
+    overflow: visible;
+}
+
+.content-wrapper .card > .card-header,
+.content-wrapper .card .card-header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    min-height: 0;
+    height: auto;
+    padding: 16px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: none;
+    color: var(--ina-text, #1f2937);
+    background: var(--ina-surface, #fff);
+    border-bottom: 1px solid var(--ina-border, #e5e7eb);
+    border-radius: var(--ina-radius, 12px) var(--ina-radius, 12px) 0 0;
+}
+
+.content-wrapper .card .card-header .header-icon {
+    display: none;
+}
+
+.content-wrapper .card .card-header .btn-actions-pane-right {
+    margin-left: auto;
+}
+
+.content-wrapper .card .card-body {
+    padding: 24px;
+}
+
+.content-wrapper .card .card-footer {
+    padding: 16px 24px;
+    background: var(--ina-surface, #fff);
+    border-top: 1px solid var(--ina-border, #e5e7eb);
+}
+
+/* Kartu di dalam kartu (sub-bagian form) */
+.content-wrapper .card .card {
+    box-shadow: none !important;
+}
+
+.content-wrapper .custom-title-wrap .custom-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ina-text, #1f2937);
+}
+
+/* ===== Text Input ===== */
+.content-wrapper label,
+.modal label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ina-text, #1f2937);
+}
+
+.content-wrapper .form-check-label,
+.modal .form-check-label {
+    font-weight: 400;
+}
+
+.content-wrapper .form-control,
+.content-wrapper .custom-select,
+.modal .form-control,
+.modal .custom-select {
+    height: 44px;
+    padding: 0 14px;
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--ina-text, #1f2937);
+    background-color: var(--ina-surface, #fff);
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-shadow: none;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.content-wrapper textarea.form-control,
+.modal textarea.form-control {
+    height: auto;
+    min-height: 44px;
+    padding: 10px 14px;
+    line-height: 1.5;
+}
+
+.content-wrapper .form-control-sm,
+.modal .form-control-sm {
+    height: 40px;
+    font-size: 14px;
+}
+
+.content-wrapper .form-control::placeholder,
+.modal .form-control::placeholder {
+    color: #9ca3af;
+}
+
+.content-wrapper .form-control:hover,
+.content-wrapper .custom-select:hover,
+.modal .form-control:hover {
+    border-color: #9ca3af;
+}
+
+.content-wrapper .form-control:focus,
+.content-wrapper .custom-select:focus,
+.modal .form-control:focus,
+.modal .custom-select:focus {
+    outline: none;
+    border-color: var(--ina-primary, #1d5fd1);
+    box-shadow: 0 0 0 3px rgba(29, 95, 209, .15);
+}
+
+.content-wrapper .form-control:disabled,
+.content-wrapper .form-control[readonly],
+.modal .form-control:disabled,
+.modal .form-control[readonly] {
+    color: #6b7280;
+    background-color: #f3f4f6;
+    border-color: var(--ina-border, #e5e7eb);
+}
+
+.content-wrapper .form-control.is-invalid,
+.content-wrapper .was-validated .form-control:invalid {
+    border-color: var(--ina-danger, #c62828);
+}
+
+.content-wrapper .invalid-feedback,
+.content-wrapper .text-danger.small {
+    font-size: 13px;
+    color: var(--ina-danger, #c62828);
+}
+
+.content-wrapper .form-text,
+.content-wrapper small.text-muted,
+.modal .form-text {
+    font-size: 13px;
+    color: var(--ina-text-muted, #6b7280) !important;
+}
+
+.content-wrapper .form-group {
+    margin-bottom: 20px;
+}
+
+/* Grup input: tombol & tambahan setinggi field */
+.content-wrapper .input-group > .form-control,
+.content-wrapper .input-group > .custom-select {
+    height: 44px;
+}
+
+.content-wrapper .input-group > .form-control:not(:last-child),
+.content-wrapper .input-group > .custom-select:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.content-wrapper .input-group > .form-control:not(:first-child),
+.content-wrapper .input-group > .custom-select:not(:first-child) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.content-wrapper .input-group-append .btn,
+.content-wrapper .input-group-prepend .btn,
+.content-wrapper .input-group-append .input-group-text,
+.content-wrapper .input-group-prepend .input-group-text {
+    height: 44px;
+    border-radius: 0;
+}
+
+.content-wrapper .input-group-append:last-child .btn,
+.content-wrapper .input-group-append:last-child .input-group-text {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.content-wrapper .input-group-prepend .custom-select {
+    height: 44px;
+    border-radius: 8px 0 0 8px;
+    background-color: #f9fafb;
+}
+
+.content-wrapper .input-group-text {
+    color: var(--ina-text-subtle, #374151);
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+/* Kotak pilihan radio di bawah input (pengarang/subjek/catatan) */
+.content-wrapper .form-radio {
+    margin-top: -1px;
+    background: #f9fafb !important;
+    border: 1px solid #d1d5db;
+    border-top: 0;
+    border-radius: 0 0 8px 8px !important;
+}
+
+.content-wrapper .form-radio .form-group {
+    margin: 0;
+}
+
+/* ===== Checkbox (INA): kotak 18px, centang #2d659e, umpan balik hover & fokus, label ikut bisa diklik ===== */
+.content-wrapper input[type="checkbox"].form-check-input,
+.modal input[type="checkbox"].form-check-input {
+    width: 18px;
+    height: 18px;
+    margin-top: .2rem;
+    accent-color: #2d659e;
+    cursor: pointer;
+}
+
+.content-wrapper input[type="checkbox"].form-check-input:hover:not(:disabled) {
+    filter: brightness(.95);
+    outline: 3px solid rgba(45, 101, 158, .15);
+    outline-offset: 1px;
+}
+
+.content-wrapper input[type="checkbox"].form-check-input:focus-visible {
+    outline: 2px solid #2d659e;
+    outline-offset: 2px;
+}
+
+.content-wrapper input[type="checkbox"].form-check-input:disabled,
+.content-wrapper input[type="checkbox"].form-check-input:disabled + .form-check-label {
+    cursor: not-allowed;
+    opacity: .5;
+}
+
+.content-wrapper .form-check-label {
+    padding-left: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ina-text, #1f2937);
+}
+
+.content-wrapper .form-check-label.text-primary {
+    color: #2d659e !important;
+}
+
+/* ===== Date Picker (INA, varian Range dengan input tanggal) ===== */
+.content-wrapper input[type="date"].form-control {
+    cursor: text;
+}
+
+.content-wrapper input[type="date"].form-control::-webkit-calendar-picker-indicator {
+    padding: 4px;
+    cursor: pointer;
+    border-radius: 6px;
+    opacity: .7;
+}
+
+.content-wrapper input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
+    background: #eaf1f8;
+    opacity: 1;
+}
+
+.content-wrapper .ina-date-help {
+    display: block;
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--ina-text-muted, #6b7280);
+}
+
+/* Select2 */
+.content-wrapper .select2-container .select2-selection--single {
+    height: 44px !important;
+    padding: 6px 8px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+}
+
+.content-wrapper .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 42px !important;
+}
+
+.content-wrapper .select2-container--focus .select2-selection--single,
+.content-wrapper .select2-container--open .select2-selection--single {
+    border-color: var(--ina-primary, #1d5fd1) !important;
+}
+
+/* Input file bawaan */
+.content-wrapper input[type="file"].form-control-file,
+.modal input[type="file"].form-control-file {
+    padding: 10px;
+    font-size: 14px;
+    background: #fafbfc;
+    border: 1px dashed #c3cad5;
+    border-radius: 8px;
+}
+
+/* ===== Tombol ===== */
+.content-wrapper .btn,
+.modal .btn {
+    font-family: inherit;
+    font-weight: 600;
+    border-radius: 8px;
+    box-shadow: none !important;
+    transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+
+.content-wrapper .btn:focus-visible,
+.modal .btn:focus-visible {
+    outline: 2px solid var(--ina-primary, #1d5fd1);
+    outline-offset: 2px;
+}
+
+.content-wrapper .btn-primary,
+.modal .btn-primary {
+    color: #fff;
+    background-color: var(--ina-primary, #1d5fd1);
+    border-color: var(--ina-primary, #1d5fd1);
+}
+
+.content-wrapper .btn-primary:hover,
+.modal .btn-primary:hover {
+    background-color: var(--ina-primary-hover, #174ea9);
+    border-color: var(--ina-primary-hover, #174ea9);
+}
+
+/* Tombol tema lama "btn bg-primary text-white" */
+.content-wrapper .btn.bg-primary,
+.modal .btn.bg-primary {
+    color: #fff !important;
+    background-color: var(--ina-primary, #1d5fd1) !important;
+    border-color: var(--ina-primary, #1d5fd1) !important;
+}
+
+.content-wrapper .btn.bg-primary:hover,
+.modal .btn.bg-primary:hover {
+    background-color: var(--ina-primary-hover, #174ea9) !important;
+}
+
+/* Tombol pemilih nilai di baris MARC: tombol ikon netral agar tabel tidak ramai */
+.content-wrapper .btn.btn-indicator1,
+.content-wrapper .btn.btn-indicator2,
+.content-wrapper .btn.btn-value {
+    width: 44px;
+    padding: 0;
+    color: var(--ina-icon, #4b5563) !important;
+    background-color: #f9fafb !important;
+    border: 1px solid #d1d5db !important;
+    border-left: 0 !important;
+}
+
+.content-wrapper .btn.btn-indicator1:hover,
+.content-wrapper .btn.btn-indicator2:hover,
+.content-wrapper .btn.btn-value:hover {
+    color: var(--ina-primary, #1d5fd1) !important;
+    background-color: var(--ina-primary-subtle, #eef4ff) !important;
+}
+
+/* Tombol tambah (Tambah File, Tambah Anggota, ...): biru #2d659e */
+.content-wrapper .btn.btn-catalog-add {
+    color: #fff;
+    background-color: #2d659e;
+    border-color: #2d659e;
+}
+
+.content-wrapper .btn.btn-catalog-add:hover {
+    color: #fff;
+    background-color: #24527f;
+    border-color: #24527f;
+}
+
+.content-wrapper .btn.btn-catalog-add:focus-visible {
+    outline: 2px solid #2d659e;
+    outline-offset: 2px;
+}
+
+/* Tombol aksi baris bergaris: biru #2d659e dan merah (hapus) */
+.content-wrapper .btn.btn-ina-outline {
+    color: #2d659e;
+    background-color: #fff;
+    border: 1px solid #2d659e;
+}
+
+.content-wrapper .btn.btn-ina-outline:hover {
+    color: #2d659e;
+    background-color: #eaf1f8;
+}
+
+.content-wrapper .btn.btn-ina-outline-danger {
+    color: var(--ina-danger, #c62828);
+    background-color: #fff;
+    border: 1px solid #f5c2c2;
+}
+
+.content-wrapper .btn.btn-ina-outline-danger:hover {
+    color: var(--ina-danger, #c62828);
+    background-color: #fdecec;
+}
+
+/* Tumpukan tombol vertikal di sel tabel: beri jarak, bukan menempel */
+.content-wrapper .btn-group-vertical {
+    gap: 6px;
+}
+
+.content-wrapper .btn-group-vertical > .btn,
+.content-wrapper .btn-group-vertical > form > .btn {
+    border-radius: 8px !important;
+    margin: 0 !important;
+}
+
+.content-wrapper .btn.marc-btn-remove {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    color: var(--ina-danger, #c62828);
+    background: var(--ina-surface, #fff);
+    border: 1px solid var(--ina-border, #e5e7eb);
+}
+
+.content-wrapper .btn.marc-btn-remove:hover {
+    color: var(--ina-danger, #c62828);
+    background: #fdecec;
+    border-color: #f5c2c2;
+}
+
+.content-wrapper .btn-success,
+.modal .btn-success {
+    color: #fff;
+    background-color: var(--ina-success, #1f7a36);
+    border-color: var(--ina-success, #1f7a36);
+}
+
+.content-wrapper .btn-success:hover,
+.modal .btn-success:hover {
+    background-color: #186129;
+    border-color: #186129;
+}
+
+.content-wrapper .btn-danger,
+.modal .btn-danger {
+    background-color: var(--ina-danger, #c62828);
+    border-color: var(--ina-danger, #c62828);
+}
+
+.content-wrapper .btn-secondary,
+.content-wrapper .btn-light,
+.modal .btn-secondary {
+    color: var(--ina-text-subtle, #374151);
+    background-color: var(--ina-surface, #fff);
+    border-color: #d1d5db;
+}
+
+.content-wrapper .btn-secondary:hover,
+.content-wrapper .btn-light:hover,
+.modal .btn-secondary:hover {
+    color: var(--ina-text, #1f2937);
+    background-color: var(--ina-hover, #f3f4f6);
+}
+
+.content-wrapper .btn-dark {
+    color: #fff;
+    background-color: var(--ina-text, #1f2937);
+    border-color: var(--ina-text, #1f2937);
+}
+
+.content-wrapper .btn-outline-secondary {
+    color: var(--ina-text-subtle, #374151);
+    border-color: #d1d5db;
+}
+
+.content-wrapper .btn-outline-secondary:hover {
+    color: var(--ina-text, #1f2937);
+    background-color: var(--ina-hover, #f3f4f6);
+}
+
+.content-wrapper .btn-outline-success {
+    color: var(--ina-success, #1f7a36);
+    border-color: var(--ina-success, #1f7a36);
+}
+
+.content-wrapper .btn-outline-success:hover {
+    color: #fff;
+    background-color: var(--ina-success, #1f7a36);
+}
+
+.content-wrapper .btn-outline-primary {
+    color: var(--ina-primary, #1d5fd1);
+    border-color: var(--ina-primary, #1d5fd1);
+}
+
+.content-wrapper .btn-outline-primary:hover {
+    color: #fff;
+    background-color: var(--ina-primary, #1d5fd1);
+}
+
+.content-wrapper .btn-lg {
+    height: 44px;
+    padding: 0 20px;
+    font-size: 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Tombol ikon kecil di tabel */
+.content-wrapper table .btn-sm,
+.content-wrapper table .btn-xs {
+    border-radius: 8px;
+}
+
+/* ===== Tab tombol (mis. Buku Tamu: Anggota / Bukan Anggota / Rombongan): biru #2d659e ===== */
+.content-wrapper .body-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    height: auto !important;
+    margin: 0 0 20px !important;
+    padding: 0 !important;
+    background: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+.content-wrapper .body-tabs .nav-item {
+    margin: 0;
+}
+
+.content-wrapper .btn-header-argon {
+    display: inline-flex;
+    align-items: center;
+    height: 40px;
+    margin: 0;
+    padding: 0 18px !important;
+    font-size: 14px;
+    font-weight: 600;
+    color: #2d659e;
+    text-decoration: none;
+    background: #fff;
+    border: 1px solid #2d659e;
+    border-radius: 8px;
+    transform: none;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+.content-wrapper .btn-header-argon:hover {
+    color: #2d659e;
+    background: #eaf1f8;
+    border-color: #2d659e;
+    transform: none;
+}
+
+.content-wrapper .btn-header-argon.active,
+.content-wrapper .btn-header-argon.active:hover {
+    color: #fff;
+    background: #2d659e;
+}
+
+.content-wrapper .btn-header-argon:focus-visible {
+    outline: 2px solid #2d659e;
+    outline-offset: 2px;
+}
+
+/* ===== Tombol ikon aksi tabel (sama dengan tabel CMS Berita/Banner) ===== */
+.content-wrapper .ina-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    font-size: 14px;
+    color: var(--ina-icon, #4b5563) !important;
+    text-decoration: none !important;
+    background: var(--ina-surface, #fff);
+    border: 1px solid var(--ina-border, #e5e7eb);
+    border-radius: 8px;
+    transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.content-wrapper .ina-action:hover {
+    color: var(--ina-primary, #1d5fd1) !important;
+    background: var(--ina-primary-subtle, #eef4ff);
+    border-color: #c7d4ea;
+}
+
+.content-wrapper .ina-action-danger:hover {
+    color: var(--ina-danger, #c62828) !important;
+    background: #fdecec;
+    border-color: #f5c2c2;
+}
+
+.content-wrapper .ina-action:focus-visible {
+    outline: 2px solid var(--ina-primary, #1d5fd1);
+    outline-offset: 2px;
+}
+
+/* ===== Badge status ===== */
+.content-wrapper .badge {
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 999px;
+}
+
+.content-wrapper .badge-success { color: #1f7a36; background: #e8f5ec; }
+.content-wrapper .badge-danger { color: #b42318; background: #fdecec; }
+.content-wrapper .badge-warning { color: #9a4b00; background: #fff4e5; }
+.content-wrapper .badge-info,
+.content-wrapper .badge-primary { color: var(--ina-primary, #1d5fd1); background: var(--ina-primary-subtle, #eef4ff); }
+.content-wrapper .badge-secondary,
+.content-wrapper .badge-light { color: #4b5563; background: #f3f4f6; }
+
+/* ===== Tabel ===== */
+.content-wrapper table.table {
+    margin-bottom: 0;
+    font-size: 14px;
+    color: var(--ina-text, #1f2937);
+    border-collapse: collapse !important;
+}
+
+.content-wrapper table.table.table-bordered,
+.content-wrapper table.table.table-bordered th,
+.content-wrapper table.table.table-bordered td {
+    border-left: 0 !important;
+    border-right: 0 !important;
+    border-top: 0 !important;
+}
+
+.content-wrapper table.table thead th {
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ina-text-subtle, #374151);
+    vertical-align: middle;
+    white-space: nowrap;
+    background: #f9fafb;
+    border-top: 0 !important;
+    border-bottom: 1px solid var(--ina-border, #e5e7eb) !important;
+}
+
+.content-wrapper table.table tbody td {
+    padding: 14px 16px;
+    vertical-align: top;
+    border-bottom: 1px solid var(--ina-border, #e5e7eb) !important;
+}
+
+.content-wrapper table.table.table-striped tbody tr:nth-of-type(odd) {
+    background: transparent;
+}
+
+.content-wrapper table.table.table-hover tbody tr:hover {
+    background: #f9fafb;
+}
+
+/* DataTables: garis gelap bawaan di atas/bawah tabel diganti garis netral */
+.content-wrapper table.dataTable,
+.content-wrapper table.dataTable.no-footer,
+.content-wrapper div.dataTables_scrollHead table,
+.content-wrapper div.dataTables_scrollBody,
+.content-wrapper div.dt-scroll-body {
+    border-top: 0 !important;
+    border-bottom: 1px solid var(--ina-border, #e5e7eb) !important;
+}
+
+/* DataTables 2: garis gelap di atas baris judul */
+.content-wrapper table.dataTable > thead > tr,
+.content-wrapper table.table > thead > tr {
+    border-top: 0 !important;
+}
+
+/* DataTables: cari, jumlah baris, paginasi */
+.content-wrapper div.dataTables_wrapper div.dataTables_filter input,
+.content-wrapper div.dataTables_wrapper div.dataTables_length select {
+    height: 40px;
+    padding: 0 12px;
+    font-size: 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+}
+
+.content-wrapper div.dataTables_wrapper div.dataTables_filter input:focus {
+    outline: none;
+    border-color: var(--ina-primary, #1d5fd1);
+    box-shadow: 0 0 0 3px rgba(29, 95, 209, .15);
+}
+
+.content-wrapper div.dataTables_wrapper div.dataTables_info {
+    font-size: 14px;
+    color: var(--ina-text-muted, #6b7280);
+}
+
+.content-wrapper .pagination {
+    gap: 4px;
+}
+
+.content-wrapper .page-item .page-link {
+    min-width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: var(--ina-text-subtle, #374151);
+    border: 1px solid var(--ina-border, #e5e7eb);
+    border-radius: 8px !important;
+    box-shadow: none;
+}
+
+.content-wrapper .page-item.active .page-link {
+    color: var(--ina-primary, #1d5fd1);
+    font-weight: 600;
+    background: var(--ina-primary-subtle, #eef4ff);
+    border-color: #c7d4ea;
+}
+
+/* Paginasi khusus daftar katalog & eksemplar */
+.content-wrapper .catalog-pagination,
+.content-wrapper .exemplar-pagination {
+    background: var(--ina-surface, #fff);
+    border-color: var(--ina-border, #e5e7eb);
+    box-shadow: none;
+}
+
+.content-wrapper .catalog-page-button:hover:not(:disabled),
+.content-wrapper .exemplar-page-button:hover:not(:disabled) {
+    color: var(--ina-primary, #1d5fd1);
+    background: var(--ina-primary-subtle, #eef4ff);
+    border-color: #c7d4ea;
+    transform: none;
+}
+
+.content-wrapper .catalog-page-button.is-active,
+.content-wrapper .exemplar-page-button.is-active {
+    color: var(--ina-primary, #1d5fd1);
+    background: var(--ina-primary-subtle, #eef4ff);
+    border-color: #c7d4ea;
+    box-shadow: none;
+}
+
+.content-wrapper .catalog-filter-label,
+.content-wrapper .exemplar-filter-label,
+.content-wrapper .karantina-filter-label {
+    color: var(--ina-text-subtle, #374151) !important;
+    background: #f9fafb !important;
+    border-color: #d1d5db !important;
+    border-radius: 8px 0 0 8px !important;
+}
+
+.content-wrapper .catalog-switch:checked,
+.content-wrapper .exemplar-switch:checked {
+    background: var(--ina-primary, #1d5fd1);
+    border-color: var(--ina-primary, #1d5fd1);
+    box-shadow: none;
+}
+
+/* ===== Tab ===== */
+.content-wrapper .nav-tabs {
+    gap: 4px;
+    border-bottom: 1px solid var(--ina-border, #e5e7eb);
+}
+
+.content-wrapper .nav-tabs .nav-link {
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ina-text-muted, #6b7280);
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+}
+
+.content-wrapper .nav-tabs .nav-link:hover {
+    color: var(--ina-text, #1f2937);
+}
+
+.content-wrapper .nav-tabs .nav-link.active {
+    color: var(--ina-primary, #1d5fd1);
+    background: transparent;
+    border-bottom-color: var(--ina-primary, #1d5fd1);
+}
+
+/* ===== Alert ===== */
+.content-wrapper .alert {
+    font-size: 14px;
+    border-radius: 8px;
+}
+
+/* ===== Modal ===== */
+.modal .modal-content {
+    border: 0;
+    border-radius: var(--ina-radius, 12px);
+    box-shadow: 0 20px 40px rgba(16, 24, 40, .18);
+    overflow: hidden;
+}
+
+.modal .modal-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--ina-border, #e5e7eb);
+}
+
+.modal .modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ina-text, #1f2937);
+}
+
+.modal .modal-body,
+.modal .card-body {
+    padding: 20px 24px;
+}
+
+.modal .modal-footer,
+.modal .card-footer {
+    padding: 16px 24px;
+    background: var(--ina-surface, #fff);
+    border-top: 1px solid var(--ina-border, #e5e7eb);
+}
+
+.modal table.table thead th {
+    font-size: 13px;
+    font-weight: 600;
+    background: #f9fafb;
+}

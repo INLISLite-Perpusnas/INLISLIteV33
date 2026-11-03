@@ -53,21 +53,36 @@ class Banner extends \Base\Controllers\BaseController
         echo view('Banner\Views\view', $this->data);
     }
 
+    /**
+     * Pesan error upload yang spesifik dan menyebutkan solusinya.
+     */
+    private function bannerFileErrors(): array
+    {
+        return [
+            'uploaded' => 'File banner wajib diunggah. Pilih gambar JPG, JPEG, atau PNG.',
+            'is_image' => 'File yang dipilih bukan gambar. Pilih gambar JPG, JPEG, atau PNG.',
+            'mime_in'  => 'Format file tidak didukung. Gunakan gambar JPG, JPEG, atau PNG.',
+            'max_size' => 'Ukuran file melebihi 2 MB. Kompres gambar atau pilih file yang lebih kecil.',
+        ];
+    }
+
     public function create()
     {
         $this->data['title'] = 'Tambah Banner';
         $slug = $this->request->getGet('slug');
 
-        // 1. Set Validasi
-        $this->validation->setRule('title', 'Judul Banner', 'required');
-        
+        // 1. Set Validasi (pesan spesifik + solusi, ditampilkan di bawah tiap field)
+        $this->validation->setRule('title', 'Judul Banner', 'required', [
+            'required' => 'Judul banner wajib diisi.',
+        ]);
+
         // Validasi File Upload
         $this->validation->setRule('file_cover', 'File Banner', [
             'uploaded[file_cover]', // Wajib upload
             'is_image[file_cover]',
             'mime_in[file_cover,image/jpg,image/jpeg,image/png]',
             'max_size[file_cover,2048]', // Max 2MB
-        ]);
+        ], $this->bannerFileErrors());
 
         if (
             $this->request->getPost() &&
@@ -167,21 +182,10 @@ class Banner extends \Base\Controllers\BaseController
             }
 
         } else {
-            // Tampilkan Form & SweetAlert Error Validasi
-            if ($this->request->getPost() && $this->validation->getErrors()) {
-                $error_msg = '<ul>';
-                foreach ($this->validation->getErrors() as $error) {
-                    $error_msg .= '<li>' . esc($error) . '</li>';
-                }
-                $error_msg .= '</ul>';
-
-                $this->session->setFlashdata('swal_icon', 'error');
-                $this->session->setFlashdata('swal_title', 'Validasi Gagal');
-                $this->session->setFlashdata('swal_html', $error_msg); 
-            }
-
+            // Error validasi ditampilkan langsung di bawah field terkait (state error)
+            $this->data['errors'] = $this->request->getPost() ? $this->validation->getErrors() : [];
             $this->data['redirect'] = base_url('banner/create');
-            $this->data['message'] = $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message');
+            $this->data['message'] = $this->session->getFlashdata('message');
             echo view('Banner\Views\add', $this->data);
         }
     }
@@ -208,16 +212,21 @@ class Banner extends \Base\Controllers\BaseController
         $this->data['banner'] = $banner;
 
         // 2. Set Validasi
-        $this->validation->setRule('title', 'Judul Banner', 'required');
-        $this->validation->setRule('sort', 'Urutan', 'required|is_natural_no_zero');
-        
+        $this->validation->setRule('title', 'Judul Banner', 'required', [
+            'required' => 'Judul banner wajib diisi.',
+        ]);
+        $this->validation->setRule('sort', 'Urutan', 'required|is_natural_no_zero', [
+            'required'           => 'Urutan wajib diisi.',
+            'is_natural_no_zero' => 'Urutan harus berupa angka bulat mulai dari 1.',
+        ]);
+
         // Validasi File
         $this->validation->setRule('file_cover', 'File Banner', [
             'permit_empty',
             'is_image[file_cover]',
             'mime_in[file_cover,image/jpg,image/jpeg,image/png]',
             'max_size[file_cover,2048]',
-        ]);
+        ], $this->bannerFileErrors());
 
         if ($this->request->getPost()) {
             if ($this->validation->withRequest($this->request)->run()) {
@@ -324,22 +333,13 @@ class Banner extends \Base\Controllers\BaseController
                     $this->session->setFlashdata('swal_text', 'Error: ' . $e->getMessage());
                     return redirect()->back()->withInput();
                 }
-            } else {
-                // Tampilkan SweetAlert jika validasi edit gagal
-                $error_msg = '<ul>';
-                foreach ($this->validation->getErrors() as $error) {
-                    $error_msg .= '<li>' . esc($error) . '</li>';
-                }
-                $error_msg .= '</ul>';
-
-                $this->session->setFlashdata('swal_icon', 'error');
-                $this->session->setFlashdata('swal_title', 'Validasi Gagal');
-                $this->session->setFlashdata('swal_html', $error_msg);
             }
         }
 
+        // Error validasi ditampilkan langsung di bawah field terkait (state error)
+        $this->data['errors'] = $this->request->getPost() ? $this->validation->getErrors() : [];
         $this->data['redirect'] = base_url('cms/banner/edit/' . $id);
-        $this->data['message'] = $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message');
+        $this->data['message'] = $this->session->getFlashdata('message');
         
         echo view('Banner\Views\update', $this->data);
     }

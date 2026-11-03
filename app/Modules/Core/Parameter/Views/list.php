@@ -1,5 +1,6 @@
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -34,7 +35,7 @@
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Parameter
             <div class="btn-actions-pane-right actions-icon-btn">
                 <a data-bs-toggle="modal" data-bs-target="#modal_create" data-toggle="modal" data-target="#modal_create"
-                    href="javascript:void(0);" class=" btn btn-success" title=""><i class="fa fa-plus"></i> Tambah
+                    href="javascript:void(0);" class="btn btn-catalog-add" title=""><i class="fa fa-plus"></i> Tambah
                     Parameter</a>
             </div>
         </div>

@@ -55,10 +55,70 @@
 		content: '-';
 	}
 
-	.app-page-title {
-		padding: 15px 30px;
+	/* Pohon menu gaya INA: baris putih berbingkai, pegangan geser abu, nonaktif lembut */
+	.dd3-content {
+		display: flex;
+		align-items: center;
+		min-height: 44px;
+		height: auto;
+		margin: 4px 0;
+		/* 30px tombol +/- + 34px pegangan geser + jarak 12px */
+		padding: 6px 10px 6px 76px;
+		font-size: 14px;
+		color: var(--ina-text, #1f2937);
+		background: var(--ina-surface, #fff);
+		border: 1px solid var(--ina-border, #e5e7eb);
+		border-radius: 8px;
+	}
+
+	.dd3-content:hover {
+		color: var(--ina-text, #1f2937);
+		background: #f9fafb;
+	}
+
+	.dd3-content > span,
+	.dd3-content > b {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.dd3-content .pull-right {
+		display: inline-flex;
+		gap: 6px;
+		margin-left: auto;
+		float: none;
+	}
+
+	.dd3-handle,
+	.dd3-handle:hover {
+		top: 4px;
+		left: 30px;
+		width: 34px;
+		height: 44px;
+		background: #f3f4f6;
+		border: 1px solid var(--ina-border, #e5e7eb);
+		border-radius: 0;
+	}
+
+	.dd3-handle:before {
+		top: 12px;
+		color: var(--ina-text-muted, #6b7280);
+	}
+
+	/* Tombol +/- di kiri pegangan, di dalam baris */
+	.dd3-item > button {
+		margin-left: 0;
+		margin-top: 8px;
+		color: #2d659e;
+	}
+
+	.menu-toggle-activate_inactive > .dd3-content {
+		color: var(--ina-text-muted, #6b7280);
+		background: #fdecec !important;
+		border-color: #f5c2c2;
 	}
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -203,7 +263,7 @@
 						</div>
 						<div class="form-group">
 							<input type="hidden" name="category_id" value="<?= $category->id ?>">
-							<button type="submit" class="btn btn-primary" name="submit">Simpan</button>
+							<button type="submit" class="btn btn-catalog-add" name="submit">Simpan</button>
 						</div>
 					</form>
 				</div>

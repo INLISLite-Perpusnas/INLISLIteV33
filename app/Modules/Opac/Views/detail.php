@@ -2,43 +2,51 @@
 
 <?= $this->section('style') ?>
 <style>
+    /* Detail Katalog OPAC - gaya INA Digital (Inter, skala 28/36, 18/26, 16/24, 14/20, 12/16; biru #2d659e) */
     :root {
-        --op-primary: #1e3a8a;
-        --op-primary-light: #3b5bdb;
-        --op-primary-soft: #eef2ff;
-        --op-ink: #111827;
+        --op-primary: #2d659e;
+        --op-primary-light: #2d659e;
+        --op-primary-hover: #24527f;
+        --op-primary-soft: #eef4fa;
+        --op-ink: #1f2937;
+        --op-ink-subtle: #374151;
         --op-muted: #6b7280;
         --op-border: #e5e7eb;
-        --op-bg: #f6f7fb;
-        --op-radius-lg: 20px;
-        --op-radius-md: 14px;
-        --op-radius-sm: 10px;
-        --op-shadow-sm: 0 1px 3px rgba(17, 24, 39, 0.06), 0 1px 2px rgba(17, 24, 39, 0.04);
-        --op-shadow-md: 0 10px 30px -12px rgba(30, 58, 138, 0.18);
-        --op-shadow-lg: 0 20px 45px -18px rgba(30, 58, 138, 0.28);
+        --op-border-strong: #d1d5db;
+        --op-bg: #f7f7f8;
+        --op-radius-lg: 12px;
+        --op-radius-md: 12px;
+        --op-radius-sm: 8px;
+        --op-shadow-sm: 0 1px 3px rgba(16, 24, 40, .08), 0 1px 2px rgba(16, 24, 40, .04);
+        --op-shadow-md: 0 8px 24px rgba(16, 24, 40, .12);
+        --op-shadow-lg: 0 8px 24px rgba(16, 24, 40, .12);
+        --op-focus: 0 0 0 3px rgba(45, 101, 158, .2);
     }
 
     body { background: var(--op-bg); }
 
-    .op-container { max-width: 1600px; margin-left: auto; margin-right: auto; }
+    .op-container { max-width: 1600px; margin-left: auto; margin-right: auto; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--op-ink); }
     @media (min-width: 1400px) {
-        .op-container { padding-left: 2.5rem; padding-right: 2.5rem; }
+        .op-container { padding-left: 2rem; padding-right: 2rem; }
     }
 
-    /* Breadcrumb */
+    /* Breadcrumb INA: teks polos */
     .op-breadcrumb .breadcrumb {
-        background: #fff;
-        padding: .6rem 1rem;
-        border-radius: 999px;
-        box-shadow: var(--op-shadow-sm);
-        display: inline-flex;
+        background: transparent;
+        padding: 0;
+        border-radius: 0;
+        box-shadow: none;
+        display: flex;
+        flex-wrap: wrap;
         margin-bottom: 0;
-        font-size: .875rem;
+        font-size: 14px;
+        line-height: 20px;
     }
-    .op-breadcrumb .breadcrumb-item a { color: var(--op-primary-light); text-decoration: none; font-weight: 500; }
-    .op-breadcrumb .breadcrumb-item.active { color: var(--op-muted); }
+    .op-breadcrumb .breadcrumb-item a { color: var(--op-primary); text-decoration: none; font-weight: 500; }
+    .op-breadcrumb .breadcrumb-item a:hover { text-decoration: underline; }
+    .op-breadcrumb .breadcrumb-item.active { color: var(--op-ink); font-weight: 600; }
 
-    /* Main card */
+    /* Kartu utama */
     .op-card {
         background: #fff;
         border: 1px solid var(--op-border);
@@ -47,38 +55,43 @@
         overflow: hidden;
     }
 
+    /* Header kartu: putih, judul gelap, garis bawah (tanpa gradien) */
     .op-hero-header {
-        background: linear-gradient(135deg, var(--op-primary) 0%, var(--op-primary-light) 100%);
-        padding: 1.5rem 1.75rem;
+        background: #fff;
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--op-border);
         position: relative;
-        overflow: hidden;
     }
-    .op-hero-header::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(circle at 85% -20%, rgba(255,255,255,.18), transparent 55%);
-        pointer-events: none;
+    .op-hero-header::after { display: none; }
+    .op-hero-header h4,
+    .op-hero-header h5 {
+        font-size: 18px;
+        line-height: 26px;
+        font-weight: 600;
+        letter-spacing: 0;
+        color: var(--op-ink) !important;
     }
-    .op-hero-header h4 { font-weight: 700; letter-spacing: -.01em; }
+    .op-hero-header h4 i,
+    .op-hero-header h5 i { color: var(--op-primary); }
     .op-id-badge {
-        background: rgba(255,255,255,.18);
-        backdrop-filter: blur(4px);
-        color: #fff;
-        font-weight: 500;
-        border: 1px solid rgba(255,255,255,.28);
-        padding: .35rem .75rem;
+        background: #f3f4f6;
+        color: var(--op-ink-subtle);
+        font-size: 12px;
+        line-height: 16px;
+        font-weight: 600;
+        border: 0;
+        padding: 2px 10px;
         border-radius: 999px;
-        font-size: .8rem;
     }
 
-    .op-body { padding: 2rem; }
+    .op-body { padding: 24px; }
 
     /* Cover */
     .op-cover-wrap {
-        border-radius: var(--op-radius-md);
+        border-radius: var(--op-radius-sm);
         overflow: hidden;
-        box-shadow: var(--op-shadow-md);
+        border: 1px solid var(--op-border);
+        box-shadow: none;
         position: relative;
     }
     .book-cover-large {
@@ -86,271 +99,328 @@
         display: block;
         max-height: 420px;
         object-fit: cover;
-        transition: transform .35s ease;
         cursor: zoom-in;
     }
-    .op-cover-wrap:hover .book-cover-large { transform: scale(1.035); }
     .op-cover-overlay-btn {
         position: absolute;
-        bottom: .75rem;
-        right: .75rem;
+        bottom: 12px;
+        right: 12px;
         border: none;
-        background: rgba(17,24,39,.65);
+        background: rgba(17, 24, 39, .75);
         color: #fff;
-        backdrop-filter: blur(4px);
-        border-radius: 999px;
-        padding: .4rem .85rem;
-        font-size: .8rem;
+        border-radius: var(--op-radius-sm);
+        padding: 6px 12px;
+        font-size: 12px;
+        line-height: 16px;
+        font-weight: 600;
         display: inline-flex;
         align-items: center;
-        gap: .35rem;
+        gap: 6px;
         opacity: 0;
-        transform: translateY(6px);
-        transition: all .25s ease;
+        transition: opacity .15s ease;
     }
-    .op-cover-wrap:hover .op-cover-overlay-btn { opacity: 1; transform: translateY(0); }
+    .op-cover-wrap:hover .op-cover-overlay-btn,
+    .op-cover-overlay-btn:focus-visible { opacity: 1; }
 
     .no-cover-large {
-        border-radius: var(--op-radius-md) !important;
-        border: 2px dashed #d1d5db !important;
-        background: linear-gradient(180deg, #fafbff, #f1f3fb) !important;
+        border-radius: var(--op-radius-sm) !important;
+        border: 1px dashed var(--op-border-strong) !important;
+        background: #f9fafb !important;
         box-shadow: none !important;
     }
+    .no-cover-large i { color: #9ca3af !important; }
 
-    /* Title */
-    .op-title { font-weight: 800; letter-spacing: -.02em; color: var(--op-ink); line-height: 1.25; }
+    /* Judul: H4 */
+    .op-title { font-size: 28px; line-height: 36px; font-weight: 700; letter-spacing: 0; color: var(--op-ink); }
     .op-edition-chip {
         display: inline-flex;
         align-items: center;
-        gap: .4rem;
+        gap: 4px;
         background: var(--op-primary-soft);
         color: var(--op-primary);
         border-radius: 999px;
-        padding: .3rem .75rem;
-        font-size: .82rem;
+        padding: 2px 10px;
+        font-size: 12px;
+        line-height: 16px;
         font-weight: 600;
     }
 
-    /* Info grid */
+    /* Grid informasi: label 12/16 abu, nilai 16/24 */
     .op-info-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: .85rem 1.25rem;
+        gap: 12px 16px;
     }
     @media (max-width: 767px) { .op-info-grid { grid-template-columns: 1fr; } }
 
     .op-info-item {
         display: flex;
-        gap: .75rem;
-        padding: .85rem;
-        background: #fafbfd;
+        gap: 12px;
+        padding: 12px 16px;
+        background: #fff;
         border: 1px solid var(--op-border);
         border-radius: var(--op-radius-sm);
-        transition: border-color .2s ease, background .2s ease;
     }
-    .op-info-item:hover { border-color: #c7d2fe; background: #f7f8ff; }
     .op-info-icon {
         flex: 0 0 auto;
         width: 36px; height: 36px;
         display: flex; align-items: center; justify-content: center;
-        border-radius: 10px;
+        border-radius: var(--op-radius-sm);
         background: var(--op-primary-soft);
         color: var(--op-primary);
-        font-size: .9rem;
+        font-size: 14px;
     }
-    .op-info-label { font-size: .74rem; text-transform: uppercase; letter-spacing: .04em; color: var(--op-muted); font-weight: 600; margin-bottom: .1rem; }
-    .op-info-value { font-size: .93rem; color: var(--op-ink); font-weight: 500; word-break: break-word; }
-    .op-info-value.mono { font-family: 'JetBrains Mono', Consolas, monospace; }
+    .op-info-label { font-size: 12px; line-height: 16px; text-transform: none; letter-spacing: 0; color: var(--op-muted); font-weight: 500; margin-bottom: 2px; }
+    .op-info-value { font-size: 16px; line-height: 24px; color: var(--op-ink); font-weight: 500; word-break: break-word; }
+    .op-info-value.mono { font-family: 'JetBrains Mono', Consolas, monospace; font-size: 14px; }
 
-    /* Section titles */
+    /* Judul bagian */
     .op-section-title {
-        font-weight: 700;
+        font-size: 18px;
+        line-height: 26px;
+        font-weight: 600;
         color: var(--op-ink);
-        font-size: 1rem;
         display: flex;
         align-items: center;
-        gap: .5rem;
-        margin-bottom: .9rem;
+        gap: 8px;
+        margin-bottom: 12px;
     }
-    .op-section-title .op-info-icon { width: 30px; height: 30px; font-size: .8rem; }
+    .op-section-title .op-info-icon { width: 28px; height: 28px; font-size: 12px; }
 
-    /* Subject chips */
+    /* Chip subjek */
     .op-subject-panel {
-        background: #fafbfd;
-        border: 1px solid var(--op-border);
-        border-radius: var(--op-radius-md);
-        padding: 1rem 1.1rem;
-        display: flex; flex-wrap: wrap; gap: .5rem;
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+        padding: 0;
+        display: flex; flex-wrap: wrap; gap: 8px;
     }
     .op-chip {
-        background: #fff;
-        border: 1px solid #dbe2ff;
+        background: var(--op-primary-soft);
+        border: 1px solid #cfdeee;
         color: var(--op-primary);
-        font-weight: 600;
-        font-size: .8rem;
-        padding: .4rem .8rem;
+        font-size: 14px;
+        line-height: 20px;
+        font-weight: 500;
+        padding: 4px 12px;
         border-radius: 999px;
-        display: inline-flex; align-items: center; gap: .35rem;
-        transition: all .2s ease;
+        display: inline-flex; align-items: center; gap: 6px;
+        text-decoration: none;
     }
     .op-chip:hover { background: var(--op-primary); color: #fff; border-color: var(--op-primary); }
 
-    /* Status badges */
+    /* Badge status INA */
     .op-status-badge {
         border-radius: 999px;
-        padding: .5rem 1rem;
+        padding: 2px 10px;
+        font-size: 12px;
+        line-height: 16px;
         font-weight: 600;
-        font-size: .82rem;
-        display: inline-flex; align-items: center; gap: .4rem;
+        display: inline-flex; align-items: center; gap: 4px;
         border: 1px solid transparent;
+        white-space: nowrap;
     }
-    .op-status-success { background: #ecfdf3; color: #027a48; border-color: #abefc6; }
-    .op-status-info     { background: #eff8ff; color: #175cd3; border-color: #b2ddff; }
-    .op-status-warning  { background: #fffaeb; color: #b54708; border-color: #fedf89; }
-    .op-status-secondary{ background: #f4f4f5; color: #3f3f46; border-color: #e4e4e7; }
+    .op-status-success  { background: #e9f6ec; color: #1f7a36; border-color: #a7d9b3; }
+    .op-status-info     { background: var(--op-primary-soft); color: var(--op-primary); border-color: #cfdeee; }
+    .op-status-warning  { background: #fff4e5; color: #8a4b00; border-color: #f5c58a; }
+    .op-status-secondary{ background: #f3f4f6; color: var(--op-ink-subtle); border-color: var(--op-border); }
 
-    /* Note panel */
+    /* Catatan: alert info netral */
     .op-note-panel {
-        background: #fffdf5;
-        border: 1px solid #fde68a;
-        border-left: 4px solid #f59e0b;
+        background: #f9fafb;
+        border: 1px solid var(--op-border);
         border-radius: var(--op-radius-sm);
-        padding: 1rem 1.1rem;
-        color: #78350f;
-        font-size: .92rem;
+        padding: 12px 16px;
+        color: var(--op-ink-subtle);
+        font-size: 16px;
+        line-height: 24px;
     }
 
-    /* Action buttons */
-    .op-actions .btn {
-        border-radius: 999px;
+    /* Tombol: utama solid, sekunder bergaris, sudut 8px */
+    .op-actions .btn,
+    .btn-op-primary,
+    .btn-op-soft {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 40px;
+        border-radius: var(--op-radius-sm) !important;
+        font-size: 14px;
+        line-height: 20px;
         font-weight: 600;
-        font-size: .875rem;
-        padding: .55rem 1.1rem;
+        padding: 8px 16px;
     }
+    .btn-op-primary.btn-sm,
+    .btn-op-soft.btn-sm { min-height: 32px; padding: 4px 12px; }
     .btn-op-primary {
-        background: linear-gradient(135deg, var(--op-primary), var(--op-primary-light));
-        border: none; color: #fff;
-        box-shadow: 0 6px 16px -6px rgba(30,58,138,.5);
+        background: var(--op-primary);
+        border: 1px solid var(--op-primary);
+        color: #fff;
+        box-shadow: none;
     }
-    .btn-op-primary:hover { color: #fff; filter: brightness(1.05); }
-    .btn-op-soft { background: #fff; border: 1px solid var(--op-border); color: var(--op-ink); }
-    .btn-op-soft:hover { border-color: var(--op-primary-light); color: var(--op-primary); }
+    .btn-op-primary:hover { color: #fff; background: var(--op-primary-hover); border-color: var(--op-primary-hover); filter: none; }
+    .btn-op-soft { background: #fff; border: 1px solid var(--op-primary); color: var(--op-primary); }
+    .btn-op-soft:hover { background: var(--op-primary-soft); border-color: var(--op-primary-hover); color: var(--op-primary-hover); }
+    .btn-op-primary:focus-visible,
+    .btn-op-soft:focus-visible { outline: none; box-shadow: var(--op-focus); }
 
     .op-dropdown-menu {
         border-radius: var(--op-radius-sm);
         border: 1px solid var(--op-border);
         box-shadow: var(--op-shadow-md);
-        padding: .4rem;
+        padding: 4px;
         min-width: 190px;
     }
-    .op-dropdown-menu .dropdown-item { border-radius: 8px; padding: .5rem .65rem; font-size: .88rem; }
+    .op-dropdown-menu .dropdown-item { border-radius: 6px; padding: 8px 12px; font-size: 14px; line-height: 20px; }
     .op-dropdown-menu .dropdown-item:hover { background: var(--op-primary-soft); color: var(--op-primary); }
 
-    /* Secondary card (eksemplar/marc) */
-    .op-tabs .nav-tabs { border: none; gap: .4rem; }
+    /* Tab eksemplar/MARC */
+    .op-tabs .nav-tabs { border: none; gap: 4px; }
     #bookTab .nav-link {
-        color: var(--op-muted);
-        font-weight: 600;
-        font-size: .875rem;
+        color: var(--op-ink-subtle);
+        font-size: 14px;
+        line-height: 20px;
+        font-weight: 500;
         border: 1px solid var(--op-border);
-        border-radius: 999px;
-        padding: .5rem 1.1rem;
+        border-radius: var(--op-radius-sm);
+        padding: 8px 16px;
         background: #fff;
-        transition: all .2s ease;
     }
-    #bookTab .nav-link:hover { color: var(--op-primary); border-color: #c7d2fe; }
+    #bookTab .nav-link:hover { color: var(--op-primary); border-color: var(--op-primary); background: var(--op-primary-soft); }
     #bookTab .nav-link.active {
         background: var(--op-primary);
         color: #fff;
         border-color: var(--op-primary);
-        box-shadow: 0 6px 14px -6px rgba(30,58,138,.45);
+        font-weight: 600;
+        box-shadow: none;
     }
 
+    /* Tabel INA */
     .op-table-wrap {
         border: 1px solid var(--op-border);
-        border-radius: var(--op-radius-md);
+        border-radius: var(--op-radius-sm);
         overflow: hidden;
     }
     .op-table-wrap table { margin-bottom: 0; }
     .op-table-wrap thead th {
-        background: #f8f9fc !important;
-        color: var(--op-ink) !important;
-        font-size: .76rem;
-        text-transform: uppercase;
-        letter-spacing: .04em;
-        font-weight: 700;
+        background: #f9fafb !important;
+        color: var(--op-ink-subtle) !important;
+        font-size: 14px;
+        line-height: 20px;
+        text-transform: none;
+        letter-spacing: 0;
+        font-weight: 600;
         border: none !important;
-        padding: .8rem 1rem;
+        border-bottom: 1px solid var(--op-border) !important;
+        padding: 12px 16px;
+        white-space: nowrap;
     }
-    .op-table-wrap tbody td { padding: .75rem 1rem; vertical-align: middle; font-size: .875rem; border-color: #f0f1f5; }
-    .op-table-wrap tbody tr:hover { background: #fafbff; }
+    .op-table-wrap tbody td { padding: 12px 16px; vertical-align: top; font-size: 14px; line-height: 20px; border-color: var(--op-border); }
+    .op-table-wrap tbody tr:hover { background: #f9fafb; }
 
     /* Pengelompokan eksemplar per Edisi Serial (khusus terbitan berkala) */
     .op-group-row { cursor: pointer; background: #fff; }
-    .op-group-row:hover { background: #fafbff; }
+    .op-group-row:hover { background: #f9fafb; }
     .op-group-toggle {
-        width: 26px; height: 26px;
-        border-radius: 8px;
-        background: var(--op-ink);
-        color: #fff;
+        width: 24px; height: 24px;
+        border-radius: 6px;
+        background: var(--op-primary-soft);
+        color: var(--op-primary);
         display: inline-flex; align-items: center; justify-content: center;
-        font-size: .7rem;
+        font-size: 12px;
         transition: transform .2s ease;
     }
     .op-group-row[aria-expanded="false"] .op-group-toggle { transform: rotate(-90deg); }
-    .op-subtable-cell { padding: 0 !important; background: #f6faf7; }
+    .op-subtable-cell { padding: 0 !important; background: #f9fafb; }
     .op-subtable { margin-bottom: 0 !important; }
     .op-subtable thead th {
-        background: #eaf6ee !important;
-        color: var(--op-ink) !important;
-        font-size: .72rem;
-        text-transform: uppercase;
-        letter-spacing: .04em;
-        font-weight: 700;
+        background: #f3f4f6 !important;
+        color: var(--op-ink-subtle) !important;
+        font-size: 12px;
+        line-height: 16px;
+        text-transform: none;
+        letter-spacing: 0;
+        font-weight: 600;
         border: none !important;
-        padding: .6rem 1rem;
+        padding: 8px 16px;
     }
-    .op-subtable tbody td { padding: .6rem 1rem; font-size: .84rem; vertical-align: middle; border-color: #e2efe4; }
-    .op-subtable tbody tr:hover { background: #eef8f0; }
+    .op-subtable tbody td { padding: 8px 16px; font-size: 14px; line-height: 20px; vertical-align: top; border-color: var(--op-border); }
+    .op-subtable tbody tr:hover { background: #f3f4f6; }
 
     .op-marc-legend {
-        background: #fafbfd;
+        background: #f9fafb;
         border: 1px solid var(--op-border);
-        border-radius: var(--op-radius-md);
+        border-radius: var(--op-radius-sm);
     }
 
     /* Sidebar */
     .op-side-card {
         border: 1px solid var(--op-border);
-        border-radius: var(--op-radius-md);
+        border-radius: var(--op-radius-lg);
         box-shadow: var(--op-shadow-sm);
         overflow: hidden;
     }
     .op-side-card .card-header {
         background: #fff;
         border-bottom: 1px solid var(--op-border);
-        font-weight: 700;
-        font-size: .92rem;
+        font-size: 16px;
+        line-height: 24px;
+        font-weight: 600;
         color: var(--op-ink);
-        padding: .95rem 1.1rem;
+        padding: 12px 16px;
     }
-    .op-side-card .card-body { padding: 1.1rem; }
-    .op-side-card .btn { border-radius: var(--op-radius-sm); text-align: left; font-weight: 600; font-size: .875rem; padding: .6rem .9rem; }
+    .op-side-card .card-header i { color: var(--op-primary) !important; }
+    .op-side-card .card-body { padding: 16px; background: #fff; }
+    .op-side-card .btn {
+        border-radius: var(--op-radius-sm);
+        text-align: left;
+        justify-content: flex-start;
+        font-size: 14px;
+        line-height: 20px;
+        font-weight: 500;
+        padding: 8px 12px;
+        color: var(--op-ink-subtle);
+        background: #fff;
+        border: 1px solid var(--op-border);
+    }
+    .op-side-card .btn:hover { color: var(--op-primary); border-color: var(--op-primary); background: var(--op-primary-soft); }
+    .op-side-card .btn i { color: var(--op-primary) !important; }
 
-    .op-meta-line { font-size: .85rem; color: var(--op-muted); display: flex; gap: .55rem; align-items: flex-start; margin-bottom: .5rem; }
-    .op-meta-line i { color: var(--op-primary-light); margin-top: .15rem; }
+    .op-meta-line { font-size: 14px; line-height: 20px; color: var(--op-muted); display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+    .op-meta-line i { color: var(--op-primary); margin-top: 3px; }
 
-    .op-sticky { position: sticky; top: 1.25rem; }
+    .op-sticky { position: sticky; top: 100px; }
+
+    /* Modal INA: header putih, judul gelap */
+    .op-modal-header {
+        background: #fff !important;
+        border-bottom: 1px solid var(--op-border) !important;
+        padding: 16px 24px;
+    }
+    .op-modal-header .modal-title {
+        font-size: 18px;
+        line-height: 26px;
+        font-weight: 600;
+        color: var(--op-ink) !important;
+    }
+    .op-modal-header .btn-close-white { filter: none; }
 
     @media print {
         .op-actions, .op-side-card, .op-dropdown-menu, nav[aria-label="breadcrumb"] { display: none !important; }
+    }
+
+    @media (max-width: 768px) {
+        .op-body { padding: 16px; }
+        .op-hero-header { padding: 16px; }
+        .op-title { font-size: 24px; line-height: 32px; }
     }
 </style>
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
 
-<div class="container-fluid op-container py-5">
+<div class="container-fluid op-container py-5" style="padding-top: 110px !important;">
     <div class="row">
         <div class="col-12 mb-4 op-breadcrumb">
             <nav aria-label="breadcrumb">
@@ -371,7 +441,7 @@
         <div class="col-lg-8">
             <div class="op-card mb-4">
                 <div class="op-hero-header d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0 text-white">
+                    <h4 class="mb-0">
                         <i class="fas fa-book-open me-2"></i>Detail Katalog
                     </h4>
                     <span class="op-id-badge">ID: <?= esc($catalog['ID']) ?></span>
@@ -406,7 +476,7 @@
                                 <div class="no-cover-large d-flex align-items-center justify-content-center"
                                     style="height: 380px;">
                                     <div class="text-center text-muted">
-                                        <i class="fas fa-book fa-3x mb-3" style="color:#c7cbe0;"></i>
+                                        <i class="fas fa-book fa-3x mb-3" aria-hidden="true"></i>
                                         <h6 class="fw-semibold">Cover Tidak Tersedia</h6>
                                         <p class="mb-0 small">Gambar cover belum diupload</p>
                                     </div>
@@ -632,7 +702,7 @@
             <?php if (!empty($roweksemplar) || !empty($roweksemplar_drm) || !empty($roweksemplar_public) || !empty($marc)): ?>
                 <div class="op-card mb-4">
                     <div class="op-hero-header">
-                        <h5 class="mb-0 text-white"><i class="fas fa-book me-2"></i>Informasi Eksemplar & Metadata</h5>
+                        <h5 class="mb-0"><i class="fas fa-book me-2"></i>Informasi Eksemplar & Metadata</h5>
                     </div>
                     <div class="op-body">
 
@@ -667,7 +737,7 @@
                             <?php if (!empty($marc)): ?>
                                 <div class="dropdown" style="position: relative;" id="marcDropdownWrapper">
                                     <button class="btn btn-op-soft btn-sm" type="button" id="downloadMarcDropdown"
-                                        style="border-radius:999px;display:inline-flex;align-items:center;gap:6px;">
+                                        style="display:inline-flex;align-items:center;gap:6px;">
                                         <i class="fas fa-download"></i>Unduh Katalog MARC
                                         <i class="fas fa-caret-down" id="marcCaretIcon"></i>
                                     </button>
@@ -687,6 +757,40 @@
                         <!-- Tab Content -->
                         <div class="tab-content" id="bookTabContent">
                             <!-- Buku Fisik -->
+                            <?php
+                            // Ketersediaan + tombol "Pesan" per eksemplar (alur booking INLISLite 3)
+                            $bookingNow = date('Y-m-d H:i:s');
+                            $bookingCanLogin = $booking_enabled && !logged_in();
+                            $bookingStatusHtml = static function ($eks) use ($bookingNow, $booking_member_no) {
+                                $active = !empty($eks->BookingMemberID) && (string) $eks->BookingExpiredDate > $bookingNow;
+                                if ($active && $eks->BookingMemberID === $booking_member_no) {
+                                    return '<span class="op-status-badge op-status-info">Sudah Anda pesan sampai ' . esc($eks->BookingExpiredDate) . '</span>';
+                                }
+                                if ($active) {
+                                    return '<span class="op-status-badge op-status-warning">Sudah Dipesan sampai ' . esc($eks->BookingExpiredDate) . '</span>';
+                                }
+                                return '<span class="op-status-badge op-status-success">' . esc($eks->StatusName) . '</span>';
+                            };
+                            $bookingActionHtml = static function ($eks) use ($bookingNow, $booking_enabled, $booking_member_no, $bookingCanLogin) {
+                                $bookable = $booking_enabled
+                                    && (int) $eks->Status_id === 1
+                                    && (int) $eks->Rule_id === 1
+                                    && !(!empty($eks->BookingMemberID) && (string) $eks->BookingExpiredDate > $bookingNow);
+                                if (!$bookable) {
+                                    return '';
+                                }
+                                if ($booking_member_no !== null) {
+                                    return '<button type="button" class="btn btn-op-primary btn-sm btn-pesan-koleksi"'
+                                        . ' data-id="' . (int) $eks->CollectionID . '" data-barcode="' . esc($eks->NomorBarcode, 'attr') . '">'
+                                        . '<i class="fas fa-bookmark me-1"></i>Pesan</button>';
+                                }
+                                if ($bookingCanLogin) {
+                                    return '<button type="button" class="btn btn-op-primary btn-sm" onclick="showMemberLoginModal(null)">'
+                                        . '<i class="fas fa-bookmark me-1"></i>Pesan</button>';
+                                }
+                                return '';
+                            };
+                            ?>
                             <?php if (!empty($roweksemplar)): ?>
                                 <div class="tab-pane fade show active" id="fisik" role="tabpanel" aria-labelledby="fisik-tab">
                                     <?php if ((int) ($catalog['Worksheet_id'] ?? 0) === 4): ?>
@@ -743,6 +847,7 @@
                                                                                     <th>Akses</th>
                                                                                     <th>Lokasi</th>
                                                                                     <th>Ketersediaan</th>
+                                                                                    <?php if ($booking_enabled): ?><th>Aksi</th><?php endif; ?>
                                                                                 </tr>
                                                                             </thead>
                                                                             <tbody>
@@ -753,7 +858,8 @@
                                                                                         <td><code><?= esc($eksemplarItem->CallNumber) ?></code></td>
                                                                                         <td><span class="op-status-badge op-status-info"><?= esc($eksemplarItem->RuleName) ?></span></td>
                                                                                         <td><i class="fas fa-building me-1 text-muted"></i><?= esc($eksemplarItem->LocationName) ?></td>
-                                                                                        <td><span class="op-status-badge op-status-success"><?= esc($eksemplarItem->StatusName) ?></span></td>
+                                                                                        <td><?= $bookingStatusHtml($eksemplarItem) ?></td>
+                                                                                        <?php if ($booking_enabled): ?><td><?= $bookingActionHtml($eksemplarItem) ?></td><?php endif; ?>
                                                                                     </tr>
                                                                                 <?php endforeach; ?>
                                                                             </tbody>
@@ -777,6 +883,7 @@
                                                             <th>Akses</th>
                                                             <th>Lokasi</th>
                                                             <th>Ketersediaan</th>
+                                                            <?php if ($booking_enabled): ?><th>Aksi</th><?php endif; ?>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -786,7 +893,8 @@
                                                                 <td><code><?= esc($eksemplar->CallNumber) ?></code></td>
                                                                 <td><span class="op-status-badge op-status-info"><?= esc($eksemplar->RuleName) ?></span></td>
                                                                 <td><i class="fas fa-building me-1 text-muted"></i><?= esc($eksemplar->LocationName) ?></td>
-                                                                <td><span class="op-status-badge op-status-success"><?= esc($eksemplar->StatusName) ?></span></td>
+                                                                <td><?= $bookingStatusHtml($eksemplar) ?></td>
+                                                                <?php if ($booking_enabled): ?><td><?= $bookingActionHtml($eksemplar) ?></td><?php endif; ?>
                                                             </tr>
                                                         <?php endforeach; ?>
                                                     </tbody>
@@ -822,10 +930,10 @@
                                                             <td><i class="fas fa-cloud me-1 text-muted"></i>Online</td>
                                                             <td><span class="op-status-badge op-status-success">Akses publik</span></td>
                                                             <td>
-                                                                <a href="<?= base_url('opac/konten-digital/' . $catalog['ID']) ?>" target="_blank" rel="noopener" class="btn btn-op-primary btn-sm" style="border-radius:999px;">
+                                                                <a href="<?= base_url('opac/konten-digital/' . $catalog['ID']) ?>" target="_blank" rel="noopener" class="btn btn-op-primary btn-sm">
                                                                     <i class="fas fa-file-pdf me-1"></i>Baca PDF
                                                                 </a>
-                                                                <a href="<?= base_url('opac/konten-digital/' . $catalog['ID']) ?>?download=1" class="btn btn-op-soft btn-sm" style="border-radius:999px;">
+                                                                <a href="<?= base_url('opac/konten-digital/' . $catalog['ID']) ?>?download=1" class="btn btn-op-soft btn-sm">
                                                                     <i class="fas fa-download me-1"></i>Unduh PDF
                                                                 </a>
                                                             </td>
@@ -847,13 +955,13 @@
                                                                     <?php if (logged_in()): ?>
                                                                         <a href="<?= $bacaDigitalUrl ?>"
                                                                             target="_blank"
-                                                                            class="btn btn-op-primary btn-sm" style="border-radius:999px;">
+                                                                            class="btn btn-op-primary btn-sm">
                                                                             <i class="fas fa-file-pdf me-1"></i>Baca PDF
                                                                         </a>
                                                                     <?php else: ?>
                                                                         <button type="button"
                                                                             onclick="showMemberLoginModal('<?= $bacaDigitalUrl ?>')"
-                                                                            class="btn btn-op-primary btn-sm" style="border-radius:999px;">
+                                                                            class="btn btn-op-primary btn-sm">
                                                                             <i class="fas fa-file-pdf me-1"></i>Baca PDF
                                                                         </button>
                                                                     <?php endif; ?>
@@ -1045,9 +1153,9 @@
 <div class="modal fade" id="coverModal" tabindex="-1" aria-labelledby="coverModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content" style="border-radius: var(--op-radius-md); overflow:hidden; border:none;">
-            <div class="modal-header" style="background: linear-gradient(135deg, var(--op-primary), var(--op-primary-light)); border:none;">
-                <h5 class="modal-title text-white" id="coverModalLabel">Cover</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header op-modal-header">
+                <h5 class="modal-title" id="coverModalLabel">Cover</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center p-0" style="background:#111827;">
                 <img id="modalCoverImage" src="" alt="Cover" class="img-fluid" style="max-height: 70vh;">
@@ -1067,11 +1175,11 @@
     <div class="modal fade" id="pdfModal<?= $catalog['ID'] ?>" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content" style="border-radius: var(--op-radius-md); overflow:hidden; border:none;">
-                <div class="modal-header" style="background: linear-gradient(135deg, var(--op-primary), var(--op-primary-light)); border:none;">
-                    <h5 class="modal-title text-white">
+                <div class="modal-header op-modal-header">
+                    <h5 class="modal-title">
                         <i class="fas fa-file-pdf me-2"></i>Baca Buku Digital: <?= esc($catalog['Title']) ?>
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-0">
                     <div class="text-center">
@@ -1088,20 +1196,20 @@
     </div>
 <?php endif; ?>
 
-<!-- Member Login Modal for Digital Books -->
-<?php if ($drm_enabled && !empty($roweksemplar_drm) && !logged_in()): ?>
+<!-- Member Login Modal (Baca Buku Digital / Pesan Koleksi) -->
+<?php if ((($drm_enabled && !empty($roweksemplar_drm)) || ($booking_enabled && !empty($roweksemplar))) && !logged_in()): ?>
     <div class="modal fade" id="memberLoginModal" tabindex="-1" aria-labelledby="memberLoginModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content" style="border-radius: var(--op-radius-md); overflow:hidden; border:none;">
-                <div class="modal-header" style="background: linear-gradient(135deg, var(--op-primary), var(--op-primary-light)); border:none;">
-                    <h5 class="modal-title text-white" id="memberLoginModalLabel">
+                <div class="modal-header op-modal-header">
+                    <h5 class="modal-title" id="memberLoginModalLabel">
                         <i class="fas fa-lock me-2"></i>Login Anggota
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="memberLoginForm">
                     <div class="modal-body">
-                        <p class="text-muted small mb-3">Silakan login sebagai anggota perpustakaan untuk membaca buku digital ini.</p>
+                        <p class="text-muted small mb-3" id="memberLoginIntro">Silakan login sebagai anggota perpustakaan untuk membaca buku digital ini.</p>
 
                         <div id="memberLoginAlert" class="alert alert-danger d-none" role="alert"></div>
 
@@ -1130,7 +1238,7 @@
                     <div class="modal-footer" style="border:none;">
                         <button type="button" class="btn btn-op-soft btn-sm" data-bs-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-op-primary btn-sm" id="memberLoginSubmitBtn">
-                            <i class="fas fa-sign-in-alt me-1"></i>Masuk &amp; Baca
+                            <i class="fas fa-sign-in-alt me-1"></i><span id="memberLoginSubmitLabel">Masuk &amp; Baca</span>
                         </button>
                     </div>
                 </form>
@@ -1497,6 +1605,15 @@ ER  -
 
     function showMemberLoginModal(url) {
         pendingBacaDigitalUrl = url;
+        // url null = login untuk memesan koleksi; halaman dimuat ulang setelah login
+        const intro = document.getElementById('memberLoginIntro');
+        const submitLabel = document.getElementById('memberLoginSubmitLabel');
+        if (intro) {
+            intro.textContent = url
+                ? 'Silakan login sebagai anggota perpustakaan untuk membaca buku digital ini.'
+                : 'Silakan login sebagai anggota perpustakaan untuk memesan koleksi ini.';
+        }
+        if (submitLabel) submitLabel.textContent = url ? 'Masuk & Baca' : 'Masuk';
         const alertBox = document.getElementById('memberLoginAlert');
         if (alertBox) {
             alertBox.classList.add('d-none');
@@ -1583,6 +1700,69 @@ ER  -
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalBtnHtml;
                 });
+        });
+    })();
+
+    // ===== Pesan (Booking) Koleksi =====
+    (function () {
+        let csrfHash = <?= json_encode(csrf_hash()) ?>;
+
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('.btn-pesan-koleksi');
+            if (!btn) return;
+
+            Swal.fire({
+                icon: 'question',
+                title: 'Pesan Koleksi',
+                text: 'Pesan eksemplar ' + btn.dataset.barcode + '? Koleksi akan disimpan untuk Anda sampai batas waktu pemesanan.',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, pesan',
+                cancelButtonText: 'Batal',
+            }).then(function (result) {
+                if (!(result.isConfirmed || result.value)) return;
+
+                const originalHtml = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Memproses...';
+
+                fetch(<?= json_encode(base_url('opac/pesan')) ?> + '/' + encodeURIComponent(btn.dataset.id), {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            <?= json_encode(config('Security')->headerName) ?>: csrfHash,
+                        },
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.csrf) csrfHash = data.csrf;
+                        if (data.login_required) {
+                            btn.disabled = false;
+                            btn.innerHTML = originalHtml;
+                            showMemberLoginModal(null);
+                            return;
+                        }
+                        Swal.fire({
+                            icon: data.error ? 'error' : 'success',
+                            title: data.error ? 'Gagal Memesan' : 'Berhasil Dipesan',
+                            text: data.message,
+                            confirmButtonText: 'Oke',
+                        }).then(function () {
+                            if (!data.error) window.location.reload();
+                        });
+                        btn.disabled = false;
+                        btn.innerHTML = originalHtml;
+                    })
+                    .catch(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = originalHtml;
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal Memesan',
+                            text: 'Terjadi kesalahan. Muat ulang halaman lalu coba lagi.',
+                            confirmButtonText: 'Oke',
+                        });
+                    });
+            });
         });
     })();
 </script>

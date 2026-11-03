@@ -9,6 +9,7 @@ $permissions = get_table('c_references', 'id, name', 'menu_id = ' . $reference->
 
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 <?= $this->section('page'); ?>
 <div class="app-main__inner">
@@ -113,7 +114,7 @@ $permissions = get_table('c_references', 'id, name', 'menu_id = ' . $reference->
 						</div>
 						<div class="form-group">
 							<input type="hidden" name="category_id" value="<?= $category->id ?>">
-							<button type="submit" class="btn btn-primary" name="submit">Simpan</button>
+							<button type="submit" class="btn btn-catalog-add" name="submit">Simpan</button>
 						</div>
 					</form>
 				</div>

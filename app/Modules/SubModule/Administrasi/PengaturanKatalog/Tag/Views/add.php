@@ -5,6 +5,7 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style') ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style') ?>
 
 <?= $this->section('page') ?>
@@ -137,7 +138,7 @@ $slug = $request->getGet('slug') ?? '';
 					<div class="card-header">
 						Sub Ruas
 						<div class="btn-actions-pane-right actions-icon-btn">
-							<button type="button" name="add" data-tbody="subruas-tbody" class="btn btn-success subruas-btn-add"><i class="fa fa-plus"></i> Item</button>
+							<button type="button" name="add" data-tbody="subruas-tbody" class="btn btn-ina-outline subruas-btn-add"><i class="fa fa-plus"></i> Item</button>
 						</div>
 					</div>
 					<div class="card-body">
@@ -165,7 +166,7 @@ $slug = $request->getGet('slug') ?? '';
 							<div class="card-header">
 								Indikator 1
 								<div class="btn-actions-pane-right actions-icon-btn">
-									<button type="button" name="add" data-tbody="indikator1-tbody" class="btn btn-success indikator1-btn-add"><i class="fa fa-plus"></i> Item</button>
+									<button type="button" name="add" data-tbody="indikator1-tbody" class="btn btn-ina-outline indikator1-btn-add"><i class="fa fa-plus"></i> Item</button>
 								</div>
 							</div>
 							<div class="card-body">
@@ -188,7 +189,7 @@ $slug = $request->getGet('slug') ?? '';
 							<div class="card-header">
 								Indikator 2
 								<div class="btn-actions-pane-right actions-icon-btn">
-									<button type="button" name="add" data-tbody="indikator2-tbody" class="btn btn-success indikator2-btn-add"><i class="fa fa-plus"></i> Item</button>
+									<button type="button" name="add" data-tbody="indikator2-tbody" class="btn btn-ina-outline indikator2-btn-add"><i class="fa fa-plus"></i> Item</button>
 								</div>
 							</div>
 							<div class="card-body">
@@ -209,7 +210,7 @@ $slug = $request->getGet('slug') ?? '';
 				</div>
 
 				<div class="form-group">
-					<button type="submit" class="btn btn-primary" name="submit">Simpan</button>
+					<button type="submit" class="btn btn-catalog-add" name="submit">Simpan</button>
 				</div>
 			</form>
 		</div>
@@ -254,7 +255,7 @@ $slug = $request->getGet('slug') ?? '';
 						<input type="hidden" name="repeatable0[` + index + `]" value="0"><input type="checkbox" name="repeatable0[` + index + `]" value="1" class="form-control">			
 					</td>
 					<td class="text-left">
-						<button type="button" class="btn btn-danger subruas-btn-remove" data-href=""><i class="fa fa-times"></i></button>
+						<button type="button" class="btn btn-ina-outline-danger subruas-btn-remove" data-href=""><i class="fa fa-times"></i></button>
 					</td>
 				</tr>
 			`);
@@ -282,7 +283,7 @@ $slug = $request->getGet('slug') ?? '';
 						<input type="text" class="form-control" name="name1[` + index + `]" placeholder="" />
 					</td>
 					<td class="text-left">
-						<button type="button" class="btn btn-danger indikator1-btn-remove" data-href=""><i class="fa fa-times"></i></button>
+						<button type="button" class="btn btn-ina-outline-danger indikator1-btn-remove" data-href=""><i class="fa fa-times"></i></button>
 					</td>
 				</tr>
 			`);
@@ -311,7 +312,7 @@ $slug = $request->getGet('slug') ?? '';
 						<input type="text" class="form-control" name="name2[` + index + `]" placeholder="" />
 					</td>
 					<td class="text-left">
-						<button type="button" class="btn btn-danger indikator2-btn-remove" data-href=""><i class="fa fa-times"></i></button>
+						<button type="button" class="btn btn-ina-outline-danger indikator2-btn-remove" data-href=""><i class="fa fa-times"></i></button>
 					</td>
 				</tr>
 			`);

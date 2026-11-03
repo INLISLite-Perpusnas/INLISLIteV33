@@ -1,6 +1,8 @@
 <?= $this->extend('App\Views\layout\main'); ?>
 
 <?= $this->section('style'); ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-table.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-table.css') ?>">
 <link rel="stylesheet" href="<?= base_url('assets/vendors/leaflet/leaflet.css') ?>" />
 
 <style>
@@ -35,7 +37,7 @@
                 </div>
             </div>
             <div class="page-title-actions">
-                <button type="button" class="btn btn-success" id="btn-tambah">
+                <button type="button" class="btn btn-catalog-add" id="btn-tambah">
                     <i class="fa fa-plus"></i> Tambah Lokasi
                 </button>
             </div>
@@ -103,7 +105,7 @@
                     </div>
 
                     <div class="form-group">
-                        <button type="button" class="btn btn-sm btn-info mb-2" id="btn-my-location">
+                        <button type="button" class="btn btn-sm btn-ina-outline mb-2" id="btn-my-location">
                             <i class="fa fa-crosshairs"></i> Gunakan Lokasi Saya
                         </button>
                         <div id="mapPicker"></div>
@@ -118,9 +120,9 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                    <button type="button" class="btn btn-ina-outline" data-dismiss="modal"
                         data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary" id="btn-simpan">Simpan</button>
+                    <button type="submit" class="btn btn-catalog-add" id="btn-simpan">Simpan</button>
                 </div>
             </form>
         </div>

@@ -77,6 +77,8 @@ class Filters extends BaseConfig
                     'opac/statistics_sirkulasi', // method: statistics_sirkulasi
                     'opac/downloadMarc*',       // method: semua downloadMarc (Utf8, Xml, Mods, dll)
                     'opac/member-login',        // method: memberLogin (login anggota via modal)
+                    'opac/pesan/*',             // method: pesan (login anggota dicek di controller)
+                    'opac/booking*',            // keranjang pesan anggota (login anggota dicek di controller)
                     // 'opac/bacaDigital/*' TIDAK DIMASUKKAN agar terkena filter session (wajib login)
 
                     // --- PENGECUALIAN UNTUK MODUL ARTIKEL (publik, gaya OPAC) ---
@@ -129,6 +131,8 @@ class Filters extends BaseConfig
                     'opac/statistics_sirkulasi',
                     'opac/downloadMarc*',
                     'opac/member-login',
+                    'opac/pesan/*',
+                    'opac/booking*',
 
                     // --- PENGECUALIAN UNTUK MODUL ARTIKEL (publik, gaya OPAC) ---
                     'artikel*',

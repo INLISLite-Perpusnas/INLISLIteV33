@@ -5,6 +5,7 @@ $slug = $request->getGet('slug') ?? '';
 
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -40,6 +41,8 @@ $slug = $request->getGet('slug') ?? '';
 			<div class="d-block">
 				<button type="button" id="pulihkan_katalog" class="btn btn-warning" data-toggle="tooltip" data-placement="top" title="Semua katalog yang terpilih"><i class="fa fa-undo"></i> Pulihkan dari Karantina</button> &nbsp;
 				<button type="button" id="hapus_permanen" class="btn btn-danger" data-toggle="tooltip" data-placement="top" title="Semua katalog yang terpilih"><i class="fa fa-trash"></i> Hapus Permanen</button>
+				<button type="button" id="export_data_tag" class="btn btn-success ml-2" data-toggle="tooltip" data-placement="top" title="Export data tag katalog yang dipilih ke Excel"><i class="fa fa-file-excel"></i> Export Data Tag</button>
+				<a href="<?= base_url('katalog/export_data_tag?karantina=1') ?>" class="btn btn-outline-success ml-2" data-toggle="tooltip" data-placement="top" title="Export data tag semua katalog karantina ke Excel"><i class="fa fa-file-excel"></i> Export Semua Data Tag</a>
 			</div>
 		</div>
 		<div class="card-body">
@@ -262,6 +265,16 @@ $slug = $request->getGet('slug') ?? '';
 				window.location.href = url;
 			}
 		});
+		return false;
+	});
+
+	$('#export_data_tag').click(function() {
+		var serialize_bulk = $('#form_items').serialize();
+		if (!serialize_bulk) {
+			Swal.fire({ title: 'Peringatan', text: 'Pilih minimal satu katalog terlebih dahulu', type: 'warning' });
+			return false;
+		}
+		window.location.href = "<?= base_url('katalog/export_data_tag') ?>" + '?' + serialize_bulk;
 		return false;
 	});
 
