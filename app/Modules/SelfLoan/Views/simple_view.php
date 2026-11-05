@@ -1,159 +1,14 @@
 <?= $this->extend('App\Views\layout\opac\layout'); ?>
 
 <?= $this->section('content') ?>
-<style>
-    :root {
-        --primary-color: #1B3878;
-        --primary-dark: #142a5c;
-        --primary-light: #dbe4f3;
-        --secondary-color: #1B3878;
-        --success-color: #1B3878;
-        --danger-color: #dc3545;
-    }
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-selfservice.css') ?>?v=<?= @filemtime(FCPATH . 'assets/css/ina-selfservice.css') ?>">
 
-    body {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        min-height: 100vh;
-        padding-top: 90px;
-    }
-
-    .card {
-        border: none;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    }
-
-    .card-header {
-        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-        color: white;
-        border-radius: 15px 15px 0 0 !important;
-        padding: 1.5rem;
-    }
-
-    .btn-primary,
-    .btn-success {
-        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-        border: none;
-        border-radius: 25px;
-        padding: 12px 30px;
-        font-weight: 600;
-    }
-
-    .btn-outline-primary {
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-    }
-
-    .btn-outline-primary:hover {
-        background-color: var(--primary-color);
-        color: #fff;
-    }
-
-    .form-control {
-        border-radius: 10px;
-        border: 2px solid #e9ecef;
-        padding: 12px 15px;
-        font-size: 18px;
-        text-align: center;
-        letter-spacing: 1px;
-    }
-
-    .form-control:focus {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 0.2rem rgba(27, 56, 120, 0.25);
-    }
-
-    .scanner-input {
-        font-family: 'Courier New', monospace;
-        font-size: 20px;
-        font-weight: bold;
-    }
-
-    .member-card {
-        background: linear-gradient(135deg, var(--primary-light), #c9d6ee);
-        border-radius: 15px;
-        padding: 25px;
-        margin: 20px 0;
-        border-left: 5px solid var(--primary-color);
-    }
-
-    .book-item {
-        background: white;
-        border-radius: 10px;
-        padding: 20px;
-        margin: 10px 0;
-        border-left: 4px solid var(--primary-color);
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    }
-
-    .step-indicator {
-        background: white;
-        border-radius: 10px;
-        padding: 20px;
-        margin-bottom: 30px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    }
-
-    .current-step {
-        color: var(--primary-color);
-        font-weight: bold;
-        font-size: 1.2rem;
-    }
-
-    /* Override Bootstrap biar full biru */
-    .text-primary,
-    .text-success {
-        color: var(--primary-color) !important;
-    }
-
-    .bg-primary,
-    .bg-success {
-        background-color: var(--primary-color) !important;
-    }
-
-    .badge.bg-primary {
-        background-color: var(--primary-color) !important;
-    }
-
-    .alert-success {
-        background-color: var(--primary-light);
-        color: var(--primary-color);
-        border-left: 5px solid var(--primary-color);
-    }
-
-    .alert-info {
-        background-color: var(--primary-light);
-        color: var(--primary-color);
-        border-left: 5px solid var(--primary-color);
-    }
-
-    .text-warning {
-        color: var(--primary-color) !important;
-    }
-
-    .text-success {
-        color: var(--primary-color) !important;
-    }
-
-    @media (max-width: 768px) {
-        .container {
-            padding: 10px;
-        }
-
-        .form-control {
-            font-size: 16px;
-        }
-    }
-</style>
-
-<div class="container py-4">
+<div class="ss-ina">
+<div class="container">
         <!-- Header -->
         <div class="text-center mb-4">
-            <h1 class="display-4 text-primary mb-2">
-                <i class="fas fa-book-open me-3"></i>Peminjaman Mandiri
-            </h1>
-            <p class="lead text-muted">Sistem Peminjaman Buku Otomatis</p>
+            <h1 class="ss-page-title">Peminjaman Mandiri</h1>
+            <p class="ss-page-subtitle mb-3">Sistem peminjaman buku otomatis</p>
             <?php if(isset($locationData) && $locationData): ?>
             <div class="alert alert-info">
                 <i class="fas fa-map-marker-alt me-2"></i>
@@ -191,11 +46,11 @@
         <div class="step-indicator text-center">
             <div class="current-step">
                 <?php if(!$memberData): ?>
-                    <i class="fas fa-user-check me-2"></i>Langkah 1: Masukkan Nomor Anggota
+                    <i class="fas fa-user-check me-2"></i>Langkah 1: Masukkan nomor anggota
                 <?php elseif(empty($selectedBooks)): ?>
-                    <i class="fas fa-barcode me-2"></i>Langkah 2: Scan Barcode Buku
+                    <i class="fas fa-barcode me-2"></i>Langkah 2: Scan barcode buku
                 <?php else: ?>
-                    <i class="fas fa-check-circle me-2"></i>Langkah 3: Konfirmasi Peminjaman
+                    <i class="fas fa-check-circle me-2"></i>Langkah 3: Konfirmasi peminjaman
                 <?php endif; ?>
             </div>
         </div>
@@ -208,38 +63,33 @@
                         <div class="card-header">
                             <h4 class="mb-0">
                                 <i class="fas fa-user-check me-2"></i>
-                                Validasi Anggota
+                                Validasi anggota
                             </h4>
                         </div>
-                        <div class="card-body text-center">
-                            <div class="mb-4">
-                                <i class="fas fa-id-card text-primary mb-3" style="font-size: 3rem;"></i>
-                                <p class="lead">Scan atau ketik nomor anggota Anda</p>
-                            </div>
+                        <div class="card-body">
                             
                             <form action="<?= base_url('peminjaman-mandiri') ?>" method="GET">
-                                <div class="mb-4">
-                                    <input type="text" 
-                                           class="form-control form-control-lg scanner-input" 
-                                           name="MemberNo" 
-                                           placeholder="Nomor Anggota"
+                                <div class="ss-field">
+                                    <label for="MemberNo">Nomor anggota</label>
+                                    <input type="text"
+                                           class="form-control form-control-lg scanner-input"
+                                           id="MemberNo"
+                                           name="MemberNo"
+                                           aria-describedby="MemberNoHelp"
+                                           placeholder="Scan atau ketik nomor anggota"
                                            value="<?= esc($memberNo ?? '') ?>"
                                            autofocus
                                            autocomplete="off"
                                            required>
+                                    <small class="ss-help" id="MemberNoHelp">Gunakan scanner barcode atau ketik manual nomor anggota</small>
                                 </div>
-                                <button type="submit" class="btn btn-primary btn-lg">
-                                    <i class="fas fa-search me-2"></i>
-                                    Validasi Anggota
-                                </button>
+                                <div class="ss-actions">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-search me-2"></i>
+                                        Validasi anggota
+                                    </button>
+                                </div>
                             </form>
-
-                            <div class="mt-4">
-                                <small class="text-muted">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    Gunakan scanner barcode atau ketik manual nomor anggota
-                                </small>
-                            </div>
                         </div>
                     </div>
 
@@ -249,7 +99,7 @@
                         <div class="card-header">
                             <h4 class="mb-0">
                                 <i class="fas fa-barcode me-2"></i>
-                                Scan Barcode Buku
+                                Scan barcode buku
                             </h4>
                         </div>
                         <div class="card-body">
@@ -259,7 +109,7 @@
                                     <div class="col-md-8">
                                         <h5 class="text-success mb-3">
                                             <i class="fas fa-user-check me-2"></i>
-                                            Anggota Valid
+                                            Anggota valid
                                         </h5>
                                         <div class="row">
                                             <div class="col-sm-6">
@@ -267,8 +117,8 @@
                                                 <p><strong>Nama:</strong> <?= esc($memberData['fullname']) ?></p>
                                             </div>
                                             <div class="col-sm-6">
-                                                <p><strong>Sedang Dipinjam:</strong> <?= $memberData['current_loans'] ?> buku</p>
-                                                <p><strong>Sisa Kuota:</strong> 
+                                                <p><strong>Sedang dipinjam:</strong> <?= $memberData['current_loans'] ?> buku</p>
+                                                <p><strong>Sisa kuota:</strong> 
                                                     <span class="<?= $memberData['remaining_loans'] > 0 ? 'text-success' : 'text-danger' ?>">
                                                         <?= $memberData['remaining_loans'] ?>
                                                     </span> buku
@@ -287,27 +137,26 @@
 
                             <?php if($memberData['remaining_loans'] > 0): ?>
                                 <!-- Book Scanner -->
-                                <div class="text-center mb-4">
-                                    <i class="fas fa-barcode text-primary mb-3" style="font-size: 3rem;"></i>
-                                    <p class="lead">Scan barcode buku yang ingin dipinjam</p>
-                                </div>
                                 
                                 <form action="<?= base_url('peminjaman-mandiri') ?>" method="GET">
                                     <input type="hidden" name="MemberNo" value="<?= esc($memberData['member_no']) ?>">
-                                    <div class="mb-4">
-                                        <input type="text" 
-                                               class="form-control form-control-lg scanner-input" 
-                                               name="NomorBarcode" 
-                                               placeholder="Barcode Buku"
+                                    <div class="ss-field">
+                                        <label for="NomorBarcode">Barcode buku</label>
+                                        <input type="text"
+                                               class="form-control form-control-lg scanner-input"
+                                               id="NomorBarcode"
+                                               name="NomorBarcode"
+                                               placeholder="Scan barcode buku"
                                                value=""
                                                autocomplete="off"
                                                autofocus
                                                required>
                                     </div>
-                                    <div class="text-center">
-                                        <button type="submit" class="btn btn-primary btn-lg">
+                                    <div class="ss-actions">
+                                        <?php // Satu aksi utama per layar: setelah ada buku, aksi utama pindah ke "Proses peminjaman" ?>
+                                        <button type="submit" class="btn <?= empty($selectedBooks) ? 'btn-primary' : 'btn-outline-primary' ?> btn-lg">
                                             <i class="fas fa-plus me-2"></i>
-                                            Tambah Buku
+                                            Tambah buku
                                         </button>
                                     </div>
                                 </form>
@@ -317,15 +166,15 @@
                             <?php if(!empty($selectedBooks)): ?>
                                 <hr class="my-4">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h5 class="mb-0">Daftar Buku yang Akan Dipinjam</h5>
-                                    <span class="badge bg-primary"><?= count($selectedBooks) ?> Buku</span>
+                                    <h5 class="mb-0">Daftar buku yang akan dipinjam</h5>
+                                    <span class="badge bg-primary"><?= count($selectedBooks) ?> buku</span>
                                 </div>
                                 
                                 <?php foreach($selectedBooks as $index => $book): ?>
                                     <div class="book-item">
                                         <div class="row align-items-center">
                                             <div class="col-md-9">
-                                                <h6 class="mb-2 text-primary"><?= esc($book['title']) ?></h6>
+                                                <h6 class="mb-2"><?= esc($book['title']) ?></h6>
                                                 <div class="row">
                                                     <div class="col-sm-6">
                                                         <p class="mb-1"><small><strong>Pengarang:</strong> <?= esc($book['author']) ?></small></p>
@@ -333,7 +182,7 @@
                                                     </div>
                                                     <div class="col-sm-6">
                                                         <p class="mb-1"><small><strong>Barcode:</strong> <?= esc($book['barcode']) ?></small></p>
-                                                        <p class="mb-1"><small><strong>No. Panggil:</strong> <?= esc($book['call_number']) ?></small></p>
+                                                        <p class="mb-1"><small><strong>No. panggil:</strong> <?= esc($book['call_number']) ?></small></p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -347,22 +196,22 @@
                                     </div>
                                 <?php endforeach; ?>
 
-                                <div class="text-center mt-4">
+                                <div class="ss-actions mt-4">
                                     <form action="<?= base_url('peminjaman-mandiri/process-loan') ?>" method="POST" id="form-proses-peminjaman">
                                         <input type="hidden" name="MemberNo" value="<?= esc($memberData['member_no']) ?>">
-                                        <button type="submit" class="btn btn-success btn-lg">
+                                        <button type="submit" class="btn btn-primary btn-lg">
                                             <i class="fas fa-check me-2"></i>
-                                            Proses Peminjaman (<?= count($selectedBooks) ?> Buku)
+                                            Proses peminjaman (<?= count($selectedBooks) ?> buku)
                                         </button>
                                     </form>
                                 </div>
                             <?php endif; ?>
 
                             <!-- New Member Button -->
-                            <div class="text-center mt-4">
-                                <a href="<?= base_url('peminjaman-mandiri') ?>" class="btn btn-outline-primary">
+                            <div class="ss-actions mt-3">
+                                <a href="<?= base_url('peminjaman-mandiri') ?>" class="btn btn-outline-secondary">
                                     <i class="fas fa-user-plus me-2"></i>
-                                    Anggota Baru
+                                    Anggota baru
                                 </a>
                             </div>
                         </div>
@@ -372,13 +221,13 @@
         </div>
 
         <!-- Instructions -->
-        <div class="row mt-5">
+        <div class="row mt-4">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
                         <h5 class="mb-0">
                             <i class="fas fa-question-circle me-2"></i>
-                            Petunjuk Penggunaan
+                            Petunjuk penggunaan
                         </h5>
                     </div>
                     <div class="card-body">
@@ -410,7 +259,7 @@
                         
                         <div class="row">
                             <div class="col-md-6">
-                                <h6 class="text-primary mb-3">Tips Penggunaan:</h6>
+                                <h6 class="mb-3">Tips penggunaan:</h6>
                                 <ul class="list-unstyled">
                                     <li><i class="fas fa-check text-success me-2"></i>Pastikan barcode dalam kondisi baik dan tidak rusak</li>
                                     <li><i class="fas fa-check text-success me-2"></i>Pegang scanner tegak lurus dengan barcode</li>
@@ -418,7 +267,7 @@
                                 </ul>
                             </div>
                             <div class="col-md-6">
-                                <h6 class="text-primary mb-3">Perhatian:</h6>
+                                <h6 class="mb-3">Perhatian:</h6>
                                 <ul class="list-unstyled">
                                     <li><i class="fas fa-exclamation-triangle text-warning me-2"></i>Simpan struk peminjaman dengan baik</li>
                                     <li><i class="fas fa-exclamation-triangle text-warning me-2"></i>Kembalikan buku sebelum tanggal jatuh tempo</li>
@@ -431,6 +280,7 @@
             </div>
         </div>
     </div>
+</div>
 
 
 <?= $this->endSection() ?>
@@ -482,13 +332,13 @@
                 e.preventDefault();
                 const href = this.getAttribute('href');
                 Swal.fire({
-                    title: 'Hapus Buku?',
+                    title: 'Hapus buku?',
                     text: 'Buku ini akan dihapus dari daftar peminjaman.',
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#d33',
+                    confirmButtonColor: '#c62828',
                     cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Ya, Hapus',
+                    confirmButtonText: 'Ya, hapus',
                     cancelButtonText: 'Batal',
                 }).then(function(result) {
                     if (result.value) {
@@ -505,13 +355,13 @@
                 e.preventDefault();
                 const form = this;
                 Swal.fire({
-                    title: 'Proses Peminjaman?',
+                    title: 'Proses peminjaman?',
                     text: 'Yakin ingin memproses peminjaman ini?',
                     icon: 'question',
                     showCancelButton: true,
-                    confirmButtonColor: '#28a745',
+                    confirmButtonColor: '#2d659e',
                     cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Ya, Proses',
+                    confirmButtonText: 'Ya, proses',
                     cancelButtonText: 'Batal',
                 }).then(function(result) {
                     if (result.value) {

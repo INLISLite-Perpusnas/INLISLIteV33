@@ -18,7 +18,7 @@ class Stockopname extends \Base\Controllers\BaseController
     {
         $this->stockopnameModel = new \Stockopname\Models\StockopnameModel();
         $this->stockopnamedetailModel = new \Stockopname\Models\StockopnamedetailModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/stockopname/';
 
         if (!file_exists($this->uploadPath)) {

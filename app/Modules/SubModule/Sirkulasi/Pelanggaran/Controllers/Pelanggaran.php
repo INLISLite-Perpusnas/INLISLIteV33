@@ -15,7 +15,7 @@ class Pelanggaran extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->pelanggaranModel = new \Pelanggaran\Models\PelanggaranModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/pelanggaran/';
 
         if (!file_exists($this->uploadPath)) {

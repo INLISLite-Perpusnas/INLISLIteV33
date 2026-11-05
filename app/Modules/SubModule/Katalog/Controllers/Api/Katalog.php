@@ -50,13 +50,15 @@ class Katalog extends \Base\Controllers\BaseResourceController
 		$length = in_array($length, [10, 25, 50, 100], true) ? $length : 10;
 		$worksheetId = max(0, (int) ($this->request->getPost('worksheet_id') ?? 0));
 		$search = trim((string) ($this->request->getPost('search') ?? ''));
+		$isKeranjang = $this->request->getPost('keranjang') === '1' ? 1 : 0;
 
 		$total = $db->table('catalogs')
 			->where('IsQUARANTINE', 0)
+			->where('IsKeranjang', $isKeranjang)
 			->countAllResults();
 
-		$applyFilters = static function ($builder) use ($worksheetId, $search) {
-			$builder->where('a.IsQUARANTINE', 0);
+		$applyFilters = static function ($builder) use ($worksheetId, $search, $isKeranjang) {
+			$builder->where('a.IsQUARANTINE', 0)->where('a.IsKeranjang', $isKeranjang);
 			if ($worksheetId > 0) {
 				$builder->where('a.Worksheet_id', $worksheetId);
 			}
@@ -457,7 +459,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
                     $cleanName = basename($name); 
                     $filePath = $this->uploadPath . $cleanName;
 
-                    if (!empty($cleanName) && file_exists($filePath)) {
+                    if (!empty($cleanName) && is_file($filePath)) {
                         $file = new \CodeIgniter\Files\File($filePath);
 
                         // SECURITY 3: Validasi MIME Type (Pastikan yang masuk murni gambar)
@@ -590,8 +592,8 @@ class Katalog extends \Base\Controllers\BaseResourceController
 				$insertData = [];
 				$updateData = [];
 				foreach ($files as $uuid => $name) {
-					if (file_exists($this->uploadPath . $name)) {
-						$file = new File($this->uploadPath . $name);
+					if (is_file($this->uploadPath . basename($name))) {
+						$file = new File($this->uploadPath . basename($name));
 
 						// === Tambahan cek ukuran file ===
 						$maxSize = 12 * 1024 * 1024; // 12MB
@@ -720,8 +722,8 @@ class Katalog extends \Base\Controllers\BaseResourceController
 				$insertData = [];
 				$updateData = [];
 				foreach ($files as $uuid => $name) {
-					if (file_exists($this->uploadPath . $name)) {
-						$file = new File($this->uploadPath . $name);
+					if (is_file($this->uploadPath . basename($name))) {
+						$file = new File($this->uploadPath . basename($name));
 
 						// === Tambahan cek ukuran file ===
 						$maxSize = 12 * 1024 * 1024; // 12MB

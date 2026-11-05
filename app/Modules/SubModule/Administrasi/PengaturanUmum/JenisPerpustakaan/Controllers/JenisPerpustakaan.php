@@ -19,7 +19,7 @@ class JenisPerpustakaan extends \Base\Controllers\BaseController
         $this->jenisperpustakaanModel = new \JenisPerpustakaan\Models\JenisPerpustakaanModel();
         $this->memberformModel = new \JenisPerpustakaan\Models\MemberFormModel();
         $this->memberfieldModel = new \JenisPerpustakaan\Models\MemberFieldModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/jenisperpustakaan/';
 
         if (!file_exists($this->uploadPath)) {

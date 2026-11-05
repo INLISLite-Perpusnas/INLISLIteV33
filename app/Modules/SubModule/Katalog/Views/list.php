@@ -7,6 +7,10 @@ $flashPayload = $flashIcon ? [
     'html' => $flashMessage,
 ] : null;
 $flashClass = in_array($flashIcon, ['success', 'info'], true) ? 'alert-success' : 'alert-warning';
+// Halaman Daftar Artikel memakai tabel yang sama, dikunci pada satu jenis bahan
+$lockedWorksheet = $locked_worksheet ?? null;
+$isKeranjang = !empty($is_keranjang);
+$pageHeading = $isKeranjang ? 'Keranjang Katalog' : ($lockedWorksheet ? 'Daftar Artikel' : 'Katalog');
 ?>
 
 <?= $this->extend('App\Views\layout\main'); ?>
@@ -201,15 +205,15 @@ $flashClass = in_array($flashIcon, ['success', 'info'], true) ? 'alert-success' 
             <div class="page-title-heading">
                 <div class="page-title-icon"><i class="pe-7s-server icon-gradient bg-strong-bliss" aria-hidden="true"></i></div>
                 <div>
-                    <h1 id="catalog-title">Katalog</h1>
-                    <p class="page-title-subheading">Daftar semua katalog</p>
+                    <h1 id="catalog-title"><?= esc($pageHeading) ?></h1>
+                    <p class="page-title-subheading"><?= $isKeranjang ? 'Daftar katalog di keranjang' : ($lockedWorksheet ? 'Katalog dengan jenis bahan ' . esc($lockedWorksheet->Name) : 'Daftar semua katalog') ?></p>
                 </div>
             </div>
             <div class="page-title-actions">
                 <nav aria-label="Breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home" aria-hidden="true"></i> Home</a></li>
-                        <li class="breadcrumb-item" aria-current="page">Katalog</li>
+                        <li class="breadcrumb-item" aria-current="page"><?= esc($pageHeading) ?></li>
                     </ol>
                 </nav>
             </div>
@@ -218,7 +222,7 @@ $flashClass = in_array($flashIcon, ['success', 'info'], true) ? 'alert-success' 
 
     <section class="main-card mb-3 card" aria-labelledby="catalog-table-title">
         <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
-            <h2 class="h6 mb-0" id="catalog-table-title"><i class="fa fa-list" aria-hidden="true"></i> Tabel Daftar Katalog</h2>
+            <h2 class="h6 mb-0" id="catalog-table-title"><i class="fa fa-list" aria-hidden="true"></i> Tabel <?= $isKeranjang ? 'Keranjang Katalog' : ($lockedWorksheet ? 'Daftar Artikel' : 'Daftar Katalog') ?></h2>
             <div class="catalog-create-actions d-flex align-items-center flex-wrap">
                 <?php if (is_allowed('katalog/create')) : ?>
                     <?php if (get_setting_parameter('FormEntriKatalog', is_profiling()) == 'Simple') : ?>
@@ -242,10 +246,15 @@ $flashClass = in_array($flashIcon, ['success', 'info'], true) ? 'alert-success' 
                 <button type="button" id="proses_karantina" class="btn btn-warning" title="Memproses katalog yang dipilih"><i class="fa fa-shopping-cart" aria-hidden="true"></i> Pindahkan ke Karantina</button>
                 <button type="button" id="proses_opac" class="btn btn-primary ml-2" title="Memproses katalog yang dipilih"><i class="fa fa-check-square" aria-hidden="true"></i> Tampilkan di OPAC</button>
                 <button type="button" id="export_data_tag" class="btn btn-success ml-2" title="Export data tag katalog yang dipilih ke Excel"><i class="fa fa-file-excel" aria-hidden="true"></i> Export Data Tag</button>
-                <a href="<?= base_url('katalog/export_data_tag') ?>" class="btn btn-outline-success ml-2" title="Export data tag semua katalog ke Excel"><i class="fa fa-file-excel" aria-hidden="true"></i> Export Semua Data Tag</a>
+                <?php if ($isKeranjang && is_allowed('keranjang-katalog/kembalikan')) : ?>
+                    <button type="button" id="kembalikan_keranjang" class="btn btn-info ml-2" title="Kembalikan katalog yang dipilih ke daftar katalog"><i class="fa fa-undo" aria-hidden="true"></i> Kembalikan ke Katalog</button>
+                <?php elseif (!$isKeranjang && is_allowed('keranjang-katalog/masukkan')) : ?>
+                    <button type="button" id="masukkan_keranjang" class="btn btn-info ml-2" title="Masukkan katalog yang dipilih ke keranjang"><i class="fa fa-shopping-cart" aria-hidden="true"></i> Masukkan ke Keranjang</button>
+                <?php endif; ?>
             </div>
 
             <div class="catalog-controls d-flex align-items-end flex-wrap mb-3">
+                <?php if (!$lockedWorksheet) : ?>
                 <div class="input-group" style="width:280px; flex-shrink:0;">
                     <div class="input-group-prepend">
                         <label class="catalog-filter-label" for="filter_worksheet_id"><i class="fa fa-filter" aria-hidden="true"></i> Jenis Bahan</label>
@@ -258,6 +267,7 @@ $flashClass = in_array($flashIcon, ['success', 'info'], true) ? 'alert-success' 
                     </select>
                 </div>
                 <button class="btn btn-outline-secondary" id="btnResetFilterWorksheet" type="button" style="height:38px; flex-shrink:0;"><i class="fa fa-undo" aria-hidden="true"></i> Reset Filter</button>
+                <?php endif; ?>
                 <div>
                     <label for="catalog_page_length" class="d-block mb-1">Data per halaman</label>
                     <select id="catalog_page_length" class="form-control" style="width:90px;">
@@ -331,9 +341,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const previousButton = document.getElementById('catalog_prev');
     const nextButton = document.getElementById('catalog_next');
     const selectAll = document.querySelector('.check_data');
-    const state = { page: 1, pages: 1, offset: 0, length: 10, search: '', worksheetId: '' };
+    const state = { page: 1, pages: 1, offset: 0, length: 10, search: '', worksheetId: <?= json_encode($lockedWorksheet ? (string) (int) $lockedWorksheet->ID : '') ?> };
     let activeRequest = null;
     let searchTimer = null;
+
+    // Halaman daftar memuat SweetAlert2 v8, jadi jenis ikon memakai opsi `type`
+    function notify(text, type) {
+        return Swal.fire({ type: type || 'warning', text: text });
+    }
+
+    function confirmAction(text) {
+        return Swal.fire({ type: 'question', text: text, showCancelButton: true, confirmButtonText: 'Ya', cancelButtonText: 'Batal' })
+            .then(function(result) { return Boolean(result.value); });
+    }
 
     function appendTextCell(row, value, className) {
         const cell = document.createElement('td');
@@ -489,7 +509,8 @@ document.addEventListener('DOMContentLoaded', function() {
             page: String(state.page),
             length: String(state.length),
             search: state.search,
-            worksheet_id: state.worksheetId
+            worksheet_id: state.worksheetId,
+            keranjang: <?= json_encode($isKeranjang ? '1' : '0') ?>
         });
 
         try {
@@ -537,19 +558,21 @@ document.addEventListener('DOMContentLoaded', function() {
             loadRows();
         }, 400);
     });
-    worksheetInput.addEventListener('change', function() {
-        state.worksheetId = worksheetInput.value;
-        state.page = 1;
-        loadRows();
-    });
+    if (worksheetInput) {
+        worksheetInput.addEventListener('change', function() {
+            state.worksheetId = worksheetInput.value;
+            state.page = 1;
+            loadRows();
+        });
+        document.getElementById('btnResetFilterWorksheet').addEventListener('click', function() {
+            worksheetInput.value = '';
+            state.worksheetId = '';
+            state.page = 1;
+            loadRows();
+        });
+    }
     lengthInput.addEventListener('change', function() {
         state.length = Number(lengthInput.value) || 10;
-        state.page = 1;
-        loadRows();
-    });
-    document.getElementById('btnResetFilterWorksheet').addEventListener('click', function() {
-        worksheetInput.value = '';
-        state.worksheetId = '';
         state.page = 1;
         loadRows();
     });
@@ -591,7 +614,7 @@ document.addEventListener('DOMContentLoaded', function() {
             info.textContent = payload.message;
         } catch (error) {
             checkbox.checked = !nextValue;
-            window.alert(error.message || 'Status gagal disimpan.');
+            notify(error.message || 'Status gagal disimpan.', 'error');
         } finally {
             checkbox.disabled = false;
         }
@@ -606,10 +629,50 @@ document.addEventListener('DOMContentLoaded', function() {
     function processSelected(url, message) {
         const query = selectedQuery();
         if (!query) {
-            window.alert('Pilih minimal satu katalog terlebih dahulu.');
+            notify('Pilih minimal satu katalog terlebih dahulu.');
             return;
         }
-        if (window.confirm(message)) window.location.assign(url + '?' + query);
+        confirmAction(message).then(function(confirmed) {
+            if (confirmed) window.location.assign(url + '?' + query);
+        });
+    }
+
+    function submitKeranjang(url, message) {
+        const ids = Array.from(tbody.querySelectorAll('input.check:checked'), function(input) { return input.value; });
+        if (!ids.length) {
+            notify('Pilih minimal satu katalog terlebih dahulu.');
+            return;
+        }
+        confirmAction(message).then(function(confirmed) {
+            if (!confirmed) return;
+            const form = document.createElement('form');
+            form.method = 'post';
+            form.action = url;
+            const fields = ids.map(function(id) { return ['ID[]', id]; });
+            fields.push([<?= json_encode(csrf_token()) ?>, <?= json_encode(csrf_hash()) ?>]);
+            fields.forEach(function(field) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = field[0];
+                input.value = field[1];
+                form.appendChild(input);
+            });
+            document.body.appendChild(form);
+            form.submit();
+        });
+    }
+
+    const keranjangIn = document.getElementById('masukkan_keranjang');
+    if (keranjangIn) {
+        keranjangIn.addEventListener('click', function() {
+            submitKeranjang(<?= json_encode(base_url('keranjang-katalog/masukkan')) ?>, 'Masukkan katalog yang dipilih ke keranjang?');
+        });
+    }
+    const keranjangOut = document.getElementById('kembalikan_keranjang');
+    if (keranjangOut) {
+        keranjangOut.addEventListener('click', function() {
+            submitKeranjang(<?= json_encode(base_url('keranjang-katalog/kembalikan')) ?>, 'Kembalikan katalog yang dipilih ke daftar katalog?');
+        });
     }
 
     document.getElementById('proses_karantina').addEventListener('click', function() {
@@ -621,7 +684,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('export_data_tag').addEventListener('click', function() {
         const query = selectedQuery();
         if (!query) {
-            window.alert('Pilih minimal satu katalog terlebih dahulu.');
+            notify('Pilih minimal satu katalog terlebih dahulu.');
             return;
         }
         window.location.assign(<?= json_encode(base_url('katalog/export_data_tag')) ?> + '?' + query);

@@ -38,7 +38,7 @@ class Dashboard extends \Base\Controllers\BaseController
     $this->data['is_dashboard_page'] = true;
     $this->data['meta_description'] = 'Ringkasan statistik dan aktivitas sistem perpustakaan.';
 
-    if(is_member('anggota')){
+    if(is_member('anggota_online')){
         $page = 'anggota';
         $member_no = user()->username;
         $member = get_member($member_no);

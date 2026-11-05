@@ -195,9 +195,9 @@ $initials = strtoupper(mb_substr(preg_replace('/[^A-Za-z0-9]/', '', $username) ?
     .nav-menu-argon li a > span {
         flex: 1;
         min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        /* Label panjang turun ke baris berikutnya, tidak dipotong */
+        white-space: normal;
+        overflow-wrap: break-word;
     }
 
     /* Hover: sorot item yang ditunjuk */

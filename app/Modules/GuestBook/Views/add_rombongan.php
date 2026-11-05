@@ -978,9 +978,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		}, 7000);
 	}
 
-	// Check for toastr messages
-	checkToastrMessages();
-	
 	// Initialize calculations
 	calculateTotals();
 });

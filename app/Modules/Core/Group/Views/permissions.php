@@ -6,6 +6,38 @@
     .card-menu {
         height: 100%;
     }
+
+    .permission-section {
+        height: 100%;
+        padding: 0.5rem;
+        border: 1px solid rgba(0, 0, 0, 0.125);
+        border-radius: 0.25rem;
+    }
+
+    .permission-section-title {
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    /* Nama permission yang panjang turun ke baris berikutnya, tombol tetap di tempatnya */
+    #permission-container .widget-content-left.flex2 {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    #permission-container .widget-heading {
+        overflow-wrap: anywhere;
+    }
+
+    #permission-container .widget-content-left:first-child,
+    #permission-container .widget-content-right {
+        flex-shrink: 0;
+    }
+
+    #permission-container .widget-content-right {
+        margin-left: 0.5rem;
+    }
 </style>
 <link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
@@ -56,43 +88,43 @@
         </div>
 
         <div class="row" id="permission-container">
-            <?php
-            $menu_permissions = [];
-            foreach ($permissions as $row) { 
-                $menu_permissions[$row->menu][] = $row;
-            }
-            ksort($menu_permissions);
-            ?>
-            
-            <?php foreach (array_keys($menu_permissions) as $menu) : ?>
-                <div class="col-md-6 col-lg-4 col-xl-3 mb-3 parent-menu" data-menu="<?= strtolower($menu); ?>">
-                    <div class="card card-menu shadow-sm">
+            <?php foreach ($permission_tree as $node) : ?>
+                <?php if (isset($node['sections'])) : ?>
+                <div class="col-12 mb-3 menu-tree">
+                    <div class="card shadow-sm">
                         <div class="card-header bg-light">
-                            <b class="text-primary"><?= strtoupper($menu) ?></b>
+                            <b class="text-primary"><?= esc(strtoupper($node['name'])) ?></b>
                         </div>
                         <div class="card-body p-2">
-                            <?php foreach ($menu_permissions[$menu] as $row) : ?>
-                                <div class="widget-content p-0 mb-2 border-bottom pb-1">
-                                    <div class="widget-content-wrapper">
-                                        <div class="widget-content-left mr-2">
-                                            <input type="checkbox" name="permissions[<?= $row->id; ?>][]" id="<?= $row->id; ?>" <?= (in_array($row->id, $permissions_users)) ? 'checked' : '' ?> data-toggle="toggle" data-onstyle="success" data-on="Ya" data-off="Tdk" data-size="mini">
+                            <div class="row">
+                                <?php foreach ($node['sections'] as $section => $rows) : ?>
+                                    <div class="col-md-6 col-lg-4 col-xl-3 mb-3 parent-menu" data-menu="<?= esc(strtolower($node['name'] . ' ' . $section), 'attr') ?>">
+                                        <div class="permission-section">
+                                            <div class="permission-section-title"><?= esc($section) ?></div>
+                                            <?php foreach ($rows as $row) : ?>
+                                                <?= view('Group\Views\permission_item', ['row' => $row, 'permissions_users' => $permissions_users]) ?>
+                                            <?php endforeach; ?>
                                         </div>
-                                        <div class="widget-content-left flex2">
-                                            <div class="widget-heading" style="font-size: 0.85rem; line-height: 1.2;">
-                                                <?= str_replace(['-', '_'], ' ', _spec($row->name)); ?>
-                                            </div>
-                                        </div>
-                                        <?php if (is_member('admin')) : ?>
-                                        <div class="widget-content-right">
-                                            <a href="#" data-href="<?= base_url('permission/delete/' . $row->id) ?>" class="btn btn-outline-danger btn-sm py-0 px-1 remove-data" title="Hapus"><i class="fa fa-trash-alt"></i></a>
-                                        </div>
-                                        <?php endif; ?>
                                     </div>
-                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <?php else : ?>
+                <div class="col-md-6 col-lg-4 col-xl-3 mb-3 parent-menu" data-menu="<?= strtolower($node['name']); ?>">
+                    <div class="card card-menu shadow-sm">
+                        <div class="card-header bg-light">
+                            <b class="text-primary"><?= strtoupper($node['name']) ?></b>
+                        </div>
+                        <div class="card-body p-2">
+                            <?php foreach ($node['rows'] as $row) : ?>
+                                <?= view('Group\Views\permission_item', ['row' => $row, 'permissions_users' => $permissions_users]) ?>
                             <?php endforeach; ?>
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
             <?php endforeach; ?>
         </div>
     </form>
@@ -114,6 +146,9 @@
             } else {
                 $(this).removeClass('checkAll').hide();
             }
+        });
+        $('.menu-tree').each(function() {
+            $(this).toggle($(this).find('.parent-menu.checkAll').length > 0);
         });
     }
 

@@ -18,7 +18,7 @@ $request = service('request');
         <div class="page-title-icon">
           <i class="pe-7s-id icon-gradient bg-strong-bliss"></i>
         </div>
-        <div><?= lang('Anggota.action.update') ?> <?= lang('Anggota.module') ?>
+        <div>Tambah Anggota
           <div class="page-title-subheading"><?= lang('Anggota.form.complete_the_data') ?>.</div>
         </div>
       </div>
@@ -99,26 +99,6 @@ $request = service('request');
 </script>
 <!-- end scropt mengambil select2 -->
 <script>
-  Dropzone.autoDiscover = false;
-  var file_image = setDropzone('file_image', 'anggota', '.jpg,.jpeg,.png', 1, 2);
-  file_image.on('addedfile', function() {
-    $('#btn-submit').prop('disabled', true);
-  });
-  file_image.on('sending', function(file, xhr, formData) {
-    formData.append('<?= csrf_token() ?>', $('input[name="<?= csrf_token() ?>"]').val());
-  });
-  file_image.on('success', function(file, response) {
-    if (response && response.csrfHash) {
-      $('input[name="<?= csrf_token() ?>"]').val(response.csrfHash);
-    }
-  });
-  function updateMemberSubmitState() {
-    const hasPendingUploads = file_image.getQueuedFiles().length > 0 || file_image.getUploadingFiles().length > 0;
-    $('#btn-submit').prop('disabled', hasPendingUploads);
-  }
-  file_image.on('complete', updateMemberSubmitState);
-  file_image.on('removedfile', updateMemberSubmitState);
-
   let refreshingCsrfToken = false;
   $('#myform').on('submit', function(event) {
     if (refreshingCsrfToken) {
@@ -132,7 +112,8 @@ $request = service('request');
     }
 
     if (file_image.files.length > 0 && $('#file_image_listed input[type="hidden"]').length === 0) {
-      alert('Upload foto belum berhasil. Ulangi upload sebelum menyimpan.');
+      $('#file_image_feedback').text('Foto belum berhasil diunggah. Hapus file lalu pilih ulang sebelum menyimpan.');
+      document.getElementById('file_image_button').scrollIntoView({ block: 'center' });
       return;
     }
 

@@ -4,7 +4,7 @@ if (!isset($routes)) {
     $routes = \Config\Services::routes(true);
 }
 
-$routes->group('baca-ditempat', ['namespace' => 'ReadOnSpot\Controllers'], function ($subroutes) {
+$routes->group('baca-ditempat', ['namespace' => 'ReadOnSpot\Controllers', 'filter' => 'kiosk'], function ($subroutes) {
     // Main pages
     $subroutes->add('', 'ReadOnSpot::index');
     $subroutes->add('index', 'ReadOnSpot::index');

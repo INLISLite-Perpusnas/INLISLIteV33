@@ -78,9 +78,8 @@ $page_title = ucfirst($segment2 ?: $segment1);
         <link rel="stylesheet" href="<?= base_url('assets/vendors/fontawesome-pro-5/css/all.min.css') ?>">
     <?php endif; ?>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="preload" href="<?= base_url('assets/fonts/inter/inter-latin.woff2') ?>" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="<?= base_url('assets/css/inter.css') ?>">
 
     <style>
         /* Token desain admin (gaya INA Digital) */

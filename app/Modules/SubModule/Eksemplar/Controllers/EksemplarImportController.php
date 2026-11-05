@@ -194,6 +194,7 @@ class EksemplarImportController extends \Base\Controllers\BaseController
                 try {
                     $catalogData     = $this->parseCatalogData($row, $header);
                     $collectionsData = $this->parseCollectionsData($row, $header);
+                    $catalogData['Location_id'] = $collectionsData['Location_id'];
                     $marcFields      = $this->generateBasicMarcFields($catalogData);
 
                     $catalogId = $this->insertCatalog($catalogData);
@@ -362,7 +363,6 @@ class EksemplarImportController extends \Base\Controllers\BaseController
             'CreateDate'          => date('Y-m-d H:i:s'),
             'CreateTerminal'      => $this->request->getIPAddress(),
             'Branch_id'           => user()->branch_id ?? 1,
-            'Location_id'         => 1,
             'IsOPAC'              => 1,
             'IsBNI'               => 1,
             'IsKIN'               => 1,
@@ -382,6 +382,7 @@ class EksemplarImportController extends \Base\Controllers\BaseController
         $headerMap        = array_flip($header);
         $tglPengadaan     = $this->getValue($row, $headerMap, 'TGL_PENGADAAN');
         $tanggalPengadaan = $this->parseDate($tglPengadaan);
+        $locationLibraryId = $this->parseLocationLibraryId($this->getValue($row, $headerMap, 'KODE_LOKASI_PERPUSTAKAAN'));
 
         $data = [
             'NomorBarcode'       => $this->getValue($row, $headerMap, 'NO_BARCODE'),
@@ -394,13 +395,13 @@ class EksemplarImportController extends \Base\Controllers\BaseController
             'CallNumber'         => $this->getValue($row, $headerMap, 'NOMOR_PANGGIL_EKSEMPLAR'),
             'Branch_id'          => user()->branch_id ?? 1,
             'Partner_id'         => $this->parsePartnerId($this->getValue($row, $headerMap, 'NAMA_SUMBER')),
-            'Location_id'        => $this->parseLocationId($this->getValue($row, $headerMap, 'KODE_LOKASI_RUANG')),
+            'Location_id'        => $this->parseLocationId($this->getValue($row, $headerMap, 'KODE_LOKASI_RUANG'), $locationLibraryId),
             'Rule_id'            => $this->parseRuleId($this->getValue($row, $headerMap, 'AKSES')),
             'Category_id'        => $this->parseCategoryId($this->getValue($row, $headerMap, 'KATEGORI')),
             'Media_id'           => $this->parseMediaId($this->getValue($row, $headerMap, 'MEDIA')),
             'Source_id'          => $this->parseSourceId($this->getValue($row, $headerMap, 'JENIS_SUMBER')),
             'Status_id'          => $this->parseStatusId($this->getValue($row, $headerMap, 'KETERSEDIAAN')),
-            'Location_Library_id'=> $this->parseLocationLibraryId($this->getValue($row, $headerMap, 'KODE_LOKASI_PERPUSTAKAAN')),
+            'Location_Library_id'=> $locationLibraryId,
             'CreateBy'           => user()->id ?? 1,
             'CreateDate'         => date('Y-m-d H:i:s'),
             'CreateTerminal'     => $this->request->getIPAddress(),
@@ -541,10 +542,24 @@ class EksemplarImportController extends \Base\Controllers\BaseController
         return 1;
     }
 
-    private function parseLocationId($kodeLokasi)
+    private function parseLocationId($kodeLokasi, $locationLibraryId)
     {
-        $mapping = ['0101' => 466, '0102' => 467, '0103' => 468, '0104' => 469];
-        return $mapping[$kodeLokasi] ?? 466;
+        $kodeLokasi = trim((string) $kodeLokasi);
+        if ($kodeLokasi === '') {
+            throw new \Exception('KODE_LOKASI_RUANG wajib diisi');
+        }
+
+        $location = $this->db->table('locations')
+            ->select('ID')
+            ->where('Code', $kodeLokasi)
+            ->where('LocationLibrary_id', $locationLibraryId)
+            ->get()->getRowArray();
+
+        if (!$location) {
+            throw new \Exception("Kode lokasi ruang {$kodeLokasi} tidak ditemukan untuk perpustakaan ini. Tambahkan lokasi ruang atau perbaiki kode di Excel");
+        }
+
+        return (int) $location['ID'];
     }
 
     private function parseRuleId($akses)
@@ -579,7 +594,20 @@ class EksemplarImportController extends \Base\Controllers\BaseController
 
     private function parseLocationLibraryId($kodeLokasiPerpustakaan)
     {
-        $mapping = ['Pusat' => 1, 'Cabang1' => 2, 'Cabang2' => 3];
-        return $mapping[$kodeLokasiPerpustakaan] ?? 1;
+        $kodeLokasiPerpustakaan = trim((string) $kodeLokasiPerpustakaan);
+        if ($kodeLokasiPerpustakaan === '') {
+            throw new \Exception('KODE_LOKASI_PERPUSTAKAAN wajib diisi');
+        }
+
+        $library = $this->db->table('location_library')
+            ->select('ID')
+            ->where('Code', $kodeLokasiPerpustakaan)
+            ->get()->getRowArray();
+
+        if (!$library) {
+            throw new \Exception("Kode lokasi perpustakaan {$kodeLokasiPerpustakaan} tidak ditemukan. Tambahkan lokasi perpustakaan atau perbaiki kode di Excel");
+        }
+
+        return (int) $library['ID'];
     }
 }

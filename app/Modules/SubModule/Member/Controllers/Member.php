@@ -19,7 +19,7 @@ class Member extends \Base\Controllers\BaseController
         $this->language->setLocale('id');
 
         $this->memberModel = new \Member\Models\MemberModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/member/';
 
         if (!file_exists($this->uploadPath)) {

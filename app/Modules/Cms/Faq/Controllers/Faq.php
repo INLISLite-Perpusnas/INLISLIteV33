@@ -20,7 +20,7 @@ class Faq extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->faqModel = new \Faq\Models\FaqModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/faq/';
 
         if (!file_exists($this->uploadPath)) {
@@ -80,8 +80,8 @@ class Faq extends \Base\Controllers\BaseController
             if (count($files)) {
                 $listed_file = array();
                 foreach ($files as $uuid => $name) {
-                    if (file_exists($this->uploadPath . $name)) {
-                        $file = new File($this->uploadPath . $name);
+                    if (is_file($this->uploadPath . basename($name))) {
+                        $file = new File($this->uploadPath . basename($name));
                         $newFileName = date('Ymd') . '_' . $file->getRandomName();
                         $file->move($this->modulePath, $newFileName);
                         $listed_file[] = $newFileName;
@@ -96,8 +96,8 @@ class Faq extends \Base\Controllers\BaseController
             if (count($files)) {
                 $listed_file = array();
                 foreach ($files as $uuid => $name) {
-                    if (file_exists($this->uploadPath . $name)) {
-                        $file = new File($this->uploadPath . $name);
+                    if (is_file($this->uploadPath . basename($name))) {
+                        $file = new File($this->uploadPath . basename($name));
                         $newFileName = date('Ymd') . '_' . $file->getRandomName();
                         $file->move($this->modulePath, $newFileName);
                         $listed_file[] = $newFileName;
@@ -164,11 +164,11 @@ class Faq extends \Base\Controllers\BaseController
                 if (count($files)) {
                     $listed_file = array();
                     foreach ($files as $uuid => $name) {
-                        if (file_exists($this->modulePath . $name)) {
-                            $listed_file[] = $name;
+                        if (is_file($this->modulePath . basename($name))) {
+                            $listed_file[] = basename($name);
                         } else {
-                            if (file_exists($this->uploadPath . $name)) {
-                                $file = new File($this->uploadPath . $name);
+                            if (is_file($this->uploadPath . basename($name))) {
+                                $file = new File($this->uploadPath . basename($name));
                                 $newFileName = date('Ymd') . '_' . $file->getRandomName();
                                 $file->move($this->modulePath, $newFileName);
                                 $listed_file[] = $newFileName;
@@ -182,11 +182,11 @@ class Faq extends \Base\Controllers\BaseController
                 if (count($files)) {
                     $listed_file = array();
                     foreach ($files as $uuid => $name) {
-                        if (file_exists($this->modulePath . $name)) {
-                            $listed_file[] = $name;
+                        if (is_file($this->modulePath . basename($name))) {
+                            $listed_file[] = basename($name);
                         } else {
-                            if (file_exists($this->uploadPath . $name)) {
-                                $file = new File($this->uploadPath . $name);
+                            if (is_file($this->uploadPath . basename($name))) {
+                                $file = new File($this->uploadPath . basename($name));
                                 $newFileName = date('Ymd') . '_' . $file->getRandomName();
                                 $file->move($this->modulePath, $newFileName);
                                 $listed_file[] = $newFileName;

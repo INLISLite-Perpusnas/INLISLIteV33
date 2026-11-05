@@ -24,6 +24,9 @@ php_value post_max_size 16M
 	RewriteCond %{THE_REQUEST} view-source: [NC]
 	RewriteRule ^ - [F,L]
 
+	# Folder upload hanya untuk file statis: jangan jalankan skrip
+	RewriteRule ^uploads/.*\.(php[0-9]*|pht|phtml?|phar|phps|shtml?|cgi|pl|py|sh)(/|$) - [F,L,NC]
+
 	# Redirect Trailing Slashes...
 	RewriteCond %{REQUEST_FILENAME} !-d
 	RewriteCond %{REQUEST_URI} (.+)/$

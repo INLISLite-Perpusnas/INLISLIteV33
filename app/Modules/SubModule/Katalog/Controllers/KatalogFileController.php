@@ -33,6 +33,13 @@ class KatalogFileController extends \Base\Controllers\BaseController
             return $this->response->setStatusCode(404)->setBody('File not found');
         }
 
+        if (!$this->canReadCatalogFile($file)) {
+            session()->remove('one_key');
+            return redirect()
+                ->to(base_url('opac/detail/' . $file->Catalog_id))
+                ->with('digital_error', 'Koleksi digital ini hanya bisa dibaca selama masa peminjaman aktif. Silakan pinjam melalui tombol Baca PDF.');
+        }
+
         return view('Katalog\Views\slug\pdf_viewer', [
             'fileId'   => $id,
             'fileName' => $file->FileURL,
@@ -61,10 +68,48 @@ class KatalogFileController extends \Base\Controllers\BaseController
             return $this->response->setStatusCode(404)->setBody('File not found');
         }
 
+        if (!$this->canReadCatalogFile($file)) {
+            return $this->response->setStatusCode(403)->setBody('Peminjaman digital tidak aktif');
+        }
+
         return $this->_streamDecryptedPdf(
             $this->modulePath . $file->FileURL,
             $file->FileURL
         );
+    }
+
+    /**
+     * Akun yang terhubung ke anggota hanya boleh membuka file katalog OPAC, dan bila katalog punya
+     * eksemplar DRM harus ada pinjaman aktif miliknya, sama seperti Opac::bacaDigital(). Staf tidak dibatasi.
+     */
+    private function canReadCatalogFile($file): bool
+    {
+        $db   = db_connect();
+        $user = $db->table('users')->select('username')->where('id', login_id())->get()->getRow();
+        $member = $user ? $db->table('members')->select('ID')->where('MemberNo', $user->username)->get()->getRow() : null;
+        if (!$member) {
+            return true;
+        }
+
+        $catalog = $db->table('catalogs')->select('IsOPAC')->where('ID', $file->Catalog_id)->get()->getRow();
+        if (!$catalog || (int) $catalog->IsOPAC !== 1) {
+            return false;
+        }
+
+        $collectionIds = array_column(
+            $db->table('collections')->select('ID')->where('Catalog_id', $file->Catalog_id)->where('ISDRM', 1)->get()->getResultArray(),
+            'ID'
+        );
+        if (!$collectionIds) {
+            return true;
+        }
+
+        return $db->table('collectionloanitems')
+            ->whereIn('Collection_id', $collectionIds)
+            ->where('member_id', $member->ID)
+            ->where('LoanStatus', 'Loan')
+            ->where('DueDate >=', date('Y-m-d H:i:s'))
+            ->countAllResults() > 0;
     }
 
     // ----------------------------------------------------------------

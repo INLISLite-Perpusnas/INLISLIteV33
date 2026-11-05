@@ -155,6 +155,7 @@ class Eksemplar extends \Base\Controllers\BaseResourceController
     // Raw, paginated data for the lightweight list. Keep the DataTables
     // response below for the catalog detail and quarantine screens.
     if ($this->request->getGet('lite') === '1') {
+        $builder->where('a.IsKeranjang', $this->request->getGet('keranjang') === '1' ? 1 : 0);
         $search = trim((string) $this->request->getGet('search'));
         if ($search !== '') {
             $builder->groupStart()

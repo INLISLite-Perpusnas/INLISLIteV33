@@ -62,6 +62,16 @@ $routes->group('karantina-eksemplar', ['namespace' => 'Eksemplar\Controllers'], 
 });
 
 // -----------------------------------------------------------------------
+// KERANJANG EKSEMPLAR (collections.IsKeranjang = 1)
+// -----------------------------------------------------------------------
+$routes->group('keranjang-eksemplar', ['namespace' => 'Eksemplar\Controllers'], function ($subroutes) {
+    $subroutes->add('', 'EksemplarController::keranjang');
+    $subroutes->add('index', 'EksemplarController::keranjang');
+    $subroutes->post('masukkan', 'EksemplarController::masukkanKeranjang', ['filter' => 'csrf']);
+    $subroutes->post('kembalikan', 'EksemplarController::kembalikanKeranjang', ['filter' => 'csrf']);
+});
+
+// -----------------------------------------------------------------------
 // KARDEKS TERBITAN BERKALA
 // -----------------------------------------------------------------------
 $routes->group('kardeks-terbitan-berkala', ['namespace' => 'Eksemplar\Controllers'], function ($subroutes) {

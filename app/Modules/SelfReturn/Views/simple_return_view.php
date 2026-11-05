@@ -1,268 +1,35 @@
 <?= $this->extend('App\Views\layout\opac\layout'); ?>
 
 <?= $this->section('content') ?>
-<style>
-    body {
-        background: #f4f7f6; /* Mengganti putih polos ke abu-abu sangat muda agar card lebih pop-out */
-        min-height: 100vh;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        padding-top: 90px;
-    }
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-selfservice.css') ?>?v=<?= @filemtime(FCPATH . 'assets/css/ina-selfservice.css') ?>">
 
-    .main-container {
-        min-height: 50vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-    }
-
-    .return-card {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 20px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        max-width: 800px;
-        width: 100%;
-        overflow: hidden;
-    }
-
-    .card-header {
-        /* Menggunakan warna #1B3878 dengan gradasi sedikit lebih terang */
-        background: linear-gradient(135deg, #1B3878, #264b9a);
-        color: white;
-        padding: 30px;
-        text-align: center;
-        border: none;
-    }
-
-    .card-header h2 {
-        margin: 0;
-        font-weight: 600;
-        font-size: 2rem;
-    }
-
-    .card-header p {
-        margin: 10px 0 0 0;
-        opacity: 0.9;
-    }
-
-    .card-body {
-        padding: 40px;
-    }
-
-    .scanner-section {
-        text-align: center;
-        margin-bottom: 40px;
-    }
-
-    .barcode-input {
-        position: relative;
-        margin-bottom: 20px;
-    }
-
-    .barcode-input input {
-        border: 2px solid #e0e0e0;
-        border-radius: 15px;
-        padding: 15px 50px 15px 20px;
-        font-size: 1.1rem;
-        width: 100%;
-        transition: all 0.3s ease;
-    }
-
-    .barcode-input input:focus {
-        border-color: #1B3878;
-        box-shadow: 0 0 0 0.2rem rgba(27, 56, 120, 0.25);
-    }
-
-    .barcode-input .scan-icon {
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #1B3878; /* Ikon mengikuti warna tema */
-        font-size: 1.5rem;
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, #1B3878, #264b9a);
-        border: none;
-        border-radius: 15px;
-        padding: 12px 30px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-primary:hover {
-        background: linear-gradient(135deg, #264b9a, #1B3878);
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(27, 56, 120, 0.4);
-    }
-
-    .btn-secondary {
-        border-radius: 15px;
-        padding: 12px 30px;
-        font-weight: 600;
-        border-color: #1B3878;
-        color: #1B3878;
-        background: transparent;
-    }
-
-    .btn-secondary:hover {
-        background: #1B3878;
-        color: white;
-    }
-
-    .book-info {
-        background: #f8f9fa;
-        border-radius: 15px;
-        padding: 25px;
-        margin: 20px 0;
-        border-left: 5px solid #1B3878; /* Border samping mengikuti tema */
-    }
-
-    .book-info h5 {
-        color: #1B3878;
-        margin-bottom: 15px;
-    }
-
-    .book-detail {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-        padding: 5px 0;
-    }
-
-    .book-detail strong {
-        color: #34495e;
-    }
-
-    .book-item-block {
-        position: relative;
-        padding-right: 45px;
-    }
-
-    .book-item-block + .book-item-block {
-        border-top: 1px dashed #dee2e6;
-        margin-top: 15px;
-        padding-top: 15px;
-    }
-
-    .btn-hapus-item {
-        position: absolute;
-        right: 0;
-        top: 5px;
-        border-radius: 10px;
-    }
-
-    .status-badge {
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 0.9rem;
-        font-weight: 600;
-    }
-
-    .status-success {
-        background: #d1e7ff; /* Biru muda untuk sukses agar match */
-        color: #1B3878;
-    }
-
-    .status-warning {
-        background: #fff3cd;
-        color: #856404;
-    }
-
-    .status-danger {
-        background: #f8d7da;
-        color: #721c24;
-    }
-
-    .history-section {
-        margin-top: 40px;
-        padding-top: 30px;
-        border-top: 1px solid #e0e0e0;
-    }
-
-    .history-item {
-        background: white;
-        border-radius: 10px;
-        padding: 20px;
-        margin-bottom: 15px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        border-left: 4px solid #1B3878;
-    }
-
-    .loading {
-        text-align: center;
-        padding: 20px;
-    }
-
-    .loading i {
-        font-size: 2rem;
-        color: #1B3878;
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-
-    .btn-outline-primary {
-        color: #1B3878;
-        border-color: #1B3878;
-    }
-
-    .btn-outline-primary:hover {
-        background-color: #1B3878;
-        border-color: #1B3878;
-        color: white;
-    }
-
-    .alert-success {
-        background: linear-gradient(135deg, #1B3878, #264b9a);
-        color: #ffffff;
-        border: none;
-    }
-
-    .fade-in {
-        animation: fadeIn .3s ease-out;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(6px); }
-        to { opacity: 1; transform: none; }
-    }
-</style>
-
+<div class="ss-ina">
 <div class="main-container">
-        <div class="return-card">
-            <div class="card-header">
-                <h2><i class="fas fa-book-open"></i> Pengembalian Buku Mandiri</h2>
-                <p>Sistem Pengembalian Buku Mandiri</p>
-            </div>
+        <div class="text-center mb-4">
+            <h1 class="ss-page-title">Pengembalian Mandiri</h1>
+            <p class="ss-page-subtitle">Sistem pengembalian buku mandiri</p>
+        </div>
 
+        <div class="return-card">
             <div class="card-body">
                 <!-- Scanner Section -->
                 <div class="scanner-section">
-                    <h4 class="mb-4">Scan atau Masukkan Barcode Buku</h4>
-
-                    <div class="barcode-input">
-                        <input type="text" id="barcodeInput" class="form-control"
-                               placeholder="Masukkan atau scan barcode buku..."
-                               autocomplete="off" autofocus>
-                        <i class="fas fa-barcode scan-icon"></i>
+                    <div class="ss-field">
+                        <label for="barcodeInput">Barcode buku</label>
+                        <div class="barcode-input">
+                            <input type="text" id="barcodeInput" class="form-control"
+                                   placeholder="Scan atau ketik barcode"
+                                   autocomplete="off" autofocus>
+                            <i class="fas fa-barcode scan-icon" aria-hidden="true"></i>
+                        </div>
                     </div>
 
-                    <div class="d-flex gap-3 justify-content-center">
-                        <button type="button" id="checkBookBtn" class="btn btn-secondary">
-                            <i class="fas fa-search"></i> Cek Buku
+                    <div class="ss-actions">
+                        <button type="button" id="checkBookBtn" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-search"></i> Cek buku
                         </button>
-                        <button type="button" id="returnBookBtn" class="btn btn-primary">
-                            <i class="fas fa-undo"></i> Kembalikan Buku
+                        <button type="button" id="returnBookBtn" class="btn btn-primary btn-lg">
+                            <i class="fas fa-undo"></i> Kembalikan buku
                         </button>
                     </div>
                 </div>
@@ -279,7 +46,7 @@
                 <!-- Book Info Section: buku dalam satu transaksi peminjaman yang siap dikembalikan -->
                 <div id="bookInfoSection" class="d-none">
                     <div class="book-info fade-in">
-                        <h5><i class="fas fa-book"></i> Informasi Buku</h5>
+                        <h5><i class="fas fa-book text-primary"></i> Informasi buku</h5>
                         <div id="bookDetails"></div>
                     </div>
                 </div>
@@ -287,7 +54,7 @@
                 <!-- Return History Section -->
                 <div class="history-section">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5><i class="fas fa-history"></i> Riwayat Pengembalian Terbaru</h5>
+                        <h5 class="mb-0"><i class="fas fa-history text-primary"></i> Riwayat pengembalian terbaru</h5>
                         <button type="button" id="refreshHistoryBtn" class="btn btn-sm btn-outline-primary">
                             <i class="fas fa-sync"></i> Refresh
                         </button>
@@ -302,6 +69,7 @@
             </div>
         </div>
     </div>
+</div>
 
 
   <!-- Bootstrap JS -->
@@ -410,11 +178,11 @@
                 details.innerHTML = this.booksToReturn.map(book => {
                     const statusBadge = book.is_overdue
                         ? `<span class="status-badge status-danger">Terlambat ${book.days_overdue} hari</span>`
-                        : `<span class="status-badge status-warning">Sedang Dipinjam</span>`;
+                        : `<span class="status-badge status-warning">Sedang dipinjam</span>`;
 
                     return `
                         <div class="book-item-block fade-in">
-                            <button type="button" class="btn btn-outline-danger btn-sm btn-hapus-item"
+                            <button type="button" class="btn btn-outline-danger btn-sm btn-hapus-item" aria-label="Hapus buku"
                                     onclick="selfReturnApp.removeBookItem('${book.id}')">
                                 <i class="fas fa-trash"></i>
                             </button>
@@ -431,7 +199,7 @@
                                 <span>${book.barcode}</span>
                             </div>
                             <div class="book-detail">
-                                <span><strong>Jatuh Tempo:</strong></span>
+                                <span><strong>Jatuh tempo:</strong></span>
                                 <span>${this.formatDate(book.due_date)}</span>
                             </div>
                             <div class="book-detail">
@@ -499,13 +267,13 @@
                 }
 
                 Swal.fire({
-                    title: 'Proses Pengembalian?',
+                    title: 'Proses pengembalian?',
                     text: `${this.booksToReturn.length} buku akan dikembalikan.`,
                     icon: 'question',
                     showCancelButton: true,
-                    confirmButtonColor: '#28a745',
+                    confirmButtonColor: '#2d659e',
                     cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Ya, Proses',
+                    confirmButtonText: 'Ya, proses',
                     cancelButtonText: 'Batal',
                 }).then((result) => {
                     if (result.value) {

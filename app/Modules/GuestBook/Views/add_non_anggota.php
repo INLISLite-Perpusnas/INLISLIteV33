@@ -563,12 +563,6 @@ function checkToastrMessages() {
 		
 		if (toastrMsg && toastrType) {
 			showCustomNotification(toastrMsg, toastrType);
-			
-			// Clear the messages after showing
-			<?php 
-			unset_message('toastr_msg'); 
-			unset_message('toastr_type'); 
-			?>
 		}
 	<?php endif; ?>
 }

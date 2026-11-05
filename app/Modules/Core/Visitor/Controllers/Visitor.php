@@ -21,7 +21,7 @@ class Visitor extends \Base\Controllers\BaseController
         $this->language->setLocale('id');
 
         $this->visitorModel = new \Visitor\Models\VisitorModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/visitor/';
 
         if (!file_exists($this->uploadPath)) {
@@ -95,8 +95,8 @@ class Visitor extends \Base\Controllers\BaseController
             if (count($files)) {
                 $listed_file = [];
                 foreach ($files as $uuid => $name) {
-                    if (file_exists($this->uploadPath . $name)) {
-                        $file = new File($this->uploadPath . $name);
+                    if (is_file($this->uploadPath . basename($name))) {
+                        $file = new File($this->uploadPath . basename($name));
                         $newFileName = $file->getRandomName();
                         $file->move($this->modulePath, $newFileName);
                         $listed_file[] = $newFileName;
@@ -116,8 +116,8 @@ class Visitor extends \Base\Controllers\BaseController
             if (count($files)) {
                 $listed_file = [];
                 foreach ($files as $uuid => $name) {
-                    if (file_exists($this->uploadPath . $name)) {
-                        $file = new File($this->uploadPath . $name);
+                    if (is_file($this->uploadPath . basename($name))) {
+                        $file = new File($this->uploadPath . basename($name));
                         $newFileName = $file->getRandomName();
                         $file->move($this->modulePath, $newFileName);
                         $listed_file[] = $newFileName;
@@ -198,11 +198,11 @@ class Visitor extends \Base\Controllers\BaseController
                 if (count($files)) {
                     $listed_file = [];
                     foreach ($files as $uuid => $name) {
-                        if (file_exists($this->modulePath . $name)) {
-                            $listed_file[] = $name;
+                        if (is_file($this->modulePath . basename($name))) {
+                            $listed_file[] = basename($name);
                         } else {
-                            if (file_exists($this->uploadPath . $name)) {
-                                $file = new File($this->uploadPath . $name);
+                            if (is_file($this->uploadPath . basename($name))) {
+                                $file = new File($this->uploadPath . basename($name));
                                 $newFileName = $file->getRandomName();
                                 $file->move($this->modulePath, $newFileName);
                                 $listed_file[] = $newFileName;
@@ -216,11 +216,11 @@ class Visitor extends \Base\Controllers\BaseController
                 if (count($files)) {
                     $listed_file = [];
                     foreach ($files as $uuid => $name) {
-                        if (file_exists($this->modulePath . $name)) {
-                            $listed_file[] = $name;
+                        if (is_file($this->modulePath . basename($name))) {
+                            $listed_file[] = basename($name);
                         } else {
-                            if (file_exists($this->uploadPath . $name)) {
-                                $file = new File($this->uploadPath . $name);
+                            if (is_file($this->uploadPath . basename($name))) {
+                                $file = new File($this->uploadPath . basename($name));
                                 $newFileName = $file->getRandomName();
                                 $file->move($this->modulePath, $newFileName);
                                 $listed_file[] = $newFileName;

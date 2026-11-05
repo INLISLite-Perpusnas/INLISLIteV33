@@ -2,6 +2,8 @@
 
 namespace SelfReturn\Controllers;
 
+use KiosBukuTamu\Libraries\KioskAuth;
+
 class SelfReturn extends \App\Controllers\BaseController
 {
     protected $db;
@@ -28,7 +30,7 @@ class SelfReturn extends \App\Controllers\BaseController
         $this->data['nomorBarcode'] = $nomorBarcode;
 
         // Get location data from cookie
-        $locationId = $this->request->getCookie('Location_id');
+        $locationId = KioskAuth::requestLocationId($this->request);
         if (!$locationId) {
             return redirect()->to('buku-tamu/lokasi');
         }

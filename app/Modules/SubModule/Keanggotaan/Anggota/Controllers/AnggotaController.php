@@ -99,7 +99,7 @@ class AnggotaController extends \Base\Controllers\BaseController
             return null;
         }
 
-        $path = $this->uploadPath . $name;
+        $path = $this->uploadPath . basename($name);
         $extension = $this->photoExtension($path);
         if ($extension === null || strtolower(pathinfo($name, PATHINFO_EXTENSION)) !== $extension) {
             return null;
@@ -315,11 +315,10 @@ class AnggotaController extends \Base\Controllers\BaseController
             ],
             'Email' => [
                 'label' => 'Email',
-                'rules' => 'required|valid_email|is_unique[users.Email]',
+                'rules' => 'required|valid_email',
                 'errors' => [
                     'valid_email' => 'Masukan email yang benar',
                     'required' => 'Email Tidak boleh Kosong',
-                    'is_unique' => 'Email ini sudah terdaftar.',
                 ],
             ],
             'JenisAnggota_id' => [

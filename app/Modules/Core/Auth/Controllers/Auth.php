@@ -166,7 +166,6 @@ public function login()
 			
 			// Set session data
 			session()->set('username', $username);
-			session()->set('password', $password);
 			session()->set('token', $token);
 			session()->set('logged_in', $user->id);
 			session()->set('branch_id', $user->branch_id ?? 0);

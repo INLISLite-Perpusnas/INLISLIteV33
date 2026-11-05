@@ -2,6 +2,8 @@
 
 namespace SelfLoan\Controllers;
 
+use KiosBukuTamu\Libraries\KioskAuth;
+
 class SelfLoan extends \App\Controllers\BaseController
 {
     protected $db;
@@ -41,7 +43,7 @@ class SelfLoan extends \App\Controllers\BaseController
         $this->data['successMessage'] = '';
         
         // Get location data from cookie
-        $locationId = $this->request->getCookie('Location_id');
+        $locationId = KioskAuth::requestLocationId($this->request);
         if (!$locationId) {
             return redirect()->to('buku-tamu/lokasi');
         }
@@ -115,7 +117,7 @@ class SelfLoan extends \App\Controllers\BaseController
         }
         
         // Get current location from cookie
-        $locationId = $this->request->getCookie('Location_id');
+        $locationId = KioskAuth::requestLocationId($this->request);
         
         // Check member location authorization
         $member_loc = $this->db->table('memberloanauthorizelocation')
@@ -566,7 +568,7 @@ class SelfLoan extends \App\Controllers\BaseController
             $collection_loan_id = get_pad_number($increment, $todayPrefix, 5);
             $loanDate = date('Y-m-d H:i:s');
             $dueDate = date('Y-m-d H:i:s', strtotime("+{$loanDays} days"));
-            $locationId = $this->request->getCookie('Location_id') ?: 1;
+            $locationId = KioskAuth::requestLocationId($this->request) ?: 1;
             
             // Create collection loan record
             $loanData = [

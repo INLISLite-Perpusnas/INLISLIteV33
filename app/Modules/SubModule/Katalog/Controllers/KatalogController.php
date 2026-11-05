@@ -34,6 +34,67 @@ class KatalogController extends \Base\Controllers\BaseController
         echo view('Katalog\Views\list', $data);
     }
 
+    /** Daftar katalog yang dikunci pada jenis bahan Artikel. */
+    public function daftarArtikel()
+    {
+        $worksheet = $this->worksheetModel->select('ID, Name')->where('Name', 'Artikel')->first();
+        if (!$worksheet) {
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Jenis bahan tidak ditemukan');
+            $this->session->setFlashdata('swal_text', 'Jenis bahan Artikel belum tersedia.');
+            return redirect()->to(base_url('katalog'));
+        }
+
+        $data['title']                = 'Daftar Artikel';
+        $data['meta_description']     = 'Daftar katalog dengan jenis bahan Artikel.';
+        $data['is_catalog_list_page'] = true;
+        $data['locked_worksheet']     = $worksheet;
+        echo view('Katalog\Views\list', $data);
+    }
+
+    /** Daftar katalog yang ada di keranjang (catalogs.IsKeranjang = 1). */
+    public function keranjang()
+    {
+        $data['title']                = 'Keranjang Katalog';
+        $data['meta_description']     = 'Daftar katalog yang ada di keranjang.';
+        $data['is_catalog_list_page'] = true;
+        $data['is_keranjang']         = true;
+        $data['worksheets']           = $this->worksheetModel
+            ->select('ID, Name')
+            ->orderBy('NoUrut')
+            ->findAll();
+        echo view('Katalog\Views\list', $data);
+    }
+
+    public function masukkanKeranjang()
+    {
+        return $this->setKeranjang(1, 'Katalog berhasil dimasukkan ke keranjang');
+    }
+
+    public function kembalikanKeranjang()
+    {
+        return $this->setKeranjang(0, 'Katalog berhasil dikembalikan ke daftar katalog');
+    }
+
+    private function setKeranjang(int $value, string $message)
+    {
+        $IDs = array_values(array_filter(array_map('intval', (array) $this->request->getPost('ID'))));
+
+        if ($IDs) {
+            db_connect()->table('catalogs')->whereIn('ID', $IDs)->update(['IsKeranjang' => $value]);
+
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', $message);
+        } else {
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Pilih katalog terlebih dahulu');
+        }
+
+        return redirect()->back();
+    }
+
     public function karantina()
     {
         $data['title'] = 'Karantina Katalog';
@@ -46,7 +107,7 @@ class KatalogController extends \Base\Controllers\BaseController
 
     /**
      * Unduh ruas MARC (catalog_ruas) katalog sebagai tabel HTML berekstensi .xls.
-     * ID[] = katalog terpilih; tanpa ID[] = semua katalog pada daftar (karantina=1 untuk karantina).
+     * ID[] = katalog terpilih; tanpa ID[] = semua katalog pada daftar (karantina=1 untuk karantina, keranjang=1 untuk keranjang).
      */
     public function export_data_tag()
     {
@@ -59,12 +120,19 @@ class KatalogController extends \Base\Controllers\BaseController
         $db  = db_connect();
         $ids = array_values(array_filter(array_map('intval', (array) $this->request->getGet('ID'))));
         $karantina = $this->request->getGet('karantina') ? 1 : 0;
+        $worksheetId = (int) $this->request->getGet('worksheet_id');
 
         $catalogs = $db->table('catalogs')->select('ID, Title')->orderBy('ID');
         if ($ids) {
             $catalogs->whereIn('ID', $ids);
         } else {
             $catalogs->where('IsQUARANTINE', $karantina);
+            if (!$karantina) {
+                $catalogs->where('IsKeranjang', $this->request->getGet('keranjang') ? 1 : 0);
+            }
+            if ($worksheetId > 0) {
+                $catalogs->where('Worksheet_id', $worksheetId);
+            }
         }
         $catalogs = $catalogs->get()->getResultArray();
 

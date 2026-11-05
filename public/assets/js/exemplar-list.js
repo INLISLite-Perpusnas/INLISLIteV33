@@ -14,6 +14,11 @@ document.addEventListener('DOMContentLoaded', function () {
     let roomRequest;
     let searchTimer;
 
+    // Halaman daftar memuat SweetAlert2 v8, jadi jenis ikon memakai opsi `type`
+    function notify(text, type) {
+        return Swal.fire({ type: type || 'warning', text: text });
+    }
+
     function cell(row, value, className) {
         const td = document.createElement('td');
         td.className = className || '';
@@ -137,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function () {
         info.textContent = 'Memuat data eksemplar...';
         byId('exemplar_retry').hidden = true;
         const params = new URLSearchParams({ lite: '1', page: state.page, length: state.length, search: state.search, sort: state.sort, direction: state.direction,
-            location_library_id: library.value, location_id: room.value, media_id: media.value });
+            location_library_id: library.value, location_id: room.value, media_id: media.value, keranjang: config.keranjang ? '1' : '0' });
         try {
             const payload = await json(config.apiUrl + '?' + params, { signal: request.signal });
             if (request !== activeRequest) return;
@@ -230,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function () {
             info.textContent = payload.message || 'Status OPAC berhasil disimpan.';
         } catch (error) {
             input.checked = !nextValue;
-            window.alert(error.message);
+            notify(error.message, 'error');
         } finally { input.disabled = false; }
     });
     tbody.addEventListener('click', async function (event) {
@@ -269,17 +274,20 @@ document.addEventListener('DOMContentLoaded', function () {
         const paper = byId('paper_size').value;
         const model = byId('label_model').value;
         const ids = [...tbody.querySelectorAll('.check:checked')].map(input => input.value);
-        if (!action) return window.alert('Silakan pilih aksi terlebih dahulu!');
-        if (action === 'cetak-label' && !paper) return window.alert('Silakan pilih jenis kertas terlebih dahulu!');
-        if (action === 'cetak-label' && !model) return window.alert('Silakan pilih model label terlebih dahulu!');
-        if (!ids.length) return window.alert('Silakan pilih minimal satu eksemplar!');
+        if (!action) return notify('Silakan pilih aksi terlebih dahulu!');
+        if (action === 'cetak-label' && !paper) return notify('Silakan pilih jenis kertas terlebih dahulu!');
+        if (action === 'cetak-label' && !model) return notify('Silakan pilih model label terlebih dahulu!');
+        if (!ids.length) return notify('Silakan pilih minimal satu eksemplar!');
         const url = config.actions[action];
         if (!url) return;
+        const fields = { eksemplar_ids: ids.join(','), [config.csrfName]: config.csrfHash };
+        if (action === 'cetak-label') Object.assign(fields, { eksemplar_tpl: model, paper_size: paper, output_format: byId('output_format').value || 'pdf' });
+        submitForm(url, fields);
+    });
+    function submitForm(url, fields) {
         const form = document.createElement('form');
         form.method = 'post';
         form.action = url;
-        const fields = { eksemplar_ids: ids.join(','), [config.csrfName]: config.csrfHash };
-        if (action === 'cetak-label') Object.assign(fields, { eksemplar_tpl: model, paper_size: paper, output_format: byId('output_format').value || 'pdf' });
         Object.entries(fields).forEach(function ([name, value]) {
             const input = document.createElement('input');
             input.type = 'hidden'; input.name = name; input.value = value;
@@ -287,7 +295,17 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         document.body.appendChild(form);
         form.submit();
-    });
+    }
+    const kembalikan = byId('kembalikan_keranjang');
+    if (kembalikan) {
+        kembalikan.addEventListener('click', function () {
+            const ids = [...tbody.querySelectorAll('.check:checked')].map(input => input.value);
+            if (!ids.length) return notify('Silakan pilih minimal satu eksemplar!');
+            Swal.fire({ type: 'question', text: 'Kembalikan eksemplar yang dipilih ke daftar eksemplar?', showCancelButton: true, confirmButtonText: 'Ya', cancelButtonText: 'Batal' }).then(function (result) {
+                if (result.value) submitForm(config.kembalikanUrl, { eksemplar_ids: ids.join(','), [config.csrfName]: config.csrfHash });
+            });
+        });
+    }
 
     loadRows();
     Promise.allSettled([loadOptions(library, config.librariesUrl), loadOptions(media, config.mediaUrl)]).then(function (results) {

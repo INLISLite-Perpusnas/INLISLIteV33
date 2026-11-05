@@ -15,7 +15,7 @@ class JenisPendidikan extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->jenispendidikanModel = new \JenisPendidikan\Models\JenisPendidikanModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/jenispendidikan/';
         helper('reference');
         if (!file_exists($this->uploadPath)) {

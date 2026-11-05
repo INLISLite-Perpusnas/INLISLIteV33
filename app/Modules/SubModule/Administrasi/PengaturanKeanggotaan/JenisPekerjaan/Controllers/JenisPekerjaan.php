@@ -15,7 +15,7 @@ class JenisPekerjaan extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->jenispekerjaanModel = new \JenisPekerjaan\Models\JenisPekerjaanModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/jenispekerjaan/';
         helper('reference');
         if (!file_exists($this->uploadPath)) {

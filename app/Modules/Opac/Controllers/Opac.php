@@ -68,6 +68,7 @@ class Opac extends \Base\Controllers\BaseController
     $this->data['opac_banners'] = $this->getOpacBanners();
     $this->data['worksheets']   = $this->getWorksheets();
     $this->logOpacSearch();
+    $this->data['search_history'] = $this->getSearchHistory();
     $this->data['worksheet_id'] = $this->request->getVar('Worksheet_id') ?? '';
     $this->data['semantic_enabled'] = SemanticSearch::enabled();
     $endTime = microtime(true);
@@ -78,7 +79,7 @@ class Opac extends \Base\Controllers\BaseController
 private function logOpacSearch(): void
 {
     $params = (array) $this->request->getGet();
-    $fields = ['search', 'Author', 'Publisher', 'Subject', 'PublishYear', 'PublishLocation', 'Worksheet_id'];
+    $fields = ['search', 'search2', 'Author', 'Publisher', 'Subject', 'PublishYear', 'PublishLocation', 'Worksheet_id'];
     if (isset($params['page']) || !array_intersect($fields, array_keys($params))
         || strtoupper((string) get_setting_parameter('opac_log')) !== 'TRUE') {
         return;
@@ -90,7 +91,7 @@ private function logOpacSearch(): void
         }
 
         $terms = [];
-        foreach (['search' => 'Kata kunci', 'Author' => 'Pengarang', 'Publisher' => 'Penerbit', 'Subject' => 'Subjek', 'PublishYear' => 'Tahun', 'PublishLocation' => 'Kota terbit'] as $key => $label) {
+        foreach (['search' => 'Kata kunci', 'search2' => 'Kata kunci kedua', 'Author' => 'Pengarang', 'Publisher' => 'Penerbit', 'Subject' => 'Subjek', 'PublishYear' => 'Tahun', 'PublishLocation' => 'Kota terbit'] as $key => $label) {
             if (isset($params[$key]) && is_scalar($params[$key]) && trim((string) $params[$key]) !== '') {
                 $terms[] = $label . ': ' . trim((string) $params[$key]);
             }
@@ -119,9 +120,62 @@ private function logOpacSearch(): void
             'jenis_bahan' => mb_substr($worksheetName, 0, 150),
             'url' => mb_substr((string) $this->request->getUri(), 0, 2048),
         ]);
+
+        // Pengunjung tanpa login dikenali dari session, bukan IP yang bisa dipakai bersama
+        $ids = (array) session()->get('opac_search_log_ids');
+        $ids[] = (int) $this->db->insertID();
+        session()->set('opac_search_log_ids', array_slice($ids, -20));
     } catch (\Throwable $e) {
         log_message('error', 'Gagal menyimpan log pencarian OPAC.');
     }
+}
+
+/**
+ * Riwayat pencarian milik pengunjung ini dari opaclogs, hanya saat log pencarian diaktifkan
+ * di /master-opac-logs. Anggota melihat riwayat akunnya, pengunjung lain riwayat session-nya.
+ */
+private function getSearchHistory(): array
+{
+    if (strtoupper((string) get_setting_parameter('opac_log')) !== 'TRUE') {
+        return [];
+    }
+
+    try {
+        if (!$this->db->tableExists('opaclogs')) {
+            return [];
+        }
+
+        $builder = $this->db->table('opaclogs')
+            ->select('keyword, MAX(url) AS url, MAX(ID) AS lastId', false)
+            ->where('keyword !=', '(tanpa kata kunci)');
+
+        $username = logged_in() ? session()->get('username') : null;
+        if ($username) {
+            $builder->where('User_id', $username);
+        } else {
+            $ids = array_map('intval', (array) session()->get('opac_search_log_ids'));
+            if (!$ids) {
+                return [];
+            }
+            $builder->whereIn('ID', $ids);
+        }
+
+        $rows = $builder->groupBy('keyword')->orderBy('lastId', 'DESC')->limit(5)->get()->getResult();
+    } catch (\Throwable $e) {
+        log_message('error', 'Gagal memuat riwayat pencarian OPAC.');
+        return [];
+    }
+
+    $history = [];
+    foreach ($rows as $row) {
+        $query = (string) parse_url((string) $row->url, PHP_URL_QUERY);
+        $history[] = [
+            'label' => str_replace('Kata kunci: ', '', $row->keyword),
+            'url'   => base_url('opac') . ($query !== '' ? '?' . $query : '') . '#hasil-pencarian',
+        ];
+    }
+
+    return $history;
 }
 private function getCollectionTabs(): array
 {
@@ -211,17 +265,7 @@ private function loadRegularCatalogs()
 
     $builder = $this->katalogModel->select('catalogs.*')->where('IsOPAC', 1);
 
-    $search   = sanitizeSearch($this->request->getVar('search'));
-    $semantic = false;
-
-    if ($search) {
-        $rawSearch = $this->request->getVar('search');
-        $searchBy  = sanitizeSearch($this->request->getVar('search_by') ?? 'Title');
-        $semantic  = $this->applySemanticSearch($builder, $search, $searchBy);
-        if (!$semantic) {
-            $this->applyFulltextSearch($builder, $search, $searchBy, $rawSearch);
-        }
-    }
+    $semantic = $this->applyKeywords($builder);
     if (!$semantic) {
         $builder->orderBy("ID", "DESC");
     }
@@ -261,9 +305,10 @@ private function loadRegularCatalogs()
     $this->data['year_counts']            = array_count_values(array_map(fn($d) => date('Y', strtotime($d)), array_column($catalogs, 'EndDate')));
 
     $this->data['search']    = esc($this->request->getVar('search') ?? '');
-    $allowedSearchBy         = ['Title', 'Author', 'Subject', 'Publisher', 'ISBN'];
-    $searchBy                = $this->request->getVar('search_by') ?? 'Title';
-    $this->data['search_by'] = in_array($searchBy, $allowedSearchBy) ? $searchBy : 'Title';
+    $this->data['search_by'] = $this->opacSearchBy('search_by');
+    $this->data['search2']   = $this->secondKeyword();
+    $this->data['search_by2'] = $this->opacSearchBy('search_by2');
+    $this->data['search_op2'] = $this->secondKeywordOperator();
 }
 
 private function loadRegularCatalogscache()
@@ -290,17 +335,7 @@ private function loadRegularCatalogscache()
         // ========== CACHE MISS ==========
         $builder = $this->katalogModel->select('catalogs.*')->where('IsOPAC', 1);
 
-        $search   = sanitizeSearch($this->request->getVar('search'));
-        $semantic = false;
-
-        if ($search) {
-            $rawSearch = $this->request->getVar('search');
-            $searchBy  = sanitizeSearch($this->request->getVar('search_by') ?? 'Title');
-            $semantic  = $this->applySemanticSearch($builder, $search, $searchBy);
-            if (!$semantic) {
-                $this->applyFulltextSearch($builder, $search, $searchBy, $rawSearch);
-            }
-        }
+        $semantic = $this->applyKeywords($builder);
         if (!$semantic) {
             $builder->orderBy("ID", "DESC");
         }
@@ -353,9 +388,10 @@ private function loadRegularCatalogscache()
     }
 
     $this->data['search']    = esc($this->request->getVar('search') ?? '');
-    $allowedSearchBy         = ['Title', 'Author', 'Subject', 'Publisher', 'ISBN'];
-    $searchBy                = $this->request->getVar('search_by') ?? 'Title';
-    $this->data['search_by'] = in_array($searchBy, $allowedSearchBy) ? $searchBy : 'Title';
+    $this->data['search_by'] = $this->opacSearchBy('search_by');
+    $this->data['search2']   = $this->secondKeyword();
+    $this->data['search_by2'] = $this->opacSearchBy('search_by2');
+    $this->data['search_op2'] = $this->secondKeywordOperator();
 }
  
 
@@ -1746,7 +1782,7 @@ public function browse()
         }
 
         $hasFilters = false;
-        foreach (['Publisher', 'Author', 'PublishLocation', 'Subject', 'PublishYear', 'Worksheet_id'] as $filter) {
+        foreach (['search2', 'Publisher', 'Author', 'PublishLocation', 'Subject', 'PublishYear', 'Worksheet_id'] as $filter) {
             $hasFilters = $hasFilters || !empty($this->request->getVar($filter));
         }
         $config = config('Semantic');
@@ -1762,15 +1798,68 @@ public function browse()
         return true;
     }
 
+    /** Kriteria pencarian dari form; bawaan Judul, sedangkan "Semua Kriteria" dikirim sebagai nilai kosong. */
+    private function opacSearchBy(string $param): string
+    {
+        $searchBy = $this->request->getVar($param) ?? 'Title';
+        return in_array($searchBy, ['Title', 'Author', 'Subject', 'Publisher', 'ISBN'], true) ? $searchBy : '';
+    }
+
+    private function secondKeyword(): string
+    {
+        $keyword = $this->request->getVar('search2');
+        return is_string($keyword) ? trim($keyword) : '';
+    }
+
+    /** Hubungan kedua kata kunci: bawaan OR (cocok salah satu), AND berarti harus cocok keduanya. */
+    private function secondKeywordOperator(): string
+    {
+        return $this->request->getVar('search_op2') === 'AND' ? 'AND' : 'OR';
+    }
+
+    /**
+     * Terapkan kata kunci pertama dan kedua. Mengembalikan true bila kata kunci pertama
+     * memakai pencarian semantik, sehingga urutan hasil sudah ditentukan.
+     */
+    private function applyKeywords($builder): bool
+    {
+        $rawSearch  = $this->request->getVar('search');
+        $search     = sanitizeSearch($rawSearch);
+        $rawSecond  = $this->secondKeyword();
+        $second     = sanitizeSearch($rawSecond);
+        // Kondisi OR dikelompokkan agar filter IsOPAC dan filter lain tetap berlaku untuk keduanya
+        $matchEither = $search && $second && $this->secondKeywordOperator() === 'OR';
+        $semantic    = false;
+
+        if ($matchEither) {
+            $builder->groupStart();
+        }
+        if ($search) {
+            $searchBy = $this->opacSearchBy('search_by');
+            $semantic = $this->applySemanticSearch($builder, $search, $searchBy);
+            if (!$semantic) {
+                $this->applyFulltextSearch($builder, $search, $searchBy, $rawSearch);
+            }
+        }
+        if ($second) {
+            $this->applyFulltextSearch($builder, $second, $this->opacSearchBy('search_by2'), $rawSecond, $matchEither);
+        }
+        if ($matchEither) {
+            $builder->groupEnd();
+        }
+
+        return $semantic;
+    }
+
     /**
      * Apply FULLTEXT search to query builder, fallback to LIKE when term is too short.
      * Requires FULLTEXT indexes on catalogs table — see app/Database/opac_fulltext_indexes.sql
      */
-    private function applyFulltextSearch($builder, string $search, string $searchBy, string $rawSearch = null): void
+    private function applyFulltextSearch($builder, string $search, string $searchBy, ?string $rawSearch = null, bool $orGroup = false): void
     {
         $rawSearch = $rawSearch ?? $search;
 
-        $builder->groupStart();
+        $orGroup ? $builder->orGroupStart() : $builder->groupStart();
         switch ($searchBy) {
             case 'Title':
                 $term = $this->toFtTerm($search);
@@ -1826,6 +1915,9 @@ public function browse()
         $builder->groupEnd();
     }
 
+    /** Stopword bawaan InnoDB yang panjangnya 3 huruf atau lebih (information_schema.innodb_ft_default_stopword). */
+    private const FT_STOPWORDS = ['about', 'are', 'com', 'for', 'from', 'how', 'that', 'the', 'this', 'was', 'what', 'when', 'where', 'who', 'will', 'with', 'und', 'www'];
+
     /**
      * Convert a sanitized search string to MySQL FULLTEXT Boolean mode term.
      * Returns empty string when all words are too short (falls back to LIKE).
@@ -1838,7 +1930,8 @@ public function browse()
         $words  = preg_split('/\s+/', trim($search), -1, PREG_SPLIT_NO_EMPTY);
         $terms  = [];
         foreach ($words as $word) {
-            if (mb_strlen($word) < 2) continue;
+            // Kata di bawah innodb_ft_min_token_size (bawaan 3) dan stopword InnoDB tidak terindeks; bila diwajibkan, hasilnya selalu kosong
+            if (mb_strlen($word) < 3 || in_array(mb_strtolower($word), self::FT_STOPWORDS, true)) continue;
             $terms[] = '+' . $word . '*';
         }
         return implode(' ', $terms);
@@ -2092,7 +2185,6 @@ public function browse()
         ], getenv('security.TOKEN_SECRET'), getenv('security.TOKEN_ALG'));
 
         session()->set('username', $username);
-        session()->set('password', $password);
         session()->set('token', $token);
         session()->set('logged_in', $user->id);
         session()->set('branch_id', $user->branch_id ?? 0);

@@ -60,7 +60,7 @@ change.log 19 Agustus 2026
 21. Menambahkan filter kelas dan update bacth kelas untuk perpustakaan sekolah
 22. Menambahakan filter fakultas dan jurusan untuk perpustakaan perguruan Tinggi
 
-change.log 22 Oktober 2026
+change.log 05 November 2026
 1. Memperbaiki bug pada modul edit anggota yang sebelumnya tidak bisa menyimpan data foto anggota
 2. Memperbaiki bug pada modul create anggota yang sebelumnya tidak bisa menyimpan data foto anggota
 3. Menambahkan setting buku populer, pendaftaran online, cahce opac,cache beranda di halaman pengaturan umum nama perpustakaan
@@ -81,4 +81,16 @@ change.log 22 Oktober 2026
 18. Proses simpan tambah dan edit katalog MARC menggunakan transaksi database agar data tidak tersimpan setengah atau hilang ketika gagal
 19. Membersihkan daftar tag sementara setelah simpan agar tag dari form sebelumnya tidak terbawa ke form katalog berikutnya
 20. Memperbaiki tampilan nilai indikator pada form edit katalog MARC yang mengandung karakter khusus
+21. Memperbaiki tampilan sesuai kaidah https://design.inadigital.go.id/
+22. Menambahkan Fitur Survey Kepuasan Pengguna di halaman frontend
+23. Menambahkan modul pengaturan cache dan halaman beranda di halaman pengaturan opac
+24. Menambahkan fitur semantic search di halaman opac
+25. Menambahkan fitur bolean search di halaman opac
+26. Menambahkan fitur filter berdasarkan jenis bahan di halaman opac
+27. Menambahkan foreign key di tabel database untuk menjaga integritas data
+28. Menyempurnakan isi data database rbac(role based access control) agar lebih aman dan sesuai kebutuhan pengguna
+30. Menambahkan fitur export excel koleksi yang hasilnya sesuai dengan template import koleksi excel.
+31. Menambahkan fitur keranjang katalog dan keranjang eksemplar
+32. Membuat modul aktivasi kios untuk kode dinamis ketika seting lokasi pengaturan  buku tamu,peminjaman mandiri dan pengembalian mandiri
+
 

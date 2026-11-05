@@ -19,7 +19,7 @@ class Berita extends \Base\Controllers\BaseController
         $this->language->setLocale('id');
 
         $this->beritaModel = new \Berita\Models\BeritaModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/berita/';
 
         if (!file_exists($this->uploadPath)) {

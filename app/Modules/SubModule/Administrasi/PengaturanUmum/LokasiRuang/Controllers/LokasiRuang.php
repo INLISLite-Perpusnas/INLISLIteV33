@@ -15,7 +15,7 @@ class LokasiRuang extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->lokasiruangModel = new \LokasiRuang\Models\LokasiRuangModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/lokasiruang/';
 
         if (!file_exists($this->uploadPath)) {

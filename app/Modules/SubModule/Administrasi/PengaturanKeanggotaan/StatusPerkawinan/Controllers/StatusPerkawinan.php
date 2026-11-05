@@ -15,7 +15,7 @@ class StatusPerkawinan extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->statusperkawinanModel = new \StatusPerkawinan\Models\StatusPerkawinanModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/statusperkawinan/';
 
         if (!file_exists($this->uploadPath)) {

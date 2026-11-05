@@ -208,6 +208,13 @@ class AnggotaOnlineController extends \Base\Controllers\BaseController
             $existingUser = $db->table('users')->where('username', $member->MemberNo)->get()->getRow();
             $password = null;
 
+            // users.email unik, sedangkan email anggota boleh sama dengan email akun lain
+            if (!$existingUser && $db->table('users')->where('email', $member->Email ?? '')->countAllResults() > 0) {
+                $failCount++;
+                $errors[] = "Email " . $member->Email . " milik " . $member->Fullname . " sudah dipakai akun lain. Ubah email anggota ini lalu aktivasi ulang.";
+                continue;
+            }
+
             $db->transStart();
             if ($existingUser) {
                 // Akun lama hanya diaktifkan; password yang sudah ada tidak diubah
@@ -218,7 +225,7 @@ class AnggotaOnlineController extends \Base\Controllers\BaseController
                 $db->table('users')->insert([
                     'username' => $member->MemberNo,
                     'email' => $member->Email ?? '',
-                    'category' => 'anggota',
+                    'category' => 'anggota_online',
                     'password_hash' => $this->password->hash($password),
                     'anggota' => $member->ID,
                     'activate_hash' => bin2hex(random_bytes(16)),
@@ -295,16 +302,16 @@ class AnggotaOnlineController extends \Base\Controllers\BaseController
         return is_allowed('anggota/edit', null, false);
     }
 
-    /** ID grup 'anggota' di auth_groups; dibuat jika belum ada (sama seperti pendaftaran online). */
+    /** ID grup 'anggota_online' di auth_groups; dibuat jika belum ada (sama seperti pendaftaran online). */
     private function getMemberGroupId($db)
     {
-        $group = $db->table('auth_groups')->where('name', 'anggota')->get()->getFirstRow();
+        $group = $db->table('auth_groups')->where('name', 'anggota_online')->get()->getFirstRow();
         if ($group) {
             return $group->id;
         }
 
         $db->table('auth_groups')->insert([
-            'name' => 'anggota',
+            'name' => 'anggota_online',
             'description' => 'Anggota perpustakaan',
         ]);
 

@@ -18,6 +18,7 @@ $routes->group('user', ['namespace' => 'User\Controllers'], function ($subroutes
 	$subroutes->add('change_password', 'User::change_password');
 	$subroutes->add('change_avatar', 'User::change_avatar');
 	$subroutes->add('do_upload', 'User::do_upload');
+	$subroutes->add('do_delete', 'User::do_delete');
 	$subroutes->add('apply_status/(:any)', 'User::apply_status/$1');
 
 	$subroutes->add('permissions/(:any)', 'User::permissions/$1');

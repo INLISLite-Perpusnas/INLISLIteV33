@@ -15,7 +15,7 @@ class JenisPelanggaran extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->jenispelanggaranModel = new \JenisPelanggaran\Models\JenisPelanggaranModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/jenispelanggaran/';
 
         if (!file_exists($this->uploadPath)) {

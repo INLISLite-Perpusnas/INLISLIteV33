@@ -22,13 +22,7 @@ class AnggotaKartuController extends \Base\Controllers\BaseController
 
     public function printanggota($id = null)
     {
-        $templateModel = new BaseModel('t_template');
-        $template      = $templateModel->where('active', 1)->first();
-
-        if (empty($template)) {
-            echo "Tidak ada template untuk di cetak";
-            exit;
-        }
+        
 
         $bg        = file_get_contents(ROOTPATH . 'public/uploads/master-template/' . $template->file_image);
         $bg_base64 = 'data:image/png;base64,' . base64_encode($bg);

@@ -2,6 +2,7 @@
 <?= $this->section('style'); ?>
 
 <link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-user-profile.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-user-profile.css') ?>">
 <?= $this->endSection('style'); ?>
 <?php
 $branch = get_ref_single('branchs', 'ID=' . $user->branch_id, 'data');
@@ -19,7 +20,7 @@ if (!empty($npp_provinsi_id)) {
     $regionModel = new \Region\Models\RegionModel();
     $region = $regionModel->where('code', user()->npp_provinsi_id)->where('level', 1)->first();
     if (!empty($region)) {
-        $provinsi_title = "PROVINSI : " . $region->name;
+        $provinsi_title = $region->name;
         $kabkota_title = "";
     }
 }
@@ -29,12 +30,12 @@ if (!empty($npp_kabkota_id)) {
     $regionModel = new \Region\Models\RegionModel();
     $region = $regionModel->where('code', user()->npp_kabkota_id)->where('level', 2)->first();
     if (!empty($region)) {
-        $kabkota_title = "KABUPATEN / KOTA : " . $region->name;
+        $kabkota_title = $region->name;
     }
 }
 ?>
 <?= $this->section('page'); ?>
-<div class="app-main__inner">
+<div class="app-main__inner ina-profile">
     <div class="app-page-title">
         <div class="page-title-wrapper">
             <div class="page-title-heading">
@@ -75,7 +76,6 @@ if (!empty($npp_kabkota_id)) {
             <div class="card-shadow-dark profile-responsive card-border mb-3 card">
                 <div class="dropdown-menu-header">
                     <div class="dropdown-menu-header-inner bg-primary">
-                        <div class="menu-header-image" style="background-image: url('<?= base_url('themes/uigniter') ?>/images/dropdown-header/abstract4.jpg')"></div>
                         <div class="menu-header-content btn-pane-right">
                             <div class="avatar-icon-wrapper mr-2 avatar-icon-xl">
                                 <div class="avatar-icon">
@@ -95,15 +95,15 @@ if (!empty($npp_kabkota_id)) {
                                 <h6 class="menu-header-subtitle"><?= $user->username; ?></h6>
                             </div>
                             <div class="menu-header-btn-pane">
-                                <a href="javascript:void(0);" data-id="<?= $user->id ?>" data-format=".jpg,.png" data-format-title="Format (JPG|PNG). Max 1 Files @ 1MB" data-field="avatar" data-title="Upload Avatar" class="mb-2 mr-2 btn btn-pill btn-primary upload-data">
-                                    <i class="fa fa-user"></i> Update Avatar
+                                <a href="javascript:void(0);" data-id="<?= $user->id ?>" data-format=".jpg,.png" data-format-title="Format (JPG|PNG). Max 1 Files @ 1MB" data-field="avatar" data-title="Avatar" class="mb-2 mr-2 btn ina-btn-profile ina-btn-profile-secondary upload-data">
+                                    <i class="fa fa-user" aria-hidden="true"></i> Perbarui avatar
                                 </a>
-                                <a data-bs-toggle="modal" data-bs-target="#modal_edit" data-toggle="modal" data-target="#modal_edit" href="javascript:void(0);" class="mb-2 mr-2 btn btn-pill btn-warning" title="">
-                                    <i class="fa fa-edit"></i>
+                                <a data-bs-toggle="modal" data-bs-target="#modal_edit" data-toggle="modal" data-target="#modal_edit" href="javascript:void(0);" class="mb-2 mr-2 btn ina-btn-profile ina-btn-profile-primary" title="">
+                                    <i class="fa fa-edit" aria-hidden="true"></i>
                                     <?php if ($is_profile) : ?>
-                                        Update Profil
+                                        Perbarui profil
                                     <?php else : ?>
-                                        Update User
+                                        Perbarui user
                                     <?php endif; ?>
                                 </a>
                             </div>
@@ -148,7 +148,7 @@ if (!empty($npp_kabkota_id)) {
                                     <i class="fa fa-phone"></i>
                                 </div>
                                 <div class="widget-content-left">
-                                    <div class="widget-heading">No Telepon</div>
+                                    <div class="widget-heading">No. telepon</div>
                                 </div>
                                 <div class="widget-content-right">
                                     <?= $user->phone ?? ''; ?>
@@ -215,7 +215,7 @@ if (!empty($npp_kabkota_id)) {
                                     <i class="fa fa-map-marker-alt"></i>
                                 </div>
                                 <div class="widget-content-left">
-                                    <div class="widget-heading">Kabupaten / Kota</div>
+                                    <div class="widget-heading">Kabupaten/kota</div>
                                 </div>
                                 <div class="widget-content-right">
                                     <?= $kabkota_title ?? ''; ?>
@@ -236,7 +236,7 @@ if (!empty($npp_kabkota_id)) {
                                         <i class="fa fa-building"></i>
                                     </div>
                                     <div class="widget-content-left">
-                                        <div class="widget-heading">Informasi NPP (Branch)</div>
+                                        <div class="widget-heading">Informasi NPP (branch)</div>
                                     </div>
                                     <div class="widget-content-right">
                                     </div>
@@ -246,17 +246,17 @@ if (!empty($npp_kabkota_id)) {
                                     <dt>Nomor</dt>
                                     <dd><?= strtoupper($branch->NPP_id ?? '-') ?></dd>
                                     <dt>Nama</dt>
-                                    <dd><?= strtoupper($branch->Name ?? '-') ?></dd>
+                                    <dd><?= ($branch->Name ?? '-') ?></dd>
                                     <dt>Jenis</dt>
                                     <dd><?= ($branch->NPP_Jenis ?? '') ?></dd>
                                     <dt>Provinsi</dt>
-                                    <dd><?= strtoupper($provinsi->name ?? '-') ?></dd>
-                                    <dt>Kab/Kota</dt>
-                                    <dd><?= strtoupper($kabkota->name ?? '-') ?></dd>
+                                    <dd><?= ($provinsi->name ?? '-') ?></dd>
+                                    <dt>Kab/kota</dt>
+                                    <dd><?= ($kabkota->name ?? '-') ?></dd>
                                     <dt>Kecamatan</dt>
-                                    <dd><?= strtoupper($kecamatan->name ?? '-') ?></dd>
+                                    <dd><?= ($kecamatan->name ?? '-') ?></dd>
                                     <dt>Kelurahan</dt>
-                                    <dd><?= strtoupper($kelurahan->name ?? '-') ?></dd>
+                                    <dd><?= ($kelurahan->name ?? '-') ?></dd>
                                     <dt>Alamat</dt>
                                     <dd><?= ($branch->Address ?? '-') ?></dd>
                                 </dl>

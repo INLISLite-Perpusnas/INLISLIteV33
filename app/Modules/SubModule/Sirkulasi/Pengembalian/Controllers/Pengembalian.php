@@ -26,7 +26,7 @@ class Pengembalian extends \Base\Controllers\BaseController
 		$this->cart = new \App\Libraries\Cart();
 		$this->db = db_connect();
 
-		$this->uploadPath = ROOTPATH . 'public/uploads/';
+		$this->uploadPath = WRITEPATH . 'uploads/';
 		$this->modulePath = ROOTPATH . 'public/uploads/pengembalian/';
 
 		if (!file_exists($this->uploadPath)) {

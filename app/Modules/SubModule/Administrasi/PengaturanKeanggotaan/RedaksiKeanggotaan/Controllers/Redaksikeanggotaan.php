@@ -17,7 +17,7 @@ class RedaksiKeanggotaan extends \Base\Controllers\BaseController
         $this->RedaksiKeanggotaanModel = new \RedaksiKeanggotaan\Models\RedaksiKeanggotaanModel();
 
 
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/redaksikeanggotaan/';
 
         if (!file_exists($this->uploadPath)) {

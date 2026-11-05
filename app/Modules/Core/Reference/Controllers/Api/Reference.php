@@ -100,8 +100,8 @@ class Reference extends \Base\Controllers\BaseResourceController
 			if (count($files)) {
 				$listed_file = array();
 				foreach ($files as $uuid => $name) {
-					if (file_exists($this->uploadPath . $name)) {
-						$file = new File($this->uploadPath . $name);
+					if (is_file($this->uploadPath . basename($name))) {
+						$file = new File($this->uploadPath . basename($name));
 						$newFileName = $file->getRandomName();
 						$file->move($this->modulePath, $newFileName);
 						$listed_file[] = $newFileName;

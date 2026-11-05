@@ -15,7 +15,7 @@ class MasterKelas extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->kelasModel = new \MasterKelas\Models\MasterKelasModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/kelas/';
         helper('reference');
         if (!file_exists($this->uploadPath)) {

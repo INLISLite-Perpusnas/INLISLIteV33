@@ -17,7 +17,7 @@ class Sumbangan extends \Base\Controllers\BaseController
     {
         $this->sumbanganModel = new \Sumbangan\Models\SumbanganModel();
         $this->anggotaModel = new \Anggota\Models\AnggotaModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/sumbangan/';
         helper(['reference']);
         if (!file_exists($this->uploadPath)) {

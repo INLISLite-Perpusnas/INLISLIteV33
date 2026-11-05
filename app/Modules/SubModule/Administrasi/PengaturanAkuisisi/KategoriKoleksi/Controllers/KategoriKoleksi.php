@@ -15,7 +15,7 @@ class KategoriKoleksi extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->kategorikoleksiModel = new \KategoriKoleksi\Models\KategoriKoleksiModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/kategorikoleksi/';
 
         if (!file_exists($this->uploadPath)) {

@@ -37,7 +37,7 @@ trait KatalogBase
         $this->eksemplarModel          = new \Eksemplar\Models\EksemplarModel();
         $this->articleModel            = new \Katalog\Models\ArtikelModel();
         $this->serialArticleFilesModel = new \Katalog\Models\SerialArticleFilesModel();
-        $this->uploadPath              = ROOTPATH . 'public/uploads/';
+        $this->uploadPath              = WRITEPATH . 'uploads/';
         $this->modulePath              = ROOTPATH . 'public/uploads/katalog/';
         $this->validation              = \Config\Services::validation();
         $this->db                      = \Config\Database::connect('data');

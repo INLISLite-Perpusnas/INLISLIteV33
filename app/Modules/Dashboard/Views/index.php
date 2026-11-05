@@ -35,7 +35,7 @@ $pendukung = [
                     <div class="dash-tooltip-box" id="tipKirimLaporan" role="tooltip">
                         Data dashboard ini akan dikirim ke database Perpusnas, agar Perpusnas mengetahui jumlah katalog, anggota, dan peminjaman dari setiap perpustakaan.
                     </div>
-                </div> buat
+                </div>
                 <small>Wajib dikirim setiap bulan</small>
             </div>
         </header>

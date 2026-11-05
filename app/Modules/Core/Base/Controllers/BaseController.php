@@ -2,6 +2,7 @@
 
 namespace Base\Controllers;
 
+use App\Libraries\TempUpload;
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\CLIRequest;
 use CodeIgniter\HTTP\IncomingRequest;
@@ -63,62 +64,64 @@ class BaseController extends Controller
 	}
 	public function do_upload()
 	{
-		$response = [
-			'success' => false,
-			'data' => '',
-			'msg' => "Image has not been uploaded successfully"
-		];
+		$file = $this->request->getFile('file');
 
-		// $validated = $this->validation->validate([
-		// 	'file' => [
-		// 		'uploaded[file]',
-		// 		// 'mime_in[file,image/jpg,image/jpeg,image/gif,image/png]',
-		// 		// 'max_size[file,10240]',
-		// 	],
-		// ]);
-
-		$validated = true;
-
-		if ($validated) {
-			$file = $this->request->getFile('file');
-			$file->move($this->uploadPath);
-
-			$data = [
-				'name' =>  $file->getClientName(),
-				'type'  => $file->getClientMimeType(),
-			];
-
-			$response = [
-				'success' => true,
-				'data' => $data,
-				'msg' => "Image has been uploaded successfully"
-			];
+		if (!$file || !$file->isValid() || $file->hasMoved()) {
+			return $this->uploadError(400, 'File tidak valid atau gagal diunggah.');
 		}
 
-		return $this->response->setJSON($response);
+		$extension = TempUpload::safeExtension($file->getTempName(), $file->getClientName());
+		if ($extension === null) {
+			return $this->uploadError(415, 'File ditolak. Gunakan JPG, PNG, GIF, WEBP, PDF, DOC, atau DOCX dengan ukuran maksimal 12 MB.');
+		}
+
+		$newName = TempUpload::randomName($extension);
+		$file->move(TempUpload::directory(), $newName);
+
+		return $this->response->setJSON([
+			'success' => true,
+			'data' => [
+				'name' => $newName,
+				'type' => $file->getClientMimeType(),
+			],
+			'msg' => 'File berhasil diunggah.',
+		]);
 	}
 
-	public function do_delete()
+	/** Dropzone membaca kunci error, modal upload katalog membaca messages.error. */
+	private function uploadError(int $status, string $message)
 	{
-		$response = [
+		return $this->response->setStatusCode($status)->setJSON([
 			'success' => false,
 			'data' => '',
-			'msg' => "Image has not been deleted successfully"
-		];
+			'msg' => $message,
+			'error' => $message,
+			'messages' => ['error' => $message],
+		]);
+	}
 
-		$name = $this->request->getPost('name');
-		$path = $this->request->getPost('path');
-		$file = $path  . $name;
+	/**
+	 * Menghapus file sementara milik do_upload. Path dari klien tidak dipakai.
+	 */
+	public function do_delete()
+	{
+		$path = strtoupper($this->request->getMethod()) === 'POST'
+			? TempUpload::deletablePath((string) $this->request->getPost('name'))
+			: null;
 
-		if (unlink($file)) {
-			$response = [
-				'success' => true,
+		if ($path === null || !unlink($path)) {
+			return $this->response->setStatusCode(400)->setJSON([
+				'success' => false,
 				'data' => '',
-				'msg' => "Image has been deleted successfully"
-			];
+				'msg' => 'File gagal dihapus.',
+			]);
 		}
 
-		return $this->response->setJSON($response);
+		return $this->response->setJSON([
+			'success' => true,
+			'data' => '',
+			'msg' => 'File berhasil dihapus.',
+		]);
 	}
 
 	public function flip($file)

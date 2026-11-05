@@ -29,7 +29,7 @@ class Template extends \Base\Controllers\BaseController
         $this->language->setLocale('id');
 
         $this->templateModel = new \Template\Models\TemplateModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/master-template/';
 
         if (!file_exists($this->uploadPath)) {

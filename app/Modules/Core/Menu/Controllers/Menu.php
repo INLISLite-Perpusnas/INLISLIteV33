@@ -19,7 +19,7 @@ class Menu extends \Base\Controllers\BaseController
         $this->menuModel = new \Menu\Models\MenuModel();
         $this->menuCategoryModel = new \Menu\Models\MenuCategoryModel();
         $this->permissionModel = new \Permission\Models\PermissionModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/menu/';
 
         if (!file_exists($this->uploadPath)) {

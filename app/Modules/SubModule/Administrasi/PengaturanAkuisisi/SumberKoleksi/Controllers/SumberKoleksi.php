@@ -15,7 +15,7 @@ class SumberKoleksi extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->sumberkoleksiModel = new \SumberKoleksi\Models\SumberKoleksiModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/sumberkoleksi/';
 
         if (!file_exists($this->uploadPath)) {

@@ -2,6 +2,8 @@
 
 namespace GuestBook\Controllers;
 
+use KiosBukuTamu\Libraries\KioskAuth;
+
 class GuestBook extends \App\Controllers\BaseController
 {
 	public $memberguestModel;
@@ -15,8 +17,6 @@ class GuestBook extends \App\Controllers\BaseController
 	public $db;
 	public $settingModel;
 
-	public $jenisKelaminModel;
-
 	function __construct()
 	{
 		$this->language = \Config\Services::language();
@@ -25,7 +25,6 @@ class GuestBook extends \App\Controllers\BaseController
 		$this->db = \Config\Database::connect('data');
 		$this->validation = \Config\Services::validation();
 		$this->memberguestModel = new \BukuTamu\Models\MemberGuestModel();
-		$this->jenisKelaminModel = new \Anggota\Models\JenisKelaminModel();
 		$this->groupguestModel = new \BukuTamu\Models\GroupGuestModel();
 		$this->settingModel = new \PenomoranKoleksi\Models\PenomoranKoleksiModel();
 
@@ -41,35 +40,43 @@ class GuestBook extends \App\Controllers\BaseController
 	public function index()
 	{
 
-		$this->data['SettingBukuTamu'] = $this->settingModel->where('Name', 'SettingBukuTamu')->first()->Value ?? '0';
-
-		// Get member number from request — trim to handle barcode scanner spaces
-		$member_no = trim($this->request->getGet('member_no') ?? '');
-
-		// Get member data from database
-		$member = $member_no ? $this->db->table('members')->where('MemberNo', $member_no)->get()->getRow() : null;
-
 		$location = $this->getSelectedLocation();
 		if (!$location) {
 			return redirect()->to('buku-tamu/lokasi');
 		}
+
+		$this->data['SettingBukuTamu'] = $this->settingModel->where('Name', 'SettingBukuTamu')->first()->Value ?? '0';
+
+		// Get member number from request — trim to handle barcode scanner spaces
+		// Bukan string (mis. member_no[]=x) diperlakukan kosong
+		$member_no_input = $this->request->getGet('member_no');
+		$member_no = is_string($member_no_input) ? trim($member_no_input) : '';
+
+		// Batasi pencarian per IP: nomor anggota berurutan sehingga nama anggota bisa dipanen
+		$throttled = false;
+		if ($member_no !== '') {
+			$throttleKey = hash('sha256', 'guestbook-member:' . $this->request->getIPAddress());
+			$throttled = !service('throttler')->check($throttleKey, 20, MINUTE);
+		}
+
+		// Get member data from database
+		$member = ($member_no && !$throttled) ? $this->db->table('members')->where('MemberNo', $member_no)->get()->getRow() : null;
+
 		$this->data['totalKunjungan'] = $this->countTodayVisits((int) $location->ID);
 
 		// Set data for view
 		$this->data['title'] = 'Buku Tamu - Anggota';
 		$this->data['data'] = $location;
 		$this->data['member'] = $member;
-		$this->data['jenis_kelamin'] = array_column(
-			$this->jenisKelaminModel->select('ID, Name')->findAll(),
-			'Name',
-			'ID'
-		);
 		$this->data['tujuan_kunjungan'] = get_ref_table('tujuan_kunjungan', 'ID, TujuanKunjungan', 'Member=1', 'data');
 		$this->data['visit_autosave_seconds'] = 30;
 		$this->data['message'] = $this->validation->getErrors()
 			? $this->validation->listErrors()
 			: $this->session->getFlashdata('message');
-		if ($member_no !== '' && !$member && empty($this->data['message'])) {
+		if ($throttled) {
+			$this->data['message'] = 'Terlalu banyak pencarian. Silakan tunggu satu menit.';
+			$this->response->setStatusCode(429);
+		} elseif ($member_no !== '' && !$member && empty($this->data['message'])) {
 			$this->data['message'] = 'Nomor Anggota ' . $member_no . ' tidak ditemukan.';
 		}
 
@@ -97,34 +104,41 @@ class GuestBook extends \App\Controllers\BaseController
 				return redirect()->back()->withInput()->with('message', 'Terlalu banyak percobaan. Silakan tunggu satu menit.');
 			}
 
-			$code = strtoupper(trim((string) $this->request->getPost('Code')));
+			if ($this->hasArrayInput()) {
+				return redirect()->back()->with('message', 'Data yang dikirim tidak valid.');
+			}
+
+			$code = KioskAuth::normalizeCode((string) $this->request->getPost('Code'));
 			$isValid = $this->validation->setRules([
 				'Code' => [
-					'label' => 'Kode Lokasi',
-					'rules' => 'required|min_length[3]|max_length[24]|regex_match[/^[A-Z0-9-]+$/]',
+					'label' => 'Kode Aktivasi',
+					'rules' => 'required|exact_length[8]|alpha_numeric',
 				],
 			])->run(['Code' => $code]);
 
 			if (!$isValid) {
-				return redirect()->back()->withInput()->with('message', 'Kode lokasi harus terdiri dari 3-24 huruf, angka, atau tanda hubung.');
+				return redirect()->back()->withInput()->with('message', 'Kode aktivasi harus 8 huruf/angka, contoh: K7QM-4XPD.');
 			}
 
-			$location = $this->locationQuery()
-				->where('a.Code', $code)
-				->where('a.active', 1)
-				->get()
-				->getRow();
-
-			if (!$location) {
-				return redirect()->back()->withInput()->with('message', 'Kode lokasi tidak ditemukan atau sudah tidak aktif.');
+			$kioskAuth = new KioskAuth($this->db);
+			try {
+				$cookie = $kioskAuth->activate($code, $this->request->getIPAddress());
+			} catch (\RuntimeException $e) {
+				log_message('error', 'Gagal aktivasi kios: ' . $e->getMessage());
+				return redirect()->back()->with('message', 'Kios tidak dapat diaktifkan. Hubungi administrator.');
 			}
 
-			$this->session->set('GuestBookLocation_id', (int) $location->ID);
+			if ($cookie === null) {
+				return redirect()->back()->withInput()->with('message', 'Kode aktivasi salah, kedaluwarsa, atau sudah dipakai.');
+			}
+
 			$response = redirect()->to(base_url('buku-tamu'));
+			$response->setCookie(KioskAuth::COOKIE, $cookie, KioskAuth::TOKEN_TTL, '', '/', '', $this->request->isSecure(), true, 'Lax');
+			// Modul Peminjaman (CMS) masih membaca cookie ini untuk cek otorisasi lokasi anggota; layanan kios tidak mempercayainya
 			$response->setCookie(
 				'Location_id',
-				(string) $location->ID,
-				604800,
+				(string) $kioskAuth->locationIdFromCookie($cookie),
+				KioskAuth::TOKEN_TTL,
 				'',
 				'/',
 				'',
@@ -136,6 +150,7 @@ class GuestBook extends \App\Controllers\BaseController
 			return $response;
 		}
 
+		$this->data['current_location'] = $this->getSelectedLocation();
 		$this->data['message'] = $this->validation->getErrors() ? $this->validation->listErrors() : $this->session->getFlashdata('message');
 		return view('GuestBook\Views\lokasi', $this->data);
 	}
@@ -175,15 +190,37 @@ class GuestBook extends \App\Controllers\BaseController
 		return $totalPerorangan + (int) ($rombongan->total_personel ?? 0);
 	}
 
+	/**
+	 * Kosong dianggap sah (tujuan tidak dipilih). Selain itu harus ID yang ada
+	 * dan berlaku untuk jenis pengunjung ini (kolom Member, NonMember, atau Rombongan).
+	 */
+	private function isValidTujuanKunjungan($value, string $column): bool
+	{
+		if ($value === null || $value === '') {
+			return true;
+		}
+		if (!is_string($value) || !ctype_digit($value)) {
+			return false;
+		}
+
+		return $this->db->table('tujuan_kunjungan')
+			->where('ID', $value)
+			->where($column, 1)
+			->countAllResults() > 0;
+	}
+
+	/** Field form selalu string; bentuk array (mis. Nama[]=x) membuat validator error */
+	private function hasArrayInput(): bool
+	{
+		return array_filter((array) $this->request->getPost(), 'is_array') !== [];
+	}
+
 	private function getSelectedLocation(): ?object
 	{
-		$locationId = filter_var(
-			$this->session->get('GuestBookLocation_id'),
-			FILTER_VALIDATE_INT,
-			['options' => ['min_range' => 1]]
-		);
+		// Lokasi hanya dipercaya dari cookie kios bertanda tangan
+		$locationId = (new KioskAuth($this->db))->locationIdFromCookie($this->request->getCookie(KioskAuth::COOKIE));
 
-		if ($locationId === false) {
+		if ($locationId === null) {
 			return null;
 		}
 
@@ -201,6 +238,11 @@ class GuestBook extends \App\Controllers\BaseController
 			return redirect()->to('buku-tamu/lokasi');
 		}
 		$locationId = $location->ID;
+
+		if ($this->hasArrayInput()) {
+			$this->session->setFlashdata('message', 'Terjadi kesalahan validasi.');
+			return redirect()->to(base_url('buku-tamu'));
+		}
 
 		$this->validation->setRule('member_no', 'Nomor Anggota', 'trim|required|max_length[50]');
 
@@ -221,7 +263,6 @@ class GuestBook extends \App\Controllers\BaseController
 					'JenisKelamin_id' => $member->Sex_id,
 					'Alamat' => $member->Address,
 					'Location_id' => $locationId,
-					'Branch_id' => $member->Branch_id,
 					'CreateTerminal' => $this->request->getIPAddress(),
 				];
 
@@ -231,7 +272,12 @@ class GuestBook extends \App\Controllers\BaseController
 				// 3. HANYA JIKA setting = 1, tambahkan 'TujuanKunjungan_id' ke dalam array
 				//    (tidak dipilih saat simpan otomatis -> NULL, bukan tujuan pertama)
 				if ($SettingBukuTamu == '1') {
-					$save_data['TujuanKunjungan_id'] = $this->request->getPost('TujuanKunjungan_id') ?: null;
+					$tujuanKunjungan = $this->request->getPost('TujuanKunjungan_id');
+					if (!$this->isValidTujuanKunjungan($tujuanKunjungan, 'Member')) {
+						$this->session->setFlashdata('message', 'Tujuan kunjungan tidak valid.');
+						return redirect()->to(base_url('buku-tamu'));
+					}
+					$save_data['TujuanKunjungan_id'] = $tujuanKunjungan ?: null;
 				}
 
 				// 4. Simpan array yang sudah final ke database
@@ -265,7 +311,6 @@ class GuestBook extends \App\Controllers\BaseController
 		$this->data['SettingBukuTamu'] = $this->settingModel->where('Name', 'SettingBukuTamu')->first()->Value ?? '0';
 		$this->data['title'] = 'Buku Tamu - Non Anggota';
 		$this->data['data'] = $location;
-		$branch_id = $location->Branch_id;
 		$this->data['totalKunjungan'] = $this->countTodayVisits((int) $locationId);
 
 		// Field bertanda * di form juga wajib di server (tidak hanya atribut required di browser)
@@ -305,6 +350,10 @@ class GuestBook extends \App\Controllers\BaseController
 		);
 
 		if ($this->request->getMethod() === 'POST') {
+			if ($this->hasArrayInput()) {
+				return redirect()->back()->with('message', 'Data yang dikirim tidak valid.');
+			}
+
 			// Gagal validasi: kembali ke form dengan isian lama (old()) dan daftar error
 			if (!$this->validation->withRequest($this->request)->run()) {
 				return redirect()->back()->withInput()->with('message', implode('<br>', array_map('esc', $this->validation->getErrors())));
@@ -317,8 +366,6 @@ class GuestBook extends \App\Controllers\BaseController
 				'JenisKelamin_id' => $this->request->getPost('JenisKelamin_id'),
 				'Alamat' => $this->request->getPost('Alamat'),
 				'Location_id' => $locationId,
-				'Branch_id' => $branch_id,
-				'CreateBy' => user_id(),
 				'CreateTerminal' => $this->request->getIPAddress(),
 			];
 			// 2. Periksa setting dari database
@@ -326,7 +373,11 @@ class GuestBook extends \App\Controllers\BaseController
 
 			// 3. HANYA JIKA setting = 1, tambahkan 'TujuanKunjungan_id' ke dalam array
 			if ($SettingBukuTamu == '1') {
-				$save_data['TujuanKunjungan_id'] = $this->request->getPost('TujuanKunjungan_id') ?: null;
+				$tujuanKunjungan = $this->request->getPost('TujuanKunjungan_id');
+				if (!$this->isValidTujuanKunjungan($tujuanKunjungan, 'NonMember')) {
+					return redirect()->back()->withInput()->with('message', 'Tujuan kunjungan tidak valid.');
+				}
+				$save_data['TujuanKunjungan_id'] = $tujuanKunjungan ?: null;
 			}
 
 			$newRombonganId = $this->memberguestModel->insert($save_data);
@@ -355,7 +406,7 @@ class GuestBook extends \App\Controllers\BaseController
 		$this->data['totalKunjungan'] = $this->countTodayVisits((int) $locationId);
 		$this->data['title'] = 'Buku Tamu - Rombongan';
 		$this->data['data'] = $location;
-		$branch_id = $location->Branch_id;
+		
 
 		// Enhanced validation rules
 		$this->validation->setRules([
@@ -411,6 +462,20 @@ class GuestBook extends \App\Controllers\BaseController
 					'max_length' => 'Telepon Instansi maksimal 20 digit',
 				],
 			],
+			'AlamatInstansi' => [
+				'label' => 'Alamat Instansi',
+				'rules' => 'permit_empty|max_length[255]',
+				'errors' => [
+					'max_length' => 'Alamat Instansi maksimal 255 karakter',
+				],
+			],
+			'Information' => [
+				'label' => 'Keterangan Tambahan',
+				'rules' => 'permit_empty|max_length[255]',
+				'errors' => [
+					'max_length' => 'Keterangan Tambahan maksimal 255 karakter',
+				],
+			],
 			'CountLaki' => [
 				'label' => 'Jumlah Laki-laki',
 				'rules' => 'permit_empty|integer|greater_than_equal_to[0]',
@@ -438,9 +503,16 @@ class GuestBook extends \App\Controllers\BaseController
 		]);
 
 		if ($this->request->getMethod() === 'POST') {
+			if ($this->hasArrayInput()) {
+				return redirect()->back()->with('message', 'Data yang dikirim tidak valid.');
+			}
+
 			// Gagal validasi: kembali ke form dengan isian lama (old()) dan daftar error
 			if (!$this->validation->withRequest($this->request)->run()) {
 				return redirect()->back()->withInput()->with('message', implode('<br>', array_map('esc', $this->validation->getErrors())));
+			}
+			if (!$this->isValidTujuanKunjungan($this->request->getPost('TujuanKunjungan_ID'), 'Rombongan')) {
+				return redirect()->back()->withInput()->with('message', 'Tujuan kunjungan tidak valid.');
 			}
 			try {
 				// Generate nomor pengunjung (optional)
@@ -451,7 +523,8 @@ class GuestBook extends \App\Controllers\BaseController
 					'NamaKetua' => $this->request->getPost('NamaKetua'),
 					'NomerTelponKetua' => $this->request->getPost('NomerTelponKetua'),
 					'AsalInstansi' => $this->request->getPost('AsalInstansi'),
-					'AlamatInstansi' => $this->request->getPost('AlamatInstansi'),
+					// Kolom NOT NULL: field yang tidak terkirim disimpan sebagai string kosong
+					'AlamatInstansi' => $this->request->getPost('AlamatInstansi') ?? '',
 					'TeleponInstansi' => $this->request->getPost('TeleponInstansi'),
 					'EmailInstansi' => $this->request->getPost('EmailInstansi'),
 					'CountPersonel' => (int) $this->request->getPost('CountPersonel'),
@@ -490,8 +563,6 @@ class GuestBook extends \App\Controllers\BaseController
 
 					// System fields
 					'Location_ID' => $locationId,
-					'Branch_id' => $branch_id,
-					'CreateBy' => user_id(),
 					'CreateDate' => date('Y-m-d H:i:s'),
 					'CreateTerminal' => $this->request->getIPAddress(),
 				];
@@ -547,11 +618,11 @@ class GuestBook extends \App\Controllers\BaseController
 						'asal_instansi' => $save_data['AsalInstansi'],
 						'total_personel' => $save_data['CountPersonel'],
 						'no_pengunjung' => $noPengunjung,
-						'location_id' => $locationId,
-						'created_by' => user_id()
+						'location_id' => $locationId
 					]));
 				} else {
 					$this->session->setFlashdata('message', 'Buku Tamu Rombongan gagal disimpan. Silakan coba lagi.');
+					return redirect()->back()->withInput();
 				}
 
 			} catch (\Exception $e) {
@@ -559,6 +630,7 @@ class GuestBook extends \App\Controllers\BaseController
 				log_message('error', 'Error saving group guest book: ' . $e->getMessage());
 
 				$this->session->setFlashdata('message', 'Terjadi kesalahan sistem. Silakan hubungi administrator.');
+				return redirect()->back()->withInput();
 			}
 
 			return redirect()->to('/buku-tamu/rombongan');

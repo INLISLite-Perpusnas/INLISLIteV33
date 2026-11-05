@@ -21,7 +21,7 @@ class Auth extends \Base\Controllers\BaseResourceController
 
         parent::__construct();
 
-		$this->uploadPath = ROOTPATH . 'public/uploads/';
+		$this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/user/';
         
         if (!file_exists($this->uploadPath)) {

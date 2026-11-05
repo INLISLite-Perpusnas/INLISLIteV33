@@ -15,7 +15,7 @@ class PemesananKoleksi extends \hamkamannan\adminigniter\Controllers\BaseControl
     function __construct()
     {
         $this->pemesanankoleksiModel = new \PemesananKoleksi\Models\PemesananKoleksiModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/pemesanankoleksi/';
 
         if (!file_exists($this->uploadPath)) {

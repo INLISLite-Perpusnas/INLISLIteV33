@@ -15,7 +15,7 @@ class PeraturanPeminjamanTanggal extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->peraturanpeminjamantanggalModel = new \PeraturanPeminjamanTanggal\Models\PeraturanPeminjamanTanggalModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/peraturanpeminjamantanggal/';
         helper('reference');
         if (!file_exists($this->uploadPath)) {

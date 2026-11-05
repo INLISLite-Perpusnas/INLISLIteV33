@@ -22,9 +22,6 @@
 		outline-offset: 2px;
 	}
 	.required-marker { color: #b42318; }
-	.form-status { min-height: 1.5rem; font-weight: 600; }
-	.form-status.success { color: #146c43; }
-	.form-status.error { color: #b42318; }
 </style>
 <link rel="stylesheet" href="<?= base_url('assets/css/ina-guestbook.css') ?>?v=<?= @filemtime(FCPATH . 'assets/css/ina-guestbook.css') ?>">
 <?= $this->endSection() ?>
@@ -34,8 +31,15 @@
 <section class="location-settings gb-ina" aria-labelledby="location-settings-title">
 	<div class="container">
 		<div class="location-card">
-		<h2 id="location-settings-title">Atur Lokasi Ruang Perpustakaan</h2>
-		<p class="text-secondary">Masukkan kode lokasi yang diberikan administrator, periksa kodenya, lalu simpan pengaturan.</p>
+		<h2 id="location-settings-title">Aktivasi Kios Perpustakaan</h2>
+		<p class="text-secondary">Halaman ini hanya untuk perangkat kios perpustakaan (buku tamu, baca di tempat, peminjaman dan pengembalian mandiri). Masukkan kode aktivasi yang dibuat administrator di menu Aktivasi Kios.</p>
+
+		<?php if (!empty($current_location)): ?>
+			<div class="alert alert-info" role="status">
+				Perangkat ini sudah aktif untuk lokasi <strong><?= esc($current_location->Name) ?></strong>.
+				<a href="<?= base_url('buku-tamu') ?>">Buka buku tamu</a> · <a href="<?= base_url('baca-ditempat') ?>">Baca di tempat</a> · <a href="<?= base_url('peminjaman-mandiri') ?>">Peminjaman mandiri</a> · <a href="<?= base_url('pengembalian-mandiri') ?>">Pengembalian mandiri</a>
+			</div>
+		<?php endif; ?>
 
 		<?php if (!empty($message)): ?>
 			<div class="alert alert-danger" role="alert">
@@ -49,121 +53,23 @@
 					<div class="contact-form contact-form-mb">
 						<form id="frm_register" method="post" action="<?= base_url('buku-tamu/lokasi') ?>" autocomplete="off">
 							<?= csrf_field() ?>
-							<div class="row">
-								<div class="col-md-12">
-									<div class="form-group">
-										<label for="Code">Kode Lokasi Ruang Perpustakaan <span class="required-marker" aria-hidden="true">*</span></label>
-										<input type="text" name="Code" id="Code" class="form-control" required
-											minlength="3" maxlength="24" pattern="[A-Za-z0-9-]+" spellcheck="false"
-											value="<?= esc(old('Code')) ?>" aria-describedby="code-help code-status">
-										<small id="code-help" class="form-text text-secondary">Contoh: ABC1230101. Gunakan huruf, angka, atau tanda hubung.</small>
-									</div>
-								</div>
-								<div class="col-md-12 mt-3">
-									<div class="form-group d-flex align-items-center gap-3 flex-wrap">
-										<button type="button" class="btn btn-primary" id="btnCheck">Cek Kode</button>
-										<span id="code-status" class="form-status" role="status" aria-live="polite"></span>
-									</div>
-								</div>
-							</div>
-							<div class="row mt-3">
-								<div class="col-md-6">
-									<div class="form-group">
-										<label for="LocationLibrary">Lokasi Perpustakaan</label>
-										<input type="text" id="LocationLibrary" class="form-control" readonly aria-readonly="true">
-									</div>
-								</div>
-								<div class="col-md-6">
-									<div class="form-group">
-										<label for="Location">Lokasi Ruang</label>
-										<input type="text" id="Location" class="form-control" readonly aria-readonly="true">
-									</div>
-								</div>
+							<div class="form-group">
+								<label for="Code">Kode Aktivasi <span class="required-marker" aria-hidden="true">*</span></label>
+								<input type="text" name="Code" id="Code" class="form-control" required
+									maxlength="9" spellcheck="false" autocapitalize="characters"
+									value="<?= esc(old('Code')) ?>" aria-describedby="code-help">
+								<small id="code-help" class="form-text text-secondary">Contoh: K7QM-4XPD. Kode berlaku 10 menit dan hanya bisa dipakai sekali.</small>
 							</div>
 							<div class="d-flex justify-content-end gap-2 mt-4">
-								<button type="reset" class="btn btn-outline-secondary">Reset Form</button>
-								<button type="submit" class="btn btn-primary" id="btnSave" disabled>Simpan Pengaturan</button>
+								<button type="submit" class="btn btn-primary">Aktifkan Kios</button>
 							</div>
 						</form>
 					</div>
-				</div>
-				<div>
 				</div>
 			</div>
 		</div>
 		</div>
 	</div>
 </section>
-
-<?= $this->endsection() ?>
-
-<?= $this->section('script') ?>
-<script>
-	(() => {
-		'use strict';
-
-		const form = document.getElementById('frm_register');
-		const codeInput = document.getElementById('Code');
-		const checkButton = document.getElementById('btnCheck');
-		const saveButton = document.getElementById('btnSave');
-		const libraryInput = document.getElementById('LocationLibrary');
-		const locationInput = document.getElementById('Location');
-		const status = document.getElementById('code-status');
-		const checkUrl = <?= json_encode(base_url('api-lokasi-ruang/check'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
-
-		function clearResult() {
-			libraryInput.value = '';
-			locationInput.value = '';
-			saveButton.disabled = true;
-			status.textContent = '';
-			status.className = 'form-status';
-		}
-
-		codeInput.addEventListener('input', clearResult);
-		form.addEventListener('reset', () => setTimeout(clearResult, 0));
-
-		checkButton.addEventListener('click', async () => {
-			codeInput.value = codeInput.value.trim().toUpperCase();
-			if (!codeInput.checkValidity()) {
-				codeInput.reportValidity();
-				return;
-			}
-
-			clearResult();
-			checkButton.disabled = true;
-			checkButton.textContent = 'Memeriksa...';
-			status.textContent = 'Kode sedang diperiksa.';
-
-			try {
-				const response = await fetch(`${checkUrl}/${encodeURIComponent(codeInput.value)}`, {
-					headers: { 'Accept': 'application/json' },
-					credentials: 'same-origin'
-				});
-				if (!response.ok) throw new Error('Kode tidak valid');
-
-				const result = await response.json();
-				libraryInput.value = String(result.LocationLibrary_name || '');
-				locationInput.value = String(result.Name || '');
-				saveButton.disabled = false;
-				status.textContent = 'Kode valid. Lokasi siap disimpan.';
-				status.className = 'form-status success';
-			} catch (error) {
-				status.textContent = 'Kode tidak ditemukan, tidak aktif, atau terlalu banyak percobaan.';
-				status.className = 'form-status error';
-			} finally {
-				checkButton.disabled = false;
-				checkButton.textContent = 'Cek Kode';
-			}
-		});
-
-		form.addEventListener('submit', (event) => {
-			if (saveButton.disabled) {
-				event.preventDefault();
-				status.textContent = 'Periksa kode lokasi sebelum menyimpan.';
-				status.className = 'form-status error';
-			}
-		});
-	})();
-</script>
 
 <?= $this->endsection() ?>

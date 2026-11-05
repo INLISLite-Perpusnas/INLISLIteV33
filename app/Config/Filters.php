@@ -27,6 +27,7 @@ class Filters extends BaseConfig
         'auth' => \App\Filters\AuthFilter::class,
         'cors' => \App\Filters\Cors::class,
         'permissions' => \App\Filters\Permissions::class,
+        'kiosk' => \App\Filters\KioskLocation::class,
         'session' => \Myth\Auth\Filters\LoginFilter::class,
     ];
 
@@ -50,10 +51,6 @@ class Filters extends BaseConfig
                     'news*',
                     'home*',
                     'auth/a/*',
-                    'api/katalog/*',
-                    'api/eksemplar/*',
-                    'api/sirkulasi-peminjaman/*',
-                    'api/sirkulasi-pengembalian/*',
                     'buku-tamu*',
                     'api-lokasi-ruang/check*',
                     'baca-ditempat*',
@@ -170,5 +167,7 @@ class Filters extends BaseConfig
      * Example:
      * 'isLoggedIn' => ['before' => ['account/*', 'profiles/*']]
      */
-    public array $filters = [];
+    public array $filters = [
+        'csrf' => ['before' => ['do_upload', 'do_delete', '*/do_upload', '*/do_delete']],
+    ];
 }

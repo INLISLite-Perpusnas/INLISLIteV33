@@ -34,6 +34,45 @@ class EksemplarController extends \Base\Controllers\BaseController
         echo view('Eksemplar\Views\list', $this->data);
     }
 
+    /** Daftar eksemplar yang ada di keranjang (collections.IsKeranjang = 1). */
+    public function keranjang()
+    {
+        $this->data['title'] = 'Keranjang Eksemplar';
+        $this->data['meta_description'] = 'Daftar eksemplar yang ada di keranjang.';
+        $this->data['is_exemplar_list_page'] = true;
+        $this->data['is_keranjang'] = true;
+        echo view('Eksemplar\Views\list', $this->data);
+    }
+
+    public function masukkanKeranjang()
+    {
+        return $this->setKeranjang(1, 'Eksemplar berhasil dimasukkan ke keranjang');
+    }
+
+    public function kembalikanKeranjang()
+    {
+        return $this->setKeranjang(0, 'Eksemplar berhasil dikembalikan ke daftar eksemplar');
+    }
+
+    private function setKeranjang(int $value, string $message)
+    {
+        $IDs = array_values(array_filter(array_map('intval', explode(',', (string) $this->request->getPost('eksemplar_ids')))));
+
+        if ($IDs) {
+            db_connect()->table('collections')->whereIn('ID', $IDs)->update(['IsKeranjang' => $value]);
+
+            $this->session->setFlashdata('swal_icon', 'success');
+            $this->session->setFlashdata('swal_title', 'Berhasil');
+            $this->session->setFlashdata('swal_text', $message);
+        } else {
+            $this->session->setFlashdata('swal_icon', 'warning');
+            $this->session->setFlashdata('swal_title', 'Peringatan');
+            $this->session->setFlashdata('swal_text', 'Tidak ada eksemplar yang dipilih');
+        }
+
+        return redirect()->back();
+    }
+
     public function karantina()
     {
         $data['title'] = 'Karantina Eksemplar';

@@ -2,6 +2,8 @@
 
 namespace ReadOnSpot\Controllers;
 
+use KiosBukuTamu\Libraries\KioskAuth;
+
 class ReadOnSpot extends \App\Controllers\BaseController
 {
     public $bacaditempatModel;
@@ -36,7 +38,7 @@ class ReadOnSpot extends \App\Controllers\BaseController
     public function index()
     {
         // Get location id from cookie
-        $locationId = $this->request->getCookie('Location_id');
+        $locationId = KioskAuth::requestLocationId($this->request);
 
         // Check if location id is available
         if (!$locationId) {
@@ -58,7 +60,7 @@ class ReadOnSpot extends \App\Controllers\BaseController
      */
     public function addByMemberNumber()
     {
-        $locationId = $this->request->getCookie('Location_id');
+        $locationId = KioskAuth::requestLocationId($this->request);
         $memberNumber = $this->request->getPost('member_number');
 
         if (!$locationId || !$memberNumber) {
@@ -89,7 +91,7 @@ class ReadOnSpot extends \App\Controllers\BaseController
      */
     public function addByBarcode()
     {
-        $locationId = $this->request->getCookie('Location_id');
+        $locationId = KioskAuth::requestLocationId($this->request);
         $barcode = $this->request->getPost('barcode');
         $memberNumber = $this->request->getPost('member_number');
 
@@ -170,7 +172,7 @@ class ReadOnSpot extends \App\Controllers\BaseController
      */
     public function addByBarcodeNonMember()
     {
-        $locationId = $this->request->getCookie('Location_id');
+        $locationId = KioskAuth::requestLocationId($this->request);
         $barcode    = $this->request->getPost('barcode');
         $nama       = trim($this->request->getPost('nama') ?? '');
 
@@ -241,7 +243,7 @@ class ReadOnSpot extends \App\Controllers\BaseController
      */
     public function getTodayData()
     {
-        $locationId = $this->request->getCookie('Location_id');
+        $locationId = KioskAuth::requestLocationId($this->request);
         
         if (!$locationId) {
             return $this->response->setJSON([

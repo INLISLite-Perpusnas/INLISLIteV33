@@ -75,6 +75,24 @@ $routes->group('karantina-katalog', ['namespace' => 'Katalog\Controllers'], func
 });
 
 // -----------------------------------------------------------------------
+// DAFTAR ARTIKEL (katalog berjenis bahan Artikel)
+// -----------------------------------------------------------------------
+$routes->group('daftar-artikel', ['namespace' => 'Katalog\Controllers'], function ($subroutes) {
+    $subroutes->add('', 'KatalogController::daftarArtikel');
+    $subroutes->add('index', 'KatalogController::daftarArtikel');
+});
+
+// -----------------------------------------------------------------------
+// KERANJANG KATALOG (catalogs.IsKeranjang = 1)
+// -----------------------------------------------------------------------
+$routes->group('keranjang-katalog', ['namespace' => 'Katalog\Controllers'], function ($subroutes) {
+    $subroutes->add('', 'KatalogController::keranjang');
+    $subroutes->add('index', 'KatalogController::keranjang');
+    $subroutes->post('masukkan', 'KatalogController::masukkanKeranjang', ['filter' => 'csrf']);
+    $subroutes->post('kembalikan', 'KatalogController::kembalikanKeranjang', ['filter' => 'csrf']);
+});
+
+// -----------------------------------------------------------------------
 // API KATALOG
 // -----------------------------------------------------------------------
 $routes->group('api/katalog', ['namespace' => 'Katalog\Controllers\Api'], function ($subroutes) {

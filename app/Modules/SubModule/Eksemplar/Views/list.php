@@ -11,6 +11,11 @@ $actions = [
     'cetak-label'         => 'Cetak Label',
     'karantina-eksemplar' => 'Karantina Eksemplar',
 ];
+$isKeranjang = !empty($is_keranjang);
+$pageHeading = $isKeranjang ? 'Keranjang Eksemplar' : 'Eksemplar';
+if (!$isKeranjang && is_allowed('keranjang-eksemplar/masukkan')) {
+    $actions['keranjang-eksemplar'] = 'Masukkan ke Keranjang';
+}
 
 /**
  * Konfigurasi lengkap semua jenis kertas beserta model-model label-nya.
@@ -321,8 +326,8 @@ $flashMessage = session()->getFlashdata('swal_html') ?? session()->getFlashdata(
                 <div class="page-title-icon">
                     <i class="pe-7s-server icon-gradient bg-strong-bliss" aria-hidden="true"></i>
                 </div>
-                <div><h1 id="exemplar-title">Eksemplar</h1>
-                    <p class="page-title-subheading">Daftar semua Eksemplar</p>
+                <div><h1 id="exemplar-title"><?= esc($pageHeading) ?></h1>
+                    <p class="page-title-subheading"><?= $isKeranjang ? 'Daftar eksemplar di keranjang' : 'Daftar semua Eksemplar' ?></p>
                 </div>
             </div>
             <div class="page-title-actions">
@@ -333,7 +338,7 @@ $flashMessage = session()->getFlashdata('swal_html') ?? session()->getFlashdata(
                                 <i class="fa fa-home" aria-hidden="true"></i> Home
                             </a>
                         </li>
-                        <li class="breadcrumb-item" aria-current="page">Eksemplar</li>
+                        <li class="breadcrumb-item" aria-current="page"><?= esc($pageHeading) ?></li>
                     </ol>
                 </nav>
             </div>
@@ -351,7 +356,7 @@ $flashMessage = session()->getFlashdata('swal_html') ?? session()->getFlashdata(
         <!-- ── Card Header ──────────────────────────────────────────────── -->
         <div class="card-header">
             <i class="header-icon fa fa-list icon-gradient bg-plum-plate" aria-hidden="true"></i>
-            Daftar Eksemplar
+            <?= $isKeranjang ? 'Keranjang Eksemplar' : 'Daftar Eksemplar' ?>
             <div class="btn-actions-pane-right actions-icon-btn">
                 <?php if (is_allowed('eksemplar/create')) : ?>
                     <a href="<?= esc(base_url('eksemplar/create') . '?' . http_build_query(['slug' => $slug])) ?>" class="btn btn-success">
@@ -381,6 +386,11 @@ $flashMessage = session()->getFlashdata('swal_html') ?? session()->getFlashdata(
                 <button class="btn btn-primary" id="btnProcess2" type="button" style="height:38px; padding: 0 16px; flex-shrink:0;">
                     <i class="fa fa-check" aria-hidden="true"></i> Proses
                 </button>
+                <?php if ($isKeranjang && is_allowed('keranjang-eksemplar/kembalikan')) : ?>
+                    <button class="btn btn-info" id="kembalikan_keranjang" type="button" style="height:38px; padding: 0 16px; flex-shrink:0;" title="Kembalikan eksemplar yang dipilih ke daftar eksemplar">
+                        <i class="fa fa-undo" aria-hidden="true"></i> Kembalikan ke Eksemplar
+                    </button>
+                <?php endif; ?>
             </div>
 
             <!-- ── Baris 2: Opsi Cetak (muncul jika aksi = Cetak Label) ── -->
@@ -550,9 +560,12 @@ window.exemplarListConfig = <?= json_encode([
     'paperSizes' => $paper_size_config,
     'csrfName' => csrf_token(),
     'csrfHash' => csrf_hash(),
+    'keranjang' => $isKeranjang,
+    'kembalikanUrl' => base_url('keranjang-eksemplar/kembalikan'),
     'actions' => [
         'cetak-label' => base_url('eksemplar/print_label'),
         'karantina-eksemplar' => base_url('eksemplar/proses_karantina'),
+        'keranjang-eksemplar' => base_url('keranjang-eksemplar/masukkan'),
     ],
 ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 </script>

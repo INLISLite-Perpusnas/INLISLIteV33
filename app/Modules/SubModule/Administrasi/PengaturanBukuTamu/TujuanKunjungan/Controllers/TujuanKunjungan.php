@@ -15,7 +15,7 @@ class TujuanKunjungan extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->tujuankunjunganModel = new \TujuanKunjungan\Models\TujuanKunjunganModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/tujuankunjungan/';
 
         if (!file_exists($this->uploadPath)) {

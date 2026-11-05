@@ -15,7 +15,7 @@ class UnitKerja extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->unitkerjaModel = new \UnitKerja\Models\UnitKerjaModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/unitkerja/';
 
         if (!file_exists($this->uploadPath)) {

@@ -3,13 +3,6 @@ $request = service('request');
 $slug = $request->getGet('slug') ?? 'kartu';
 $branch_id = user()->branch_id ?? '';
 
-$db = db_connect('backend');
-$builder = $db
-	->table('t_template')
-	->select('t_template.*')
-	->where('t_template.category', 'kartu')
-	->orderBy('t_template.sort', 'asc');
-
 $templates = $builder->get()->getResult();
 ?>
 

@@ -538,6 +538,29 @@ class Home extends \Base\Controllers\BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
         $this->data['title'] = 'Pendaftaran Online';
+        $this->data['member_rules'] = $this->getMemberRules();
         return view('Home\Views\pendaftaran-online', $this->data);
+    }
+
+    /**
+     * Persyaratan dan tata tertib dari Redaksi Keanggotaan untuk halaman publik.
+     * Isinya HTML dari editor admin, jadi hanya tag teks yang dipertahankan, tanpa atribut.
+     */
+    private function getMemberRules(): array
+    {
+        $rules = db_connect()->table('memberrules')
+            ->select('NameCategory, Contents')
+            ->where('isPublish', 1)
+            ->where('active', 1)
+            ->orderBy('SortNum')
+            ->get()
+            ->getResult();
+
+        foreach ($rules as $rule) {
+            $text = strip_tags((string) $rule->Contents, '<p><br><ul><ol><li><strong><b><em><i><u>');
+            $rule->Contents = preg_replace('/<(\/?[a-z]+)[^>]*>/i', '<$1>', $text);
+        }
+
+        return $rules;
     }
 }

@@ -18,7 +18,7 @@ class Perpanjangan extends \Base\Controllers\BaseController
     {
         $this->perpanjanganModel = new \Perpanjangan\Models\PerpanjanganModel();
         $this->anggotaModel = new \Anggota\Models\AnggotaModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/perpanjangan/';
 
         if (!file_exists($this->uploadPath)) {

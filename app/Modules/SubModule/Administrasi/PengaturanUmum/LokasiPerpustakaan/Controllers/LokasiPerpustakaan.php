@@ -15,7 +15,7 @@ class LokasiPerpustakaan extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->lokasiperpustakaanModel = new \LokasiPerpustakaan\Models\LokasiPerpustakaanModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/lokasiperpustakaan/';
 
         if (!file_exists($this->uploadPath)) {

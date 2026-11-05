@@ -16,7 +16,7 @@ class Banner extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->bannerModel = new \Banner\Models\BannerModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/banner/';
 
         if (!file_exists($this->uploadPath)) {

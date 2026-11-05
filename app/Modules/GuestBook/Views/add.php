@@ -471,13 +471,12 @@
 			</div>
 
 
-			<!-- Member Profile -->
+			<!-- Identitas Anggota -->
 			<div class="member-profile">
 				<div class="welcome-header">
-					<h2>Profil Anggota</h2>
+					<h2><?= esc($member->Fullname) ?></h2>
 					<div class="member-number">No. Anggota: <?= esc($member->MemberNo) ?></div>
 				</div>
-				<?= view('Member\Views\member_profile', array('member' => $member ?? '', 'jenis_anggota' => $jenis_anggota ?? [])) ?>
 			</div>
 
 		<?php endif; ?>

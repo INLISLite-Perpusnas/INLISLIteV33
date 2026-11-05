@@ -15,7 +15,7 @@ class MasterFakultas extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->fakultasModel = new \MasterFakultas\Models\MasterFakultasModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/fakultas/';
         helper('reference');
         if (!file_exists($this->uploadPath)) {

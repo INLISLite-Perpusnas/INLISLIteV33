@@ -5,9 +5,9 @@
 			Profil Anggota			
 		</div>
 		<ul class="nav">
-			<li class="nav-item"><a data-toggle="tab" href="#tab1" class="nav-link show active">Profil Anggota</a></li>
-			<li class="nav-item"><a data-toggle="tab" href="#tab2" class="nav-link show">Lokasi Perpustakaan</a></li>
-			<li class="nav-item"><a data-toggle="tab" href="#tab3" class="nav-link show">Kategori Koleksi</a></li>
+			<li class="nav-item"><a data-toggle="tab" data-bs-toggle="tab" href="#tab1" class="nav-link show active">Profil Anggota</a></li>
+			<li class="nav-item"><a data-toggle="tab" data-bs-toggle="tab" href="#tab2" class="nav-link show">Lokasi Perpustakaan</a></li>
+			<li class="nav-item"><a data-toggle="tab" data-bs-toggle="tab" href="#tab3" class="nav-link show">Kategori Koleksi</a></li>
 		</ul>
 	</div>
 	<div class="card-body">

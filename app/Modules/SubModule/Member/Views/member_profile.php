@@ -119,11 +119,11 @@ helper('date_id');
 						</div>
 						<div class="menu-header-btn-pane">
 							<ul class="nav" id="nav_profile">
-								<li class="nav-item"><a data-toggle="tab" href="#tab1"
+								<li class="nav-item"><a data-toggle="tab" data-bs-toggle="tab" href="#tab1"
 										class="text-light nav-link show active ">Profil Anggota</a></li>
-								<li class="nav-item"><a data-toggle="tab" href="#tab2"
+								<li class="nav-item"><a data-toggle="tab" data-bs-toggle="tab" href="#tab2"
 										class="text-light nav-link show">Lokasi Perpustakaan</a></li>
-								<li class="nav-item"><a data-toggle="tab" href="#tab3"
+								<li class="nav-item"><a data-toggle="tab" data-bs-toggle="tab" href="#tab3"
 										class="text-light nav-link show">Kategori Koleksi</a></li>
 							</ul>
 						</div>

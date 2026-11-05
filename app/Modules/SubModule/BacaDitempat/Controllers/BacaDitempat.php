@@ -16,7 +16,7 @@ class BacaDitempat extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->bacaditempatModel = new \BacaDitempat\Models\BacaDitempatModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/bacaditempat/';
 
         if (!file_exists($this->uploadPath)) {

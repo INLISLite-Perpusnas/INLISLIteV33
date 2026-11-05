@@ -289,8 +289,19 @@ public function create()
     return $this->respond($response);
 }
 
+	/** Pemegang izin user/edit boleh mengelola semua akun; selain itu hanya akunnya sendiri. */
+	private function canManageUsers(): bool
+	{
+		return is_allowed('user/edit', null, false);
+	}
+
 	public function edit($id = null)
 {
+    $canManage = $this->canManageUsers();
+    if (!$canManage && (int) $id !== (int) login_id()) {
+        return $this->failForbidden('Anda hanya bisa mengubah akun Anda sendiri.');
+    }
+
     $this->validation->setRule('username', 'Username', 'required');
     $this->validation->setRule('email', 'Email', 'required');
     
@@ -323,6 +334,11 @@ public function create()
             // 3. Masukkan ke dalam array update data
             'location_ids' => $location_ids_str
         );
+
+        // Data penempatan dan hak akses hanya bisa diubah pengelola akun
+        if (!$canManage) {
+            unset($update_data['unit'], $update_data['company'], $update_data['coordinate'], $update_data['branch_id'], $update_data['location_ids']);
+        }
 
         $group_id = null;
         if (is_member('admin')) {
@@ -378,6 +394,10 @@ public function create()
     $upload_id = $this->request->getPost('upload_id');
     $upload_field = $this->request->getPost('upload_field');
     $upload_title = $this->request->getPost('upload_title');
+
+    if (!$this->canManageUsers() && ((int) $upload_id !== (int) login_id() || $upload_field !== 'avatar')) {
+        return $this->failForbidden('Anda hanya bisa mengubah avatar akun Anda sendiri.');
+    }
 
     // Validasi input
     $validation = \Config\Services::validation();

@@ -15,7 +15,7 @@ class JenisAkses extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->jenisaksesModel = new \JenisAkses\Models\JenisAksesModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/jenisakses/';
 
         if (!file_exists($this->uploadPath)) {

@@ -236,7 +236,7 @@
 	/* Dropzone*/
 	Dropzone.autoDiscover = false;
 
-	function setDropzone(domID, routePath, acceptedFiles = 'application/pdf', maxFiles = 1, maxFilesize = 10, writePath = false) {
+	function setDropzone(domID, routePath, acceptedFiles = 'application/pdf', maxFiles = 1, maxFilesize = 10, writePath = false, extraOptions = {}) {
 		var baseUrl = BASEURL + "/" + routePath;
 		if (maxFiles > 1) {
 			url = baseUrl + "/do_upload";
@@ -246,7 +246,7 @@
 			paramName = "file";
 		}
 
-		var myDropzone = new Dropzone('#' + domID, {
+		var myDropzone = new Dropzone('#' + domID, Object.assign({
 			dictDefaultMessage: "<span class='text-muted'><i class='material-icons mt-2'>cloud_upload</i><br>DRAG &amp; DROP FILES HERE OR CLICK TO UPLOAD</span>",
 			url: url,
 			paramName: paramName,
@@ -254,6 +254,7 @@
 			maxFilesize: maxFilesize,
 			addRemoveLinks: true,
 			acceptedFiles: acceptedFiles,
+			headers: {'<?= csrf_header() ?>': '<?= csrf_hash() ?>'},
 			renameFile: function(file) {
 				var filename = new Date().getTime() + '_' + file.name.toLowerCase().replace(' ', '_');
 				console.log("renameFile");
@@ -278,6 +279,7 @@
 
 				var uuid = file.upload.uuid;
 				var value = response.data.name;
+				file.serverName = value;
 				var name = domID + '[' + uuid + ']';
 
 				$('#' + domID + '_listed').append('<input type="hidden" name="' + name + '" value="' + value + '" />');
@@ -285,27 +287,16 @@
 			removedfile: function(file) {
 				console.log('removedfile');
 				// console.log(file);
-				var name = "";
-
-				var path = WRITEPATH + '/' + 'uploads';
-
-				if (writePath) {
-					path = writePath;
+				// Nama file sementara ditentukan server, tersimpan saat upload berhasil
+				if (file.serverName) {
+					$.ajax({
+						type: 'POST',
+						url: baseUrl + "/do_delete",
+						headers: {'<?= csrf_header() ?>': '<?= csrf_hash() ?>'},
+						data: {name: file.serverName},
+						dataType: 'json'
+					});
 				}
-
-				if (file.upload !== undefined) {
-					name = file.upload.filename;
-				} else {
-					name = file.name;
-					path = ROOTPATH + '/public/uploads/' + routePath;
-				}
-
-				$.ajax({
-					type: 'POST',
-					url: baseUrl + "/do_delete",
-					data: "name=" + name + "&path=" + path,
-					dataType: 'html'
-				});
 
 				$('input[name="' + domID + '[' + file.upload.uuid + ']"]').remove();
 
@@ -314,7 +305,7 @@
 				return true;
 
 			}
-		});
+		}, extraOptions));
 
 		return myDropzone;
 	}

@@ -15,7 +15,7 @@ class KeranjangAnggota extends \hamkamannan\adminigniter\Controllers\BaseControl
     function __construct()
     {
         $this->keranjanganggotaModel = new \KeranjangAnggota\Models\KeranjangAnggotaModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/keranjanganggota/';
 
         if (!file_exists($this->uploadPath)) {

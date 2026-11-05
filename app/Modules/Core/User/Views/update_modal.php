@@ -1,14 +1,14 @@
 <?php
 $branch = get_ref_single('branchs', 'ID=' . $user->branch_id, 'data');
 ?>
-<div class="modal fade" id="modal_edit" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="modal_edit" tabindex="-1" role="dialog" aria-labelledby="modal_edit_title" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="header-icon lnr-pencil icon-gradient bg-plum-plate"> </i> Edit Profil User
+                <h5 class="modal-title" id="modal_edit_title">
+                    Edit profil user
                 </h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Tutup">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -29,17 +29,17 @@ $branch = get_ref_single('branchs', 'ID=' . $user->branch_id, 'data');
                     <div class="form-row">
                         <div class="col-md-6">
                             <div class="position-relative form-group">
-                                <label for="first_name">Nama Depan</label>
+                                <label for="first_name">Nama depan</label>
                                 <div>
-                                    <input type="text" class="form-control" id="first_name" name="first_name" placeholder="Nama Depan" value="<?= $user->first_name ?: ''; ?>" />
+                                    <input type="text" class="form-control" id="first_name" name="first_name" placeholder="Nama depan" value="<?= $user->first_name ?: ''; ?>" />
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="position-relative form-group">
-                                <label for="last_name">Nama Belakang</label>
+                                <label for="last_name">Nama belakang</label>
                                 <div>
-                                    <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Nama Belakang" value="<?= $user->last_name ?: ''; ?>" />
+                                    <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Nama belakang" value="<?= $user->last_name ?: ''; ?>" />
                                 </div>
                             </div>
                         </div>
@@ -55,9 +55,9 @@ $branch = get_ref_single('branchs', 'ID=' . $user->branch_id, 'data');
                         </div>
                         <div class="col-md-6">
                             <div class="position-relative form-group">
-                                <label for="phone">No. Telepon</label>
+                                <label for="phone">No. telepon</label>
                                 <div>
-                                    <input type="text" class="form-control" id="phone" name="phone" placeholder="No. Telepon" value="<?= $user->phone ?: ''; ?>" />
+                                    <input type="text" class="form-control" id="phone" name="phone" placeholder="No. telepon" value="<?= $user->phone ?: ''; ?>" />
                                 </div>
                             </div>
                         </div>
@@ -73,9 +73,9 @@ $branch = get_ref_single('branchs', 'ID=' . $user->branch_id, 'data');
                         </div>
                         <div class="col-md-6">
                             <div class="position-relative form-group">
-                                <label for="pass_confirm">Konfirmasi Password</label>
+                                <label for="pass_confirm">Konfirmasi password</label>
                                 <div>
-                                    <input type="password" class="form-control" id="pass_confirm" name="pass_confirm" placeholder="Konfirmasi Password" />
+                                    <input type="password" class="form-control" id="pass_confirm" name="pass_confirm" placeholder="Konfirmasi password" />
                                 </div>
                             </div>
                         </div>
@@ -92,8 +92,9 @@ $branch = get_ref_single('branchs', 'ID=' . $user->branch_id, 'data');
                         </div>
                     <?php endif ?>
 
+                    <?php if (is_allowed('user/edit', null, false)) : ?>
                     <div class="position-relative form-group">
-                        <label>Akses Lokasi Perpustakaan</label>
+                        <label for="frm_edit_LocationLibrary_id">Akses lokasi perpustakaan</label>
                         <select class="form-control select2" multiple="multiple" name="location_library_ids[]" id="frm_edit_LocationLibrary_id" style="width: 100%;">
                             <?php
                             $selected_locations = !empty($user->location_ids) ? explode(',', $user->location_ids) : [];
@@ -106,6 +107,7 @@ $branch = get_ref_single('branchs', 'ID=' . $user->branch_id, 'data');
                             <?php endforeach; ?>
                         </select>
                     </div>
+                    <?php endif; ?>
 
                 </div>
                 <div class="modal-footer">
@@ -124,7 +126,7 @@ $branch = get_ref_single('branchs', 'ID=' . $user->branch_id, 'data');
     $(document).ready(function() {
         // Inisialisasi Select2 untuk lokasi perpustakaan
         $('#frm_edit_LocationLibrary_id').select2({
-            placeholder: "Pilih Akses Lokasi",
+            placeholder: "Pilih akses lokasi",
             allowClear: true,
             // dropdownParent wajib di-set ke modal agar search box select2 bisa diklik saat di dalam modal
             dropdownParent: $('#modal_edit')
@@ -153,7 +155,7 @@ $branch = get_ref_single('branchs', 'ID=' . $user->branch_id, 'data');
                 if (res.status === 201) {
                     Swal.fire({
                         title: 'Berhasil',
-                        text: 'Profil User berhasil disimpan',
+                        text: 'Profil user berhasil disimpan',
                         icon: 'success',
                         showConfirmButton: false,
                         timer: 3000

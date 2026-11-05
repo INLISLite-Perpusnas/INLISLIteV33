@@ -81,15 +81,15 @@ if (!function_exists('member_register')) {
 
             // Pendaftaran online memakai grup ini; siapkan jika database belum memiliki seed Auth.
             $memberGroup = $db->table('auth_groups')
-                ->where('name', 'anggota')->get()->getFirstRow();
+                ->where('name', 'anggota_online')->get()->getFirstRow();
             if (!$memberGroup) {
                 $db->table('auth_groups')->insert([
-                    'name' => 'anggota',
+                    'name' => 'anggota_online',
                     'description' => 'Anggota perpustakaan',
                 ]);
             }
 
-            $users->withGroup('anggota');
+            $users->withGroup('anggota_online');
             if (!$users->save($user)) {
                 $userErrors = method_exists($users, 'errors') ? $users->errors() : [];
                 throw new \RuntimeException('Akun pengguna gagal disimpan: ' . json_encode($userErrors));

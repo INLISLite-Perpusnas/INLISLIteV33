@@ -15,7 +15,7 @@ class MediaKoleksi extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->mediakoleksiModel = new \MediaKoleksi\Models\MediaKoleksiModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/kategorikoleksi/';
 
         if (!file_exists($this->uploadPath)) {

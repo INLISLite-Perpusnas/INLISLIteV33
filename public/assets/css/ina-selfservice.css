@@ -1,0 +1,578 @@
+/*
+ * Peminjaman Mandiri dan Pengembalian Mandiri (kios) - gaya INA Digital.
+ * Semua aturan dibatasi .ss-ina agar tidak bocor ke layout OPAC.
+ * Skala huruf INA: H4 28/36, H5 24/32, Body 18/26, Body Small 16/24, Caption 14/20, Caption Small 12/16.
+ * Ukuran komponen: Text Field 56px untuk input pemindai, Button 48/44/40px.
+ */
+.ss-ina {
+    --ss-primary: #2d659e;
+    --ss-primary-hover: #24527f;
+    --ss-primary-subtle: #eaf1f8;
+    --ss-text: #1f2937;
+    --ss-text-subtle: #374151;
+    --ss-text-muted: #6b7280;
+    --ss-border: #e5e7eb;
+    --ss-border-strong: #d1d5db;
+    --ss-surface: #ffffff;
+    --ss-page: #f7f7f8;
+    --ss-danger: #c62828;
+    --ss-danger-subtle: #fdecec;
+    --ss-success: #1f7a36;
+    --ss-success-subtle: #e9f6ec;
+    --ss-warning: #8a4b00;
+    --ss-warning-subtle: #fff4e5;
+    --ss-radius: 12px;
+    --ss-radius-sm: 8px;
+    --ss-shadow: 0 1px 3px rgba(16, 24, 40, .08), 0 1px 2px rgba(16, 24, 40, .04);
+    --ss-focus: 0 0 0 3px rgba(45, 101, 158, .2);
+    min-height: 80vh;
+    padding: 114px 0 40px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 24px;
+    color: var(--ss-text);
+    letter-spacing: 0;
+    background: var(--ss-page);
+}
+
+/* Latar halaman sampai ke footer */
+body:has(.ss-ina) {
+    background: #f7f7f8;
+}
+
+.ss-ina .scanner-section {
+    margin-bottom: 24px;
+}
+
+.ss-ina a:not(.btn) {
+    color: var(--ss-primary);
+}
+
+/* ---------- Warna teks ---------- */
+.ss-ina .text-primary { color: var(--ss-primary) !important; }
+.ss-ina .text-success { color: var(--ss-success) !important; }
+.ss-ina .text-warning { color: var(--ss-warning) !important; }
+.ss-ina .text-danger { color: var(--ss-danger) !important; }
+.ss-ina .text-muted { color: var(--ss-text-muted) !important; }
+
+/* ---------- Judul halaman ---------- */
+.ss-ina .ss-page-title {
+    margin: 0 0 4px;
+    font-size: 28px;
+    line-height: 36px;
+    font-weight: 700;
+    color: var(--ss-text);
+}
+
+.ss-ina .ss-page-subtitle {
+    margin: 0;
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 400;
+    color: var(--ss-text-muted);
+}
+
+.ss-ina .ss-success-icon {
+    display: block;
+    margin-bottom: 12px;
+    font-size: 48px;
+    line-height: 1;
+    color: var(--ss-success);
+}
+
+/* ---------- Kartu ---------- */
+.ss-ina .card,
+.ss-ina .return-card {
+    background: var(--ss-surface);
+    border: 1px solid var(--ss-border);
+    border-radius: var(--ss-radius);
+    box-shadow: var(--ss-shadow);
+}
+
+.ss-ina .return-card {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.ss-ina .card-header {
+    padding: 16px 24px;
+    color: var(--ss-text);
+    background: var(--ss-surface);
+    border-bottom: 1px solid var(--ss-border);
+    border-radius: var(--ss-radius) var(--ss-radius) 0 0;
+}
+
+.ss-ina .card-header h4,
+.ss-ina .card-header h5 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 26px;
+    font-weight: 600;
+    color: var(--ss-text);
+}
+
+.ss-ina .card-header i {
+    color: var(--ss-primary);
+}
+
+.ss-ina .card-body {
+    padding: 24px;
+}
+
+.ss-ina h4 {
+    font-size: 18px;
+    line-height: 26px;
+    font-weight: 600;
+}
+
+.ss-ina h5,
+.ss-ina h6 {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+}
+
+.ss-ina small,
+.ss-ina .small {
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.ss-ina hr {
+    background-color: var(--ss-border);
+    border: 0;
+    opacity: 1;
+}
+
+/* ---------- Penanda langkah ---------- */
+.ss-ina .step-indicator {
+    margin-bottom: 24px;
+    padding: 16px 24px;
+    background: var(--ss-primary-subtle);
+    border: 1px solid #cfdeee;
+    border-radius: var(--ss-radius-sm);
+}
+
+.ss-ina .current-step {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+    color: var(--ss-primary);
+}
+
+/* ---------- Text Input ---------- */
+.ss-ina label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    color: var(--ss-text);
+}
+
+.ss-ina .form-control {
+    height: 56px;
+    padding: 0 16px;
+    font-family: inherit;
+    font-size: 18px;
+    line-height: 26px;
+    color: var(--ss-text);
+    text-align: left;
+    letter-spacing: 0;
+    background-color: var(--ss-surface);
+    border: 1px solid var(--ss-border-strong);
+    border-radius: var(--ss-radius-sm);
+    box-shadow: none;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.ss-ina .form-control::placeholder {
+    color: #9ca3af;
+}
+
+.ss-ina .form-control:hover {
+    border-color: #9ca3af;
+}
+
+.ss-ina .form-control:focus {
+    border-color: var(--ss-primary);
+    outline: none;
+    box-shadow: var(--ss-focus);
+}
+
+.ss-ina .ss-help {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--ss-text-muted);
+}
+
+.ss-ina .ss-field {
+    margin-bottom: 20px;
+}
+
+.ss-ina .barcode-input {
+    position: relative;
+}
+
+.ss-ina .barcode-input input {
+    padding-right: 52px;
+}
+
+.ss-ina .barcode-input .scan-icon {
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    font-size: 20px;
+    color: var(--ss-text-muted);
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+/* ---------- Button ---------- */
+.ss-ina .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 20px;
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+    border-radius: var(--ss-radius-sm);
+    box-shadow: none;
+    transform: none;
+    transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+
+.ss-ina .btn i {
+    margin: 0 !important;
+}
+
+.ss-ina .btn-lg {
+    min-height: 48px;
+    padding: 0 24px;
+}
+
+.ss-ina .btn-sm {
+    min-height: 40px;
+    padding: 0 16px;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.ss-ina .btn:focus-visible {
+    outline: 2px solid var(--ss-primary);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+.ss-ina .btn-primary {
+    color: #fff;
+    background: var(--ss-primary);
+    border: 1px solid var(--ss-primary);
+}
+
+.ss-ina .btn-primary:hover,
+.ss-ina .btn-primary:active {
+    color: #fff;
+    background: var(--ss-primary-hover);
+    border-color: var(--ss-primary-hover);
+}
+
+.ss-ina .btn-primary:disabled {
+    color: #6b7280;
+    background: #e5e7eb;
+    border-color: #e5e7eb;
+    opacity: 1;
+}
+
+.ss-ina .btn-outline-primary {
+    color: var(--ss-primary);
+    background: var(--ss-surface);
+    border: 1px solid var(--ss-primary);
+}
+
+.ss-ina .btn-outline-primary:hover,
+.ss-ina .btn-outline-primary:active {
+    color: var(--ss-primary);
+    background: var(--ss-primary-subtle);
+    border-color: var(--ss-primary);
+}
+
+.ss-ina .btn-outline-primary:disabled {
+    color: #6b7280;
+    background: #e5e7eb;
+    border-color: #e5e7eb;
+    opacity: 1;
+}
+
+.ss-ina .btn-outline-secondary {
+    color: var(--ss-text-subtle);
+    background: var(--ss-surface);
+    border: 1px solid var(--ss-border-strong);
+}
+
+.ss-ina .btn-outline-secondary:hover {
+    color: var(--ss-text);
+    background: #f3f4f6;
+    border-color: var(--ss-border-strong);
+}
+
+.ss-ina .btn-outline-danger {
+    color: var(--ss-danger);
+    background: var(--ss-surface);
+    border: 1px solid #f3b4b4;
+}
+
+.ss-ina .btn-outline-danger:hover {
+    color: var(--ss-danger);
+    background: var(--ss-danger-subtle);
+    border-color: #f3b4b4;
+}
+
+.ss-ina .ss-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* ---------- Alert ---------- */
+.ss-ina .alert {
+    padding: 16px;
+    font-size: 14px;
+    line-height: 20px;
+    border: 1px solid;
+    border-radius: var(--ss-radius-sm);
+}
+
+.ss-ina .alert-dismissible {
+    padding-right: 48px;
+}
+
+.ss-ina .alert-dismissible .btn-close {
+    padding: 18px 16px;
+}
+
+.ss-ina .alert-info {
+    color: var(--ss-primary);
+    background: var(--ss-primary-subtle);
+    border-color: #cfdeee;
+}
+
+.ss-ina .alert-success {
+    color: var(--ss-success);
+    background: var(--ss-success-subtle);
+    border-color: #a7d9b3;
+}
+
+.ss-ina .alert-warning {
+    color: var(--ss-warning);
+    background: var(--ss-warning-subtle);
+    border-color: #f5c58a;
+}
+
+.ss-ina .alert-danger {
+    color: var(--ss-danger);
+    background: var(--ss-danger-subtle);
+    border-color: #f3b4b4;
+}
+
+.ss-ina .alert-heading {
+    margin-bottom: 8px;
+    color: inherit;
+}
+
+/* ---------- Badge ---------- */
+.ss-ina .badge,
+.ss-ina .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 600;
+    border-radius: 999px;
+}
+
+.ss-ina .badge.bg-primary {
+    color: var(--ss-primary);
+    background: var(--ss-primary-subtle) !important;
+}
+
+.ss-ina .badge.bg-danger,
+.ss-ina .status-danger {
+    color: var(--ss-danger);
+    background: var(--ss-danger-subtle) !important;
+}
+
+.ss-ina .status-warning {
+    color: var(--ss-warning);
+    background: var(--ss-warning-subtle);
+}
+
+/* ---------- Data anggota, buku, struk ---------- */
+.ss-ina .member-card,
+.ss-ina .loan-summary,
+.ss-ina .return-summary,
+.ss-ina .book-info {
+    margin: 0 0 24px;
+    padding: 20px;
+    background: #f9fafb;
+    border: 1px solid var(--ss-border);
+    border-radius: var(--ss-radius-sm);
+}
+
+.ss-ina .book-info {
+    margin: 24px 0 0;
+}
+
+.ss-ina .book-item,
+.ss-ina .history-item {
+    margin: 12px 0;
+    padding: 16px;
+    background: var(--ss-surface);
+    border: 1px solid var(--ss-border);
+    border-radius: var(--ss-radius-sm);
+    box-shadow: none;
+}
+
+.ss-ina .book-item.overdue {
+    border-color: #f3b4b4;
+}
+
+.ss-ina .book-item-block {
+    position: relative;
+    padding-right: 52px;
+}
+
+.ss-ina .book-item-block + .book-item-block {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--ss-border);
+}
+
+.ss-ina .btn-hapus-item {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40px;
+    padding: 0;
+}
+
+.ss-ina .book-item-block + .book-item-block .btn-hapus-item {
+    top: 16px;
+}
+
+.ss-ina .book-detail {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 4px 0;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.ss-ina .book-detail > span:last-child {
+    text-align: right;
+}
+
+.ss-ina .book-detail strong {
+    font-weight: 600;
+    color: var(--ss-text-subtle);
+}
+
+.ss-ina .receipt-section {
+    margin: 24px 0;
+    padding: 24px;
+    background: var(--ss-surface);
+    border: 1px dashed var(--ss-border-strong);
+    border-radius: var(--ss-radius-sm);
+}
+
+.ss-ina .history-section {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--ss-border);
+}
+
+/* ---------- Status proses ---------- */
+.ss-ina .loading {
+    padding: 20px;
+    text-align: center;
+}
+
+.ss-ina .loading i {
+    font-size: 32px;
+    color: var(--ss-primary);
+    animation: ss-spin 1s linear infinite;
+}
+
+@keyframes ss-spin {
+    to { transform: rotate(360deg); }
+}
+
+.ss-ina .fade-in {
+    animation: ss-fade-in .2s ease-out;
+}
+
+@keyframes ss-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ss-ina .fade-in { animation: none; }
+}
+
+/* ---------- Layar sempit: tombol menumpuk ---------- */
+@media (max-width: 575.98px) {
+    .ss-ina .card-body {
+        padding: 16px;
+    }
+
+    .ss-ina .ss-actions {
+        flex-direction: column;
+    }
+
+    .ss-ina .ss-actions > *,
+    .ss-ina .ss-actions form .btn {
+        width: 100%;
+    }
+
+    .ss-ina .main-container {
+        padding: 0 12px;
+    }
+}
+
+/* ---------- Cetak struk ---------- */
+@media print {
+    header,
+    footer {
+        display: none !important;
+    }
+
+    body:has(.ss-ina) {
+        background: #fff;
+    }
+
+    .ss-ina {
+        min-height: 0;
+        padding: 0;
+        background: #fff !important;
+    }
+
+    .ss-ina .no-print {
+        display: none !important;
+    }
+
+    .ss-ina .card {
+        border: 0;
+        box-shadow: none !important;
+    }
+}

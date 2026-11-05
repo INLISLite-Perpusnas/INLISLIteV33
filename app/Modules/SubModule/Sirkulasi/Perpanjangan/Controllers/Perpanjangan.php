@@ -25,7 +25,7 @@ class Perpanjangan extends \Base\Controllers\BaseController
 		$this->collectionLoanItemModel = new \Peminjaman\Models\CollectionLoanItemModel();
 		$this->collectionLoanExtendModel = new \Peminjaman\Models\CollectionLoanExtendModel();
 
-		$this->uploadPath = ROOTPATH . 'public/uploads/';
+		$this->uploadPath = WRITEPATH . 'uploads/';
 		$this->modulePath = ROOTPATH . 'public/uploads/perpanjangan/';
 
 		if (!file_exists($this->uploadPath)) {

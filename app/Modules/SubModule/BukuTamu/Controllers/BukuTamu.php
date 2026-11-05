@@ -17,7 +17,7 @@ class BukuTamu extends \Base\Controllers\BaseController
     {
         $this->memberguestModel = new \BukuTamu\Models\MemberGuestModel();
         $this->groupguestModel = new \BukuTamu\Models\GroupGuestModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/bukutamu/';
 
         if (!file_exists($this->uploadPath)) {

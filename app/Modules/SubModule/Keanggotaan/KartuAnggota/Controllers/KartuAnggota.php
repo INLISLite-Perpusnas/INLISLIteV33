@@ -29,7 +29,7 @@ class KartuAnggota extends \Base\Controllers\BaseController
         $this->language->setLocale('id');
 
         $this->kartuanggotaModel = new \KartuAnggota\Models\KartuAnggotaModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/kartuanggota/';
 
         if (!file_exists($this->uploadPath)) {

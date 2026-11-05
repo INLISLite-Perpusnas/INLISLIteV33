@@ -3,183 +3,50 @@
 <?= $this->section('content') ?>
 
 
-   <style>
-    :root {
-        --primary-color: #1B3878;
-        --primary-dark: #142a5c;
-        --primary-light: #dbe4f3;
-    }
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-selfservice.css') ?>?v=<?= @filemtime(FCPATH . 'assets/css/ina-selfservice.css') ?>">
 
-    body {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        min-height: 100vh;
-        padding-top: 90px;
-    }
-
-    /* Card */
-    .card {
-        border: none;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Animation */
-    .success-animation {
-        animation: bounceIn 0.8s ease-in-out;
-    }
-
-    @keyframes bounceIn {
-        0% { transform: scale(0.3); opacity: 0; }
-        50% { transform: scale(1.05); }
-        70% { transform: scale(0.9); }
-        100% { transform: scale(1); opacity: 1; }
-    }
-
-    /* Loan Summary */
-    .loan-summary {
-        background: linear-gradient(135deg, #dbe4f3, #c9d6ee);
-        border-radius: 15px;
-        padding: 25px;
-        margin: 20px 0;
-        border-left: 5px solid var(--primary-color);
-    }
-
-    /* Book Item */
-    .book-item {
-        background: white;
-        border-radius: 10px;
-        padding: 15px;
-        margin: 10px 0;
-        border-left: 4px solid var(--primary-color);
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    }
-
-    /* Receipt */
-    .receipt-section {
-        background: white;
-        border-radius: 15px;
-        padding: 30px;
-        margin: 20px 0;
-        border: 2px dashed #dee2e6;
-    }
-
-    /* Buttons */
-    .btn-primary {
-        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-        border: none;
-        border-radius: 25px;
-        padding: 12px 30px;
-        font-weight: 600;
-    }
-
-    .btn-success {
-        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-        border: none;
-        border-radius: 25px;
-        padding: 12px 30px;
-        font-weight: 600;
-    }
-
-    /* Override Bootstrap Colors */
-    .text-success {
-        color: var(--primary-color) !important;
-    }
-
-    .bg-success {
-        background-color: var(--primary-color) !important;
-    }
-
-    .border-success {
-        border-color: var(--primary-color) !important;
-    }
-
-    .alert-success {
-        background-color: var(--primary-light);
-        color: var(--primary-color);
-        border-left: 5px solid var(--primary-color);
-    }
-
-    /* Custom Alert (ganti warning biar konsisten) */
-    .alert-warning {
-        background-color: var(--primary-light);
-        color: var(--primary-color);
-        border-left: 5px solid var(--primary-color);
-    }
-
-    /* Badge */
-    .badge.bg-primary {
-        background-color: var(--primary-color) !important;
-    }
-
-    /* Link hover */
-    a {
-        color: var(--primary-color);
-    }
-
-    a:hover {
-        color: var(--primary-dark);
-    }
-
-    /* Print */
-    @media print {
-        body { background: white !important; }
-        .no-print { display: none !important; }
-        .card { box-shadow: none !important; }
-    }
-
-    /* Mobile */
-    @media (max-width: 768px) {
-        .container { padding: 10px; }
-    }
-</style>
-
-    <div class="container py-4">
+    <div class="ss-ina">
+    <div class="container">
         <!-- Header -->
         <div class="text-center mb-4 no-print">
-            <h1 class="display-4 text-success mb-2">
-                <i class="fas fa-check-circle me-3"></i>Peminjaman Berhasil!
-            </h1>
-            <p class="lead text-muted">Transaksi peminjaman telah berhasil diproses</p>
+            <i class="fas fa-check-circle ss-success-icon" aria-hidden="true"></i>
+            <h1 class="ss-page-title">Peminjaman Berhasil</h1>
+            <p class="ss-page-subtitle">Transaksi peminjaman telah berhasil diproses</p>
         </div>
 
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <!-- Success Card -->
-                <div class="card border-success success-animation">
-                    <div class="card-header bg-success text-white">
+                <div class="card success-animation">
+                    <div class="card-header">
                         <h4 class="mb-0">
                             <i class="fas fa-check-circle me-2"></i>
-                            Transaksi Berhasil
+                            Transaksi berhasil
                         </h4>
                     </div>
                     <div class="card-body">
-                        <!-- Success Icon -->
-                        <div class="text-center mb-4 no-print">
-                            <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
-                        </div>
                         
                         <!-- Loan Summary -->
                         <div class="loan-summary">
-                            <h4 class="text-success mb-4 text-center">
-                                <i class="fas fa-receipt me-2"></i>
-                                Struk Peminjaman
+                            <h4 class="mb-4 text-center">
+                                <i class="fas fa-receipt text-primary me-2"></i>
+                                Struk peminjaman
                             </h4>
                             
                             <div class="row mb-4">
                                 <div class="col-md-6">
-                                    <h6 class="text-primary mb-3">Data Anggota:</h6>
-                                    <p class="mb-1"><strong>Nomor Anggota:</strong> <?= esc($loan->MemberNo) ?></p>
+                                    <h6 class="mb-3">Data anggota:</h6>
+                                    <p class="mb-1"><strong>Nomor anggota:</strong> <?= esc($loan->MemberNo) ?></p>
                                     <p class="mb-1"><strong>Nama:</strong> <?= esc($loan->Fullname) ?></p>
                                     <p class="mb-1"><strong>Email:</strong> <?= esc($loan->Email ?: '-') ?></p>
                                     <p class="mb-1"><strong>Telepon:</strong> <?= esc($loan->Phone ?: '-') ?></p>
                                 </div>
                                 <div class="col-md-6">
-                                    <h6 class="text-primary mb-3">Data Peminjaman:</h6>
-                                    <p class="mb-1"><strong>ID Peminjaman:</strong> <?= esc($loan->ID) ?></p>
-                                    <p class="mb-1"><strong>Tanggal Pinjam:</strong> <?= date('d/m/Y H:i', strtotime($loan->CreateDate)) ?></p>
-                                    <p class="mb-1"><strong>Jumlah Buku:</strong> <?= $loan->CollectionCount ?> buku</p>
-                                    <p class="mb-1"><strong>Masa Peminjaman:</strong> 7 hari</p>
+                                    <h6 class="mb-3">Data peminjaman:</h6>
+                                    <p class="mb-1"><strong>ID peminjaman:</strong> <?= esc($loan->ID) ?></p>
+                                    <p class="mb-1"><strong>Tanggal pinjam:</strong> <?= date('d/m/Y H:i', strtotime($loan->CreateDate)) ?></p>
+                                    <p class="mb-1"><strong>Jumlah buku:</strong> <?= $loan->CollectionCount ?> buku</p>
+                                    <p class="mb-1"><strong>Masa peminjaman:</strong> 7 hari</p>
                                 </div>
                             </div>
 
@@ -192,8 +59,8 @@
                             ?>
                             <?php if($firstDueDate): ?>
                             <div class="alert alert-warning text-center">
-                                <i class="fas fa-calendar-exclamation me-2"></i>
-                                <strong>Tanggal Kembali: <?= date('d/m/Y', strtotime($firstDueDate)) ?></strong><br>
+                                <i class="fas fa-calendar-day me-2"></i>
+                                <strong>Tanggal kembali: <?= date('d/m/Y', strtotime($firstDueDate)) ?></strong><br>
                                 <small>Harap kembalikan buku sebelum tanggal jatuh tempo untuk menghindari denda</small>
                             </div>
                             <?php endif; ?>
@@ -202,9 +69,9 @@
                         <!-- Books List -->
                         <?php if (!empty($loanItems)): ?>
                         <div class="mb-4">
-                            <h5 class="text-primary mb-3">
-                                <i class="fas fa-books me-2"></i>
-                                Daftar Buku yang Dipinjam:
+                            <h5 class="mb-3">
+                                <i class="fas fa-book text-primary me-2"></i>
+                                Daftar buku yang dipinjam:
                             </h5>
                             
                             <?php foreach($loanItems as $index => $item): ?>
@@ -214,15 +81,15 @@
                                         <span class="badge bg-primary"><?= $index + 1 ?></span>
                                     </div>
                                     <div class="col-md-11">
-                                        <h6 class="mb-2 text-primary"><?= esc($item->Title) ?></h6>
+                                        <h6 class="mb-2"><?= esc($item->Title) ?></h6>
                                         <div class="row">
                                             <div class="col-sm-6">
                                                 <p class="mb-1"><small><strong>Pengarang:</strong> <?= esc($item->Author ?: 'Tidak diketahui') ?></small></p>
                                                 <p class="mb-1"><small><strong>Barcode:</strong> <?= esc($item->NomorBarcode) ?></small></p>
                                             </div>
                                             <div class="col-sm-6">
-                                                <p class="mb-1"><small><strong>No. Panggil:</strong> <?= esc($item->CallNumber ?: '-') ?></small></p>
-                                                <p class="mb-1"><small><strong>Tanggal Kembali:</strong> <span class="text-danger"><?= date('d/m/Y', strtotime($item->DueDate)) ?></span></small></p>
+                                                <p class="mb-1"><small><strong>No. panggil:</strong> <?= esc($item->CallNumber ?: '-') ?></small></p>
+                                                <p class="mb-1"><small><strong>Tanggal kembali:</strong> <span class="text-danger"><?= date('d/m/Y', strtotime($item->DueDate)) ?></span></small></p>
                                             </div>
                                         </div>
                                     </div>
@@ -235,10 +102,10 @@
                         <!-- Receipt Section -->
                         <div class="receipt-section">
                             <div class="text-center">
-                                <h6 class="text-muted mb-3">BUKTI PEMINJAMAN</h6>
+                                <h6 class="text-muted mb-3">Bukti peminjaman</h6>
                                 <div class="row">
                                     <div class="col-4">
-                                        <small class="text-muted">ID Transaksi</small><br>
+                                        <small class="text-muted">ID transaksi</small><br>
                                         <strong><?= esc($loan->ID) ?></strong>
                                     </div>
                                     <div class="col-4">
@@ -247,7 +114,7 @@
                                     </div>
                                     <div class="col-4">
                                         <small class="text-muted">Jumlah</small><br>
-                                        <strong><?= $loan->CollectionCount ?> Buku</strong>
+                                        <strong><?= $loan->CollectionCount ?> buku</strong>
                                     </div>
                                 </div>
                                 <hr class="my-3">
@@ -262,7 +129,7 @@
                         <div class="alert alert-info mt-4">
                             <h6 class="alert-heading">
                                 <i class="fas fa-info-circle me-2"></i>
-                                Informasi Penting:
+                                Informasi penting:
                             </h6>
                             <ul class="mb-0">
                                 <li>Simpan struk ini dengan baik sebagai bukti peminjaman</li>
@@ -273,14 +140,14 @@
                         </div>
 
                         <!-- Action Buttons -->
-                        <div class="text-center mt-4 no-print">
-                            <button type="button" class="btn btn-success btn-lg me-3" onclick="window.print()">
+                        <div class="ss-actions mt-4 no-print">
+                            <button type="button" class="btn btn-primary btn-lg" onclick="window.print()">
                                 <i class="fas fa-print me-2"></i>
-                                Cetak Struk
+                                Cetak struk
                             </button>
-                            <a href="<?= base_url('peminjaman-mandiri') ?>" class="btn btn-primary btn-lg">
+                            <a href="<?= base_url('peminjaman-mandiri') ?>" class="btn btn-outline-primary btn-lg">
                                 <i class="fas fa-plus me-2"></i>
-                                Peminjaman Baru
+                                Peminjaman baru
                             </a>
                         </div>
 
@@ -300,11 +167,11 @@
                         <div class="card">
                             <div class="card-body text-center">
                                 <i class="fas fa-undo text-primary fa-2x mb-3"></i>
-                                <h6>Pengembalian Mandiri</h6>
+                                <h6>Pengembalian mandiri</h6>
                                 <p class="small text-muted">Kembalikan buku secara mandiri</p>
                                 <a href="<?= base_url('pengembalian-mandiri') ?>" class="btn btn-outline-primary btn-sm">
                                     <i class="fas fa-arrow-right me-1"></i>
-                                    Ke Pengembalian
+                                    Ke pengembalian
                                 </a>
                             </div>
                         </div>
@@ -313,7 +180,7 @@
                         <div class="card">
                             <div class="card-body text-center">
                                 <i class="fas fa-search text-primary fa-2x mb-3"></i>
-                                <h6>Katalog Online</h6>
+                                <h6>Katalog online</h6>
                                 <p class="small text-muted">Cari koleksi perpustakaan</p>
                                 <a href="<?= base_url('opac') ?>" class="btn btn-outline-primary btn-sm">
                                     <i class="fas fa-arrow-right me-1"></i>
@@ -328,15 +195,16 @@
                 <div class="text-center mt-4 no-print">
                     <a href="<?= base_url() ?>" class="btn btn-outline-secondary">
                         <i class="fas fa-home me-2"></i>
-                        Kembali ke Beranda
+                        Kembali ke beranda
                     </a>
                 </div>
             </div>
         </div>
     </div>
+    </div>
 
- 
-    
+
+
     <script>
         // Auto-print after 3 seconds (optional)
         // setTimeout(function() {

@@ -23,7 +23,7 @@ class JenisAnggota extends \Base\Controllers\BaseController
         $this->lokasi = new \JenisAnggota\Models\LokasiModel();
         $this->jenisbahan = new \JenisBahan\Models\JenisBahanModel();
         $this->defaultbahan = new \JenisAnggota\Models\DefaultBahanModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/jenisanggota/';
         helper('reference');
         if (!file_exists($this->uploadPath)) {

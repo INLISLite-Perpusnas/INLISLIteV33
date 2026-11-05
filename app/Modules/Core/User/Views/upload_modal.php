@@ -1,11 +1,11 @@
-<div class="modal fade" id="modal_upload_img" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="modal_upload_img" tabindex="-1" role="dialog" aria-labelledby="modal_upload_title" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Upload File - <span id="upload_title_span"></span>
+                <h5 class="modal-title" id="modal_upload_title">
+                    Unggah file - <span id="upload_title_span"></span>
                 </h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Tutup">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>

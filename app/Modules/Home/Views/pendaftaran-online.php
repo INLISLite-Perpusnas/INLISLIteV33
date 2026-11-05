@@ -2,251 +2,366 @@
 
 <?= $this->section('style') ?>
 <style>
-    :root {
-      --primary-color: #2563eb;
-      --secondary-color: #475569;
-      --accent-color: #f1f5f9;
-      --success-color: #10b981;
-      --error-color: #ef4444;
-      --border-radius: 12px;
-      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    /* Token INA Digital; layout publik tidak memuatnya, jadi nilainya disamakan dengan layout admin */
+    .reg-page {
+      --ina-primary: #1d5fd1;
+      --ina-primary-hover: #174ea9;
+      --ina-primary-subtle: #eef4ff;
+      --ina-text: #1f2937;
+      --ina-text-subtle: #374151;
+      --ina-text-muted: #6b7280;
+      --ina-icon: #4b5563;
+      --ina-border: #e5e7eb;
+      --ina-border-strong: #d1d5db;
+      --ina-surface: #ffffff;
+      --ina-page: #f7f7f8;
+      --ina-success: #1f7a36;
+      --ina-danger: #c62828;
+      --ina-radius: 12px;
+      --ina-shadow: 0 1px 3px rgba(16, 24, 40, .08), 0 1px 2px rgba(16, 24, 40, .06);
+      color: var(--ina-text);
     }
 
-    .page-header {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-radius: var(--border-radius);
-      box-shadow: var(--shadow);
-      margin-bottom: 2rem;
-      padding: 2rem;
-      text-align: center;
+    .reg-page .page-header {
+      margin-bottom: 24px;
     }
 
-    .page-header h1 {
-      color: var(--primary-color);
+    .reg-page .page-header h1 {
+      color: var(--ina-text);
       font-weight: 700;
-      font-size: 2.5rem;
+      font-size: 32px;
+      line-height: 40px;
+      letter-spacing: -.01em;
       margin: 0;
     }
 
-    .page-header p {
-      color: var(--secondary-color);
-      margin: 0.5rem 0 0 0;
-      font-size: 1.1rem;
+    .reg-page .page-header p {
+      color: var(--ina-text-muted);
+      margin: 4px 0 0;
+      font-size: 16px;
     }
 
-    .registration-container {
-      background: rgb(255, 255, 255);
-      backdrop-filter: blur(20px);
-      border-radius: var(--border-radius);
-      box-shadow: var(--shadow);
-      padding: 3rem;
-      margin-bottom: 2rem;
+    .reg-page .registration-container,
+    .reg-page .progress-section,
+    .reg-page .login-link,
+    .reg-page .rules-card {
+      background: var(--ina-surface);
+      border: 1px solid var(--ina-border);
+      border-radius: var(--ina-radius);
+      box-shadow: var(--ina-shadow);
     }
 
-    .section-header {
+    .reg-page .registration-container {
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .reg-page .section-header {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      margin-bottom: 2rem;
-      padding-bottom: 1rem;
-      border-bottom: 2px solid var(--accent-color);
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--ina-border);
     }
 
-    .section-header .icon {
-      background: var(--primary-color);
-      color: white;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
+    .reg-page .section-header .icon {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.2rem;
-    }
-
-    .section-header h3 {
-      color: var(--primary-color);
-      font-weight: 600;
-      margin: 0;
-      font-size: 1.5rem;
-    }
-
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-
-    .form-label {
-      font-weight: 600;
-      color: var(--secondary-color);
-      margin-bottom: 0.5rem;
-      display: block;
-    }
-
-    .required::after {
-      content: " *";
-      color: var(--error-color);
-    }
-
-    .form-control,
-    .form-select {
-      border: 2px solid #e2e8f0;
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      font-size: 16px;
+      color: var(--ina-primary);
+      background: var(--ina-primary-subtle);
       border-radius: 8px;
-      padding: 0.75rem 1rem;
-      transition: all 0.2s ease;
-      font-size: 1rem;
     }
 
-    .form-control:focus,
-    .form-select:focus {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    .reg-page .section-header h3 {
+      color: var(--ina-text);
+      font-weight: 600;
+      font-size: 18px;
+      line-height: 26px;
+      margin: 0;
+    }
+
+    .reg-page .form-group {
+      margin-bottom: 20px;
+    }
+
+    .reg-page .form-label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ina-text);
+    }
+
+    .reg-page .required::after {
+      content: " *";
+      color: var(--ina-danger);
+    }
+
+    .reg-page .form-control,
+    .reg-page .form-select {
+      min-height: 44px;
+      padding: 10px 14px;
+      font-size: 15px;
+      color: var(--ina-text);
+      background-color: var(--ina-surface);
+      border: 1px solid var(--ina-border-strong);
+      border-radius: 8px;
+      box-shadow: none;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .reg-page .form-select {
+      padding-right: 36px;
+    }
+
+    .reg-page .form-control::placeholder {
+      color: #9ca3af;
+    }
+
+    .reg-page .form-control:hover:not(:disabled):not([readonly]),
+    .reg-page .form-select:hover:not(:disabled) {
+      border-color: #9ca3af;
+    }
+
+    .reg-page .form-control:focus,
+    .reg-page .form-select:focus {
+      border-color: var(--ina-primary);
+      box-shadow: 0 0 0 3px rgba(29, 95, 209, .15);
       outline: none;
     }
 
-    .form-control.is-invalid {
-      border-color: var(--error-color);
+    .reg-page .form-control:disabled,
+    .reg-page .form-control[readonly],
+    .reg-page .form-select:disabled {
+      color: var(--ina-text-muted);
+      background-color: #f3f4f6;
+      border-color: var(--ina-border);
     }
 
-    .form-control.is-valid {
-      border-color: var(--success-color);
+    .reg-page .form-control.is-invalid,
+    .reg-page .form-select.is-invalid {
+      border-color: var(--ina-danger);
     }
 
-    .help-text {
-      font-size: 0.875rem;
-      color: #64748b;
-      margin-top: 0.25rem;
+    .reg-page .form-control.is-valid,
+    .reg-page .form-select.is-valid {
+      border-color: var(--ina-success);
     }
 
-    .btn-primary {
-      background: var(--primary-color);
-      border: none;
-      padding: 0.875rem 2rem;
-      border-radius: 8px;
+    .reg-page .help-text {
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--ina-text-muted);
+    }
+
+    .reg-page .btn {
+      min-height: 44px;
+      padding: 10px 20px;
+      font-size: 15px;
       font-weight: 600;
-      transition: all 0.2s ease;
-      box-shadow: var(--shadow);
-    }
-
-    .btn-primary:hover {
-      background: #1d4ed8;
-      transform: translateY(-1px);
-      box-shadow: 0 8px 25px -8px rgba(37, 99, 235, 0.5);
-    }
-
-    .btn-outline-primary {
-      border: 2px solid var(--primary-color);
-      color: var(--primary-color);
-      padding: 0.875rem 2rem;
       border-radius: 8px;
-      font-weight: 600;
-      transition: all 0.2s ease;
+      box-shadow: none;
+      transition: background-color .15s ease, border-color .15s ease, color .15s ease;
     }
 
-    .btn-outline-primary:hover {
-      background: var(--primary-color);
-      border-color: var(--primary-color);
-      transform: translateY(-1px);
+    .reg-page .btn:focus-visible {
+      outline: 2px solid var(--ina-primary);
+      outline-offset: 2px;
+      box-shadow: none;
     }
 
-    .checkbox-group {
-      background: var(--accent-color);
-      padding: 1.5rem;
+    .reg-page .btn-primary {
+      color: #fff;
+      background: var(--ina-primary);
+      border: 1px solid var(--ina-primary);
+    }
+
+    .reg-page .btn-primary:hover:not(:disabled) {
+      background: var(--ina-primary-hover);
+      border-color: var(--ina-primary-hover);
+    }
+
+    .reg-page .btn-outline-primary {
+      color: var(--ina-primary);
+      background: var(--ina-surface);
+      border: 1px solid var(--ina-primary);
+    }
+
+    .reg-page .btn-outline-primary:hover:not(:disabled) {
+      color: var(--ina-primary);
+      background: var(--ina-primary-subtle);
+      border-color: var(--ina-primary);
+    }
+
+    .reg-page .btn-success {
+      color: #fff;
+      background: var(--ina-success);
+      border: 1px solid var(--ina-success);
+    }
+
+    .reg-page .checkbox-group {
+      padding: 14px 16px;
+      margin: 16px 0;
+      background: var(--ina-surface);
+      border: 1px solid var(--ina-border);
       border-radius: 8px;
-      margin: 1rem 0;
     }
 
-    .form-check-input:checked {
-      background-color: var(--primary-color);
-      border-color: var(--primary-color);
+    .reg-page .form-check-input:checked {
+      background-color: var(--ina-primary);
+      border-color: var(--ina-primary);
     }
 
-    .form-check-label {
+    .reg-page .form-check-label {
+      font-size: 15px;
       font-weight: 500;
-      color: var(--secondary-color);
+      color: var(--ina-text-subtle);
     }
 
-    .progress-section {
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: var(--border-radius);
-      padding: 1.5rem;
-      margin-bottom: 2rem;
+    .reg-page .progress-section {
+      padding: 20px 24px;
+      margin-bottom: 24px;
     }
 
-    .progress {
+    .reg-page .progress {
       height: 8px;
+      background: var(--ina-border);
       border-radius: 4px;
     }
 
-    .progress-bar {
-      background: linear-gradient(90deg, var(--primary-color), #3b82f6);
+    .reg-page .progress-bar {
+      background: var(--ina-primary);
     }
 
-    .step-indicator {
+    .reg-page .step-indicator {
       display: flex;
       justify-content: space-between;
-      margin-top: 1rem;
+      margin-top: 12px;
     }
 
-    .step {
+    .reg-page .step {
       display: flex;
       flex-direction: column;
       align-items: center;
-      font-size: 0.875rem;
-      color: #64748b;
+      gap: 4px;
+      font-size: 14px;
+      color: var(--ina-text-muted);
     }
 
-    .step.active {
-      color: var(--primary-color);
+    .reg-page .step.active {
+      color: var(--ina-primary);
       font-weight: 600;
     }
 
-    .input-group-icon {
+    .reg-page .input-group-icon {
       position: relative;
     }
 
-    .input-group-icon .form-control {
-      padding-left: 3rem;
+    .reg-page .input-group-icon .form-control {
+      padding-left: 42px;
     }
 
-    .input-group-icon .icon {
+    .reg-page .input-group-icon .icon {
       position: absolute;
-      left: 1rem;
-      top: 50%;
+      left: 14px;
+      top: 22px;
       transform: translateY(-50%);
-      color: #64748b;
+      color: var(--ina-icon);
       z-index: 10;
     }
 
-    .card-section {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+    .reg-page .card-section {
+      padding: 24px 24px 4px;
+      margin: 16px 0 24px;
+      background: var(--ina-page);
+      border: 1px solid var(--ina-border);
       border-radius: 8px;
-      padding: 2rem;
-      margin: 2rem 0;
     }
 
-    .login-link {
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: var(--border-radius);
-      padding: 1.5rem;
+    .reg-page .login-link {
+      padding: 16px 24px;
+      margin-bottom: 32px;
       text-align: center;
-      box-shadow: var(--shadow);
-      margin-bottom: 2rem;
+      color: var(--ina-text-subtle);
+    }
+
+    .reg-page .login-link a {
+      color: var(--ina-primary);
+    }
+
+    /* Persyaratan dan tata tertib */
+    .reg-page .rules-card {
+      height: 100%;
+      padding: 24px;
+    }
+
+    .reg-page .rules-card h2 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0 0 16px;
+      font-size: 18px;
+      line-height: 26px;
+      font-weight: 600;
+      color: var(--ina-text);
+    }
+
+    .reg-page .rules-card h2 .icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      font-size: 16px;
+      color: var(--ina-primary);
+      background: var(--ina-primary-subtle);
+      border-radius: 8px;
+    }
+
+    .reg-page .rules-content {
+      font-size: 15px;
+      line-height: 24px;
+      color: var(--ina-text-subtle);
+    }
+
+    .reg-page .rules-content ul,
+    .reg-page .rules-content ol {
+      padding-left: 20px;
+      margin: 0;
+    }
+
+    .reg-page .rules-content li {
+      margin-bottom: 8px;
+    }
+
+    .reg-page .rules-content li:last-child,
+    .reg-page .rules-content p:last-child {
+      margin-bottom: 0;
     }
 
     @media (max-width: 768px) {
-      .registration-container {
-        padding: 1.5rem;
+      .reg-page .registration-container {
+        padding: 20px;
       }
 
-      .page-header h1 {
-        font-size: 2rem;
+      .reg-page .card-section {
+        padding: 16px 16px 0;
       }
 
-      .section-header {
-        flex-direction: column;
-        text-align: center;
+      .reg-page .page-header h1 {
+        font-size: 26px;
+        line-height: 34px;
+      }
+
+      .reg-page .step {
+        font-size: 13px;
       }
     }
 
@@ -260,17 +375,40 @@
       30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
       40%, 60% { transform: translate3d(4px, 0, 0); }
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      .shake {
+        animation: none;
+      }
+    }
 </style>
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
 
-  <div class="container" style="margin-top: 100px;">
+  <div class="container reg-page" style="margin-top: 120px;">
     <!-- Header -->
     <div class="page-header">
-      <h1><i class="fas fa-user-plus me-3"></i>Pendaftaran Anggota</h1>
+      <h1>Pendaftaran Anggota</h1>
       <p>Daftarkan diri Anda sebagai anggota perpustakaan</p>
     </div>
+
+    <!-- Persyaratan dan Tata Tertib (dikelola di /master-redaksi-keanggotaan) -->
+    <?php if (!empty($member_rules)) : ?>
+      <div class="row g-4 mb-4">
+        <?php foreach ($member_rules as $rule) : ?>
+          <div class="col-md-6">
+            <section class="rules-card">
+              <h2>
+                <span class="icon"><i class="fas fa-clipboard-list" aria-hidden="true"></i></span>
+                <?= esc($rule->NameCategory) ?>
+              </h2>
+              <div class="rules-content"><?= $rule->Contents ?></div>
+            </section>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
 
     <!-- Progress Indicator -->
     <div class="progress-section">

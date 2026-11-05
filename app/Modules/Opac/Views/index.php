@@ -53,12 +53,25 @@
         left: 52px;
         right: 52px;
         max-width: 40rem;
+        width: fit-content;
+        padding: 16px 24px;
+        background: rgba(255, 255, 255, .88);
+        border-radius: 12px;
         text-align: left !important;
     }
 
-    .op-hero.has-banner h1,
+    .op-hero.has-banner .op-hero-heading .op-lead {
+        margin-bottom: 0;
+    }
+
+    /* Banner tampil apa adanya (tanpa lapisan gelap); teks gelap agar terbaca di atas gambar terang */
+    .op-hero.has-banner h1 {
+        color: var(--op-text);
+    }
+
     .op-hero.has-banner .op-lead {
-        color: #fff;
+        color: #374151;
+        font-weight: 500;
     }
 
     .op-hero.has-banner .op-search {
@@ -244,15 +257,6 @@
         margin-left: calc(50% - 50vw);
         overflow: hidden;
         background: var(--op-surface);
-    }
-
-    .op-banner::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        z-index: 1;
-        background: rgba(10, 31, 57, .35);
-        pointer-events: none;
     }
 
     .op-banner .carousel-inner,
@@ -739,12 +743,44 @@
                             </div>
                         </div>
 
+                        <?php $second_keyword_open = ($search2 ?? '') !== ''; ?>
+                        <div class="row g-2 mt-1" id="opac-second-keyword" <?= $second_keyword_open ? '' : 'hidden' ?>>
+                            <div class="col-md-3">
+                                <label class="visually-hidden" for="opac-search-by2">Cari kata kunci kedua berdasarkan</label>
+                                <div class="d-flex gap-2">
+                                <label class="visually-hidden" for="opac-search-op2">Hubungan kedua kata kunci</label>
+                                <select class="form-select op-input" name="search_op2" id="opac-search-op2" style="width: 112px; flex-shrink: 0;" <?= $second_keyword_open ? '' : 'disabled' ?>>
+                                    <option value="OR" <?= ($search_op2 ?? 'OR') === 'OR' ? 'selected' : '' ?>>Atau</option>
+                                    <option value="AND" <?= ($search_op2 ?? 'OR') === 'AND' ? 'selected' : '' ?>>Dan</option>
+                                </select>
+                                <select class="form-select op-input" name="search_by2" id="opac-search-by2" <?= $second_keyword_open ? '' : 'disabled' ?>>
+                                    <?php foreach (['' => 'Semua Kriteria', 'Title' => 'Judul', 'Author' => 'Pengarang', 'Subject' => 'Subjek', 'Publisher' => 'Penerbit', 'ISBN' => 'ISBN'] as $value => $label) : ?>
+                                        <option value="<?= esc($value, 'attr') ?>" <?= ($search_by2 ?? 'Title') === $value ? 'selected' : '' ?>><?= esc($label) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                </div>
+                            </div>
+                            <div class="col-md-7 op-search-main">
+                                <label class="visually-hidden" for="opac-search2">Kata kunci kedua</label>
+                                <i class="fas fa-search" aria-hidden="true"></i>
+                                <input type="search" class="form-control op-input" name="search2" id="opac-search2"
+                                    placeholder="Kata kunci kedua..." value="<?= esc($search2 ?? '') ?>" <?= $second_keyword_open ? '' : 'disabled' ?>>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-op-outline w-100" id="opac-second-remove">Hapus</button>
+                            </div>
+                        </div>
+
                         <div class="op-filters">
                             <div class="op-filters-actions">
                                 <button type="button" class="op-filters-toggle" data-bs-toggle="collapse" data-bs-target="#opac-advanced-filters" aria-controls="opac-advanced-filters" aria-expanded="<?= $advanced_filters_open ? 'true' : 'false' ?>">
                                     <i class="fas fa-sliders-h" aria-hidden="true"></i>
                                     Filter lanjutan
                                     <i class="fas fa-chevron-down op-filters-chevron" aria-hidden="true"></i>
+                                </button>
+                                <button type="button" class="op-filters-toggle" id="opac-second-add" <?= $second_keyword_open ? 'hidden' : '' ?>>
+                                    <i class="fas fa-plus" aria-hidden="true"></i>
+                                    Tambah kata kunci
                                 </button>
                                 <?php if (!empty($semantic_enabled)) : ?>
                                     <div class="form-check form-switch mb-0" title="Cari berdasarkan makna kata kunci, bukan hanya kata yang sama persis">
@@ -794,6 +830,36 @@
                             </div>
                         <?php endif; ?>
                     </form>
+                    <script>
+                        (function () {
+                            const row = document.getElementById('opac-second-keyword');
+                            const add = document.getElementById('opac-second-add');
+                            const input = document.getElementById('opac-search2');
+                            const criteria = document.getElementById('opac-search-by2');
+                            const operator = document.getElementById('opac-search-op2');
+
+                            function setOpen(open) {
+                                row.hidden = !open;
+                                add.hidden = open;
+                                // Saat tertutup tidak ikut terkirim, jadi URL pencarian tetap bersih
+                                input.disabled = !open;
+                                criteria.disabled = !open;
+                                operator.disabled = !open;
+                            }
+
+                            add.addEventListener('click', function () {
+                                setOpen(true);
+                                input.focus();
+                            });
+                            document.getElementById('opac-second-remove').addEventListener('click', function () {
+                                input.value = '';
+                                criteria.value = 'Title';
+                                operator.value = 'OR';
+                                setOpen(false);
+                                add.focus();
+                            });
+                        })();
+                    </script>
                 </div>
             </div>
         </div>
@@ -813,6 +879,21 @@
                             <div class="op-total"><?= isset($total_records) ? number_format($total_records) : '0' ?></div>
                         </div>
                     </div>
+
+                    <?php if (!empty($search_history)) : ?>
+                        <div class="op-side-card">
+                            <div class="op-side-heading">
+                                <h2 class="op-side-title"><i class="fas fa-search" aria-hidden="true"></i>Riwayat Pencarian</h2>
+                            </div>
+                            <div class="op-side-list">
+                                <?php foreach ($search_history as $item) : ?>
+                                    <div class="op-stat-item">
+                                        <a href="<?= esc($item['url'], 'attr') ?>" class="text-truncate" title="<?= esc($item['label'], 'attr') ?>"><?= esc($item['label']) ?></a>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
 
                     <?php
                     $facets = [

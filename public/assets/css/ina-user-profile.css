@@ -1,0 +1,283 @@
+/*
+ * Halaman Profil User (/user/profile dan /user/detail/{id}) beserta modalnya.
+ * Mengikuti INA Digital: Button, Modal, Typography, dan Text Input.
+ * Warna utama halaman ini #2d659e. Cakupan dibatasi agar halaman lain tidak berubah.
+ *
+ * Skala Typography yang dipakai (ukuran/tinggi baris):
+ * Heading H5 24/32, Body 18/26, Body Small 16/24, Caption 14/20, Caption Small 12/16.
+ */
+
+.ina-profile,
+#modal_edit,
+#modal_upload_img {
+    --ina-primary: #2d659e;
+    --ina-primary-hover: #24527f;
+    --ina-primary-subtle: #eaf1f8;
+    --ina-focus-ring: rgba(45, 101, 158, .2);
+    font-family: var(--ina-font);
+}
+
+/* ===== Banner profil ===== */
+.ina-profile .profile-responsive .dropdown-menu-header-inner.bg-primary {
+    background: var(--ina-primary) !important;
+    border-radius: var(--ina-radius, 12px) var(--ina-radius, 12px) 0 0;
+}
+
+.ina-profile .menu-header-title {
+    font-size: 24px;
+    line-height: 32px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.ina-profile .menu-header-subtitle {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 400;
+    color: #fff;
+    opacity: 1;
+}
+
+/* ===== Button =====
+ * Satu aksi utama per layar. Ukuran 40px di banner dan 44px di modal.
+ */
+.ina-profile .ina-btn-profile,
+#modal_edit .modal-footer .btn,
+#modal_upload_img .modal-footer .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 600;
+    white-space: nowrap;
+    border-radius: 8px;
+}
+
+/* Berjajar bila cukup ruang, menumpuk bila layar sempit */
+.ina-profile .menu-header-btn-pane {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+}
+
+.ina-profile .menu-header-btn-pane .btn {
+    margin: 0 !important;
+}
+
+.ina-profile .ina-btn-profile {
+    height: 40px;
+    padding: 0 16px;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+#modal_edit .modal-footer .btn,
+#modal_upload_img .modal-footer .btn {
+    height: 44px;
+    padding: 0 20px;
+    font-size: 16px;
+    line-height: 24px;
+}
+
+/* Di atas banner biru: aksi utama putih, aksi sekunder bergaris putih */
+.ina-profile .ina-btn-profile-primary {
+    color: var(--ina-primary);
+    background-color: #fff;
+    border: 1px solid #fff;
+}
+
+.ina-profile .ina-btn-profile-primary:hover {
+    color: var(--ina-primary-hover);
+    background-color: var(--ina-primary-subtle);
+    border-color: var(--ina-primary-subtle);
+}
+
+.ina-profile .ina-btn-profile-secondary {
+    color: #fff;
+    background-color: transparent;
+    border: 1px solid #fff;
+}
+
+.ina-profile .ina-btn-profile-secondary:hover {
+    color: #fff;
+    background-color: var(--ina-primary-hover);
+}
+
+.ina-profile .ina-btn-profile:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+/* ===== Daftar data profil ===== */
+.ina-profile .list-group-item .widget-content-left > i,
+.ina-profile .card-body .widget-content-left > i {
+    width: 16px;
+    color: var(--ina-primary);
+    text-align: center;
+}
+
+.ina-profile .widget-heading,
+.ina-profile dt {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    color: var(--ina-text);
+    opacity: 1;
+}
+
+.ina-profile .widget-content-right,
+.ina-profile dd {
+    font-size: 16px;
+    line-height: 24px;
+    color: var(--ina-text-subtle);
+}
+
+.ina-profile .badge {
+    font-size: 12px;
+    line-height: 16px;
+    text-transform: none;
+}
+
+.ina-profile .widget-content-right .badge {
+    margin: 0 0 0 8px !important;
+}
+
+/* ===== Modal ===== */
+#modal_edit .modal-header,
+#modal_upload_img .modal-header {
+    align-items: center;
+    background: var(--ina-surface);
+}
+
+#modal_edit .modal-title,
+#modal_upload_img .modal-title {
+    font-size: 18px;
+    line-height: 26px;
+    font-weight: 600;
+}
+
+#modal_edit .close,
+#modal_upload_img .close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin: -8px -8px -8px auto;
+    padding: 0;
+    font-size: 24px;
+    line-height: 1;
+    color: var(--ina-icon);
+    text-shadow: none;
+    opacity: 1;
+    background: transparent;
+    border: 0;
+    border-radius: 8px;
+}
+
+#modal_edit .close:hover,
+#modal_upload_img .close:hover {
+    color: var(--ina-text);
+    background: var(--ina-hover);
+}
+
+#modal_edit .close:focus-visible,
+#modal_upload_img .close:focus-visible {
+    outline: 2px solid var(--ina-primary);
+    outline-offset: 2px;
+}
+
+#modal_edit .modal-footer,
+#modal_upload_img .modal-footer {
+    gap: 12px;
+}
+
+#modal_edit .modal-footer > *,
+#modal_upload_img .modal-footer > * {
+    margin: 0;
+}
+
+/* ===== Text Input: tinggi Medium 44px ===== */
+#modal_edit label,
+#modal_upload_img label {
+    margin-bottom: 4px;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    color: var(--ina-text);
+}
+
+#modal_edit .form-control,
+#modal_upload_img .form-control {
+    font-size: 16px;
+    line-height: 24px;
+}
+
+#modal_edit .form-control:focus,
+#modal_upload_img .form-control:focus {
+    box-shadow: 0 0 0 3px var(--ina-focus-ring);
+}
+
+#modal_edit .form-control.is-invalid,
+#modal_upload_img .form-control.is-invalid {
+    border-color: var(--ina-danger);
+}
+
+#modal_edit .help-block,
+#modal_edit .form-text,
+#modal_upload_img .form-text {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--ina-text-muted) !important;
+}
+
+#modal_upload_img input[type="file"].form-control {
+    height: auto;
+    min-height: 44px;
+    padding: 9px 14px;
+}
+
+/* Select2 di modal disamakan dengan Text Input */
+#modal_edit .select2-container .select2-selection--single,
+#modal_edit .select2-container .select2-selection--multiple {
+    min-height: 44px;
+    font-size: 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+}
+
+#modal_edit .select2-container .select2-selection--single {
+    height: 44px;
+}
+
+#modal_edit .select2-container--default .select2-selection--single .select2-selection__rendered {
+    padding-left: 14px;
+    line-height: 42px;
+    color: var(--ina-text);
+}
+
+#modal_edit .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 42px;
+}
+
+#modal_edit .select2-container--default.select2-container--focus .select2-selection,
+#modal_edit .select2-container--default.select2-container--open .select2-selection {
+    border-color: var(--ina-primary);
+    box-shadow: 0 0 0 3px var(--ina-focus-ring);
+}
+
+#modal_edit .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    color: var(--ina-primary);
+    background: var(--ina-primary-subtle);
+    border: 0;
+    border-radius: 6px;
+}
+
+#modal_edit .select2-container--default .select2-results__option--highlighted[aria-selected],
+#modal_edit .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+    color: #fff;
+    background: var(--ina-primary);
+}

@@ -15,7 +15,7 @@ class JenisDenda extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->jenisdendaModel = new \JenisDenda\Models\JenisDendaModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/jenisdenda/';
 
         if (!file_exists($this->uploadPath)) {

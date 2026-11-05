@@ -1,145 +1,144 @@
 <?php
 $member_type = get_member_type($member->JenisAnggota_id);
+$photo = !empty($member->PhotoUrl) ? base_url('uploads/anggota/' . rawurlencode($member->PhotoUrl)) : '';
+$rows = [
+	['icon' => 'fa-envelope', 'label' => 'Email', 'value' => $member->Email ?: '-'],
+	['icon' => 'fa-id-card', 'label' => 'Jenis Anggota', 'value' => $member_type->jenisanggota ?? '-'],
+	['icon' => 'fa-calendar-check', 'label' => 'Maks Lama Peminjaman', 'value' => (int) ($member_type->MaxLoanDays ?? 0) . ' Hari'],
+	['icon' => 'fa-book', 'label' => 'Maks Jumlah Peminjaman', 'value' => (int) ($member_type->MaxPinjamKoleksi ?? 0) . ' Koleksi'],
+	['icon' => 'fa-calendar-plus', 'label' => 'Maks Perpanjangan', 'value' => (int) ($member_type->DayPerpanjang ?? 0) . ' Hari'],
+	['icon' => 'fa-credit-card', 'label' => 'Denda Terlambat', 'value' => 'Rp ' . number_format((float) ($member_type->DendaPerTenor ?? 0), 0, ',', '.') . ' / ' . ($member_type->DendaTenorSatuan ?? 'Hari')],
+];
 ?>
-<div class="card-shadow-dark profile-responsive card-border mb-2 card">
-	<div class="dropdown-menu-header">
-		<div class="dropdown-menu-header-inner bg-corporate-primary2">
-			<div class="menu-header-image" style="background-image: url('<?= base_url('themes/uigniter') ?>/images/dropdown-header/abstract8.jpg')"></div>
-			<div class="menu-header-content btn-pane-right">
-				<div class="avatar-icon-wrapper mr-2 avatar-icon-xl">
-					<div class="avatar-icon">
-						<?php
-						$default = base_url('uploads/default/no_cover.jpg');
-						$image = $default;
+<style>
+	.member-card {
+		margin-bottom: 16px;
+		overflow: hidden;
+		background: var(--ina-surface, #fff);
+		border: 1px solid var(--ina-border, #e5e7eb);
+		border-radius: var(--ina-radius, 12px);
+		box-shadow: var(--ina-shadow, 0 1px 3px rgba(16, 24, 40, .08));
+	}
 
-						// $image = base_url('uploads/user/'.$user->avatar);
-						// if(empty($user->avatar)){
-						//     $image = $default;
-						// }
-						?>
+	.member-card-head {
+		padding: 24px 16px 20px;
+		text-align: center;
+		border-bottom: 1px solid var(--ina-border, #e5e7eb);
+	}
 
-						<img src="<?= $image ?>" onerror="this.onerror=null;this.src='<?= $default ?>';" alt="User Profile">
-					</div>
-				</div>
-				<div>
-					<h5 class="menu-header-title"><?= $member->name ?? 'Nama Anggota' ?></h5>
-					<h6 class="menu-header-subtitle"><?= $member->MemberNo ?? 'Nomor Anggota' ?></p>
-				</div>
-				<div class="menu-header-btn-pane">
+	.member-card-avatar {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 88px;
+		height: 88px;
+		margin: 0 auto 12px;
+		overflow: hidden;
+		font-size: 32px;
+		color: var(--ina-primary, #1d5fd1);
+		background: var(--ina-primary-subtle, #eef4ff);
+		border-radius: 50%;
+	}
 
-				</div>
-			</div>
+	.member-card-avatar img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.member-card-name {
+		margin: 0;
+		font-size: 18px;
+		font-weight: 600;
+		line-height: 26px;
+		color: var(--ina-text, #1f2937);
+		overflow-wrap: anywhere;
+	}
+
+	.member-card-no {
+		margin: 2px 0 0;
+		font-size: 14px;
+		color: var(--ina-text-muted, #6b7280);
+		overflow-wrap: anywhere;
+	}
+
+	.member-card-list {
+		padding: 0;
+		margin: 0;
+		list-style: none;
+	}
+
+	.member-card-list li {
+		display: flex;
+		align-items: flex-start;
+		gap: 12px;
+		padding: 12px 16px;
+		border-bottom: 1px solid var(--ina-border, #e5e7eb);
+	}
+
+	.member-card-list li:last-child {
+		border-bottom: 0;
+	}
+
+	.member-card-list i {
+		flex-shrink: 0;
+		width: 20px;
+		margin-top: 3px;
+		text-align: center;
+		color: var(--ina-icon, #4b5563);
+	}
+
+	.member-card-text {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.member-card-label {
+		display: block;
+		font-size: 13px;
+		line-height: 18px;
+		color: var(--ina-text-muted, #6b7280);
+	}
+
+	.member-card-value {
+		display: block;
+		font-size: 15px;
+		font-weight: 600;
+		line-height: 22px;
+		color: var(--ina-text, #1f2937);
+		overflow-wrap: anywhere;
+	}
+
+</style>
+<div class="member-card">
+	<div class="member-card-head">
+		<div class="member-card-avatar">
+			<?php if ($photo !== '') : ?>
+				<img src="<?= esc($photo, 'attr') ?>" alt="Foto <?= esc(trim((string) $member->Fullname), 'attr') ?>" onerror="this.outerHTML='<i class=&quot;fa fa-user&quot; aria-hidden=&quot;true&quot;></i>'">
+			<?php else : ?>
+				<i class="fa fa-user" aria-hidden="true"></i>
+			<?php endif; ?>
 		</div>
+		<h2 class="member-card-name"><?= esc(trim((string) $member->Fullname) ?: '-') ?></h2>
+		<p class="member-card-no"><?= esc($member->MemberNo ?? '-') ?></p>
 	</div>
-	<ul class="list-group list-group-flush">
-		<li class="list-group-item">
-			<div class="widget-content p-0">
-				<div class="widget-content-wrapper">
-					<div class="widget-content-left mr-3">
-						<i class="fa fa-envelope"></i>
-					</div>
-					<div class="widget-content-left">
-						<div class="widget-heading"><?= $member->Email ?? '-' ?></div>
-					</div>
-					<div class="widget-content-right">
-
-					</div>
-				</div>
+	<ul class="member-card-list">
+		<li>
+			<i class="fa fa-calendar-alt" aria-hidden="true"></i>
+			<div class="member-card-text">
+				<span class="member-card-label">Masa Berlaku</span>
+				<span class="member-card-value"><?= !empty($member->EndDate) ? esc(date('d-m-Y', strtotime($member->EndDate))) : '-' ?></span>
 			</div>
 		</li>
-		<li class="list-group-item">
-			<div class="widget-content p-0">
-				<div class="widget-content-wrapper">
-					<div class="widget-content-left mr-3">
-						<i class="fa fa-calendar"></i>
-					</div>
-					<div class="widget-content-left">
-						<div class="widget-heading"><?= substr($member->EndDate, 0, 10) ?? '-' ?></div>
-					</div>
-					<div class="widget-content-right">
-						<form method="post" action="<?= base_url('anggota/extend/' . rawurlencode($member->MemberNo)) ?>" class="d-inline" onsubmit="return confirm('Perpanjang masa berlaku anggota?')">
-							<?= csrf_field() ?>
-							<button type="submit" class="btn btn-sm btn-warning">Perpanjang Anggota</button>
-						</form>
-					</div>
+		<?php foreach ($rows as $row) : ?>
+			<li>
+				<i class="fa <?= $row['icon'] ?>" aria-hidden="true"></i>
+				<div class="member-card-text">
+					<span class="member-card-label"><?= esc($row['label']) ?></span>
+					<span class="member-card-value"><?= esc($row['value']) ?></span>
 				</div>
-			</div>
-		</li>
-		<li class="list-group-item">
-			<div class="widget-content p-0">
-				<div class="widget-content-wrapper">
-					<div class="widget-content-left mr-3">
-						<i class="fa fa-id-card"></i>
-					</div>
-					<div class="widget-content-left">
-						<div class="widget-heading"><?= $member_type->name ?? '-' ?></div>
-					</div>
-					<div class="widget-content-right">
-						<small class="text-muted">Jenis Anggota</small>
-					</div>
-				</div>
-			</div>
-		</li>
-		<li class="list-group-item">
-			<div class="widget-content p-0">
-				<div class="widget-content-wrapper">
-					<div class="widget-content-left mr-3">
-						<i class="fa fa-calendar-check"></i>
-					</div>
-					<div class="widget-content-left">
-						<div class="widget-heading"><?= $member_type->max_loan_days ?? '-' ?> Hari</div>
-					</div>
-					<div class="widget-content-right">
-						<small class="text-muted">Maks Lama Peminjaman</small>
-					</div>
-				</div>
-			</div>
-		</li>
-		<li class="list-group-item">
-			<div class="widget-content p-0">
-				<div class="widget-content-wrapper">
-					<div class="widget-content-left mr-3">
-						<i class="fa fa-calendar-check"></i>
-					</div>
-					<div class="widget-content-left">
-						<div class="widget-heading"><?= $member_type->max_loan_attempt ?? '-' ?> Kali</div>
-					</div>
-					<div class="widget-content-right">
-						<small class="text-muted">Maks Jumlah Peminjaman</small>
-					</div>
-				</div>
-			</div>
-		</li>
-		<li class="list-group-item">
-			<div class="widget-content p-0">
-				<div class="widget-content-wrapper">
-					<div class="widget-content-left mr-3">
-						<i class="fa fa-calendar-check"></i>
-					</div>
-					<div class="widget-content-left">
-						<div class="widget-heading"><?= $member_type->extend_days ?? '-' ?> Hari</div>
-					</div>
-					<div class="widget-content-right">
-						<small class="text-muted">Maks Perpanjangan</small>
-					</div>
-				</div>
-			</div>
-		</li>
-		<li class="list-group-item">
-			<div class="widget-content p-0">
-				<div class="widget-content-wrapper">
-					<div class="widget-content-left mr-3">
-						<i class="fa fa-credit-card"></i>
-					</div>
-					<div class="widget-content-left">
-						<div class="widget-heading"><?= $member_type->charge_amount ?? '-' ?> </div>
-					</div>
-					<div class="widget-content-right">
-						<small class="text-muted">Denda Terlambat / <?= $member_type->charge_unit ?? '-' ?></small>
-					</div>
-				</div>
-			</div>
-		</li>
+			</li>
+		<?php endforeach; ?>
 	</ul>
 </div>
 

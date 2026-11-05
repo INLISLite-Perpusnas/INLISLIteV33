@@ -41,7 +41,7 @@ trait AnggotaBase
         $this->password = new \Myth\Auth\Password();
         $this->jenisKelaminModel = new \Anggota\Models\JenisKelaminModel();
 
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/anggota/';
 
         if (!file_exists($this->uploadPath)) {

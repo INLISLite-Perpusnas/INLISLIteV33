@@ -183,6 +183,7 @@
                 maxFiles: maxFiles,
                 maxFilesize: maxSize,
                 acceptedFiles: accepted,
+                headers: {'<?= csrf_header() ?>': '<?= csrf_hash() ?>'},
                 previewsContainer: '#upload_preview_list',
                 previewTemplate: document.getElementById('upload_item_template').innerHTML,
                 thumbnailWidth: 192,
@@ -208,6 +209,7 @@
                         showMessage('Hanya ' + maxFiles + ' file yang diizinkan. Hapus file sebelumnya untuk menggantinya.');
                     });
                     this.on('success', function(file, response) {
+                        file.serverName = response.data.name;
                         var name = 'upload_file[' + file.upload.uuid + ']';
                         $('#upload_file_listed').append($('<input>', { type: 'hidden', name: name, value: response.data.name }));
                         var status = file.previewElement.querySelector('.ina-upload-status');
@@ -226,7 +228,13 @@
                     this.on('removedfile', function(file) {
                         // Hapus file sementara di server bila sudah sempat terunggah
                         if (file.upload && file.status === Dropzone.SUCCESS) {
-                            $.post('<?= base_url('user/do_delete') ?>', { name: file.upload.filename, path: WRITEPATH + '/uploads' });
+                            $.ajax({
+                                type: 'POST',
+                                url: '<?= base_url('user/do_delete') ?>',
+                                headers: {'<?= csrf_header() ?>': '<?= csrf_hash() ?>'},
+                                data: { name: file.serverName },
+                                dataType: 'json'
+                            });
                             $('input[name="upload_file[' + file.upload.uuid + ']"]').remove();
                         }
                         refreshState();

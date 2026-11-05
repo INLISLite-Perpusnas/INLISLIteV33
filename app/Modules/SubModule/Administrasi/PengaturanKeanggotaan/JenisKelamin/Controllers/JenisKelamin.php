@@ -15,7 +15,7 @@ class JenisKelamin extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->jeniskelaminModel = new \JenisKelamin\Models\JenisKelaminModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/jeniskelamin/';
 
         if (!file_exists($this->uploadPath)) {

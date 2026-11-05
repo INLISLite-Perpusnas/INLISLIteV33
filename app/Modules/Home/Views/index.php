@@ -533,7 +533,7 @@
 $usulanRow = db_connect()->table('settingparameters')->select('Value')->where('Name', 'UsulanKoleksiLKD')->get()->getRow();
 $layananMandiri = [
     ['show' => setting_enabled('is_keanggotaan_online'), 'url' => base_url('home/pendaftaran-online'), 'icon' => 'fa-id-card', 'bg' => '#e0f2fe', 'color' => '#0284c7', 'title' => 'Anggota Online', 'desc' => 'Daftar anggota'],
-    ['show' => setting_enabled('is_peminjaman_mandiri', true), 'url' => base_url('peminjaman-mandiri'), 'icon' => 'fa-hand-holding-hand', 'bg' => '#dcfce7', 'color' => '#16a34a', 'title' => 'Pinjam Mandiri', 'desc' => 'Pinjam koleksi'],
+    ['show' => setting_enabled('is_peminjaman_mandiri', true), 'url' => base_url('peminjaman-mandiri'), 'icon' => 'fa-hand-holding-hand', 'bg' => '#dcfce7', 'color' => '#16a34a', 'title' => 'Peminjaman Mandiri', 'desc' => 'Pinjam koleksi'],
     ['show' => setting_enabled('is_pengembalian_mandiri', true), 'url' => base_url('pengembalian-mandiri'), 'icon' => 'fa-rotate-left', 'bg' => '#fef3c7', 'color' => '#d97706', 'title' => 'Pengembalian Mandiri', 'desc' => 'Kembalikan koleksi'],
     ['show' => true, 'url' => base_url('baca-ditempat'), 'icon' => 'fa-book-reader', 'bg' => '#ffe4e6', 'color' => '#e11d48', 'title' => 'Baca di Tempat', 'desc' => 'Layanan baca'],
     ['show' => true, 'url' => base_url('buku-tamu'), 'icon' => 'fa-address-book', 'bg' => '#fae8ff', 'color' => '#c026d3', 'title' => 'Buku Tamu', 'desc' => 'Isi kunjungan'],

@@ -439,16 +439,6 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 	// INITIALIZATION
 	// ========================================
 
-	Dropzone.autoDiscover = false;
-	var file_image = setDropzone('file_image', 'anggota', '.jpg,.jpeg,.png', 1, 2);
-	file_image.on('sending', function (file, xhr, formData) {
-		formData.append('<?= csrf_token() ?>', $('input[name="<?= csrf_token() ?>"]').val());
-	});
-	file_image.on('success', function (file, response) {
-		if (response && response.csrfHash) {
-			$('input[name="<?= csrf_token() ?>"]').val(response.csrfHash);
-		}
-	});
 
 	// ========================================
 	// SELECT2 INITIALIZATION
@@ -721,7 +711,8 @@ $jenis_anggota = get_ref_single('jenis_anggota', 'id=' . $member->JenisAnggota_i
 				return false;
 			}
 			if (file_image.files.length > 0 && $('#file_image_listed input[type="hidden"]').length === 0) {
-				Swal.fire('Gagal', 'Upload foto belum berhasil. Ulangi upload sebelum menyimpan.', 'error');
+				$('#file_image_feedback').text('Foto belum berhasil diunggah. Hapus file lalu pilih ulang sebelum menyimpan.');
+				document.getElementById('file_image_button').scrollIntoView({ block: 'center' });
 				return false;
 			}
 

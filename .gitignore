@@ -137,3 +137,6 @@ nb-configuration.xml
 
 # Model dan data pencarian semantik OPAC
 writable/semantic/*
+
+# Dokumentasi lokal
+/dokumentasi/

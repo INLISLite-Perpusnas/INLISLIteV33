@@ -296,6 +296,14 @@ if (!function_exists('_render_menu_backend')) {
         $html      = '<ul class="' . ($level === 1 ? 'nav-menu-argon' : 'submenu-argon') . '">';
         $hasActive = false;
 
+        $activePathLength = 0;
+        foreach ($result as $row) {
+            $path = trim(explode('?', (string) $row->controller, 2)[0], '/');
+            if ($path !== '' && ($currentPath === $path || strpos($currentPath, $path . '/') === 0)) {
+                $activePathLength = max($activePathLength, strlen($path));
+            }
+        }
+
         foreach ($result as $row) {
 
             if ($row->type === 'label') {
@@ -304,9 +312,14 @@ if (!function_exists('_render_menu_backend')) {
             }
 
             $url            = $row->controller ? base_url($row->controller) : '#';
-            $controllerPath = trim($row->controller, '/');
-            $isActive       = ($currentPath === $controllerPath)
-                || ($controllerPath !== '' && strpos($currentPath, $controllerPath . '/') === 0);
+            // Menu seperti katalog/create?rda=1 hanya aktif jika parameter URL-nya sama
+            [$controllerPath, $controllerQuery] = array_pad(explode('?', trim($row->controller, '/'), 2), 2, '');
+            parse_str($controllerQuery, $controllerParams);
+            $isActive       = (($currentPath === $controllerPath)
+                || ($controllerPath !== '' && strpos($currentPath, $controllerPath . '/') === 0))
+                && array_intersect_key($request->getGet(), $controllerParams) == $controllerParams
+                // Menu yang path-nya lebih spesifik (katalog/create) didahulukan dari induknya (katalog)
+                && strlen($controllerPath) === $activePathLength;
 
             if ($row->childs > 0) {
                 $child         = _render_menu_backend($row->id, $level + 1, $group);

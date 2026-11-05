@@ -15,7 +15,7 @@ class HariLibur extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->hariliburModel = new \HariLibur\Models\HariLiburModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/harilibur/';
 
         if (!file_exists($this->uploadPath)) {

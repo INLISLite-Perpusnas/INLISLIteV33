@@ -15,7 +15,7 @@ class PeraturanPeminjamanHari extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->peraturanpeminjamanhariModel = new \PeraturanPeminjamanHari\Models\PeraturanPeminjamanHariModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/peraturanpeminjamanhari/';
         helper('reference');
         if (!file_exists($this->uploadPath)) {

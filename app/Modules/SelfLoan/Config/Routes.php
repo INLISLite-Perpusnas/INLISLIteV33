@@ -1,7 +1,7 @@
 <?php if (!isset($routes)) {
 	$routes = \Config\Services::routes(true);
 }
-$routes->group('peminjaman-mandiri', ['namespace' => 'SelfLoan\Controllers'], function ($subroutes) {
+$routes->group('peminjaman-mandiri', ['namespace' => 'SelfLoan\Controllers', 'filter' => 'kiosk'], function ($subroutes) {
 	$subroutes->add('/', 'SelfLoan::index');
     $subroutes->add('remove-book', 'SelfLoan::removeBook');
 	$subroutes->add('process-loan', 'SelfLoan::processLoan');

@@ -130,8 +130,8 @@ class Template extends \Base\Controllers\BaseResourceController
             $file_name = '';
             $file_size = '';
             foreach ($files as $uuid => $name) {
-                if (file_exists($this->uploadPath . $name)) {
-                    $file = new File($this->uploadPath . $name);
+                if (is_file($this->uploadPath . basename($name))) {
+                    $file = new File($this->uploadPath . basename($name));
                     $file_name = $file->getRandomName();
                     $file_size = $file->getSizeByUnit('kb');
                     $file->move($this->modulePath, $file_name);

@@ -15,7 +15,7 @@ class JenisBahan extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->jenisbahanModel = new \JenisBahan\Models\JenisBahanModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/jenisbahan/';
 
         if (!file_exists($this->uploadPath)) {

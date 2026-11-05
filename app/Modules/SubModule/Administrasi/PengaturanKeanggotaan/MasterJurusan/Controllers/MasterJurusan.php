@@ -15,7 +15,7 @@ class MasterJurusan extends \Base\Controllers\BaseController
     function __construct()
     {
         $this->jurusanModel = new \MasterJurusan\Models\MasterJurusanModel();
-        $this->uploadPath = ROOTPATH . 'public/uploads/';
+        $this->uploadPath = WRITEPATH . 'uploads/';
         $this->modulePath = ROOTPATH . 'public/uploads/jurusan/';
         helper('reference');
         if (!file_exists($this->uploadPath)) {

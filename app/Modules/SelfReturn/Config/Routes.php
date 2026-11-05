@@ -1,7 +1,7 @@
 <?php if (!isset($routes)) {
 	$routes = \Config\Services::routes(true);
 }
-$routes->group('pengembalian-mandiri', ['namespace' => 'SelfReturn\Controllers'], function ($subroutes) {
+$routes->group('pengembalian-mandiri', ['namespace' => 'SelfReturn\Controllers', 'filter' => 'kiosk'], function ($subroutes) {
     // Main routes - hanya perlu scan barcode
 	$subroutes->add('/', 'SelfReturn::index');
     $subroutes->add('check-book', 'SelfReturn::checkBook');
