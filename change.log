@@ -92,5 +92,7 @@ change.log 05 November 2026
 30. Menambahkan fitur export excel koleksi yang hasilnya sesuai dengan template import koleksi excel.
 31. Menambahkan fitur keranjang katalog dan keranjang eksemplar
 32. Membuat modul aktivasi kios untuk kode dinamis ketika seting lokasi pengaturan  buku tamu,peminjaman mandiri dan pengembalian mandiri
+33. Meningkatkan security keamanan pada saat upload file.
+
 
 

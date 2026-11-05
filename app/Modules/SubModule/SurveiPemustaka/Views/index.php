@@ -108,7 +108,7 @@
     $('body').on('click', '.btn-hasil', function() {
         var id = $(this).data('id');
         $('#modalResults').html('<center>Loading...</center>');
-        $('#result-modal').modal('show');
+        $('#result-modal').appendTo('body').modal('show');
         $.ajax({
             type: 'GET',
             cache: false,
