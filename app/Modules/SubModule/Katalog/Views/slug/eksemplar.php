@@ -11,6 +11,9 @@ $actions = [
     'cetak-label'         => 'Cetak Label',
     'karantina-eksemplar' => 'Karantina Eksemplar',
 ];
+if (is_allowed('keranjang-eksemplar/masukkan')) {
+    $actions['keranjang-eksemplar'] = 'Masukkan ke Keranjang';
+}
 
 /**
  * Konfigurasi lengkap semua jenis kertas beserta model-model label-nya.
@@ -548,7 +551,8 @@ $(document).ready(function () {
         var urlMap = {
             'cetak-label'        : '<?= base_url('eksemplar/print_label') ?>',
             'tampil-opac'        : '<?= base_url('eksemplar/proses_opac') ?>',
-            'karantina-eksemplar': '<?= base_url('eksemplar/proses_karantina') ?>'
+            'karantina-eksemplar': '<?= base_url('eksemplar/proses_karantina') ?>',
+            'keranjang-eksemplar': '<?= base_url('keranjang-eksemplar/masukkan') ?>'
         };
 
         var targetUrl = urlMap[action] || '';
@@ -557,6 +561,7 @@ $(document).ready(function () {
         // Submit via virtual form
         var form = $('<form>', { method: 'post', action: targetUrl });
         form.append($('<input>', { type: 'hidden', name: 'eksemplar_ids', value: checkedItems.join(',') }));
+        form.append($('<input>', { type: 'hidden', name: '<?= csrf_token() ?>', value: '<?= csrf_hash() ?>' }));
 
         if (action === 'cetak-label') {
             // eksemplar_tpl = key template (misal: cetak-label-a4-2, cetak-label-lr3, dst.)
