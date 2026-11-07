@@ -8,7 +8,7 @@ if (!function_exists('get_groups')) {
 		$groups = $model->where('level >', 0)->findAll();
 
 		if (is_member('admin')) {
-			$include = ['admin', 'sa_prov', 'sa_kabkot', 'sa_umum', 'sa_pkpt', 'sa_psm', 'anggota', 'kataloger', 'layanan'];
+			$include = ['admin', 'sa_prov', 'sa_kabkot', 'sa_umum', 'sa_pkpt', 'sa_psm', 'anggota', 'anggota_online', 'kataloger', 'layanan'];
 		} elseif (is_member('sa_prov')) {
 			$include = ['sa_prov', 'sa_kabkot', 'sa_umum', 'sa_pkpt', 'sa_psm', 'keanggotaan', 'kataloger', 'layanan'];
 		} elseif (is_member('sa_kabkot')) {

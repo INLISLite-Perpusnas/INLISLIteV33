@@ -41,12 +41,12 @@ class User extends \Base\Controllers\BaseController
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Access Denied');
             // atau: return redirect()->to('/access-denied');
         }
-        $groups = $this->groupModel->findAll();
+        $groups = $this->groupModel->orderBy('id', 'asc')->findAll();
         $slug = $this->request->getGet('slug') ?? '';
         $branch_id = $this->request->getGet('branch_id') ?? '';
 
-        if (empty($slug) && !empty($groups)) {
-            return redirect()->to(base_url('user/index?slug=' . $groups[0]->name));
+        if ($slug === '') {
+            return redirect()->to(base_url('user/index?slug=semua'));
         }
 
         $this->data['title'] = 'User';

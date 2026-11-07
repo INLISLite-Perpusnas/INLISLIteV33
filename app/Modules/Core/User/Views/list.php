@@ -1,8 +1,5 @@
 <?php
 helper('region');
-helper('user');
-$request = service('request');
-$slug = $request->getGet('slug');
 ?>
 
 <?= $this->extend('App\Views\layout\main'); ?>
@@ -49,20 +46,18 @@ $slug = $request->getGet('slug');
 		</div>
 	</div>
 
-	<ul class="body-tabs body-tabs-layout tabs-animated body-tabs-animated nav">
-		<li class="nav-item">
-			<a class="btn-header-argon <?= ($slug === 'semua') ? 'active' : '' ?>" href="<?= base_url('user/index?slug=semua') ?>">
-				<span>SEMUA</span>
-			</a>
-		</li>
-		<?php foreach (get_groups() as $group) : ?>
-			<li class="nav-item">
-				<a class="btn-header-argon <?= ($slug == $group->name) ? 'active' : '' ?>" href="<?= base_url('user/index?slug=' . $group->name) ?>">
-					<span><?= strtoupper($group->name) ?></span>
-				</a>
-			</li>
-		<?php endforeach; ?>
-	</ul>
+	<form action="<?= base_url('user/index') ?>" method="get" class="d-flex flex-wrap align-items-end mb-3" style="gap: 12px;">
+		<div class="form-group mb-0">
+			<label for="filter_user_group" class="d-block mb-1">Filter grup</label>
+			<select name="slug" id="filter_user_group" class="form-control">
+				<option value="semua" <?= $slug === 'semua' ? 'selected' : '' ?>>Semua grup</option>
+				<?php foreach ($groups as $group) : ?>
+					<option value="<?= esc($group->name, 'attr') ?>" <?= $slug === $group->name ? 'selected' : '' ?>><?= esc($group->name) ?></option>
+				<?php endforeach; ?>
+			</select>
+		</div>
+		<button type="submit" class="btn btn-primary">Terapkan filter</button>
+	</form>
 
 
 
@@ -150,14 +145,14 @@ $slug = $request->getGet('slug');
 </script>
 <script>
 	var url = "<?php echo site_url('api/user/datatable') ?>";
-	var slug = "<?= $slug ?>";
+	var slug = <?= json_encode($slug, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 	var t;
 	$(document).ready(function() {
 		t = $('#tbl_users').DataTable({
 			"processing": true,
 			"serverSide": true,
 			"ajax": {
-				"url": `${url}?slug=${slug}`,
+				"url": `${url}?slug=${encodeURIComponent(slug)}`,
 			},
 			 "dom": "<'row mb-2'<'col-md-6 col-sm-12 text-left'l><'col-md-6 col-sm-12 text-right'f>>" +
                    "<'row'<'col-md-12'tr>>" +
