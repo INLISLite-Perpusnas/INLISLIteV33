@@ -22,7 +22,7 @@ OPAC otomatis memakai pencarian FULLTEXT dan menampilkan pemberitahuan.
 1. `composer install` dengan PHP CLI yang ekstensi FFI-nya bisa dimuat
    (`php -d extension=ffi composer.phar install`). Plugin `codewithkyrian/platform-package-installer` mengunduh
    pustaka native ONNX Runtime sesuai OS.
-2. `php spark migrate` (bukan `--all`) untuk membuat tabel `catalog_embeddings`.
+2. `php spark migrate` (bukan `--all`) untuk membuat tabel `catalog_embeddings` dan menambahkan `semantic_enabled=1` ke `settingparameters` jika belum ada.
 3. Model: dijalankan pertama kali, indexer mengunduh `Xenova/multilingual-e5-small` dari Hugging Face ke
    `writable/semantic/models`. Untuk server offline, salin folder itu dari server lain
    (`writable/semantic/models/Xenova/multilingual-e5-small/{config.json,tokenizer.json,tokenizer_config.json,onnx/model_quantized.onnx}`).
@@ -30,7 +30,7 @@ OPAC otomatis memakai pencarian FULLTEXT dan menampilkan pemberitahuan.
    (Task Scheduler / cron); hanya katalog baru/berubah yang di-embed.
 5. Jalankan `php -d extension=ffi spark semantic:serve` sebagai service yang hidup terus (NSSM di Windows,
    systemd di Linux). Perubahan dari indexer dimuat otomatis tiap 60 detik.
-6. `.env`: `semantic.enabled = true`.
+6. Buka `/master-pengaturan-frontend` dan aktifkan **Pencarian Semantik OPAC**. Nilai tersimpan di `settingparameters` (`Name=semantic_enabled`, `Value=1` aktif, `Value=0` nonaktif); bila baris belum ada, opsi tidak aktif.
 
 `ffi.enable` cukup bawaan (`preload`): FFI hanya dipakai di CLI. Jangan bind service ke selain `127.0.0.1`,
 karena tidak ada autentikasi.

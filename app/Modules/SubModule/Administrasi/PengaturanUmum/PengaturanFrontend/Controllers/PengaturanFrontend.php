@@ -22,6 +22,7 @@ class PengaturanFrontend extends \Base\Controllers\BaseController
 			'is_peminjaman_mandiri'    => ['Peminjaman Mandiri', '1', '0', true, 'Menampilkan layanan peminjaman koleksi mandiri oleh anggota di halaman frontend.'],
 			'is_pengembalian_mandiri'  => ['Pengembalian Mandiri', '1', '0', true, 'Menampilkan layanan pengembalian koleksi mandiri oleh anggota di halaman frontend.'],
 			'is_perpustakaan_keliling' => ['Perpustakaan Keliling', '1', '0', false, 'Mengaktifkan halaman layanan Perpustakaan Keliling di frontend.'],
+			'semantic_enabled'         => ['Pencarian Semantik OPAC', '1', '0', false, 'Menampilkan opsi pencarian semantik di OPAC. Memerlukan service semantic:serve dan indeks katalog yang sudah dibuat.'],
 			'is_sering_dibaca'         => ['Koleksi Sering Dibaca', '1', '0', false, 'Menampilkan section Koleksi Sering Dibaca di halaman beranda.'],
 			'UsulanKoleksiLKD'         => ['Usulan Koleksi', 'True', 'False', false, 'Membuka formulir usulan koleksi oleh pemustaka di halaman frontend.'],
 		],

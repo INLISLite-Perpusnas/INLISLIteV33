@@ -14,7 +14,7 @@ final class SemanticSearch
 
     public static function enabled(): bool
     {
-        return filter_var(config('Semantic')->enabled, FILTER_VALIDATE_BOOLEAN);
+        return filter_var(get_setting_parameter('semantic_enabled'), FILTER_VALIDATE_BOOLEAN);
     }
 
     /**

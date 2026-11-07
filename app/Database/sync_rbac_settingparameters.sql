@@ -7,7 +7,7 @@
 -- c_menus category_id = 1 / menu backend (132 baris)
 --   -> DITIMPA: isi lama dihapus, diganti isi dari sumber (ID dipertahankan).
 --      Menu frontend dan referensi tidak disentuh.
--- settingparameters (158 Name unik)
+-- settingparameters (159 Name unik)
 --   -> Hanya menambah Name yang belum ada. Value yang sudah ada tidak diubah.
 -- auth_groups_users, auth_users_permissions
 --   -> TIDAK disentuh, karena ID user tiap database berbeda.
@@ -1990,6 +1990,9 @@ INSERT INTO `settingparameters` (`Name`, `Value`, `CreateBy`, `CreateDate`, `Cre
 SELECT 'show_sering_dibaca', '12', NULL, '2026-11-02 13:20:09', NULL, NULL, '2026-11-02 13:20:09', NULL, NULL FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM `settingparameters` WHERE `Name` = 'show_sering_dibaca');
 INSERT INTO `settingparameters` (`Name`, `Value`, `CreateBy`, `CreateDate`, `CreateTerminal`, `UpdateBy`, `UpdateDate`, `UpdateTerminal`, `Branch_id`)
 SELECT 'opac_log', 'FALSE', NULL, '2026-11-03 10:15:16', NULL, NULL, '2026-11-03 10:16:59', NULL, NULL FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM `settingparameters` WHERE `Name` = 'opac_log');
+INSERT INTO `settingparameters` (`Name`, `Value`)
+SELECT 'semantic_enabled', '1' FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM `settingparameters` WHERE `Name` = 'semantic_enabled');
 
 COMMIT;
 

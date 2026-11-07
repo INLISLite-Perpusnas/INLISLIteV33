@@ -9,17 +9,10 @@ use CodeIgniter\Config\BaseConfig;
  *
  * Model dijalankan oleh service CLI `php -d extension=ffi spark semantic:serve` yang menyimpan model dan indeks
  * vektor di memori; OPAC memanggilnya lewat HTTP ke host:port di bawah. Bila service tidak aktif, OPAC otomatis
- * memakai pencarian FULLTEXT biasa. Semua nilai bisa ditimpa dari .env, mis. `semantic.enabled = true`.
+ * memakai pencarian FULLTEXT biasa. Koneksi dan model service dapat ditimpa dari .env.
  */
 class Semantic extends BaseConfig
 {
-    /**
-     * Tampilkan opsi pencarian semantik di OPAC.
-     *
-     * @var bool
-     */
-    public $enabled = false;
-
     /**
      * Alamat service semantic:serve. Biarkan 127.0.0.1: service tidak memakai autentikasi.
      *
