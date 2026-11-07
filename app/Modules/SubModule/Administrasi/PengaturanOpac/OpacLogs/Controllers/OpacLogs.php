@@ -28,8 +28,7 @@ class OpacLogs extends \Base\Controllers\BaseController
                     return redirect()->to('/master-opac-logs');
                 }
                 set_setting_parameter('opac_log', $this->request->getPost('opac_log'));
-                set_message('toastr_msg', 'Pengaturan log pencarian OPAC berhasil disimpan');
-                set_message('toastr_type', 'success');
+                session()->setFlashdata('opac_log_saved', true);
             } else {
                 set_message('toastr_msg', implode('<br>', $this->validation->getErrors()));
                 set_message('toastr_type', 'error');

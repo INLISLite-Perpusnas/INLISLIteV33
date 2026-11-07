@@ -59,7 +59,7 @@ class AnggotaImportController extends \Base\Controllers\BaseController
             $memberModel = $this->anggotaModel;
             $branch_id   = user()->branch_id;
 
-            $header    = array_map('strtolower', $data[0]);
+            $header    = array_map(static fn ($value) => strtolower(trim((string) $value)), $data[0]);
             $columnMap = [
                 'no anggota'                     => 'MemberNo',
                 'nama'                           => 'FullName',
@@ -68,6 +68,7 @@ class AnggotaImportController extends \Base\Controllers\BaseController
                 'alamat sesuai ktp'              => 'Address',
                 'propinsi sesuai ktp'            => 'Province',
                 'kabupaten/kota sesuai ktp'      => 'City',
+                'kabupaten / kota sesuai ktp'    => 'City',
                 'kecamatan sesuai ktp'           => 'Kecamatan',
                 'kelurahan sesuai ktp'           => 'Kelurahan',
                 'rt sesuai ktp'                  => 'RT',
@@ -75,6 +76,7 @@ class AnggotaImportController extends \Base\Controllers\BaseController
                 'alamat tempat tinggal sekarang' => 'AddressNow',
                 'propinsi sekarang'              => 'ProvinceNow',
                 'kabupaten/kota sekarang'        => 'CityNow',
+                'kabupaten / kota sekarang'      => 'CityNow',
                 'kecamatan sekarang'             => 'KecamatanNow',
                 'kelurahan sekarang'             => 'KelurahanNow',
                 'rt sekarang'                    => 'RTNow',
@@ -83,6 +85,8 @@ class AnggotaImportController extends \Base\Controllers\BaseController
                 'agama'                          => 'Agama_id',
                 'jenis identitas'                => 'IdentityType_id',
                 'nomor identitas'                => 'IdentityNo',
+                'no. identitas'                  => 'IdentityNo',
+                'no. telp rumah'                => 'Phone',
                 'jenis kelamin'                  => 'Sex_id',
                 'photo url'                      => 'PhotoUrl',
                 'pekerjaan'                      => 'Job_id',
@@ -102,6 +106,8 @@ class AnggotaImportController extends \Base\Controllers\BaseController
                 'tahun ajaran'                   => 'TahunAjaran',
                 'fakultas'                       => 'Fakultas_id',
                 'kelas'                          => 'Kelas_id',
+                'kelas siswa'                   => 'Kelas_id',
+                'jurusan'                       => 'Jurusan_id',
                 'program studi'                  => 'ProgramStudi_id',
                 'phone'                          => 'Phone',
             ];
@@ -122,6 +128,10 @@ class AnggotaImportController extends \Base\Controllers\BaseController
 
                         $dbColumnName = $columnMap[$columnName];
                         $cellValue    = $row[$index] ?? '';
+                        if (str_ends_with($dbColumnName, '_id') && trim((string) $cellValue) === '') {
+                            $memberData[$dbColumnName] = null;
+                            continue;
+                        }
 
                         if ($dbColumnName == 'Sex_id') {
                             $row_data = $db->table('jenis_kelamin')->like('Name', $cellValue)->get()->getRow();
@@ -159,6 +169,9 @@ class AnggotaImportController extends \Base\Controllers\BaseController
                         } elseif ($dbColumnName == 'Kelas_id') {
                             $row_data = $db->table('kelas_siswa')->like('namakelassiswa', $cellValue)->get()->getRow();
                             $memberData['Kelas_id'] = $row_data ? $row_data->id : null;
+                        } elseif ($dbColumnName == 'Jurusan_id') {
+                            $row_data = $db->table('master_jurusan')->like('Nama', $cellValue)->get()->getRow();
+                            $memberData['Jurusan_id'] = $row_data ? $row_data->id : null;
                         } elseif ($dbColumnName == 'ProgramStudi_id') {
                             $row_data = $db->table('master_program_studi')->like('Nama', $cellValue)->get()->getRow();
                             $memberData['ProgramStudi_id'] = $row_data ? $row_data->id : null;

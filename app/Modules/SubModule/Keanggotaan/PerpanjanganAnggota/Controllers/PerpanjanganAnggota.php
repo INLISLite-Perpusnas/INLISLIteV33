@@ -51,6 +51,83 @@ class PerpanjanganAnggota extends \Base\Controllers\BaseController
 
         return view('PerpanjanganAnggota\Views\list', $this->data);
     }
+
+    public function searchMembers()
+    {
+        if (!logged_in() || !is_allowed('perpanjangan-anggota/create', login_id(), false)) {
+            return $this->response->setStatusCode(403)->setJSON(['message' => 'Akses ditolak']);
+        }
+
+        $requestedPage = $this->request->getGet('page');
+        $page = max(1, min(1000, is_scalar($requestedPage) ? (int) $requestedPage : 1));
+        $limit = 50;
+        $query = $this->request->getGet('q');
+        $search = mb_substr(is_string($query) ? trim($query) : '', 0, 100);
+        $builder = db_connect('data')->table('members')
+            ->select('members.ID, members.MemberNo, members.Fullname, members.NoHp, members.Email, members.Address, members.EndDate, members.JenisAnggota_id, members.Fakultas_id, members.Jurusan_id, members.Kelas_id, members.Job_id')
+            ->select('jenis_anggota.jenisanggota AS JenisAnggota_label, master_fakultas.Nama AS Fakultas_label, master_jurusan.Nama AS Jurusan_label')
+            ->join('jenis_anggota', 'jenis_anggota.id = members.JenisAnggota_id', 'left')
+            ->join('master_fakultas', 'master_fakultas.id = members.Fakultas_id', 'left')
+            ->join('master_jurusan', 'master_jurusan.id = members.Jurusan_id', 'left');
+
+        if ($search !== '') {
+            $builder->groupStart()
+                ->like('members.MemberNo', $search, 'after')
+                ->orLike('members.Fullname', $search, 'after')
+                ->groupEnd();
+        }
+
+        foreach (['fakultas' => 'Fakultas_id', 'jurusan' => 'Jurusan_id', 'kelas' => 'Kelas_id', 'pekerjaan' => 'Job_id'] as $param => $column) {
+            $value = $this->request->getGet($param);
+            if ($value !== null && $value !== '') {
+                if (!is_scalar($value) || !ctype_digit((string) $value) || (int) $value < 1) {
+                    return $this->response->setStatusCode(400)->setJSON(['message' => 'Filter tidak valid']);
+                }
+                $builder->where('members.' . $column, (int) $value);
+            }
+        }
+
+        $education = $this->request->getGet('pendidikan');
+        if ($education !== null && $education !== '') {
+            if (!is_scalar($education) || !ctype_digit((string) $education) || (int) $education < 1) {
+                return $this->response->setStatusCode(400)->setJSON(['message' => 'Filter tidak valid']);
+            }
+            $builder->groupStart()
+                ->where('members.JenjangPendidikan_id', (int) $education)
+                ->orGroupStart()
+                    ->where('members.JenjangPendidikan_id', null)
+                    ->where('members.EducationLevel_id', (int) $education)
+                ->groupEnd()
+            ->groupEnd();
+        }
+
+        if ($this->request->getGet('expired') === '1') {
+            $builder->where('members.EndDate <', date('Y-m-d'));
+        }
+
+        $members = $builder->orderBy('members.ID', 'DESC')->get($limit + 1, ($page - 1) * $limit)->getResult();
+        $more = count($members) > $limit && $page < 1000;
+        $results = [];
+        foreach (array_slice($members, 0, $limit) as $member) {
+            $results[] = [
+                'id' => (string) $member->ID,
+                'text' => $member->MemberNo . ' - ' . $member->Fullname,
+                'no_anggota' => $member->MemberNo,
+                'name' => $member->Fullname,
+                'email' => $member->Email,
+                'address' => $member->Address,
+                'date' => $member->EndDate,
+                'nomor' => $member->NoHp,
+                'jenis' => $member->JenisAnggota_id,
+                'jenis_label' => $member->JenisAnggota_label,
+                'fakultas_label' => $member->Fakultas_label,
+                'jurusan_label' => $member->Jurusan_label,
+            ];
+        }
+
+        return $this->response->setJSON(['results' => $results, 'pagination' => ['more' => $more]]);
+    }
+
     public function create()
     {
         $this->data['title'] = 'Tambah PerpanjanganAnggota';

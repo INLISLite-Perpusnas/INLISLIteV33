@@ -1,79 +1,27 @@
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
-<style>
-    .upload-area {
-        border: 2px dashed #ddd;
-        border-radius: 10px;
-        padding: 40px;
-        text-align: center;
-        background-color: #f9f9f9;
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-
-    .upload-area:hover {
-        border-color: #007bff;
-        background-color: #f0f8ff;
-    }
-
-    .upload-area.dragover {
-        border-color: #007bff;
-        background-color: #e3f2fd;
-    }
-
-    .upload-icon {
-        font-size: 48px;
-        color: #ddd;
-        margin-bottom: 20px;
-    }
-
-    .progress-container {
-        display: none;
-        margin-top: 20px;
-    }
-
-    .import-results {
-        display: none;
-        margin-top: 20px;
-    }
-
-    .format-info {
-        background-color: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 5px;
-        padding: 15px;
-        margin-top: 20px;
-    }
-
-    .sample-format {
-        background-color: #f1f3f4;
-        padding: 10px;
-        border-radius: 5px;
-        font-family: monospace;
-        font-size: 0.85em;
-        margin: 10px 0;
-    }
-</style>
 <link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-guestbook-import.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-guestbook-import.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-eksemplar-import.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-eksemplar-import.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
-<div class="app-main__inner">
+<div class="app-main__inner ei-page">
     <div class="app-page-title">
         <div class="page-title-wrapper">
             <div class="page-title-heading">
                 <div class="page-title-icon">
-                    <i class="pe-7s-cloud-upload icon-gradient bg-strong-bliss"></i>
+                    <i class="pe-7s-cloud-upload icon-gradient bg-strong-bliss" aria-hidden="true"></i>
                 </div>
-                <div>Import Eksemplar Excel
-                    <div class="page-title-subheading">Import data katalog, MARC fields, dan collections dari file Excel</div>
+                <div>Import eksemplar Excel
+                    <div class="page-title-subheading">Tambahkan data katalog dan eksemplar sekaligus dari file Excel</div>
                 </div>
             </div>
             <div class="page-title-actions">
-                <nav class="" aria-label="breadcrumb">
+                <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="<?= base_url('eksemplar/import') ?>"><i class="fa fa-home"></i> Home</a></li>
-                        <li class="breadcrumb-item"><a href="<?= base_url('eksemplar/import') ?>">Katalog</a></li>
+                        <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>"><i class="fa fa-home" aria-hidden="true"></i> Beranda</a></li>
+                        <li class="breadcrumb-item"><a href="<?= base_url('eksemplar') ?>">Eksemplar</a></li>
                         <li class="breadcrumb-item" aria-current="page">Import Excel</li>
                     </ol>
                 </nav>
@@ -83,178 +31,120 @@
 
     <div class="main-card mb-3 card">
         <div class="card-header">
-            <i class="header-icon lnr-cloud-upload icon-gradient bg-plum-plate"> </i>Upload File Excel
-            <div class="btn-actions-pane-right">
-                <a href="<?= base_url('eksemplar/download-template') ?>" class="btn btn-info">
-                    <i class="fa fa-download"></i> Download Template
+            Unggah file Excel
+            <div class="gb-import-actions">
+                <a href="<?= base_url('eksemplar/download-template') ?>" class="btn btn-outline-primary gb-import-btn">
+                    <i class="fa fa-download" aria-hidden="true"></i> Unduh template
                 </a>
             </div>
         </div>
         <div class="card-body">
             <?= get_message('message'); ?>
 
+            <div class="ei-notice" role="note">
+                <i class="fa fa-info-circle ei-notice-icon" aria-hidden="true"></i>
+                <div>
+                    <p class="ei-notice-title">Disarankan maksimal 1.000 baris per file</p>
+                    <p>Bagi data yang lebih banyak menjadi beberapa file, karena proses bisa terputus jika berjalan terlalu lama.</p>
+                    <p>Jika terputus, baris yang sudah diproses tetap tersimpan. Saat file diunggah ulang, baris tersebut ditolak karena barcode-nya sudah ada, dan baris lainnya tetap masuk. Isi <code>NO_BARCODE</code> atau <code>NO_INDUK</code> di setiap baris agar tidak ada data yang masuk dua kali.</p>
+                </div>
+            </div>
+
             <form id="form_import" enctype="multipart/form-data">
-                <div class="upload-area" id="upload-area">
-                    <div class="upload-icon">
-                        <i class="fa fa-cloud-upload"></i>
+                <div class="gb-upload-field" id="upload-area">
+                    <i class="fa fa-cloud-upload-alt gb-upload-icon" aria-hidden="true"></i>
+                    <p class="gb-upload-title">Seret file Excel ke sini atau</p>
+                    <button type="button" class="btn btn-outline-primary gb-upload-pick" id="pick-file">Pilih file</button>
+                    <p class="gb-upload-hint">Format .xlsx atau .xls, satu file, maksimal 10 MB.</p>
+                    <input type="file" id="excel_file" name="excel_file" accept=".xlsx,.xls" hidden>
+                </div>
+
+                <div class="gb-upload-item" id="upload-item" data-state="idle" hidden>
+                    <i class="fa fa-file-excel gb-upload-item-icon" aria-hidden="true"></i>
+                    <div class="gb-upload-item-body">
+                        <div class="gb-upload-item-name" id="file-name"></div>
+                        <div class="gb-upload-item-desc" id="file-desc" role="status" aria-live="polite"></div>
+                        <div class="gb-upload-progress" id="file-progress" hidden><span id="file-bar"></span></div>
                     </div>
-                    <h5>Drag & Drop file Excel di sini</h5>
-                    <p class="text-muted">atau klik untuk memilih file</p>
-                    <input type="file" id="excel_file" name="excel_file" accept=".xlsx,.xls" style="display: none;">
-                    <button type="button" class="btn btn-primary" onclick="document.getElementById('excel_file').click();">
-                        <i class="fa fa-folder-open"></i> Pilih File
+                    <button type="button" class="gb-upload-remove" id="file-remove" aria-label="Hapus file">
+                        <i class="fa fa-trash-alt" aria-hidden="true"></i>
                     </button>
                 </div>
 
-                <div id="file-info" style="display: none;" class="mt-3">
-                    <div class="alert alert-info">
-                        <strong>File dipilih:</strong> <span id="file-name"></span><br>
-                        <strong>Ukuran:</strong> <span id="file-size"></span>
-                    </div>
-                    <button type="submit" class="btn btn-success">
-                        <i class="fa fa-upload"></i> Upload & Import
-                    </button>
+                <ul class="gb-import-errors" id="import-errors" tabindex="0" aria-label="Daftar baris yang perlu diperbaiki" hidden></ul>
+
+                <div class="ei-form-actions">
+                    <a class="btn btn-outline-primary gb-import-btn-lg" id="view-catalog" href="<?= base_url('katalog') ?>" hidden>Lihat data katalog</a>
+                    <button type="submit" class="btn btn-primary gb-import-btn-lg" id="submit-import" disabled>Import</button>
                 </div>
             </form>
-
-            <div class="progress-container" id="progress-container">
-                <h6>Proses Import...</h6>
-                <div class="progress">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
-                </div>
-                <small class="text-muted">Mohon tunggu, sedang memproses data...</small>
-            </div>
-
-            <div class="import-results" id="import-results">
-                <!-- Results will be displayed here -->
-            </div>
         </div>
     </div>
 
     <div class="main-card mb-3 card">
-        <div class="card-header">
-            <i class="header-icon lnr-question-circle icon-gradient bg-plum-plate"> </i>Format File Excel
-        </div>
+        <div class="card-header">Panduan pengisian</div>
         <div class="card-body">
-            <div class="format-info">
-                <h6><i class="fa fa-info-circle"></i> Informasi Format File</h6>
-                <p>File Excel harus memiliki kolom-kolom berikut:</p>
+            <p class="ei-text">Gunakan template yang tersedia atau template INLISLite 3. Kolom bertanda <span class="ei-required">*</span> wajib diisi.</p>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6>Data Catalog (Wajib):</h6>
-                        <ul class="small">
-                            <li><strong>JUDUL_UTAMA</strong> <span class="text-danger">*</span> - Judul utama buku</li>
-                            <li><strong>ANAK_JUDUL</strong> - Subtitle/anak judul</li>
-                            <li><strong>TAJUK_PENGARANG</strong> - Nama pengarang utama</li>
-                            <li><strong>PENERBIT</strong> - Nama penerbit</li>
-                            <li><strong>KOTA_TERBIT</strong> - Tempat terbit</li>
-                            <li><strong>TAHUN_TERBIT</strong> - Tahun terbit</li>
-                            <li><strong>SUBJEK_TOPIK</strong> - Topik/subjek buku</li>
-                            <li><strong>JUMLAH_HALAMAN</strong> - Deskripsi halaman</li>
-                            <li><strong>DIMENSI</strong> - Ukuran buku</li>
-                            <li><strong>ISBN</strong> - Nomor ISBN</li>
-                            <li><strong>NO_DDC</strong> - Nomor klasifikasi DDC</li>
-                            <li><strong>NOMOR_PANGGIL_KATALOG</strong> - Call number</li>
-                            <li><strong>BAHASA</strong> - Bahasa buku</li>
-                            <li><strong>ABSTRAK</strong> - Ringkasan/catatan</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-6">
-                        <h6>Data Collection (Wajib):</h6>
-                        <ul class="small">
-                            <li><strong>NO_BARCODE</strong> <span class="text-danger">*</span> - Nomor barcode unik</li>
-                            <li><strong>NO_INDUK</strong> <span class="text-danger">*</span> - Nomor induk</li>
-                            <li><strong>NO_RFID</strong> - Nomor RFID</li>
-                            <li><strong>TGL_PENGADAAN</strong> - Tanggal pengadaan (dd-mm-yyyy)</li>
-                            <li><strong>JENIS_SUMBER</strong> - Pembelian/Hadiah/Hibah/dll</li>
-                            <li><strong>NAMA_SUMBER</strong> - Nama sumber/vendor</li>
-                            <li><strong>MATA_UANG</strong> - IDR/USD/dll</li>
-                            <li><strong>HARGA</strong> - Harga satuan (angka)</li>
-                            <li><strong>KODE_LOKASI_PERPUSTAKAAN</strong> - Pusat/Cabang1/dll</li>
-                            <li><strong>KODE_LOKASI_RUANG</strong> - 0101/0102/dll</li>
-                            <li><strong>AKSES</strong> - Dapat dipinjam/Tidak dapat dipinjam</li>
-                            <li><strong>KATEGORI</strong> - Koleksi Umum/Referensi/dll</li>
-                            <li><strong>MEDIA</strong> - Buku/CD/DVD/dll</li>
-                            <li><strong>KETERSEDIAAN</strong> - Tersedia/Dipinjam/dll</li>
-                            <li><strong>NOMOR_PANGGIL_EKSEMPLAR</strong> - Call number eksemplar</li>
-                        </ul>
-                    </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <h3 class="ei-heading">Data katalog</h3>
+                    <dl class="ei-columns">
+                        <dt>JENIS_BAHAN</dt><dd>Sesuai master. Jika kosong: Monograf</dd>
+                        <dt>JUDUL_UTAMA <span class="ei-required">*</span></dt><dd>Judul utama</dd>
+                        <dt>ANAK_JUDUL</dt><dd>Anak judul</dd>
+                        <dt>PERNYATAAN_TANGGUNGJAWAB</dt><dd>Penanggung jawab</dd>
+                        <dt>TAJUK_PENGARANG</dt><dd>Pengarang utama</dd>
+                        <dt>TAJUK_PENGARANG_BADAN_KOOPERASI</dt><dd>Badan pengarang</dd>
+                        <dt>PENGARANG_TAMBAHAN_NAMA_ORANG</dt><dd>Pisahkan dengan titik koma</dd>
+                        <dt>PENGARANG_TAMBAHAN_NAMA_BADAN</dt><dd>Pisahkan dengan titik koma</dd>
+                        <dt>EDISI</dt><dd>Edisi</dd>
+                        <dt>KOTA_TERBIT</dt><dd>Tempat terbit</dd>
+                        <dt>PENERBIT</dt><dd>Nama penerbit</dd>
+                        <dt>TAHUN_TERBIT</dt><dd>Tahun terbit</dd>
+                        <dt>JUMLAH_HALAMAN</dt><dd>Contoh: 120 hlm.</dd>
+                        <dt>DIMENSI</dt><dd>Contoh: 25 cm.</dd>
+                        <dt>ISBN, ISSN, ISMN</dt><dd>Pisahkan dengan titik koma</dd>
+                        <dt>NO_DDC</dt><dd>Nomor klasifikasi DDC</dd>
+                        <dt>NOMOR_PANGGIL_KATALOG</dt><dd>Pisahkan dengan titik koma</dd>
+                        <dt>ABSTRAK</dt><dd>Pisahkan dengan titik koma</dd>
+                        <dt>BAHASA</dt><dd>Kode bahasa, contoh: ind</dd>
+                        <dt>SUBJEK_TOPIK</dt><dd>Pisahkan dengan titik koma</dd>
+                    </dl>
                 </div>
-
-                <div class="alert alert-info mt-3">
-                    <strong>Format Data:</strong>
-                    <ul class="mb-0">
-                        <li><strong>Tanggal:</strong> Gunakan format dd-mm-yyyy (contoh: 14-02-2015)</li>
-                        <li><strong>Harga:</strong> Angka tanpa titik/koma (contoh: 75000)</li>
-                        <li><strong>Judul Lengkap:</strong> Akan digabung dari JUDUL_UTAMA + ANAK_JUDUL</li>
-                        <li><strong>Deskripsi Fisik:</strong> Akan digabung dari JUMLAH_HALAMAN + DIMENSI</li>
-                    </ul>
-                </div>
-
-                <div class="alert alert-success mt-3">
-                    <strong>Mapping ID Otomatis:</strong>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <strong>Jenis Sumber:</strong>
-                            <ul class="small mb-2">
-                                <li>Pembelian → ID: 1</li>
-                                <li>Hadiah/Hibah → ID: 2</li>
-                                <li>Tukar Menukar → ID: 3</li>
-                                <li>Deposit → ID: 4</li>
-                            </ul>
-
-                            <strong>Media:</strong>
-                            <ul class="small mb-2">
-                                <li>Buku → ID: 2</li>
-                                <li>CD/DVD → ID: 3</li>
-                                <li>Majalah → ID: 4</li>
-                                <li>Jurnal → ID: 5</li>
-                            </ul>
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Ketersediaan:</strong>
-                            <ul class="small mb-2">
-                                <li>Tersedia → ID: 1</li>
-                                <li>Dipinjam → ID: 2</li>
-                                <li>Hilang → ID: 3</li>
-                                <li>Rusak → ID: 4</li>
-                            </ul>
-
-                            <strong>Akses:</strong>
-                            <ul class="small mb-2">
-                                <li>Dapat dipinjam → ID: 1</li>
-                                <li>Tidak dapat dipinjam → ID: 2</li>
-                                <li>Referensi → ID: 3</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="alert alert-warning mt-3">
-                    <strong>Catatan Penting:</strong>
-                    <ul class="mb-0">
-                        <li>Kolom yang bertanda <span class="text-danger">*</span> wajib diisi</li>
-                        <li>ControlNumber dan NomorBarcode harus unik dalam sistem</li>
-                        <li>Format file yang didukung: .xlsx, .xls</li>
-                        <li>Maksimal ukuran file: 10MB</li>
-                        <li>Gunakan template yang disediakan untuk memudahkan proses import</li>
-                        <li>Data akan divalidasi sebelum disimpan ke database</li>
-                        <li>Jika terjadi error pada satu baris, baris tersebut akan dilewati</li>
-                    </ul>
-                </div>
-
-                <div class="alert alert-info mt-3">
-                    <strong>Tips Penggunaan:</strong>
-                    <ul class="mb-0">
-                        <li>Download template terlebih dahulu untuk memahami format yang benar</li>
-                        <li>Pastikan tidak ada baris kosong di tengah data</li>
-                        <li>Gunakan format tanggal yang konsisten (YYYY-MM-DD)</li>
-                        <li>Untuk MARC fields, gunakan separator "|" untuk subfields</li>
-                        <li>Backup data sebelum melakukan import dalam jumlah besar</li>
-                    </ul>
+                <div class="col-md-6">
+                    <h3 class="ei-heading">Data eksemplar</h3>
+                    <dl class="ei-columns">
+                        <dt>TGL_PENGADAAN <span class="ei-required">*</span></dt><dd>Format dd-mm-yyyy, contoh: 14-02-2015</dd>
+                        <dt>NO_INDUK</dt><dd>Nomor induk</dd>
+                        <dt>NO_BARCODE</dt><dd>Harus unik. Jika kosong: dibuat otomatis</dd>
+                        <dt>NO_RFID</dt><dd>Jika kosong: dibuat otomatis</dd>
+                        <dt>JENIS_SUMBER</dt><dd>Sesuai master. Jika kosong: Pembelian</dd>
+                        <dt>NAMA_SUMBER <span class="ei-required">*</span></dt><dd>Sesuai master Nama Sumber Perolehan</dd>
+                        <dt>MATA_UANG</dt><dd>Kode mata uang. Jika kosong: IDR</dd>
+                        <dt>HARGA</dt><dd>Angka tanpa titik atau koma. Jika kosong: 0</dd>
+                        <dt>KODE_LOKASI_PERPUSTAKAAN <span class="ei-required">*</span></dt><dd>Kode lokasi perpustakaan</dd>
+                        <dt>KODE_LOKASI_RUANG <span class="ei-required">*</span></dt><dd>Kode ruang di perpustakaan tersebut</dd>
+                        <dt>AKSES</dt><dd>Sesuai master. Jika kosong: Dapat dipinjam</dd>
+                        <dt>KATEGORI</dt><dd>Sesuai master. Jika kosong: Koleksi Umum</dd>
+                        <dt>MEDIA</dt><dd>Sesuai master. Jika kosong: Buku</dd>
+                        <dt>KETERSEDIAAN</dt><dd>Sesuai master. Jika kosong: Tersedia</dd>
+                        <dt>NOMOR_PANGGIL_EKSEMPLAR</dt><dd>Nomor panggil eksemplar</dd>
+                        <dt>EDISI_SERIAL</dt><dd>Khusus terbitan berkala</dd>
+                        <dt>TGL_TERBIT_EDISI_SERIAL</dt><dd>Format dd-mm-yyyy</dd>
+                        <dt>BAHAN_SERTAAN_SERIAL</dt><dd>Khusus terbitan berkala</dd>
+                        <dt>KETERANGAN_LAIN_SERIAL</dt><dd>Khusus terbitan berkala</dd>
+                    </dl>
                 </div>
             </div>
+
+            <h3 class="ei-heading">Cara data diproses</h3>
+            <ul class="ei-list">
+                <li>Nama pada kolom bertuliskan "Sesuai master" harus sama dengan nama di menu master, tanpa membedakan huruf besar-kecil.</li>
+                <li>Baris yang salah dilewati dan ditampilkan di hasil import. Baris lain tetap masuk.</li>
+                <li>Buku dengan jenis bahan, judul, pengarang, edisi, kota, penerbit, dan tahun terbit yang sama masuk ke satu katalog, dengan satu eksemplar per baris.</li>
+                <li>Nomor barcode tidak boleh sama dengan eksemplar yang sudah ada.</li>
+            </ul>
         </div>
     </div>
 </div>
@@ -263,194 +153,185 @@
 <?= $this->section('script'); ?>
 <script>
     $(document).ready(function() {
-        const uploadArea = $('#upload-area');
-        const fileInput = $('#excel_file');
-        const fileInfo = $('#file-info');
-        const fileName = $('#file-name');
-        const fileSize = $('#file-size');
-        const progressContainer = $('#progress-container');
-        const importResults = $('#import-results');
+        const MAX_SIZE = 10 * 1024 * 1024;
+        const TIMEOUT_MESSAGE = 'Proses terlalu lama dan terputus. Baris yang sudah diproses tetap tersimpan. Bagi file menjadi maksimal 1.000 baris per file, lalu unggah ulang.';
+        const form = $('#form_import');
+        const field = $('#upload-area');
+        const input = $('#excel_file');
+        const pick = $('#pick-file');
+        const item = $('#upload-item');
+        const desc = $('#file-desc');
+        const progress = $('#file-progress');
+        const bar = $('#file-bar');
+        const remove = $('#file-remove');
+        const errorList = $('#import-errors');
+        const submit = $('#submit-import');
+        const viewCatalog = $('#view-catalog');
+        let selected = null;
+        let finished = false;
+        let uploading = false;
 
-        // Drag and drop functionality
-        uploadArea.on('dragover', function(e) {
-            e.preventDefault();
-            $(this).addClass('dragover');
-        });
-
-        uploadArea.on('dragleave', function(e) {
-            e.preventDefault();
-            $(this).removeClass('dragover');
-        });
-
-        uploadArea.on('drop', function(e) {
-            e.preventDefault();
-            $(this).removeClass('dragover');
-
-            const files = e.originalEvent.dataTransfer.files;
-            if (files.length > 0) {
-                handleFileSelect(files[0]);
-            }
-        });
-
-        // Click to upload
-        uploadArea.on('click', function() {
-            fileInput.click();
-        });
-
-        // File input change
-        fileInput.on('change', function() {
-            if (this.files.length > 0) {
-                handleFileSelect(this.files[0]);
-            }
-        });
-
-        function handleFileSelect(file) {
-            // Validate file type
-            const allowedTypes = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'];
-            const allowedExtensions = ['.xlsx', '.xls'];
-            const fileExtension = file.name.toLowerCase().substr(file.name.lastIndexOf('.'));
-
-            if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'File harus berformat Excel (.xlsx atau .xls)',
-                    type: 'error'
-                });
-                return;
-            }
-
-            // Validate file size (10MB max)
-            if (file.size > 10 * 1024 * 1024) {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Ukuran file tidak boleh lebih dari 10MB',
-                    type: 'error'
-                });
-                return;
-            }
-
-            // Display file info
-            fileName.text(file.name);
-            fileSize.text(formatFileSize(file.size));
-            fileInfo.show();
+        function formatSize(bytes) {
+            return bytes < 1024 * 1024
+                ? Math.max(1, Math.round(bytes / 1024)) + ' KB'
+                : (bytes / 1024 / 1024).toFixed(1) + ' MB';
         }
 
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        function setFieldDisabled(disabled) {
+            field.toggleClass('is-disabled', disabled);
+            pick.prop('disabled', disabled);
         }
 
-        // Form submit
-        $('#form_import').on('submit', function(e) {
-            e.preventDefault();
+        function setItem(state, text) {
+            item.prop('hidden', false).attr('data-state', state);
+            desc.text(text);
+            progress.prop('hidden', state !== 'uploading');
+            remove.prop('hidden', state === 'uploading' || finished);
+        }
 
-            if (!fileInput[0].files.length) {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Silakan pilih file terlebih dahulu',
-                    type: 'error'
-                });
+        function showErrors(errors) {
+            errorList.empty();
+            (errors || []).forEach(function(message) {
+                errorList.append($('<li>').text(message));
+            });
+            errorList.prop('hidden', errorList.children().length === 0);
+        }
+
+        function reset() {
+            selected = null;
+            finished = false;
+            input.val('');
+            item.prop('hidden', true).attr('data-state', 'idle');
+            bar.css('width', '0');
+            showErrors([]);
+            setFieldDisabled(false);
+            viewCatalog.prop('hidden', true);
+            submit.text('Import').prop('disabled', true);
+        }
+
+        function chooseFile(file) {
+            if (!file || field.hasClass('is-disabled')) {
                 return;
             }
 
-            const formData = new FormData(this);
+            reset();
+            $('#file-name').text(file.name);
+            setFieldDisabled(true);
 
-            // Show progress
-            progressContainer.show();
-            importResults.hide();
-            fileInfo.hide();
+            if (!/\.(xlsx|xls)$/i.test(file.name)) {
+                setItem('error', 'File harus berformat Excel (.xlsx atau .xls). Hapus file ini, lalu pilih file lain.');
+                return;
+            }
+            if (file.size > MAX_SIZE) {
+                setItem('error', 'Ukuran file ' + formatSize(file.size) + ', maksimal 10 MB. Bagi data menjadi beberapa file.');
+                return;
+            }
 
-            // Animate progress bar
-            let progress = 0;
-            const progressInterval = setInterval(function() {
-                progress += Math.random() * 15;
-                if (progress > 90) progress = 90;
-                $('.progress-bar').css('width', progress + '%');
-            }, 500);
+            selected = file;
+            setItem('selected', formatSize(file.size));
+            submit.prop('disabled', false);
+        }
+
+        function failed(message, errors) {
+            uploading = false;
+            selected = null;
+            setItem('error', message);
+            showErrors(errors);
+            submit.text('Import').prop('disabled', true);
+        }
+
+        pick.on('click', function() {
+            input.trigger('click');
+        });
+        input.on('change', function() {
+            chooseFile(this.files[0]);
+        });
+        remove.on('click', function() {
+            reset();
+            pick.trigger('focus');
+        });
+        field.on('dragenter dragover', function(e) {
+            e.preventDefault();
+            if (!field.hasClass('is-disabled')) {
+                field.addClass('is-dragover');
+            }
+        });
+        field.on('dragleave drop', function(e) {
+            e.preventDefault();
+            field.removeClass('is-dragover');
+        });
+        field.on('drop', function(e) {
+            chooseFile(e.originalEvent.dataTransfer.files[0]);
+        });
+
+        form.on('submit', function(e) {
+            e.preventDefault();
+
+            if (finished) {
+                reset();
+                pick.trigger('focus');
+                return;
+            }
+            if (!selected || uploading) {
+                return;
+            }
+
+            const body = new FormData();
+            body.append('excel_file', selected);
+
+            uploading = true;
+            setItem('uploading', 'Mengunggah file...');
+            showErrors([]);
+            submit.text('Memproses...').prop('disabled', true);
 
             $.ajax({
                 url: '<?= base_url('eksemplar/uploadexcel') ?>',
                 type: 'POST',
-                data: formData,
+                data: body,
                 processData: false,
                 contentType: false,
                 dataType: 'json',
+                xhr: function() {
+                    const xhr = $.ajaxSettings.xhr();
+                    if (xhr.upload) {
+                        xhr.upload.addEventListener('progress', function(event) {
+                            if (event.lengthComputable) {
+                                bar.css('width', Math.round(event.loaded / event.total * 100) + '%');
+                                if (event.loaded === event.total) {
+                                    desc.text('Memeriksa dan menyimpan data. Jangan tutup halaman ini.');
+                                }
+                            }
+                        });
+                    }
+                    return xhr;
+                },
                 success: function(response) {
-                    clearInterval(progressInterval);
-                    $('.progress-bar').css('width', '100%');
-
-                    setTimeout(function() {
-                        progressContainer.hide();
-                        displayResults(response);
-                    }, 1000);
+                    const data = response.data;
+                    uploading = false;
+                    selected = null;
+                    finished = true;
+                    setItem(data.error_count > 0 ? 'warning' : 'success',
+                        data.success_count + ' baris berhasil diimport' + (data.error_count > 0 ? ', ' + data.error_count + ' baris dilewati.' : '.'));
+                    showErrors(data.errors);
+                    viewCatalog.prop('hidden', false);
+                    submit.text('Import file lain').prop('disabled', false);
                 },
                 error: function(xhr) {
-                    clearInterval(progressInterval);
-                    progressContainer.hide();
-
-                    let errorMessage = 'Terjadi kesalahan saat mengimport data';
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        errorMessage = xhr.responseJSON.message;
-                    } else if (xhr.responseJSON && xhr.responseJSON.messages) {
-                        errorMessage = Object.values(xhr.responseJSON.messages).join(', ');
+                    const json = xhr.responseJSON;
+                    let message = 'Terjadi kendala di server. Muat ulang halaman, lalu coba lagi.';
+                    if (xhr.status === 504 || xhr.status === 502 || xhr.status === 524) {
+                        message = TIMEOUT_MESSAGE;
+                    } else if (xhr.status === 0) {
+                        message = 'Koneksi terputus. Baris yang sudah diproses tetap tersimpan. Periksa jaringan, lalu unggah ulang.';
+                    } else if (json && json.message) {
+                        message = json.message;
+                    } else if (json && json.messages) {
+                        message = Object.values(json.messages).join(' ');
                     }
-
-                    Swal.fire({
-                        title: 'Error!',
-                        text: errorMessage,
-                        type: 'error'
-                    });
-
-                    // Reset form
-                    resetForm();
+                    failed(message, json && json.errors);
                 }
             });
         });
-
-        function displayResults(response) {
-            let html = '<div class="alert alert-success">';
-            html += '<h5><i class="fa fa-check-circle"></i> Import Selesai</h5>';
-            html += '<p><strong>Data berhasil diimport:</strong> ' + response.data.success_count + ' record</p>';
-
-            if (response.data.error_count > 0) {
-                html += '<p><strong>Data gagal diimport:</strong> ' + response.data.error_count + ' record</p>';
-
-                if (response.data.errors.length > 0) {
-                    html += '<div class="mt-3">';
-                    html += '<h6>Detail Error:</h6>';
-                    html += '<div style="max-height: 200px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 5px;">';
-                    response.data.errors.forEach(function(error) {
-                        html += '<small class="text-danger">• ' + error + '</small><br>';
-                    });
-                    html += '</div>';
-                    html += '</div>';
-                }
-            }
-
-            html += '</div>';
-
-            // Add action buttons
-            html += '<div class="text-center mt-3">';
-            html += '<button type="button" class="btn btn-primary" onclick="location.reload()">Import Lagi</button> ';
-            html += '<a href="<?= base_url('katalog') ?>" class="btn btn-success">Lihat Data Katalog</a>';
-            html += '</div>';
-
-            importResults.html(html).show();
-
-            // Reset form
-            resetForm();
-        }
-
-        function resetForm() {
-            $('#form_import')[0].reset();
-            fileInfo.hide();
-            fileName.text('');
-            fileSize.text('');
-            $('.progress-bar').css('width', '0%');
-        }
     });
 </script>
 <?= $this->endSection('script'); ?>

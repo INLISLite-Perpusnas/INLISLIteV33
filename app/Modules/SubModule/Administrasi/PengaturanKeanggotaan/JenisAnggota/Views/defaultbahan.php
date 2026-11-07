@@ -60,30 +60,21 @@ $slug = $request->getGet('slug') ?? '';
     <div class="main-card mb-3 card">
         <div class="card-header">
             <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Form Setting Default Jenis Bahan
+            <div class="btn-actions-pane-right actions-icon-btn">
+                <a data-bs-toggle="modal" data-bs-target="#modal_create" href="javascript:void(0);" class="btn btn-catalog-add" title="Tambah"><i class="fa fa-plus"></i> Tambah</a>
+            </div>
         </div>
 
         <div class="card-body">
             <div id="infoMessage"><?= $message ?? ''; ?></div>
             <?= get_message('message'); ?>
 
-            <!-- your_view.php -->
-            <div class="dropdown">
-                <button class="btn btn-primary dropdown-toggle" type="button" id="locationDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Tambah 
-                </button>
-                <div class="dropdown-menu" aria-labelledby="locationDropdown">
-                    <?php foreach ($CollectionCategorys  as $jenisbahan) : ?>
-                        <a class="dropdown-item" href="#" data-jenisbahan-id="<?= $jenisbahan->ID ?>"><?= $jenisbahan->Name ?></a>
-                    <?php endforeach; ?>
-                </div>
-                <input type="hidden" id="master-jenis-anggota" value="<?= $JenisAnggota_id ?>">
-            </div><br>
             <table style="width: 100%;" id="tbl_data" class="table table-hover table-striped table-bordered">
                 <thead>
                     <tr>
-                        <th>No</th>
-                        <th>Nama</th>
-                        <th>Action</th>
+                        <th class="text-center" width="35">No</th>
+                        <th class="text-center">Nama</th>
+                        <th class="text-center" style="min-width: 150px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -91,10 +82,10 @@ $slug = $request->getGet('slug') ?? '';
                     <?php foreach ($joinedData as $row) : ?>
                         <tr>
 
-                            <td><?= $no++ ?></td>
+                            <td class="text-center"><?= $no++ ?></td>
                             <td><?= $row->Name ?></td>
-                            <td>
-                                <button class="btn btn-danger" data-record-id="<?= $row->ID ?>" onclick="deleteRecord(this)">Delete</button>
+                            <td class="text-center">
+                                <a href="javascript:void(0);" data-record-id="<?= $row->ID ?>" onclick="deleteRecord(this)" title="Hapus" aria-label="Hapus" class="ina-action ina-action-danger"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -105,28 +96,53 @@ $slug = $request->getGet('slug') ?? '';
     </div>
 </div>
 
+<div class="modal fade" id="modal_create" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="header-icon lnr-plus-circle icon-gradient bg-plum-plate"> </i> Tambah Default Jenis Bahan
+                </h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="frm_add" method="post" action="">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="frm_add_CollectionCategory_id">Jenis Bahan</label>
+                        <select required class="form-control" id="frm_add_CollectionCategory_id" name="CollectionCategory_id">
+                            <?php foreach ($CollectionCategorys as $jenisbahan) : ?>
+                                <option value="<?= $jenisbahan->ID ?>"><?= $jenisbahan->Name ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <input type="hidden" name="JenisAnggota_id" value="<?= $JenisAnggota_id ?>">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="submit" class="btn btn-primary" id="btnAdd">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.1/dist/sweetalert2.min.js" integrity="sha384-cova8l3suyxv07mYN97ndzFjqOOOFnihka1QgMonm/XXG0qjFcFQHt/6Ax4x+Zru" crossorigin="anonymous"></script>
-
 <script>
     $(document).ready(function () {
-        $('.dropdown-item').click(function (e) {
-            e.preventDefault(); // Mencegah reload default <a href="#">
+        $('#modal_create').appendTo('body');
 
-            var jenisbahanID = $(this).data('jenisbahan-id');
-            var jenisAnggota = $('#master-jenis-anggota').val();
+        $('#frm_add').submit(function (e) {
+            e.preventDefault();
 
             $.ajax({
                 type: 'POST',
                 url: '<?= base_url('master-jenis-anggota/savejenisbahan') ?>',
-                data: {
-                    CollectionCategory_id: jenisbahanID,
-                    JenisAnggota_id: jenisAnggota
-                },
+                data: $(this).serialize(),
                 success: function (response) {
                     Swal.fire({
                         icon: 'success',

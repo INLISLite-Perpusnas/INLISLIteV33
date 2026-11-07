@@ -58,6 +58,8 @@ $routes->group('anggota', ['namespace' => 'Anggota\Controllers'], function ($sub
     // === AnggotaImportController ===
     $subroutes->add('import_view',            'AnggotaImportController::import_view');
     $subroutes->add('import',                 'AnggotaImportController::import');
+    $subroutes->get('export_view',            'AnggotaExportController::index');
+    $subroutes->get('export',                 'AnggotaExportController::export');
 
     // === AnggotaPrintController ===
     $subroutes->add('printanggota/(:any)',    'AnggotaPrintController::printanggota/$1');

@@ -17,6 +17,10 @@ $routes->group('bukutamu', ['namespace' => 'BukuTamu\Controllers'], function ($s
 	//custom
 	$subroutes->add('non_anggota', 'BukuTamu::non_anggota');
 	$subroutes->add('rombongan', 'BukuTamu::rombongan');
+
+	// Import Excel: awalan create agar mengikuti izin bukutamu/create
+	$subroutes->get('create/template/(:segment)', 'BukuTamuImport::template/$1');
+	$subroutes->post('create/import/(:segment)', 'BukuTamuImport::import/$1', ['filter' => 'csrf']);
 });
 
 $routes->group('api/bukutamu', ['namespace' => 'BukuTamu\Controllers\Api'], function ($subroutes) {

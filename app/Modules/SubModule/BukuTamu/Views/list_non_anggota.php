@@ -6,6 +6,7 @@ $slug = $request->getGet('slug') ?? '';
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
 <link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-guestbook-import.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-guestbook-import.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -51,7 +52,7 @@ $slug = $request->getGet('slug') ?? '';
     <div class="main-card mb-3 card">
         <div class="card-header"><i class="header-icon lnr-list icon-gradient bg-plum-plate"> </i>Tabel Buku Tamu
             <div class="btn-actions-pane-right actions-icon-btn">
-
+                <?= view('BukuTamu\Views\import_actions', ['importType' => 'non_anggota', 'importLabel' => 'Non Anggota']) ?>
             </div>
         </div>
         <div class="card-body">
@@ -75,9 +76,11 @@ $slug = $request->getGet('slug') ?? '';
         </div>
     </div>
 </div>
+<?= view('BukuTamu\Views\import_modal', ['importType' => 'non_anggota', 'importLabel' => 'Non Anggota']) ?>
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
+<script defer src="<?= base_url('assets/js/guestbook-import.js') . '?v=' . filemtime(FCPATH . 'assets/js/guestbook-import.js') ?>"></script>
 <script>
     var t;
     $(document).ready(function() {

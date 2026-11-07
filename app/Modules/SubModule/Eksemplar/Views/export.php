@@ -5,6 +5,11 @@
         display: none;
         margin-top: 20px;
     }
+
+    #form_export {
+        --ina-primary: #2d659e;
+        --ina-primary-hover: #24527f;
+    }
 </style>
 <link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
 <?= $this->endSection('style'); ?>
@@ -90,11 +95,11 @@
 
                 <?php if (is_allowed('export-eksemplar/export')) : ?>
                     <span class="has-tip" data-tip="Export eksemplar pada periode terpilih ke Excel dengan format template import. Data diproses per <?= (int) $batch_size ?> baris agar tidak timeout.">
-                        <button type="submit" class="btn btn-success" id="btn_export"><i class="fa fa-file-excel"></i> Export Excel</button>
+                        <button type="submit" class="btn btn-primary" id="btn_export"><i class="fa fa-file-excel"></i> Export Excel</button>
                     </span>
                 <?php endif; ?>
                 <span class="has-tip" data-tip="Unduh template kosong berisi contoh data untuk import.">
-                    <a href="<?= base_url('eksemplar/download-template') ?>" class="btn btn-info"><i class="fa fa-download"></i> Download Template</a>
+                    <a href="<?= base_url('eksemplar/download-template') ?>" class="btn btn-outline-primary"><i class="fa fa-download"></i> Download Template</a>
                 </span>
             </form>
 

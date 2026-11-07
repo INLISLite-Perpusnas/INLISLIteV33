@@ -465,9 +465,9 @@ CALL tmp_modify_column('c_references', 'menu_id', 'mediumint unsigned', 'NULL', 
 -- Sinkronisasi RBAC dan settingparameters ke database lain
 -- Sumber : inlislite_v33_progo (2026-11-04)
 --
--- auth_groups (5 baris), auth_permissions (633 baris),
--- auth_groups_permissions (831 baris)
--- c_menus category_id = 1 / menu backend (131 baris)
+-- auth_groups (5 baris), auth_permissions (637 baris),
+-- auth_groups_permissions (840 baris)
+-- c_menus category_id = 1 / menu backend (132 baris)
 --   -> DITIMPA: isi lama dihapus, diganti isi dari sumber (ID dipertahankan).
 --      Menu frontend dan referensi tidak disentuh.
 -- settingparameters (158 Name unik)
@@ -539,6 +539,10 @@ INSERT INTO `auth_permissions` (`id`, `name`, `route`, `menu`, `description`, `c
 ('406', 'anggota/access', 'anggota', 'Daftar Anggota', 'Update Permission for menu Daftar Anggota', NULL),
 ('407', 'anggota/index', 'anggota', 'Daftar Anggota', 'Update Permission for menu Daftar Anggota', NULL),
 ('408', 'anggota/create', 'anggota', 'Daftar Anggota', 'Update Permission for menu Daftar Anggota', NULL),
+('1183', 'anggota/create/access', 'anggota/create', 'Entri Anggota', 'Permission access menu Entri Anggota', NULL),
+('1184', 'anggota/export_view/access', 'anggota/export_view', 'Export Anggota', 'Permission access menu Export Anggota', NULL),
+('1185', 'anggota/export_view/index', 'anggota/export_view', 'Export Anggota', 'Permission index menu Export Anggota', NULL),
+('1186', 'anggota/export', 'anggota/export', 'Export Anggota', 'Permission export menu Export Anggota', NULL),
 ('409', 'anggota/edit', 'anggota', 'Daftar Anggota', 'Update Permission for menu Daftar Anggota', NULL),
 ('410', 'anggota/delete', 'anggota', 'Daftar Anggota', 'Update Permission for menu Daftar Anggota', NULL),
 ('411', 'keranjang-anggota/access', 'keranjang-anggota', 'Keranjang Anggota', 'Update Permission for menu Keranjang Anggota', NULL),
@@ -1178,6 +1182,10 @@ INSERT INTO `auth_groups_permissions` (`group_id`, `permission_id`, `category`, 
 ('1', '406', '0', '0'),
 ('1', '407', '0', '0'),
 ('1', '408', '0', '0'),
+('1', '1183', '0', '0'),
+('1', '1184', '0', '0'),
+('1', '1185', '0', '0'),
+('1', '1186', '0', '0'),
 ('1', '409', '0', '0'),
 ('1', '410', '0', '0'),
 ('1', '411', '0', '0'),
@@ -1786,6 +1794,10 @@ INSERT INTO `auth_groups_permissions` (`group_id`, `permission_id`, `category`, 
 ('8', '406', '0', '0'),
 ('8', '407', '0', '0'),
 ('8', '408', '0', '0'),
+('8', '1183', '0', '0'),
+('8', '1184', '0', '0'),
+('8', '1185', '0', '0'),
+('8', '1186', '0', '0'),
 ('8', '409', '0', '0'),
 ('8', '410', '0', '0'),
 ('8', '411', '0', '0'),
@@ -1960,6 +1972,7 @@ INSERT INTO `auth_groups_permissions` (`group_id`, `permission_id`, `category`, 
 ('11', '406', '0', '0'),
 ('11', '407', '0', '0'),
 ('11', '408', '0', '0'),
+('11', '1183', '0', '0'),
 ('11', '409', '0', '0'),
 ('11', '410', '0', '0'),
 ('11', '411', '0', '0'),
@@ -2063,6 +2076,7 @@ INSERT INTO `c_menus` (`id`, `name`, `parent`, `controller`, `slug`, `icon`, `pe
 ('234', 'Entri Peminjaman', '53', 'sirkulasi-peminjaman/create', 'entri-peminjaman', 'fas fa-sync', 'access|index|create|edit|delete', NULL, 'menu', '1', 'backend-menu', '21', NULL, '1', NULL, NULL, '2025-03-18 17:58:49', '2026-05-28 12:44:23', NULL),
 ('235', 'Entri  Pengembalian', '53', 'sirkulasi-pengembalian/create', 'entri-pengembalian', 'fas fa-share-square', 'access|index|create|edit|delete', NULL, 'menu', '1', 'backend-menu', '23', NULL, '1', NULL, NULL, '2025-03-18 18:00:24', '2026-05-28 12:44:23', NULL),
 ('236', 'Import Anggota', '23', 'anggota/import_view', 'import-anggota', 'fas fa-file-excel', 'access|index|create|edit|delete', NULL, 'menu', '1', 'backend-menu', '17', NULL, '1', NULL, NULL, '2025-03-27 01:53:42', '2026-05-28 12:44:23', NULL),
+('296', 'Export Anggota', '23', 'anggota/export_view', 'export-anggota', 'fas fa-file-export', 'access|index', NULL, 'menu', '1', 'backend-menu', '20', NULL, '1', NULL, NULL, NULL, NULL, NULL),
 ('237', 'Ruas Data Bibliografis', '160', 'ruas-data-bibliografis', 'ruas-data-bibliografis', 'fas fa-file-code', 'access|index|create|edit|delete', NULL, 'menu', '1', 'backend-menu', '57', NULL, '1', NULL, NULL, '2025-06-26 01:08:32', '2026-05-28 12:44:23', NULL),
 ('238', 'Penomoran koleksi', '160', 'master-penomoran-koleksi', 'penomoran-koleksi', 'fas fa-keyboard', 'access|index|create|edit|delete', NULL, 'menu', '1', 'backend-menu', '58', NULL, '1', NULL, NULL, '2025-06-26 16:34:12', '2026-05-28 12:44:23', NULL),
 ('239', 'Redaksi Keanggotaan', '159', 'master-redaksi-keanggotaan', 'redaksi-keanggotaan', 'fas fa-chalkboard-teacher', 'access|index|create|edit|delete', NULL, 'menu', '1', 'backend-menu', '71', NULL, '1', NULL, NULL, '2025-06-26 19:46:31', '2026-05-28 12:44:23', NULL),
@@ -2440,6 +2454,42 @@ SELECT 'show_sering_dibaca', '12', NULL, '2026-11-02 13:20:09', NULL, NULL, '202
 INSERT INTO `settingparameters` (`Name`, `Value`, `CreateBy`, `CreateDate`, `CreateTerminal`, `UpdateBy`, `UpdateDate`, `UpdateTerminal`, `Branch_id`)
 SELECT 'opac_log', 'FALSE', NULL, '2026-11-03 10:15:16', NULL, NULL, '2026-11-03 10:16:59', NULL, NULL FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM `settingparameters` WHERE `Name` = 'opac_log');
 
+-- AddOpacSearchHistoryReport: apply after RBAC replacement so sync does not erase it.
+INSERT INTO `c_menus` (`name`, `parent`, `controller`, `slug`, `icon`, `permission`, `type`, `category_id`, `category`, `sort`, `active`)
+SELECT 'Laporan Histori Pencarian OPAC', parent.id, 'laporan-opac-histori-pencarian',
+       'laporan-opac-histori-pencarian', 'fas fa-search', 'access|index|export|export_pdf',
+       'menu', 1, 'backend-menu', 39, 1
+FROM `c_menus` parent
+WHERE parent.controller = 'menu-laporan'
+  AND NOT EXISTS (SELECT 1 FROM `c_menus` menu WHERE menu.controller = 'laporan-opac-histori-pencarian');
+
+INSERT INTO `auth_permissions` (`name`, `route`, `menu`, `description`)
+SELECT CONCAT('laporan-opac-histori-pencarian/', actions.action),
+       CASE WHEN actions.action IN ('access', 'index') THEN 'laporan-opac-histori-pencarian'
+            ELSE CONCAT('laporan-opac-histori-pencarian/', actions.action) END,
+       'Laporan Histori Pencarian OPAC', 'Laporan histori pencarian OPAC'
+FROM (SELECT 'access' AS action UNION ALL SELECT 'index' UNION ALL SELECT 'export' UNION ALL SELECT 'export_pdf') actions
+WHERE NOT EXISTS (
+    SELECT 1 FROM `auth_permissions` permission
+    WHERE permission.name = CONCAT('laporan-opac-histori-pencarian/', actions.action)
+);
+
+INSERT INTO `auth_groups_permissions` (`group_id`, `permission_id`, `category`, `branch_id`)
+SELECT source_grant.group_id, report_permission.id, source_grant.category, source_grant.branch_id
+FROM `auth_permissions` history_permission
+JOIN `auth_groups_permissions` source_grant ON source_grant.permission_id = history_permission.id
+JOIN `auth_permissions` report_permission ON report_permission.name IN (
+    'laporan-opac-histori-pencarian/access', 'laporan-opac-histori-pencarian/index',
+    'laporan-opac-histori-pencarian/export', 'laporan-opac-histori-pencarian/export_pdf'
+)
+WHERE history_permission.name = 'master-opac-histori-pencarian/access'
+  AND NOT EXISTS (
+      SELECT 1 FROM `auth_groups_permissions` existing
+      WHERE existing.group_id = source_grant.group_id
+        AND existing.permission_id = report_permission.id
+        AND existing.branch_id <=> source_grant.branch_id
+  );
+
 COMMIT;
 
 SET SESSION FOREIGN_KEY_CHECKS = @old_fk_checks;
@@ -2468,10 +2518,10 @@ SELECT 'permission hilang', op.id, op.name FROM tmp_rbac_old_permissions op
 LEFT JOIN `auth_permissions` p ON p.id = op.id AND p.name = op.name WHERE p.id IS NULL;
 
 -- Cek 3: jumlah baris akhir
-SELECT (SELECT COUNT(*) FROM `auth_groups`) AS auth_groups_harus_5,
-       (SELECT COUNT(*) FROM `auth_permissions`) AS auth_permissions_harus_633,
-       (SELECT COUNT(*) FROM `auth_groups_permissions`) AS auth_groups_permissions_harus_831,
-       (SELECT COUNT(*) FROM `c_menus` WHERE `category_id` = 1) AS c_menus_backend_harus_131,
+SELECT (SELECT COUNT(*) FROM `auth_groups`) AS auth_groups_total,
+       (SELECT COUNT(*) FROM `auth_permissions`) AS auth_permissions_total,
+       (SELECT COUNT(*) FROM `auth_groups_permissions`) AS auth_groups_permissions_total,
+       (SELECT COUNT(*) FROM `c_menus` WHERE `category_id` = 1) AS c_menus_backend_total,
        (SELECT COUNT(*) FROM `settingparameters`) AS settingparameters;
 
 DROP TEMPORARY TABLE IF EXISTS tmp_rbac_old_groups;

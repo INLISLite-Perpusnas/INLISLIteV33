@@ -58,3 +58,19 @@
     </div>
 </div>
 <?= $this->endSection('page') ?>
+
+<?= $this->section('script') ?>
+<?php if (session()->getFlashdata('opac_log_saved')): ?>
+<script>
+    Swal.fire({
+        imageUrl: <?= json_encode(base_url('assets/img/data-berhasil-disimpan.png'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
+        imageWidth: 240,
+        imageHeight: 180,
+        imageAlt: 'Ilustrasi data berhasil disimpan',
+        title: 'Berhasil',
+        text: 'Pengaturan log pencarian OPAC berhasil disimpan.',
+        confirmButtonText: 'Tutup'
+    });
+</script>
+<?php endif; ?>
+<?= $this->endSection('script') ?>

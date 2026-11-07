@@ -6,6 +6,7 @@ $routes->group('perpanjangan-anggota', ['namespace' => 'PerpanjanganAnggota\Cont
 	$subroutes->add('index', 'PerpanjanganAnggota::index');
 	$subroutes->add('detail/(:any)', 'PerpanjanganAnggota::detail/$1');
 	$subroutes->add('create', 'PerpanjanganAnggota::create');
+	$subroutes->get('search-members', 'PerpanjanganAnggota::searchMembers');
 	$subroutes->add('edit/(:any)', 'PerpanjanganAnggota::edit/$1');
 	$subroutes->add('delete/(:any)', 'PerpanjanganAnggota::delete/$1');
 	$subroutes->add('apply_status/(:any)', 'PerpanjanganAnggota::apply_status/$1');

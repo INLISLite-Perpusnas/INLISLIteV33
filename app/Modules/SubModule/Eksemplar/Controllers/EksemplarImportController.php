@@ -16,6 +16,12 @@ class EksemplarImportController extends \Base\Controllers\BaseController
     use ResponseTrait;
     use EksemplarBase;
 
+    /** Isi tabel master yang sudah dibaca, agar tidak query ulang per baris. */
+    private array $masterCache = [];
+
+    /** Nilai setting FormatNomorBarcode dan FormatNomorRFID. */
+    private array $numberFormats = [];
+
     function __construct()
     {
         $this->initEksemplarBase();
@@ -43,7 +49,14 @@ class EksemplarImportController extends \Base\Controllers\BaseController
 
         $validation = \Config\Services::validation();
         $validation->setRules([
-            'excel_file' => 'uploaded[excel_file]|ext_in[excel_file,xlsx,xls]|max_size[excel_file,10240]'
+            'excel_file' => [
+                'rules'  => 'uploaded[excel_file]|ext_in[excel_file,xlsx,xls]|max_size[excel_file,10240]',
+                'errors' => [
+                    'uploaded' => 'Silakan pilih file Excel terlebih dahulu.',
+                    'ext_in'   => 'File harus berformat Excel (.xlsx atau .xls).',
+                    'max_size' => 'Ukuran file maksimal 10 MB.',
+                ],
+            ],
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
@@ -53,7 +66,7 @@ class EksemplarImportController extends \Base\Controllers\BaseController
         $file = $this->request->getFile('excel_file');
 
         if (!$file->isValid()) {
-            return $this->fail(['excel_file' => 'File tidak valid']);
+            return $this->fail(['excel_file' => 'File gagal diunggah. Silakan coba unggah ulang.']);
         }
 
         try {
@@ -69,24 +82,41 @@ class EksemplarImportController extends \Base\Controllers\BaseController
             $reader->setReadDataOnly(true);
             $spreadsheet = $reader->load($filePath);
             $worksheet   = $spreadsheet->getActiveSheet();
-            $rows        = $worksheet->toArray();
+            $rows        = $worksheet->toArray(null, true, false, false);
 
-            $header = array_shift($rows);
-            $result = $this->processImport($rows, $header);
+            [$header, $firstRowNumber, $rows] = $this->extractHeader($rows);
+            if ($header === null) {
+                unlink($filePath);
+                return $this->fail(['message' => 'File ini bukan template import eksemplar. Kolom JUDUL_UTAMA tidak ditemukan. Unduh template di halaman ini, lalu isi kembali.']);
+            }
+
+            $result = $this->processImport($rows, $header, $firstRowNumber);
 
             unlink($filePath);
+
+            if ($result['success_count'] === 0) {
+                return $this->respond([
+                    'status'  => 'error',
+                    'message' => $result['error_count'] > 0
+                        ? 'Tidak ada data yang berhasil diimport. Perbaiki baris berikut, lalu unggah ulang file.'
+                        : 'File tidak berisi data. Isi data mulai dari baris kedua.',
+                    'errors'  => $result['errors'],
+                ], 422);
+            }
 
             return $this->respond([
                 'status'  => 'success',
                 'message' => 'Import berhasil',
                 'data'    => $result,
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             if (isset($filePath) && file_exists($filePath)) {
                 unlink($filePath);
             }
 
-            return $this->fail(['message' => 'Error saat import: ' . $e->getMessage()]);
+            log_message('error', 'Import eksemplar gagal: ' . $e->getMessage());
+
+            return $this->fail(['message' => 'File tidak bisa diproses. Pastikan file memakai template yang disediakan, lalu coba lagi.']);
         }
     }
 
@@ -133,9 +163,9 @@ class EksemplarImportController extends \Base\Controllers\BaseController
             $sampleData = [
                 [1,'14-02-2015','X0022/2016','X0022/2016','X0022/2016','Hadiah/Hibah','---Belum ditentukan---','IDR',0,'Pusat','0101','Dapat dipinjam','Koleksi Umum','Buku','Tersedia','123 PRA m','Monograf','Mahligai Biru','','Mamik Pradana','Pradana, Mamik','','','','','Jakarta','Grafika','2015','120 hlm.','25 cm.','978-222-666-444','','','123','123 PRA m','','ind','Rumah Tangga','','','',''],
                 [2,'15-02-2015','X0023/2016','X0023/2016','X0023/2016','Pembelian','---Belum ditentukan---','IDR',0,'Pusat','0101','Dapat dipinjam','Koleksi Umum','Buku','Tersedia','201 SAM k','Monograf','Kancil dan Kerbau','','Deni Saman','Saman, Deni','','','','','Jakarta','Prabu','2015','68 hlm.','21 cm.','856-225-456-78','','','201','201 SAM k','','ind','Fiksi','','','',''],
-                [3,'16-03-2015','X0024/2016','X0024/2016','X0024/2016','Pembelian','Toko Buku Mandiri','IDR',75000,'Pusat','0102','Dapat dipinjam','Koleksi Umum','Buku','Tersedia','004.678 BUD p','Monograf','Pemrograman Web dengan PHP','Panduan Lengkap untuk Pemula','Budi Raharjo','Raharjo, Budi','','','','Edisi 2','Bandung','Informatika','2015','350 hlm.','24 cm.','978-602-1234-567-8','','','004.678','004.678 BUD p','Buku panduan pemrograman web menggunakan PHP','ind','Teknologi Informasi; Pemrograman','','','',''],
-                [4,'20-03-2015','X0025/2016','X0025/2016','X0025/2016','Hadiah/Hibah','Dinas Pendidikan','IDR',0,'Pusat','0103','Dapat dipinjam','Koleksi Umum','Buku','Tersedia','899.221 DEW s','Monograf','Sastra Indonesia Kontemporer','Analisis dan Apresiasi','Dewi Lestari','Lestari, Dewi','','Pusat Bahasa','','Edisi 3','Jakarta','Gramedia Pustaka Utama','2015','320 hlm.','20 cm.','978-602-0307-456-7','','','899.221','899.221 DEW s','Kumpulan analisis sastra Indonesia modern','ind','Sastra Indonesia; Literatur','','','',''],
-                [5,'25-03-2015','X0026/2016','X0026/2016','X0026/2016','Pembelian','CV. Pustaka Ilmu','IDR',85000,'Pusat','0104','Dapat dipinjam','Koleksi Referensi','Buku','Tersedia','904.598 BAM s','Monograf','Sejarah Perkembangan Teknologi Digital di Indonesia','','Prof. Dr. Bambang Sutrisno; Dr. Maya Sari','Sutrisno, Bambang','','','Sari, Maya','Edisi 1','Jakarta','Erlangga','2015','500 hlm.','24 cm.','978-602-2989-345-6','','','904.598','904.598 BAM s','Dokumentasi lengkap perkembangan teknologi digital di Indonesia','ind','Sejarah; Teknologi; Indonesia','','','',''],
+                [3,'16-03-2015','X0024/2016','X0024/2016','X0024/2016','Pembelian','---Belum ditentukan---','IDR',75000,'Pusat','0102','Dapat dipinjam','Koleksi Umum','Buku','Tersedia','004.678 BUD p','Monograf','Pemrograman Web dengan PHP','Panduan Lengkap untuk Pemula','Budi Raharjo','Raharjo, Budi','','','','Edisi 2','Bandung','Informatika','2015','350 hlm.','24 cm.','978-602-1234-567-8','','','004.678','004.678 BUD p','Buku panduan pemrograman web menggunakan PHP','ind','Teknologi Informasi; Pemrograman','','','',''],
+                [4,'20-03-2015','X0025/2016','X0025/2016','X0025/2016','Hadiah/Hibah','---Belum ditentukan---','IDR',0,'Pusat','0103','Dapat dipinjam','Koleksi Umum','Buku','Tersedia','899.221 DEW s','Monograf','Sastra Indonesia Kontemporer','Analisis dan Apresiasi','Dewi Lestari','Lestari, Dewi','','Pusat Bahasa','','Edisi 3','Jakarta','Gramedia Pustaka Utama','2015','320 hlm.','20 cm.','978-602-0307-456-7','','','899.221','899.221 DEW s','Kumpulan analisis sastra Indonesia modern','ind','Sastra Indonesia; Literatur','','','',''],
+                [5,'25-03-2015','X0026/2016','X0026/2016','X0026/2016','Pembelian','---Belum ditentukan---','IDR',85000,'Pusat','0101','Dapat dipinjam','Koleksi Referensi','Buku','Tersedia','904.598 BAM s','Monograf','Sejarah Perkembangan Teknologi Digital di Indonesia','','Prof. Dr. Bambang Sutrisno; Dr. Maya Sari','Sutrisno, Bambang','','','Sari, Maya','Edisi 1','Jakarta','Erlangga','2015','500 hlm.','24 cm.','978-602-2989-345-6','','','904.598','904.598 BAM s','Dokumentasi lengkap perkembangan teknologi digital di Indonesia','ind','Sejarah; Teknologi; Indonesia','','','',''],
             ];
 
             $sheet->fromArray($sampleData, null, 'A2');
@@ -177,131 +207,161 @@ class EksemplarImportController extends \Base\Controllers\BaseController
     // PRIVATE IMPORT HELPERS
     // ----------------------------------------------------------------
 
-    private function processImport($rows, $header)
+    /**
+     * Baris judul kolom bisa di baris 1 (template ini) atau baris 2 (template INLISLite 3,
+     * yang baris 1-nya berisi judul kelompok dan nama kolomnya memakai spasi).
+     *
+     * @return array{0: ?array, 1: int, 2: array} nama kolom, nomor baris data pertama, baris data
+     */
+    private function extractHeader(array $rows): array
     {
-        $successCount = 0;
-        $errorCount   = 0;
-        $errors       = [];
-
-        $this->db->transBegin();
-
-        try {
-            foreach ($rows as $rowIndex => $row) {
-                if (empty(array_filter($row))) continue;
-
-                $rowNumber = $rowIndex + 2;
-
-                try {
-                    $catalogData     = $this->parseCatalogData($row, $header);
-                    $collectionsData = $this->parseCollectionsData($row, $header);
-                    $catalogData['Location_id'] = $collectionsData['Location_id'];
-                    $marcFields      = $this->generateBasicMarcFields($catalogData);
-
-                    $catalogId = $this->insertCatalog($catalogData);
-
-                    if (!empty($marcFields)) {
-                        $this->insertMarcFields($catalogId, $marcFields);
-                    }
-
-                    if (!empty($collectionsData)) {
-                        $this->insertCollections($catalogId, [$collectionsData]);
-                    }
-
-                    $successCount++;
-                } catch (\Exception $e) {
-                    $errorCount++;
-                    $errors[] = "Baris {$rowNumber}: " . $e->getMessage();
-                }
+        foreach (array_slice($rows, 0, 2) as $index => $row) {
+            $header = array_map(static fn ($name) => trim(preg_replace('/[^A-Z0-9]+/', '_', strtoupper((string) $name)), '_'), $row);
+            if (in_array('JUDUL_UTAMA', $header, true)) {
+                return [$header, $index + 2, array_slice($rows, $index + 1)];
             }
-
-            if ($errorCount > 0 && $successCount == 0) {
-                $this->db->transRollback();
-                throw new \Exception("Semua data gagal diimport. Errors: " . implode('; ', array_slice($errors, 0, 5)));
-            }
-
-            $this->db->transCommit();
-
-            return [
-                'success_count' => $successCount,
-                'error_count'   => $errorCount,
-                'errors'        => array_slice($errors, 0, 10),
-            ];
-        } catch (\Exception $e) {
-            $this->db->transRollback();
-            throw $e;
         }
+
+        return [null, 0, []];
     }
 
-    private function generateBasicMarcFields($catalogData)
+    /**
+     * Tiap baris punya transaksi sendiri: baris gagal dibatalkan utuh, baris lain tetap masuk.
+     * DomainException berisi pesan untuk pengguna. Error lain hanya dicatat di log.
+     */
+    private function processImport($rows, $header, int $firstRowNumber = 2)
     {
-        $marcFields = [];
-        $sequence   = 1;
+        $successCount = 0;
+        $errors       = [];
 
-        $baseField = [
-            'Indicator1'     => '#',
-            'Indicator2'     => '#',
-            'CreateBy'       => user()->id ?? 1,
-            'CreateDate'     => date('Y-m-d H:i:s'),
-            'CreateTerminal' => $this->request->getIPAddress(),
-            'Branch_id'      => user()->branch_id ?? 1,
-            'active'         => 1,
+        foreach ($rows as $rowIndex => $row) {
+            if (empty(array_filter($row, static fn ($value) => trim((string) $value) !== ''))) continue;
+
+            $rowNumber = $rowIndex + $firstRowNumber;
+
+            $this->db->transBegin();
+
+            try {
+                $catalogData     = $this->parseCatalogData($row, $header);
+                $collectionsData = $this->parseCollectionsData($row, $header);
+                $catalogData['Location_id'] = $collectionsData['Location_id'];
+
+                $this->assertBarcodeAvailable($collectionsData['NomorBarcode']);
+
+                $collectionsData['Catalog_id'] = $this->saveCatalog($catalogData, $collectionsData['NoInduk']);
+                $this->insertCollection($collectionsData);
+
+                $this->db->transCommit();
+                $successCount++;
+            } catch (\DomainException $e) {
+                $this->db->transRollback();
+                $errors[] = "Baris {$rowNumber}: " . $e->getMessage();
+            } catch (\Throwable $e) {
+                $this->db->transRollback();
+                log_message('error', "Import eksemplar baris {$rowNumber}: " . $e->getMessage());
+                $errors[] = "Baris {$rowNumber}: Data tidak dapat disimpan. Periksa isi baris ini atau hubungi administrator.";
+            }
+        }
+
+        return [
+            'success_count' => $successCount,
+            'error_count'   => count($errors),
+            'errors'        => $errors,
         ];
+    }
 
-        if (!empty($catalogData['ControlNumber'])) {
-            $marcFields[] = array_merge($baseField, ['Tag' => '001', 'Value' => $catalogData['ControlNumber'], 'Sequence' => $sequence++]);
-        }
+    /** Katalog yang sama dipakai ulang; bila belum ada, katalog dan ruasnya dibuat. Mengembalikan ID katalog. */
+    private function saveCatalog(array $catalogData, $noInduk): int
+    {
+        $ruas = $catalogData['_ruas'];
+        unset($catalogData['_ruas']);
 
-        $marcFields[] = array_merge($baseField, ['Tag' => '005', 'Value' => date('YmdHis'), 'Sequence' => $sequence++]);
+        $existing = $this->db->table('catalogs')->select('ID')->where([
+            'Worksheet_id'    => $catalogData['Worksheet_id'],
+            'Title'           => $catalogData['Title'],
+            'Author'          => $catalogData['Author'],
+            'Edition'         => $catalogData['Edition'],
+            'Publisher'       => $catalogData['Publisher'],
+            'PublishLocation' => $catalogData['PublishLocation'],
+            'PublishYear'     => $catalogData['PublishYear'],
+        ])->get()->getRow();
 
-        if (!empty($catalogData['ISBN'])) {
-            $marcFields[] = array_merge($baseField, ['Tag' => '020', 'Value' => '$a ' . $catalogData['ISBN'], 'Sequence' => $sequence++]);
-        }
-
-        if (!empty($catalogData['DeweyNo'])) {
-            $marcFields[] = array_merge($baseField, ['Tag' => '082', 'Value' => '$a ' . $catalogData['DeweyNo'], 'Sequence' => $sequence++]);
-        }
-
-        if (!empty($catalogData['Author'])) {
-            $marcFields[] = array_merge($baseField, ['Tag' => '100', 'Indicator1' => '1', 'Value' => '$a ' . $catalogData['Author'], 'Sequence' => $sequence++]);
-        }
-
-        if (!empty($catalogData['Title'])) {
-            $titleValue   = '$a ' . $catalogData['Title'];
-            if (!empty($catalogData['Author'])) {
-                $titleValue .= ' /$c ' . $catalogData['Author'];
+        if ($existing) {
+            $catalogId = (int) $existing->ID;
+            if ((string) $noInduk !== '') {
+                $last = $this->db->table('catalog_ruas')->selectMax('Sequence', 'Sequence')->where('CatalogId', $catalogId)->get()->getRow();
+                $this->insertMarcFields($catalogId, [$this->ruasRow('990', '$a ' . $noInduk)], (int) ($last->Sequence ?? 0) + 1);
             }
-            $marcFields[] = array_merge($baseField, ['Tag' => '245', 'Indicator1' => '1', 'Indicator2' => '0', 'Value' => $titleValue, 'Sequence' => $sequence++]);
+
+            return $catalogId;
         }
 
-        if (!empty($catalogData['Edition'])) {
-            $marcFields[] = array_merge($baseField, ['Tag' => '250', 'Value' => '$a ' . $catalogData['Edition'], 'Sequence' => $sequence++]);
+        $catalogData['ControlNumber'] = get_control_number();
+        $catalogData['BIBID']         = get_bib_id();
+        $catalogId = $this->insertCatalog($catalogData);
+
+        $head = [
+            ['Tag' => '001', 'Indicator1' => null, 'Indicator2' => null, 'Value' => $catalogData['ControlNumber']],
+            ['Tag' => '005', 'Indicator1' => null, 'Indicator2' => null, 'Value' => date('YmdHis')],
+        ];
+        if ($catalogData['Languages'] !== '') {
+            $head[] = $this->ruasRow('008', str_repeat('#', 35) . $catalogData['Languages'] . '##');
         }
+        $head[] = $this->ruasRow('035', '$a ' . $catalogData['BIBID']);
+        $tail = (string) $noInduk !== '' ? [$this->ruasRow('990', '$a ' . $noInduk)] : [];
 
-        if (!empty($catalogData['PublishLocation']) || !empty($catalogData['Publisher']) || !empty($catalogData['PublishYear'])) {
-            $pubValue = '';
-            if (!empty($catalogData['PublishLocation'])) $pubValue .= '$a ' . $catalogData['PublishLocation'] . ' :';
-            if (!empty($catalogData['Publisher']))       $pubValue .= '$b ' . $catalogData['Publisher'] . ',';
-            if (!empty($catalogData['PublishYear']))     $pubValue .= '$c ' . $catalogData['PublishYear'];
+        $this->insertMarcFields($catalogId, array_merge($head, $ruas, $tail), 1);
 
-            if (!empty($pubValue)) {
-                $marcFields[] = array_merge($baseField, ['Tag' => '260', 'Value' => $pubValue, 'Sequence' => $sequence++]);
+        return $catalogId;
+    }
+
+    private function ruasRow(string $tag, string $value): array
+    {
+        return ['Tag' => $tag, 'Indicator1' => '#', 'Indicator2' => '#', 'Value' => $value];
+    }
+
+    /** Ruas MARC katalog, urutannya mengikuti import INLISLite 3. */
+    private function buildRuas(array $v): array
+    {
+        $rows = [];
+        $single = function (string $tag, string $value) use (&$rows) {
+            if ($value !== '') {
+                $rows[] = $this->ruasRow($tag, '$a ' . $value);
             }
-        }
-
-        if (!empty($catalogData['PhysicalDescription'])) {
-            $marcFields[] = array_merge($baseField, ['Tag' => '300', 'Value' => '$a ' . $catalogData['PhysicalDescription'], 'Sequence' => $sequence++]);
-        }
-
-        if (!empty($catalogData['Subject'])) {
-            foreach (explode(';', $catalogData['Subject']) as $subject) {
-                $subject = trim($subject);
-                if (!empty($subject)) {
-                    $marcFields[] = array_merge($baseField, ['Tag' => '650', 'Value' => '$a ' . $subject, 'Sequence' => $sequence++]);
+        };
+        $repeat = function (string $tag, string $value) use (&$rows) {
+            foreach (explode(';', $value) as $part) {
+                $part = trim($part);
+                if ($part !== '') {
+                    $rows[] = $this->ruasRow($tag, '$a ' . $part);
                 }
             }
-        }
+        };
+        $marc = function (string $tag, array $subfields) use (&$rows) {
+            $value = marc_build_value($tag, $subfields);
+            if ($value !== '') {
+                $rows[] = $this->ruasRow($tag, $value);
+            }
+        };
 
-        return $marcFields;
+        $marc('245', [['a', $v['title_a']], ['b', $v['title_b']], ['c', $v['title_c']]]);
+        $single('100', $v['author']);
+        $single('110', $v['author_body']);
+        $repeat('700', $v['author_added']);
+        $repeat('710', $v['author_added_body']);
+        $single('250', $v['edition']);
+        $marc('260', [['a', $v['publish_location']], ['b', $v['publisher']], ['c', $v['publish_year']]]);
+        $marc('300', [['a', $v['pages']], ['c', $v['dimension']]]);
+        $repeat('020', $v['isbn']);
+        $repeat('022', $v['issn']);
+        $repeat('024', $v['ismn']);
+        $repeat('084', $v['call_number']);
+        $repeat('520', $v['abstract']);
+        $single('082', $v['dewey']);
+        $repeat('650', $v['subject']);
+        $single('863', $v['serial_edition']);
+
+        return $rows;
     }
 
     private function getValue($row, $headerMap, $columnName, $default = '')
@@ -322,7 +382,11 @@ class EksemplarImportController extends \Base\Controllers\BaseController
             }
 
             $value = $row[$columnIndex];
-            return is_string($value) ? trim($value) : $value;
+            // Angka bulat dari Excel terbaca sebagai float, mis. 12345.0
+            if (is_float($value) && floor($value) === $value) {
+                $value = (string) (int) $value;
+            }
+            return is_string($value) ? trim(preg_replace('/\s+/', ' ', $value)) : $value;
         } catch (\Exception $e) {
             log_message('error', "Error in getValue for {$columnName}: " . $e->getMessage());
             return $default;
@@ -331,34 +395,57 @@ class EksemplarImportController extends \Base\Controllers\BaseController
 
     private function parseCatalogData($row, $header)
     {
-        $headerMap     = array_flip($header);
-        $controlNumber = $this->generateUniqueControlNumber();
+        $headerMap = array_flip($header);
+        $text = fn (string $column) => trim((string) $this->getValue($row, $headerMap, $column));
 
-        $judulUtama = $this->getValue($row, $headerMap, 'JUDUL_UTAMA');
-        $anakJudul  = $this->getValue($row, $headerMap, 'ANAK_JUDUL');
-        $title      = $judulUtama . ($anakJudul ? ' : ' . $anakJudul : '');
+        $v = [
+            'title_a'           => $text('JUDUL_UTAMA'),
+            'title_b'           => $text('ANAK_JUDUL'),
+            'title_c'           => $text('PERNYATAAN_TANGGUNGJAWAB'),
+            'author'            => $text('TAJUK_PENGARANG'),
+            'author_body'       => $text('TAJUK_PENGARANG_BADAN_KOOPERASI'),
+            'author_added'      => $text('PENGARANG_TAMBAHAN_NAMA_ORANG'),
+            'author_added_body' => $text('PENGARANG_TAMBAHAN_NAMA_BADAN'),
+            'edition'           => $text('EDISI'),
+            'publish_location'  => $text('KOTA_TERBIT'),
+            'publisher'         => $text('PENERBIT'),
+            'publish_year'      => $text('TAHUN_TERBIT'),
+            'pages'             => $text('JUMLAH_HALAMAN'),
+            'dimension'         => $text('DIMENSI'),
+            'isbn'              => $text('ISBN'),
+            'issn'              => $text('ISSN'),
+            'ismn'              => $text('ISMN'),
+            'dewey'             => $text('NO_DDC'),
+            'call_number'       => $text('NOMOR_PANGGIL_KATALOG'),
+            'abstract'          => $text('ABSTRAK'),
+            'languages'         => $text('BAHASA'),
+            'subject'           => $text('SUBJEK_TOPIK'),
+            'serial_edition'    => $text('EDISI_SERIAL'),
+        ];
 
-        $jumlahHalaman       = $this->getValue($row, $headerMap, 'JUMLAH_HALAMAN');
-        $dimensi             = $this->getValue($row, $headerMap, 'DIMENSI');
-        $physicalDescription = $jumlahHalaman . ($dimensi ? ' ; ' . $dimensi : '');
+        if ($v['title_a'] === '') {
+            throw new \DomainException('Judul utama belum diisi.');
+        }
 
-        $data = [
-            'ControlNumber'       => $controlNumber,
-            'BIBID'               => $this->generateBibId($controlNumber),
-            'Title'               => $title,
-            'Author'              => $this->getValue($row, $headerMap, 'TAJUK_PENGARANG'),
-            'Worksheet_id'        => 1,
-            'Edition'             => $this->getValue($row, $headerMap, 'EDISI'),
-            'Publisher'           => $this->getValue($row, $headerMap, 'PENERBIT'),
-            'PublishLocation'     => $this->getValue($row, $headerMap, 'KOTA_TERBIT'),
-            'PublishYear'         => $this->getValue($row, $headerMap, 'TAHUN_TERBIT'),
-            'Subject'             => $this->getValue($row, $headerMap, 'SUBJEK_TOPIK'),
-            'PhysicalDescription' => $physicalDescription,
-            'ISBN'                => $this->getValue($row, $headerMap, 'ISBN'),
-            'CallNumber'          => $this->getValue($row, $headerMap, 'NOMOR_PANGGIL_KATALOG'),
-            'Note'                => $this->getValue($row, $headerMap, 'ABSTRAK'),
-            'Languages'           => $this->getValue($row, $headerMap, 'BAHASA'),
-            'DeweyNo'             => $this->getValue($row, $headerMap, 'NO_DDC'),
+        $plain = static fn (string $marc) => trim(preg_replace('/\s+/', ' ', preg_replace('/\$\w/', ' ', $marc)));
+        $publication = static fn (string $value) => preg_replace('/[^a-zA-Z0-9 ]/', '', $value);
+
+        return [
+            'Title'               => $plain(marc_build_value('245', [['a', $v['title_a']], ['b', $v['title_b']], ['c', $v['title_c']]])),
+            'Author'              => $v['author'],
+            'Worksheet_id'        => $this->masterId('worksheets', 'Jenis bahan', $this->getValue($row, $headerMap, 'JENIS_BAHAN'), 'Monograf'),
+            'Edition'             => $v['edition'],
+            'Publisher'           => $v['publisher'],
+            'PublishLocation'     => $v['publish_location'],
+            'PublishYear'         => $v['publish_year'],
+            'Publikasi'           => $publication($v['publish_location']) . ' : ' . $publication($v['publisher']) . ', ' . $publication($v['publish_year']),
+            'Subject'             => $v['subject'],
+            'PhysicalDescription' => $plain(marc_build_value('300', [['a', $v['pages']], ['c', $v['dimension']]])),
+            'ISBN'                => implode(' ; ', array_filter([$v['isbn'], $v['issn'], $v['ismn']], 'strlen')),
+            'CallNumber'          => $v['call_number'],
+            'Note'                => $v['abstract'],
+            'Languages'           => $v['languages'],
+            'DeweyNo'             => $v['dewey'],
             'CreateBy'            => user()->id ?? 1,
             'CreateDate'          => date('Y-m-d H:i:s'),
             'CreateTerminal'      => $this->request->getIPAddress(),
@@ -366,32 +453,35 @@ class EksemplarImportController extends \Base\Controllers\BaseController
             'IsOPAC'              => 1,
             'IsBNI'               => 1,
             'IsKIN'               => 1,
-            'IsRDA'               => 1,
+            'IsRDA'               => 0, // Ruas memakai 260, sama seperti import AACR INLISLite 3
             'active'              => 1,
+            '_ruas'               => $this->buildRuas($v),
         ];
-
-        if (empty($data['Title'])) {
-            throw new \Exception('Judul utama tidak boleh kosong');
-        }
-
-        return $data;
     }
 
     private function parseCollectionsData($row, $header)
     {
-        $headerMap        = array_flip($header);
-        $tglPengadaan     = $this->getValue($row, $headerMap, 'TGL_PENGADAAN');
-        $tanggalPengadaan = $this->parseDate($tglPengadaan);
+        $headerMap         = array_flip($header);
         $locationLibraryId = $this->parseLocationLibraryId($this->getValue($row, $headerMap, 'KODE_LOKASI_PERPUSTAKAAN'));
+        $noInduk           = trim((string) $this->getValue($row, $headerMap, 'NO_INDUK'));
 
-        $data = [
-            'NomorBarcode'       => $this->getValue($row, $headerMap, 'NO_BARCODE'),
-            'NoInduk'            => $this->getValue($row, $headerMap, 'NO_INDUK'),
-            'RFID'               => $this->getValue($row, $headerMap, 'NO_RFID'),
-            'Currency'           => $this->getValue($row, $headerMap, 'MATA_UANG', 'IDR'),
-            'Price'              => (int) $this->getValue($row, $headerMap, 'HARGA', 0),
-            'PriceType'          => 'Per eksemplar',
-            'TanggalPengadaan'   => $tanggalPengadaan,
+        $price = trim((string) $this->getValue($row, $headerMap, 'HARGA'));
+        if ($price !== '' && !is_numeric($price)) {
+            throw new \DomainException("Harga \"{$price}\" harus berupa angka tanpa titik atau koma.");
+        }
+
+        $purchaseDate = $this->parseImportDate($this->getValue($row, $headerMap, 'TGL_PENGADAAN'), 'Tanggal pengadaan');
+        if ($purchaseDate === null) {
+            throw new \DomainException('Tanggal pengadaan belum diisi.');
+        }
+
+        return [
+            'NomorBarcode'       => $this->resolveItemNumber($this->getValue($row, $headerMap, 'NO_BARCODE'), 'FormatNomorBarcode', $noInduk),
+            'NoInduk'            => $noInduk,
+            'RFID'               => $this->resolveItemNumber($this->getValue($row, $headerMap, 'NO_RFID'), 'FormatNomorRFID', $noInduk),
+            'Currency'           => $this->parseCurrency($this->getValue($row, $headerMap, 'MATA_UANG')),
+            'Price'              => $price === '' ? 0 : $price,
+            'TanggalPengadaan'   => $purchaseDate,
             'CallNumber'         => $this->getValue($row, $headerMap, 'NOMOR_PANGGIL_EKSEMPLAR'),
             'Branch_id'          => user()->branch_id ?? 1,
             'Partner_id'         => $this->parsePartnerId($this->getValue($row, $headerMap, 'NAMA_SUMBER')),
@@ -402,151 +492,173 @@ class EksemplarImportController extends \Base\Controllers\BaseController
             'Source_id'          => $this->parseSourceId($this->getValue($row, $headerMap, 'JENIS_SUMBER')),
             'Status_id'          => $this->parseStatusId($this->getValue($row, $headerMap, 'KETERSEDIAAN')),
             'Location_Library_id'=> $locationLibraryId,
+            'IsVerified'         => 0,
+            'EDISISERIAL'        => $this->getValue($row, $headerMap, 'EDISI_SERIAL'),
+            'TANGGAL_TERBIT_EDISI_SERIAL' => $this->parseImportDate($this->getValue($row, $headerMap, 'TGL_TERBIT_EDISI_SERIAL'), 'Tanggal terbit edisi serial'),
+            'BAHAN_SERTAAN'      => $this->getValue($row, $headerMap, 'BAHAN_SERTAAN_SERIAL'),
+            'KETERANGAN_LAIN'    => $this->getValue($row, $headerMap, 'KETERANGAN_LAIN_SERIAL'),
             'CreateBy'           => user()->id ?? 1,
             'CreateDate'         => date('Y-m-d H:i:s'),
             'CreateTerminal'     => $this->request->getIPAddress(),
         ];
+    }
 
-        if (empty($data['NomorBarcode'])) {
-            throw new \Exception('Nomor Barcode tidak boleh kosong');
+    /**
+     * Isi kolom, atau nomor otomatis 11 digit bila kosong.
+     * Setting bernilai "No. Induk" mendahulukan nomor induk.
+     */
+    private function resolveItemNumber($value, string $setting, string $noInduk): string
+    {
+        if (!array_key_exists($setting, $this->numberFormats)) {
+            $row = $this->db->table('settingparameters')->select('Value')->where('Name', $setting)->get()->getRow();
+            $this->numberFormats[$setting] = str_replace(' ', '', strtolower(trim((string) ($row->Value ?? ''))));
         }
 
-        if (empty($data['NoInduk'])) {
-            throw new \Exception('No Induk tidak boleh kosong');
+        if ($this->numberFormats[$setting] === 'no.induk' && $noInduk !== '') {
+            return $noInduk;
         }
 
-        return $data;
+        $value = trim((string) $value);
+        if ($value !== '') {
+            return $value;
+        }
+
+        $last = $this->db->table('collections')->selectMax('ID', 'ID')->get()->getRow();
+
+        return str_pad((string) ((int) ($last->ID ?? 0) + 1), 11, '0', STR_PAD_LEFT);
+    }
+
+    private function parseCurrency($currency): string
+    {
+        $currency = trim((string) $currency);
+        if ($currency === '') {
+            return 'IDR';
+        }
+
+        $found = $this->db->table('currency')->select('Currency')->where('Currency', $currency)->get()->getRow();
+        if (!$found) {
+            throw new \DomainException("Mata uang \"{$currency}\" tidak dikenal. Gunakan kode seperti IDR atau USD.");
+        }
+
+        return $found->Currency;
     }
 
     private function insertCatalog($data)
     {
         $existing = $this->katalogModel->where('ControlNumber', $data['ControlNumber'])->first();
         if ($existing) {
-            throw new \Exception("ControlNumber {$data['ControlNumber']} sudah ada");
+            throw new \RuntimeException("ControlNumber {$data['ControlNumber']} sudah ada");
         }
 
         if (!$this->katalogModel->insert($data)) {
-            throw new \Exception("Gagal insert catalog: " . implode(', ', $this->katalogModel->errors()));
+            throw new \RuntimeException("Gagal insert catalog: " . implode(', ', $this->katalogModel->errors()));
         }
 
         return $this->katalogModel->getInsertID();
     }
 
-    private function insertMarcFields($catalogId, $marcFields)
+    private function insertMarcFields($catalogId, $marcFields, int $sequence)
     {
         foreach ($marcFields as $field) {
-            $field['CatalogId'] = $catalogId;
+            $field += [
+                'CatalogId'      => $catalogId,
+                'Sequence'       => $sequence++,
+                'CreateBy'       => user()->id ?? 1,
+                'CreateDate'     => date('Y-m-d H:i:s'),
+                'CreateTerminal' => $this->request->getIPAddress(),
+                'Branch_id'      => user()->branch_id ?? 1,
+                'active'         => 1,
+            ];
 
-            if (!$this->katalogRuasModel->insert($field)) {
-                throw new \Exception("Gagal insert MARC field: " . implode(', ', $this->katalogRuasModel->errors()));
+            // Koneksi yang sama dengan katalog dan eksemplar, supaya ikut batal bila barisnya gagal
+            if (!$this->db->table('catalog_ruas')->insert($field)) {
+                throw new \RuntimeException('Gagal insert MARC field: ' . $this->db->error()['message']);
             }
         }
     }
 
-    private function insertCollections($catalogId, $collections)
+    private function assertBarcodeAvailable(string $barcode): void
     {
-        foreach ($collections as $collection) {
-            $collection['Catalog_id'] = $catalogId;
-
-            $existing = $this->eksemplarModel->where('NomorBarcode', $collection['NomorBarcode'])->first();
-            if ($existing) {
-                throw new \Exception("Barcode {$collection['NomorBarcode']} sudah ada");
-            }
-
-            if (!$this->eksemplarModel->insert($collection)) {
-                throw new \Exception("Gagal insert collection: " . implode(', ', $this->eksemplarModel->errors()));
-            }
+        if ($this->eksemplarModel->where('NomorBarcode', $barcode)->first()) {
+            throw new \DomainException("Nomor barcode {$barcode} sudah dipakai eksemplar lain.");
         }
     }
 
-    private function generateBibId($controlNumber)
+    private function insertCollection(array $collection): void
     {
-        $numberPart    = substr($controlNumber, 5);
-        $lastSevenDigits = substr($numberPart, -7);
-        return '0010-092' . $lastSevenDigits;
-    }
-
-    private function generateControlNumber()
-    {
-        $prefix      = 'INLIS';
-        $numberLength = 19 - strlen($prefix);
-
-        try {
-            $lastRecord = $this->katalogModel
-                ->select('ControlNumber')
-                ->where('ControlNumber LIKE', $prefix . '%')
-                ->orderBy('ControlNumber', 'DESC')
-                ->first();
-
-            $nextNumber = ($lastRecord && !empty($lastRecord->ControlNumber))
-                ? (int) substr($lastRecord->ControlNumber, strlen($prefix)) + 1
-                : 1;
-
-            $controlNumber = $prefix . str_pad($nextNumber, $numberLength, '0', STR_PAD_LEFT);
-
-            if (strlen($controlNumber) !== 19) {
-                throw new \Exception("Generated ControlNumber length mismatch: " . strlen($controlNumber));
-            }
-
-            return $controlNumber;
-        } catch (\Exception $e) {
-            log_message('error', 'Error generating ControlNumber: ' . $e->getMessage());
-            $fallback = time() % 99999999999999;
-            return $prefix . str_pad($fallback, $numberLength, '0', STR_PAD_LEFT);
+        if (!$this->eksemplarModel->insert($collection)) {
+            throw new \RuntimeException('Gagal insert collection: ' . implode(', ', $this->eksemplarModel->errors()) . ' ' . $this->db->error()['message']);
         }
     }
 
-    private function isControlNumberExists($controlNumber)
+    /** Tanggal dd-mm-yyyy atau nomor seri Excel. Null bila kosong. */
+    private function parseImportDate($value, string $label): ?string
     {
-        return $this->katalogModel->where('ControlNumber', $controlNumber)->countAllResults() > 0;
-    }
-
-    private function generateUniqueControlNumber($maxRetries = 5)
-    {
-        $attempt = 0;
-
-        while ($attempt < $maxRetries) {
-            $controlNumber = $this->generateControlNumber();
-
-            if (!$this->isControlNumberExists($controlNumber)) {
-                return $controlNumber;
-            }
-
-            $attempt++;
-            usleep(100000);
+        $value = trim((string) $value);
+        if ($value === '') {
+            return null;
         }
 
-        $timestamp    = microtime(true);
-        $uniqueNumber = substr(str_replace('.', '', $timestamp), -14);
-        return 'INLIS' . str_pad($uniqueNumber, 14, '0', STR_PAD_LEFT);
-    }
-
-    private function parseDate($dateString)
-    {
-        if (empty($dateString)) {
-            return date('Y-m-d H:i:s');
-        }
-
-        foreach (['d-m-Y', 'Y-m-d', 'd/m/Y', 'Y/m/d'] as $format) {
-            $date = \DateTime::createFromFormat($format, $dateString);
-            if ($date !== false) {
-                return $date->format('Y-m-d H:i:s');
+        $date = null;
+        if (is_numeric($value)) {
+            $date = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((float) $value);
+        } else {
+            foreach (['d-m-Y', 'd/m/Y', 'Y-m-d'] as $format) {
+                $parsed = \DateTime::createFromFormat('!' . $format, $value);
+                $problems = \DateTime::getLastErrors();
+                if ($parsed !== false && (!$problems || ($problems['warning_count'] === 0 && $problems['error_count'] === 0))) {
+                    $date = $parsed;
+                    break;
+                }
             }
         }
 
-        return date('Y-m-d H:i:s');
+        if ($date === null || (int) $date->format('Y') < 1900) {
+            throw new \DomainException("{$label} \"{$value}\" tidak dikenali. Gunakan format dd-mm-yyyy, contoh 14-02-2015.");
+        }
+
+        return $date->format('Y-m-d H:i:s');
+    }
+
+    /**
+     * ID data master berdasarkan nama, tanpa membedakan huruf besar-kecil.
+     * Nilai kosong memakai $default. Tanpa $default, nilai wajib diisi.
+     */
+    private function masterId(string $table, string $label, $value, ?string $default = null): int
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            if ($default === null) {
+                throw new \DomainException("{$label} belum diisi.");
+            }
+            $value = $default;
+        }
+
+        if (!isset($this->masterCache[$table])) {
+            $this->masterCache[$table] = [];
+            foreach ($this->db->table($table)->select('ID, Name')->orderBy('ID')->get()->getResultArray() as $master) {
+                $this->masterCache[$table][mb_strtolower(trim((string) $master['Name']))] ??= (int) $master['ID'];
+            }
+        }
+
+        $id = $this->masterCache[$table][mb_strtolower($value)] ?? null;
+        if ($id === null) {
+            throw new \DomainException("{$label} \"{$value}\" belum ada di data master. Perbaiki isi Excel atau tambahkan dulu di menu master.");
+        }
+
+        return $id;
     }
 
     private function parsePartnerId($namaSumber)
     {
-        return 1;
+        return $this->masterId('partners', 'Nama sumber', $namaSumber);
     }
 
     private function parseLocationId($kodeLokasi, $locationLibraryId)
     {
         $kodeLokasi = trim((string) $kodeLokasi);
         if ($kodeLokasi === '') {
-            throw new \Exception('KODE_LOKASI_RUANG wajib diisi');
+            throw new \DomainException('Kode lokasi ruang belum diisi.');
         }
 
         $location = $this->db->table('locations')
@@ -556,7 +668,7 @@ class EksemplarImportController extends \Base\Controllers\BaseController
             ->get()->getRowArray();
 
         if (!$location) {
-            throw new \Exception("Kode lokasi ruang {$kodeLokasi} tidak ditemukan untuk perpustakaan ini. Tambahkan lokasi ruang atau perbaiki kode di Excel");
+            throw new \DomainException("Kode lokasi ruang \"{$kodeLokasi}\" tidak ada di perpustakaan ini. Perbaiki isi Excel atau tambahkan dulu lokasi ruangnya.");
         }
 
         return (int) $location['ID'];
@@ -564,39 +676,34 @@ class EksemplarImportController extends \Base\Controllers\BaseController
 
     private function parseRuleId($akses)
     {
-        $mapping = ['Dapat dipinjam' => 1, 'Tidak dapat dipinjam' => 2, 'Referensi' => 3];
-        return $mapping[$akses] ?? 1;
+        return $this->masterId('collectionrules', 'Akses', $akses, 'Dapat dipinjam');
     }
 
     private function parseCategoryId($kategori)
     {
-        $mapping = ['Koleksi Umum' => 7, 'Koleksi Referensi' => 8, 'Koleksi Langka' => 9];
-        return $mapping[$kategori] ?? 7;
+        return $this->masterId('collectioncategorys', 'Kategori', $kategori, 'Koleksi Umum');
     }
 
     private function parseMediaId($media)
     {
-        $mapping = ['Buku' => 2, 'CD/DVD' => 3, 'Majalah' => 4, 'Jurnal' => 5, 'E-Book' => 6];
-        return $mapping[$media] ?? 2;
+        return $this->masterId('collectionmedias', 'Media', $media, 'Buku');
     }
 
     private function parseSourceId($jenisSumber)
     {
-        $mapping = ['Pembelian' => 1, 'Hadiah/Hibah' => 2, 'Tukar Menukar' => 3, 'Deposit' => 4];
-        return $mapping[$jenisSumber] ?? 1;
+        return $this->masterId('collectionsources', 'Jenis sumber', $jenisSumber, 'Pembelian');
     }
 
     private function parseStatusId($ketersediaan)
     {
-        $mapping = ['Tersedia' => 1, 'Dipinjam' => 2, 'Hilang' => 3, 'Rusak' => 4, 'Dalam Perbaikan' => 5];
-        return $mapping[$ketersediaan] ?? 1;
+        return $this->masterId('collectionstatus', 'Ketersediaan', $ketersediaan, 'Tersedia');
     }
 
     private function parseLocationLibraryId($kodeLokasiPerpustakaan)
     {
         $kodeLokasiPerpustakaan = trim((string) $kodeLokasiPerpustakaan);
         if ($kodeLokasiPerpustakaan === '') {
-            throw new \Exception('KODE_LOKASI_PERPUSTAKAAN wajib diisi');
+            throw new \DomainException('Kode lokasi perpustakaan belum diisi.');
         }
 
         $library = $this->db->table('location_library')
@@ -605,7 +712,7 @@ class EksemplarImportController extends \Base\Controllers\BaseController
             ->get()->getRowArray();
 
         if (!$library) {
-            throw new \Exception("Kode lokasi perpustakaan {$kodeLokasiPerpustakaan} tidak ditemukan. Tambahkan lokasi perpustakaan atau perbaiki kode di Excel");
+            throw new \DomainException("Kode lokasi perpustakaan \"{$kodeLokasiPerpustakaan}\" tidak ditemukan. Perbaiki isi Excel atau tambahkan dulu lokasi perpustakaannya.");
         }
 
         return (int) $library['ID'];

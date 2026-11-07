@@ -2,9 +2,9 @@
 -- Sinkronisasi RBAC dan settingparameters ke database lain
 -- Sumber : inlislite_v33_progo (2026-11-04)
 --
--- auth_groups (5 baris), auth_permissions (633 baris),
--- auth_groups_permissions (831 baris)
--- c_menus category_id = 1 / menu backend (131 baris)
+-- auth_groups (5 baris), auth_permissions (637 baris),
+-- auth_groups_permissions (840 baris)
+-- c_menus category_id = 1 / menu backend (132 baris)
 --   -> DITIMPA: isi lama dihapus, diganti isi dari sumber (ID dipertahankan).
 --      Menu frontend dan referensi tidak disentuh.
 -- settingparameters (158 Name unik)
@@ -76,6 +76,10 @@ INSERT INTO `auth_permissions` (`id`, `name`, `route`, `menu`, `description`, `c
 ('406', 'anggota/access', 'anggota', 'Daftar Anggota', 'Update Permission for menu Daftar Anggota', NULL),
 ('407', 'anggota/index', 'anggota', 'Daftar Anggota', 'Update Permission for menu Daftar Anggota', NULL),
 ('408', 'anggota/create', 'anggota', 'Daftar Anggota', 'Update Permission for menu Daftar Anggota', NULL),
+('1183', 'anggota/create/access', 'anggota/create', 'Entri Anggota', 'Permission access menu Entri Anggota', NULL),
+('1184', 'anggota/export_view/access', 'anggota/export_view', 'Export Anggota', 'Permission access menu Export Anggota', NULL),
+('1185', 'anggota/export_view/index', 'anggota/export_view', 'Export Anggota', 'Permission index menu Export Anggota', NULL),
+('1186', 'anggota/export', 'anggota/export', 'Export Anggota', 'Permission export menu Export Anggota', NULL),
 ('409', 'anggota/edit', 'anggota', 'Daftar Anggota', 'Update Permission for menu Daftar Anggota', NULL),
 ('410', 'anggota/delete', 'anggota', 'Daftar Anggota', 'Update Permission for menu Daftar Anggota', NULL),
 ('411', 'keranjang-anggota/access', 'keranjang-anggota', 'Keranjang Anggota', 'Update Permission for menu Keranjang Anggota', NULL),
@@ -715,6 +719,10 @@ INSERT INTO `auth_groups_permissions` (`group_id`, `permission_id`, `category`, 
 ('1', '406', '0', '0'),
 ('1', '407', '0', '0'),
 ('1', '408', '0', '0'),
+('1', '1183', '0', '0'),
+('1', '1184', '0', '0'),
+('1', '1185', '0', '0'),
+('1', '1186', '0', '0'),
 ('1', '409', '0', '0'),
 ('1', '410', '0', '0'),
 ('1', '411', '0', '0'),
@@ -1323,6 +1331,10 @@ INSERT INTO `auth_groups_permissions` (`group_id`, `permission_id`, `category`, 
 ('8', '406', '0', '0'),
 ('8', '407', '0', '0'),
 ('8', '408', '0', '0'),
+('8', '1183', '0', '0'),
+('8', '1184', '0', '0'),
+('8', '1185', '0', '0'),
+('8', '1186', '0', '0'),
 ('8', '409', '0', '0'),
 ('8', '410', '0', '0'),
 ('8', '411', '0', '0'),
@@ -1497,6 +1509,7 @@ INSERT INTO `auth_groups_permissions` (`group_id`, `permission_id`, `category`, 
 ('11', '406', '0', '0'),
 ('11', '407', '0', '0'),
 ('11', '408', '0', '0'),
+('11', '1183', '0', '0'),
 ('11', '409', '0', '0'),
 ('11', '410', '0', '0'),
 ('11', '411', '0', '0'),
@@ -1600,6 +1613,7 @@ INSERT INTO `c_menus` (`id`, `name`, `parent`, `controller`, `slug`, `icon`, `pe
 ('234', 'Entri Peminjaman', '53', 'sirkulasi-peminjaman/create', 'entri-peminjaman', 'fas fa-sync', 'access|index|create|edit|delete', NULL, 'menu', '1', 'backend-menu', '21', NULL, '1', NULL, NULL, '2025-03-18 17:58:49', '2026-05-28 12:44:23', NULL),
 ('235', 'Entri  Pengembalian', '53', 'sirkulasi-pengembalian/create', 'entri-pengembalian', 'fas fa-share-square', 'access|index|create|edit|delete', NULL, 'menu', '1', 'backend-menu', '23', NULL, '1', NULL, NULL, '2025-03-18 18:00:24', '2026-05-28 12:44:23', NULL),
 ('236', 'Import Anggota', '23', 'anggota/import_view', 'import-anggota', 'fas fa-file-excel', 'access|index|create|edit|delete', NULL, 'menu', '1', 'backend-menu', '17', NULL, '1', NULL, NULL, '2025-03-27 01:53:42', '2026-05-28 12:44:23', NULL),
+('296', 'Export Anggota', '23', 'anggota/export_view', 'export-anggota', 'fas fa-file-export', 'access|index', NULL, 'menu', '1', 'backend-menu', '20', NULL, '1', NULL, NULL, NULL, NULL, NULL),
 ('237', 'Ruas Data Bibliografis', '160', 'ruas-data-bibliografis', 'ruas-data-bibliografis', 'fas fa-file-code', 'access|index|create|edit|delete', NULL, 'menu', '1', 'backend-menu', '57', NULL, '1', NULL, NULL, '2025-06-26 01:08:32', '2026-05-28 12:44:23', NULL),
 ('238', 'Penomoran koleksi', '160', 'master-penomoran-koleksi', 'penomoran-koleksi', 'fas fa-keyboard', 'access|index|create|edit|delete', NULL, 'menu', '1', 'backend-menu', '58', NULL, '1', NULL, NULL, '2025-06-26 16:34:12', '2026-05-28 12:44:23', NULL),
 ('239', 'Redaksi Keanggotaan', '159', 'master-redaksi-keanggotaan', 'redaksi-keanggotaan', 'fas fa-chalkboard-teacher', 'access|index|create|edit|delete', NULL, 'menu', '1', 'backend-menu', '71', NULL, '1', NULL, NULL, '2025-06-26 19:46:31', '2026-05-28 12:44:23', NULL),

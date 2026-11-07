@@ -142,6 +142,10 @@ INSERT INTO `auth_groups_permissions` VALUES (1, 405, '0', 0);
 INSERT INTO `auth_groups_permissions` VALUES (1, 406, '0', 0);
 INSERT INTO `auth_groups_permissions` VALUES (1, 407, '0', 0);
 INSERT INTO `auth_groups_permissions` VALUES (1, 408, '0', 0);
+INSERT INTO `auth_groups_permissions` VALUES (1, 1183, '0', 0);
+INSERT INTO `auth_groups_permissions` VALUES (1, 1184, '0', 0);
+INSERT INTO `auth_groups_permissions` VALUES (1, 1185, '0', 0);
+INSERT INTO `auth_groups_permissions` VALUES (1, 1186, '0', 0);
 INSERT INTO `auth_groups_permissions` VALUES (1, 409, '0', 0);
 INSERT INTO `auth_groups_permissions` VALUES (1, 410, '0', 0);
 INSERT INTO `auth_groups_permissions` VALUES (1, 411, '0', 0);
@@ -747,6 +751,10 @@ INSERT INTO `auth_groups_permissions` VALUES (8, 405, '0', 0);
 INSERT INTO `auth_groups_permissions` VALUES (8, 406, '0', 0);
 INSERT INTO `auth_groups_permissions` VALUES (8, 407, '0', 0);
 INSERT INTO `auth_groups_permissions` VALUES (8, 408, '0', 0);
+INSERT INTO `auth_groups_permissions` VALUES (8, 1183, '0', 0);
+INSERT INTO `auth_groups_permissions` VALUES (8, 1184, '0', 0);
+INSERT INTO `auth_groups_permissions` VALUES (8, 1185, '0', 0);
+INSERT INTO `auth_groups_permissions` VALUES (8, 1186, '0', 0);
 INSERT INTO `auth_groups_permissions` VALUES (8, 409, '0', 0);
 INSERT INTO `auth_groups_permissions` VALUES (8, 410, '0', 0);
 INSERT INTO `auth_groups_permissions` VALUES (8, 411, '0', 0);
@@ -920,6 +928,7 @@ INSERT INTO `auth_groups_permissions` VALUES (11, 405, '0', 0);
 INSERT INTO `auth_groups_permissions` VALUES (11, 406, '0', 0);
 INSERT INTO `auth_groups_permissions` VALUES (11, 407, '0', 0);
 INSERT INTO `auth_groups_permissions` VALUES (11, 408, '0', 0);
+INSERT INTO `auth_groups_permissions` VALUES (11, 1183, '0', 0);
 INSERT INTO `auth_groups_permissions` VALUES (11, 409, '0', 0);
 INSERT INTO `auth_groups_permissions` VALUES (11, 410, '0', 0);
 INSERT INTO `auth_groups_permissions` VALUES (11, 411, '0', 0);
@@ -1941,6 +1950,10 @@ INSERT INTO `auth_permissions` VALUES (1179, 'master-kios-buku-tamu/access', 'ma
 INSERT INTO `auth_permissions` VALUES (1180, 'master-kios-buku-tamu/index', 'master-kios-buku-tamu', 'Aktivasi Kios', 'Permission index menu Aktivasi Kios', NULL);
 INSERT INTO `auth_permissions` VALUES (1181, 'master-kios-buku-tamu/create', 'master-kios-buku-tamu', 'Aktivasi Kios', 'Permission create menu Aktivasi Kios', NULL);
 INSERT INTO `auth_permissions` VALUES (1182, 'master-kios-buku-tamu/delete', 'master-kios-buku-tamu', 'Aktivasi Kios', 'Permission delete menu Aktivasi Kios', NULL);
+INSERT INTO `auth_permissions` VALUES (1183, 'anggota/create/access', 'anggota/create', 'Entri Anggota', 'Permission access menu Entri Anggota', NULL);
+INSERT INTO `auth_permissions` VALUES (1184, 'anggota/export_view/access', 'anggota/export_view', 'Export Anggota', 'Permission access menu Export Anggota', NULL);
+INSERT INTO `auth_permissions` VALUES (1185, 'anggota/export_view/index', 'anggota/export_view', 'Export Anggota', 'Permission index menu Export Anggota', NULL);
+INSERT INTO `auth_permissions` VALUES (1186, 'anggota/export', 'anggota/export', 'Export Anggota', 'Permission export menu Export Anggota', NULL);
 
 -- ----------------------------
 -- Table structure for auth_reset_attempts
@@ -2382,6 +2395,7 @@ INSERT INTO `c_menus` VALUES (233, 'Perpanjangan Anggota', 23, 'perpanjangan-ang
 INSERT INTO `c_menus` VALUES (234, 'Entri Peminjaman', 53, 'sirkulasi-peminjaman/create', 'entri-peminjaman', 'fas fa-sync', 'access|index|create|edit|delete', NULL, 'menu', 1, 'backend-menu', 21, NULL, 1, NULL, NULL, '2025-03-18 17:58:49', '2026-05-28 12:44:23', NULL);
 INSERT INTO `c_menus` VALUES (235, 'Entri  Pengembalian', 53, 'sirkulasi-pengembalian/create', 'entri-pengembalian', 'fas fa-share-square', 'access|index|create|edit|delete', NULL, 'menu', 1, 'backend-menu', 23, NULL, 1, NULL, NULL, '2025-03-18 18:00:24', '2026-05-28 12:44:23', NULL);
 INSERT INTO `c_menus` VALUES (236, 'Import Anggota', 23, 'anggota/import_view', 'import-anggota', 'fas fa-file-excel', 'access|index|create|edit|delete', NULL, 'menu', 1, 'backend-menu', 17, NULL, 1, NULL, NULL, '2025-03-27 01:53:42', '2026-05-28 12:44:23', NULL);
+INSERT INTO `c_menus` VALUES (296, 'Export Anggota', 23, 'anggota/export_view', 'export-anggota', 'fas fa-file-export', 'access|index', NULL, 'menu', 1, 'backend-menu', 20, NULL, 1, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO `c_menus` VALUES (237, 'Ruas Data Bibliografis', 160, 'ruas-data-bibliografis', 'ruas-data-bibliografis', 'fas fa-file-code', 'access|index|create|edit|delete', NULL, 'menu', 1, 'backend-menu', 57, NULL, 1, NULL, NULL, '2025-06-26 01:08:32', '2026-05-28 12:44:23', NULL);
 INSERT INTO `c_menus` VALUES (238, 'Penomoran koleksi', 160, 'master-penomoran-koleksi', 'penomoran-koleksi', 'fas fa-keyboard', 'access|index|create|edit|delete', NULL, 'menu', 1, 'backend-menu', 58, NULL, 1, NULL, NULL, '2025-06-26 16:34:12', '2026-05-28 12:44:23', NULL);
 INSERT INTO `c_menus` VALUES (239, 'Redaksi Keanggotaan', 159, 'master-redaksi-keanggotaan', 'redaksi-keanggotaan', 'fas fa-chalkboard-teacher', 'access|index|create|edit|delete', NULL, 'menu', 1, 'backend-menu', 71, NULL, 1, NULL, NULL, '2025-06-26 19:46:31', '2026-05-28 12:44:23', NULL);

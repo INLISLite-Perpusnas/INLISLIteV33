@@ -1,0 +1,296 @@
+/*
+ * Import Excel buku tamu admin (/bukutamu).
+ * Mengikuti INA Digital: Button, File Upload varian Field, dan Modal varian Task.
+ */
+
+/* ===== Tombol di kepala tabel ===== */
+.gb-import-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.gb-import-btn,
+.gb-import-btn-lg,
+.gb-upload-pick {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 600;
+    text-transform: none;
+    white-space: nowrap;
+    border-radius: 8px;
+}
+
+.gb-import-btn,
+.gb-upload-pick {
+    height: 40px;
+    padding: 0 16px;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.gb-import-btn-lg {
+    height: 44px;
+    padding: 0 20px;
+    font-size: 16px;
+    line-height: 24px;
+}
+
+.gb-import-btn:focus-visible,
+.gb-import-btn-lg:focus-visible,
+.gb-upload-pick:focus-visible,
+.gb-import-close:focus-visible,
+.gb-upload-remove:focus-visible,
+.gb-import-errors:focus-visible {
+    outline: 2px solid var(--ina-primary, #2d659e);
+    outline-offset: 2px;
+}
+
+/* ===== Modal ===== */
+.gb-import-dialog {
+    max-width: 560px;
+}
+
+#gb_import_modal .modal-content {
+    border: 0;
+    border-radius: 12px;
+    font-family: var(--ina-font, inherit);
+}
+
+#gb_import_modal .modal-header {
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--ina-border, #e5e7eb);
+}
+
+#gb_import_modal .modal-title {
+    margin: 0;
+    font-size: 18px;
+    line-height: 26px;
+    font-weight: 600;
+    color: var(--ina-text, #1f2937);
+}
+
+#gb_import_modal .modal-body {
+    padding: 24px;
+    overflow-x: hidden;
+}
+
+#gb_import_modal .modal-footer {
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--ina-border, #e5e7eb);
+}
+
+#gb_import_modal .modal-footer > * {
+    margin: 0;
+}
+
+.gb-import-close,
+.gb-upload-remove {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    color: var(--ina-text-muted, #6b7280);
+    background: transparent;
+    border: 0;
+    border-radius: 8px;
+}
+
+.gb-import-close:hover,
+.gb-upload-remove:hover {
+    color: var(--ina-text, #1f2937);
+    background: #f3f4f6;
+}
+
+/* ===== File Upload: Field ===== */
+.gb-upload-field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 32px 24px;
+    text-align: center;
+    background: #fff;
+    border: 1px dashed #9ca3af;
+    border-radius: 8px;
+}
+
+.gb-upload-field.is-dragover {
+    background: #eaf1f8;
+    border-color: var(--ina-primary, #2d659e);
+}
+
+/* Hanya menerima satu file: nonaktif selama ada file terpilih */
+.gb-upload-field.is-disabled {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+.gb-upload-field.is-disabled .gb-upload-icon,
+.gb-upload-field.is-disabled .gb-upload-title,
+.gb-upload-field.is-disabled .gb-upload-hint {
+    color: #9ca3af;
+}
+
+.gb-upload-icon {
+    font-size: 32px;
+    line-height: 40px;
+    color: var(--ina-primary, #2d659e);
+}
+
+.gb-upload-title {
+    margin: 0;
+    font-size: 16px;
+    line-height: 24px;
+    color: var(--ina-text, #1f2937);
+}
+
+.gb-upload-hint {
+    margin: 0;
+    font-size: 14px;
+    line-height: 20px;
+    color: #4b5563;
+}
+
+/* ===== File Upload: Item ===== */
+.gb-upload-item[hidden],
+.gb-import-errors[hidden],
+.gb-upload-progress[hidden] {
+    display: none;
+}
+
+.gb-upload-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    padding: 12px 8px 12px 16px;
+    border: 1px solid var(--ina-border, #e5e7eb);
+    border-radius: 8px;
+}
+
+.gb-upload-item-icon {
+    flex-shrink: 0;
+    font-size: 24px;
+    color: #15803d;
+}
+
+.gb-upload-item-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.gb-upload-item-name {
+    overflow: hidden;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    color: var(--ina-text, #1f2937);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gb-upload-item-desc {
+    font-size: 12px;
+    line-height: 16px;
+    color: #4b5563;
+}
+
+.gb-upload-item[data-state="error"] {
+    background: #fef2f2;
+    border-color: #b91c1c;
+}
+
+.gb-upload-item[data-state="error"] .gb-upload-item-icon,
+.gb-upload-item[data-state="error"] .gb-upload-item-desc {
+    color: #b91c1c;
+}
+
+.gb-upload-item[data-state="success"] {
+    background: #f0fdf4;
+    border-color: #15803d;
+}
+
+.gb-upload-item[data-state="success"] .gb-upload-item-desc {
+    color: #166534;
+}
+
+.gb-upload-progress {
+    height: 4px;
+    margin-top: 8px;
+    overflow: hidden;
+    background: #e5e7eb;
+    border-radius: 2px;
+}
+
+.gb-upload-progress span {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: var(--ina-primary, #2d659e);
+    transition: width .2s;
+}
+
+/* ===== Daftar isian yang perlu diperbaiki ===== */
+.gb-import-errors {
+    max-height: 200px;
+    margin: 12px 0 0;
+    padding: 12px 12px 12px 28px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 20px;
+    color: #991b1b;
+    overflow-wrap: anywhere;
+    background: #fef2f2;
+    border-radius: 8px;
+}
+
+.gb-import-errors li + li {
+    margin-top: 4px;
+}
+
+@media (max-width: 575.98px) {
+    .gb-import-actions {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .gb-import-actions .gb-import-btn {
+        flex: 1;
+    }
+
+    #gb_import_modal .modal-footer .gb-import-btn-lg {
+        flex: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gb-upload-progress span {
+        transition: none;
+    }
+}
+
+/* Atribut hidden kalah oleh display di atas */
+.gb-upload-remove[hidden],
+.gb-import-btn-lg[hidden] {
+    display: none;
+}
+
+/* Tema lama memberi bayangan dan latar pada .modal-dialog serta latar abu-abu pada kepala modal */
+#gb_import_modal .gb-import-dialog {
+    background: transparent;
+    box-shadow: none;
+}
+
+#gb_import_modal .modal-header {
+    background: #fff;
+    border-radius: 12px 12px 0 0;
+}

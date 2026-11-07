@@ -31,6 +31,7 @@ class Group extends \Base\Controllers\BaseController
 		'eksemplar/import'                             => 'eksemplar/importviews',
 		'eksemplar/importviews'                        => 'eksemplar/importviews',
 		'eksemplar/download-template'                  => 'eksemplar/importviews',
+		'anggota/export'                               => 'anggota/export_view',
 		'anggota/import'                               => 'anggota/import_view',
 		'anggota/import_anggota'                       => 'anggota/import_view',
 		'sirkulasi-peminjaman/process-loan'            => 'sirkulasi-peminjaman/create',

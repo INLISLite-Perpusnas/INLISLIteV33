@@ -19,9 +19,8 @@ $pageHeading = $isKeranjang ? 'Keranjang Katalog' : ($lockedWorksheet ? 'Daftar 
 <style>
     .catalog-list-page .page-title-heading h1 {
         margin: 0;
-        font-size: 1.5rem;
-        font-weight: 600;
-        line-height: 1.2;
+        font: var(--ina-h4);
+        font-weight: 700;
     }
     .catalog-list-page .page-title-subheading { margin: .25rem 0 0; }
     .catalog-list-page .app-page-title .page-title-wrapper {
@@ -108,6 +107,9 @@ $pageHeading = $isKeranjang ? 'Keranjang Katalog' : ($lockedWorksheet ? 'Daftar 
     }
     .catalog-list-page .catalog-controls { gap: .75rem; }
     .catalog-list-page .catalog-create-actions { gap: .6rem; }
+    .catalog-list-page .catalog-bulk-actions { gap: .75rem; }
+    .catalog-list-page .catalog-bulk-actions .btn { min-height: 44px; }
+    .catalog-list-page .catalog-controls #btnResetFilterWorksheet { min-height: 44px; flex-shrink: 0; }
     .catalog-list-page .catalog-search-wrapper {
         margin-left: auto;
     }
@@ -226,10 +228,10 @@ $pageHeading = $isKeranjang ? 'Keranjang Katalog' : ($lockedWorksheet ? 'Daftar 
             <div class="catalog-create-actions d-flex align-items-center flex-wrap">
                 <?php if (is_allowed('katalog/create')) : ?>
                     <?php if (get_setting_parameter('FormEntriKatalog', is_profiling()) == 'Simple') : ?>
-                        <a href="<?= base_url('katalog/create?rda=1') ?>" class="btn btn-primary btn-sm mr-2"><i class="fa fa-plus" aria-hidden="true"></i> Tambah Katalog RDA</a>
-                        <a href="<?= base_url('katalog/create?rda=0') ?>" class="btn btn-success btn-sm mr-2"><i class="fa fa-plus" aria-hidden="true"></i> Tambah Katalog AACR</a>
+                        <a href="<?= base_url('katalog/create?rda=1') ?>" class="btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> Tambah Katalog RDA</a>
+                        <a href="<?= base_url('katalog/create?rda=0') ?>" class="btn btn-ina-outline"><i class="fa fa-plus" aria-hidden="true"></i> Tambah Katalog AACR</a>
                     <?php else : ?>
-                        <a href="<?= base_url('katalog/create_marc') ?>" class="btn btn-success btn-sm mr-2"><i class="fa fa-plus" aria-hidden="true"></i> Tambah Katalog</a>
+                        <a href="<?= base_url('katalog/create_marc') ?>" class="btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> Tambah Katalog</a>
                     <?php endif; ?>
                 <?php endif; ?>
             </div>
@@ -242,14 +244,14 @@ $pageHeading = $isKeranjang ? 'Keranjang Katalog' : ($lockedWorksheet ? 'Daftar 
                     <?= esc(strip_tags((string) $flashPayload['html'])) ?>
                 </div>
             <?php endif; ?>
-            <div class="d-block mb-3 pb-3 border-bottom">
-                <button type="button" id="proses_karantina" class="btn btn-warning" title="Memproses katalog yang dipilih"><i class="fa fa-shopping-cart" aria-hidden="true"></i> Pindahkan ke Karantina</button>
-                <button type="button" id="proses_opac" class="btn btn-primary ml-2" title="Memproses katalog yang dipilih"><i class="fa fa-check-square" aria-hidden="true"></i> Tampilkan di OPAC</button>
-                <button type="button" id="export_data_tag" class="btn btn-success ml-2" title="Export data tag katalog yang dipilih ke Excel"><i class="fa fa-file-excel" aria-hidden="true"></i> Export Data Tag</button>
+            <div class="catalog-bulk-actions d-flex flex-wrap mb-3 pb-3 border-bottom">
+                <button type="button" id="proses_karantina" class="btn btn-ina-outline-danger" title="Memproses katalog yang dipilih"><i class="fa fa-shopping-cart" aria-hidden="true"></i> Pindahkan ke Karantina</button>
+                <button type="button" id="proses_opac" class="btn btn-primary" title="Memproses katalog yang dipilih"><i class="fa fa-check-square" aria-hidden="true"></i> Tampilkan di OPAC</button>
+                <button type="button" id="export_data_tag" class="btn btn-ina-outline" title="Export data tag katalog yang dipilih ke Excel"><i class="fa fa-file-excel" aria-hidden="true"></i> Export Data Tag</button>
                 <?php if ($isKeranjang && is_allowed('keranjang-katalog/kembalikan')) : ?>
-                    <button type="button" id="kembalikan_keranjang" class="btn btn-info ml-2" title="Kembalikan katalog yang dipilih ke daftar katalog"><i class="fa fa-undo" aria-hidden="true"></i> Kembalikan ke Katalog</button>
+                    <button type="button" id="kembalikan_keranjang" class="btn btn-ina-outline" title="Kembalikan katalog yang dipilih ke daftar katalog"><i class="fa fa-undo" aria-hidden="true"></i> Kembalikan ke Katalog</button>
                 <?php elseif (!$isKeranjang && is_allowed('keranjang-katalog/masukkan')) : ?>
-                    <button type="button" id="masukkan_keranjang" class="btn btn-info ml-2" title="Masukkan katalog yang dipilih ke keranjang"><i class="fa fa-shopping-cart" aria-hidden="true"></i> Masukkan ke Keranjang</button>
+                    <button type="button" id="masukkan_keranjang" class="btn btn-ina-outline" title="Masukkan katalog yang dipilih ke keranjang"><i class="fa fa-shopping-cart" aria-hidden="true"></i> Masukkan ke Keranjang</button>
                 <?php endif; ?>
             </div>
 
@@ -266,7 +268,7 @@ $pageHeading = $isKeranjang ? 'Keranjang Katalog' : ($lockedWorksheet ? 'Daftar 
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <button class="btn btn-outline-secondary" id="btnResetFilterWorksheet" type="button" style="height:38px; flex-shrink:0;"><i class="fa fa-undo" aria-hidden="true"></i> Reset Filter</button>
+                <button class="btn btn-outline-secondary" id="btnResetFilterWorksheet" type="button"><i class="fa fa-undo" aria-hidden="true"></i> Reset filter</button>
                 <?php endif; ?>
                 <div>
                     <label for="catalog_page_length" class="d-block mb-1">Data per halaman</label>
