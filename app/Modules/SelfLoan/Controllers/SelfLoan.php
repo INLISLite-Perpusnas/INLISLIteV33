@@ -549,6 +549,22 @@ class SelfLoan extends \App\Controllers\BaseController
                    ->with('error', 'Melebihi limit peminjaman (' . $maxLoans . ' dari ' . $loan_config['source'] . ')');
         }
         
+        $locationId = KioskAuth::requestLocationId($this->request);
+        if (!$locationId) {
+            return redirect()->to('buku-tamu/lokasi');
+        }
+
+        $location = $this->db->table('locations as a')
+            ->select('b.ID as location_library_id')
+            ->join('location_library as b', 'b.ID = a.LocationLibrary_id')
+            ->where('a.ID', $locationId)
+            ->get()
+            ->getRow();
+        if (!$location) {
+            return redirect()->to('/peminjaman-mandiri?MemberNo=' . urlencode($memberNo))
+                ->with('error', 'Lokasi kios belum terhubung ke lokasi perpustakaan. Hubungi petugas.');
+        }
+
         // --- PERBAIKAN TRANSAKSI DIMULAI DI SINI ---
         // Gunakan transBegin() untuk transaksi manual
         $this->db->transBegin();
@@ -568,8 +584,7 @@ class SelfLoan extends \App\Controllers\BaseController
             $collection_loan_id = get_pad_number($increment, $todayPrefix, 5);
             $loanDate = date('Y-m-d H:i:s');
             $dueDate = date('Y-m-d H:i:s', strtotime("+{$loanDays} days"));
-            $locationId = KioskAuth::requestLocationId($this->request) ?: 1;
-            
+
             // Create collection loan record
             $loanData = [
                 'ID' => $collection_loan_id,
@@ -583,7 +598,7 @@ class SelfLoan extends \App\Controllers\BaseController
                 'CreateBy' => 1, // System user
                 'CreateDate' => $loanDate,
                 'CreateTerminal' => $this->request->getIPAddress(),
-                'LocationLibrary_id' => $locationId,
+                'LocationLibrary_id' => $location->location_library_id,
             ];
             
             // Cek apakah insert master berhasil
@@ -650,9 +665,8 @@ class SelfLoan extends \App\Controllers\BaseController
             // Catat error sebenarnya ke file log
             log_message('error', 'Loan processing error: ' . $e->getMessage());
             
-            // Menampilkan error database langsung ke user (Bagus untuk tahap development/debugging)
             return redirect()->to('/peminjaman-mandiri?MemberNo=' . urlencode($memberNo))
-                   ->with('error', 'Gagal memproses: ' . $e->getMessage());
+                   ->with('error', 'Gagal memproses peminjaman. Silakan hubungi petugas.');
         }
     }
     
