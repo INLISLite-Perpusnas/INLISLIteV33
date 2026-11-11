@@ -12,17 +12,31 @@
 		</tr>
 	</thead>
 	<tbody>
-		<?php foreach (get_pelanggaran($anggota->ID) as $row) : ?>
-		<tr>
-			<td width="35"></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-		</tr>
+		<?php foreach (get_pelanggaran($anggota->ID) as $row): ?>
+			<tr>
+				<td width="35"></td>
+				<td>
+					<?= $row->barcode_no ?>
+				</td>
+				<td>
+					<?= $row->title ?>
+				</td>
+				<td>
+					<?= $row->jenis_pelanggaran ?>
+				</td>
+				<td>
+					<?= $row->jenis_denda ?>
+				</td>
+				<td>
+					<?= 'Rp ' . number_format($row->JumlahDenda, 0, ',', '.') ?>
+				</td>
+				<td>
+					<?= $row->JumlahSuspend ?>
+				</td>
+				<td>
+					<?= date('d F Y', strtotime($row->CreateDate)) ?>
+				</td>
+			</tr>
 		<?php endforeach; ?>
 	</tbody>
 </table>
