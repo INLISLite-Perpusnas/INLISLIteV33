@@ -323,7 +323,19 @@ padding-top: 110px; }
                                 <p><strong>ID Peminjaman</strong> <?= esc($loan->ID) ?></p>
                                 <p><strong>Tanggal Pinjam</strong> <?= date('d/m/Y H:i', strtotime($loan->CreateDate)) ?></p>
                                 <p><strong>Jumlah Buku</strong> <?= $loan->CollectionCount ?> buku</p>
-                                <p><strong>Masa Peminjaman</strong> 7 hari</p>
+                                <?php
+                                // Dihitung dari tanggal pinjam dan jatuh tempo yang tersimpan, sumber yang sama dengan "Tanggal Kembali"
+                                $loanPeriods = [];
+                                foreach ($loanItems as $item) {
+                                    $loanPeriods[] = (new \DateTime(date('Y-m-d', strtotime($item->LoanDate))))
+                                        ->diff(new \DateTime(date('Y-m-d', strtotime($item->DueDate))))->days;
+                                }
+                                $loanPeriods = array_values(array_unique($loanPeriods));
+                                sort($loanPeriods);
+                                ?>
+                                <?php if ($loanPeriods) : ?>
+                                <p><strong>Masa Peminjaman</strong> <?= count($loanPeriods) === 1 ? $loanPeriods[0] : $loanPeriods[0] . '–' . end($loanPeriods) ?> hari</p>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

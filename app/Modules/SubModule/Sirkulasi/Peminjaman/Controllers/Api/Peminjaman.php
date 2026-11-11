@@ -107,9 +107,9 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
                         <div class="widget-content-left text-secondary">
                             <dl class="dl-horizontal mb-0">
                                 <dt class="font-weight-bold mb-0"><i class="fa fa-user text-secondary"></i> No. Anggota</dt>
-                                <dd class="font-weight-bold mb-0 mr-1">&nbsp;: <a href="#">' . $row->MemberNo . '  <span class="text-secondary">(' . $row->Fullname . ')</span></a></dd>
+                                <dd class="font-weight-bold mb-0 mr-1">&nbsp;: <a href="#">' . esc($row->MemberNo) . '  <span class="text-secondary">(' . esc($row->Fullname) . ')</span></a></dd>
                                 <dt class="font-weight-bold mb-0"><i class="fa fa-hashtag text-secondary"></i> No. Transaksi</dt>
-                                <dd class="font-weight-bold mb-0 mr-1">&nbsp;: <a href="#">' . $row->CollectionLoan_id . '</a></dd>
+                                <dd class="font-weight-bold mb-0 mr-1">&nbsp;: <a href="#">' . esc($row->CollectionLoan_id) . '</a></dd>
                             </dl>
                         </div>
                     </div>
@@ -128,7 +128,7 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
                         <i class="fa fa-qrcode fa-2x text-info"></i>
                     </div>
                     <div class="widget-content-left">
-                        <div class="widget-heading">' . $row->NomorBarcode . '</div>
+                        <div class="widget-heading">' . esc($row->NomorBarcode) . '</div>
                     </div>
                 </div>
             </div>';
@@ -142,8 +142,8 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
                         <i class="fa fa-book fa-2x text-info"></i>
                     </div>
                     <div class="widget-content-left">
-                        <div class="widget-heading text-primary">' . $row->Publisher . '</div>
-                        <div class="widget-heading">' . $row->Title . '</div>
+                        <div class="widget-heading text-primary">' . esc($row->Publisher) . '</div>
+                        <div class="widget-heading">' . esc($row->Title) . '</div>
                     </div>
                 </div>
             </div>';
@@ -163,7 +163,9 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
             $html  =  '<badge class="badge badge-info badge-pill">' . $row->UpdateDate . '</badge>';
             return $html;
         })
-       
+        // Dibaca halaman lewat innerHTML (stripHtml), jadi harus sudah aman sebagai HTML
+        ->edit('Publisher', fn ($row) => esc($row->Publisher))
+        ->edit('LocationLibrary', fn ($row) => esc($row->LocationLibrary))
         ->toJson();
     return $dataTable;
 }
@@ -205,8 +207,8 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
                         <i class="far fa-qrcode fa-2x text-info"></i>
                     </div>
                     <div class="widget-content-left">
-                        <div class="widget-heading">' . $row->CollectionLoan_id . '</div>
-                        <div class="widget-subheading">' . $row->NomorBarcode . '</div>
+                        <div class="widget-heading">' . esc($row->CollectionLoan_id) . '</div>
+                        <div class="widget-subheading">' . esc($row->NomorBarcode) . '</div>
                     </div>
                 </div>
             </div>';
@@ -220,8 +222,8 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
                         <i class="far fa-book fa-2x text-info"></i>
                     </div>
                     <div class="widget-content-left">
-                        <div class="widget-heading text-primary">' . $row->Publisher . '</div>
-                        <div class="widget-heading">' . $row->Title . '</div>
+                        <div class="widget-heading text-primary">' . esc($row->Publisher) . '</div>
+                        <div class="widget-heading">' . esc($row->Title) . '</div>
                     </div>
                 </div>
             </div>';
@@ -241,6 +243,7 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
             $html  =  '<badge class="badge badge-info badge-pill">' . $row->UpdateDate . '</badge>';
             return $html;
         })
+        ->edit('Publisher', fn ($row) => esc($row->Publisher))
         ->edit('action', function ($row) {
             // --- INI ADALAH BLOK YANG ANDA SEDIAKAN DI PROMPT ---
             $isLate = false;
@@ -262,8 +265,8 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
                      data-toggle="modal" 
                                 data-target="#modalViolation"
                                 data-id="' . $row->ID . '" 
-                                data-loan-id="' . $row->CollectionLoan_id . '"
-                                data-barcode="' . $row->NomorBarcode . '"
+                                data-loan-id="' . esc($row->CollectionLoan_id) . '"
+                                data-barcode="' . esc($row->NomorBarcode) . '"
                                 data-title="' . htmlspecialchars($row->Title, ENT_QUOTES) . '"
                                 data-late-days="' . $lateDays . '"
                                  data-member-id="' . $row->member_id . '"
@@ -327,12 +330,12 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
 			->edit('NomorBarcode', function ($row) {
-				$html  = '<b>' . $row->NomorBarcode . '</b>';
+				$html  = '<b>' . esc($row->NomorBarcode) . '</b>';
 				return $html;
 			})
 			->edit('Title', function ($row) {
-				$html  = '<b>' . $row->Publisher . '</b><br>';
-				$html .= $row->Title;
+				$html  = '<b>' . esc($row->Publisher) . '</b><br>';
+				$html .= esc($row->Title);
 				return $html;
 			})
 			->edit('LoanDate', function ($row) {
@@ -384,17 +387,20 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 				$builder->whereNotIn('col.ID', $col_id_arr);
 			}
 
-			$member = get_ref_single('members', 'MemberNo="' . $member_no . '"', 'data');
-			$member_loc = get_ref_table('memberloanauthorizelocation', 'LocationLoan_id', 'Member_id="' . $member->ID . '"', 'data');
-			$member_loc_arr = get_object_array($member_loc, 'LocationLoan_id');
-			if (!empty($member_loc_arr)) {
-				$builder->whereIn('col.Location_Library_id', $member_loc_arr);
-			}
+			// Nomor anggota dari URL dipakai sebagai nilai terikat, bukan potongan SQL
+			$member = $db->table('members')->select('ID')->where('MemberNo', $member_no)->get()->getRow();
+			if (!$member) {
+				$builder->where('1 = 0', null, false);
+			} else {
+				$member_loc_arr = array_column($db->table('memberloanauthorizelocation')->select('LocationLoan_id')->where('Member_id', $member->ID)->get()->getResultArray(), 'LocationLoan_id');
+				if (!empty($member_loc_arr)) {
+					$builder->whereIn('col.Location_Library_id', $member_loc_arr);
+				}
 
-			$member_cat = get_ref_table('memberloanauthorizecategory', 'CategoryLoan_id', 'Member_id="' . $member->ID . '"', 'data');
-			$member_cat_arr = get_object_array($member_cat, 'CategoryLoan_id');
-			if (!empty($member_cat_arr)) {
-				$builder->whereIn('col.Category_id', $member_cat_arr);
+				$member_cat_arr = array_column($db->table('memberloanauthorizecategory')->select('CategoryLoan_id')->where('Member_id', $member->ID)->get()->getResultArray(), 'CategoryLoan_id');
+				if (!empty($member_cat_arr)) {
+					$builder->whereIn('col.Category_id', $member_cat_arr);
+				}
 			}
 		}
 
@@ -412,7 +418,7 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 							<i class="far fa-qrcode fa-2x text-info"></i>
 						</div>
 						<div class="widget-content-left">
-							<div class="widget-heading">' . $row->NomorBarcode . '</div>
+							<div class="widget-heading">' . esc($row->NomorBarcode) . '</div>
 						</div>
 					</div>
 				</div>';
@@ -426,8 +432,8 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 							<i class="far fa-book fa-2x text-info"></i>
 						</div>
 						<div class="widget-content-left">
-							<div class="widget-heading text-primary">' . $row->Publisher . '</div>
-							<div class="widget-heading">' . $row->Title . '</div>
+							<div class="widget-heading text-primary">' . esc($row->Publisher) . '</div>
+							<div class="widget-heading">' . esc($row->Title) . '</div>
 						</div>
 					</div>
 				</div>';
@@ -580,19 +586,34 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 	public function loan_history()
 	{
 
-		// Mengambil parameter dari request
-		$requestedFields = $this->request->getVar('fields') ?? [
+		// Kolom yang boleh diminta klien. Data pribadi anggota (NIK, nama ibu kandung, dll.) tidak termasuk.
+		$allowedFields = [
 			'collectionloanitems.*',
-			'members.FullName',
-			'collections.Catalog_id',
-			'collections.NomorBarcode'  // Added NomorBarcode to default fields
+			'collectionloanitems.ID', 'collectionloanitems.CollectionLoan_id', 'collectionloanitems.LoanDate',
+			'collectionloanitems.DueDate', 'collectionloanitems.ActualReturn', 'collectionloanitems.LateDays',
+			'collectionloanitems.LoanStatus', 'collectionloanitems.Collection_id', 'collectionloanitems.member_id',
+			'members.FullName', 'members.MemberNo',
+			'collections.Catalog_id', 'collections.NomorBarcode', 'collections.CallNumber',
+			'catalogs.Title', 'catalogs.Author', 'catalogs.Publisher', 'catalogs.PublishYear',
 		];
+		$defaultFields = ['collectionloanitems.*', 'members.FullName', 'collections.Catalog_id', 'collections.NomorBarcode'];
+
+		$requestedFields = $this->request->getVar('fields');
+		if (is_string($requestedFields)) {
+			$requestedFields = explode(',', $requestedFields);
+		}
+		$requestedFields = array_values(array_intersect(array_map('trim', (array) ($requestedFields ?? [])), $allowedFields));
+		if ($requestedFields === []) {
+			$requestedFields = $defaultFields;
+		}
+
 		$search = $this->request->getVar('search') ?? '';
-		$limit = (int)($this->request->getVar('limit') ?? 10);
-		$page = (int)($this->request->getVar('page') ?? 1);
+		$limit = min(100, max(1, (int)($this->request->getVar('limit') ?? 10)));
+		$page = max(1, (int)($this->request->getVar('page') ?? 1));
 		$offset = ($page - 1) * $limit;
-		$order = $this->request->getVar('order') ?? 'collectionloanitems.ID';
-		$direction = $this->request->getVar('direction') ?? 'desc';
+		$order = $this->request->getVar('order');
+		$order = in_array($order, $allowedFields, true) && !str_ends_with($order, '.*') ? $order : 'collectionloanitems.ID';
+		$direction = strtolower((string) $this->request->getVar('direction')) === 'asc' ? 'asc' : 'desc';
 		$loanStatus = $this->request->getVar('LoanStatus');
 		$member_id = $this->request->getVar('member_id');
 		$barcode = $this->request->getVar('NomorBarcode');

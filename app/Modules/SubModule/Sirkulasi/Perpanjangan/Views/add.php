@@ -722,31 +722,6 @@
                         </i>
                     </div>
 
-                    <!-- Extend Days Selector -->
-                    <div id="extendSelectorWrap">
-                        <p style="text-align:center;font-size:13px;font-weight:700;color:var(--blue-900);margin-bottom:10px;">
-                            <i class="fa fa-calendar"></i>&nbsp; Durasi Perpanjangan
-                        </p>
-                        <div class="extend-selector">
-                            <div class="extend-opt selected" data-days="7" onclick="extendApp.selectDays(7, this)">
-                                <span class="eo-days">7</span>
-                                <span class="eo-label">Hari</span>
-                            </div>
-                            <div class="extend-opt" data-days="14" onclick="extendApp.selectDays(14, this)">
-                                <span class="eo-days">14</span>
-                                <span class="eo-label">Hari</span>
-                            </div>
-                            <div class="extend-opt" data-days="21" onclick="extendApp.selectDays(21, this)">
-                                <span class="eo-days">21</span>
-                                <span class="eo-label">Hari</span>
-                            </div>
-                            <div class="extend-opt" data-days="30" onclick="extendApp.selectDays(30, this)">
-                                <span class="eo-days">30</span>
-                                <span class="eo-label">Hari</span>
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="text-center" style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">
                         <button type="button" id="checkBookBtn" class="pm-btn pm-btn-ghost">
                             <i class="fa fa-search"></i> Cek Buku
@@ -792,7 +767,7 @@
                         <div id="summaryBar" class="summary-bar d-none">
                             <div>
                                 <h6 id="summaryText">Siap diperpanjang</h6>
-                                <p id="summarySubtext">Perpanjangan selama <span id="summaryDays">7</span> hari</p>
+                                <p id="summarySubtext">Lama perpanjangan mengikuti aturan sirkulasi, dihitung dari hari ini dalam hari kerja</p>
                             </div>
                             <button type="button" id="confirmExtendBtn" class="pm-btn pm-btn-teal">
                                 <i class="fa fa-check"></i> Konfirmasi Perpanjangan
@@ -841,7 +816,6 @@
             this.currentMemberId = null;
             this.currentMemberName = null;
             this.booksData = []; // semua buku dari server
-            this.selectedDays = 7;
             window.extendApp = this;
             this.init();
         }
@@ -892,13 +866,10 @@
             document.getElementById('barcodeInput').focus();
         }
 
-        selectDays(days, el) {
-            this.selectedDays = days;
-            document.querySelectorAll('.extend-opt').forEach(o => o.classList.remove('selected'));
-            el.classList.add('selected');
-            document.getElementById('summaryDays').textContent = days;
-            // Re-render due date previews
-            if (this.booksData.length) this.renderBookList();
+        escapeHtml(value) {
+            const div = document.createElement('div');
+            div.textContent = value == null ? '' : String(value);
+            return div.innerHTML;
         }
 
         showLoading() {
@@ -955,7 +926,8 @@
         toggleSelectAll(checked) {
             this.booksData.forEach((_, i) => {
                 const cb = document.getElementById('cb_' + i);
-                if (cb) cb.checked = checked;
+                if (!cb || cb.disabled) return;
+                cb.checked = checked;
                 const item = document.getElementById('bei_' + i);
                 if (item) item.classList.toggle('selected', checked);
             });
@@ -977,10 +949,12 @@
                 bar.classList.add('d-none');
             }
 
-            // Sync select-all checkbox
+            // Sync select-all checkbox: hanya buku yang memenuhi syarat
+            const eligible = this.booksData.filter(b => b.can_extend).length;
             const allCheck = document.getElementById('selectAllCheck');
-            allCheck.checked = count === this.booksData.length && count > 0;
-            allCheck.indeterminate = count > 0 && count < this.booksData.length;
+            allCheck.disabled = eligible === 0;
+            allCheck.checked = count === eligible && count > 0;
+            allCheck.indeterminate = count > 0 && count < eligible;
         }
 
         addDays(dateStr, days) {
@@ -1001,45 +975,48 @@
 
         renderBookList() {
             const list = document.getElementById('bookList');
-            const now = new Date();
+            const esc = v => this.escapeHtml(v);
 
             list.innerHTML = this.booksData.map((book, i) => {
-                const newDue = this.addDays(book.due_date, this.selectedDays);
-                const isNewOverdue = newDue < now; // seharusnya tidak mungkin tapi antisipasi
                 const overdueBadge = book.is_overdue ?
-                    `<span class="status-badge status-overdue"><i class="fa fa-exclamation-circle"></i> Terlambat ${book.days_overdue} hari</span>` :
+                    `<span class="status-badge status-overdue"><i class="fa fa-exclamation-circle"></i> Terlambat ${esc(book.days_overdue)} hari</span>` :
                     `<span class="status-badge status-onloan"><i class="fa fa-clock-o"></i> Sedang Dipinjam</span>`;
                 const extendBadge = book.extend_count > 0 ?
-                    `<span class="extend-badge"><i class="fa fa-refresh"></i> Perpanjang ke-${book.extend_count + 1}</span>` :
+                    `<span class="extend-badge"><i class="fa fa-refresh"></i> Sudah diperpanjang ${esc(book.extend_count)}${book.max_extend > 0 ? ' dari ' + esc(book.max_extend) : ''} kali</span>` :
                     `<span class="extend-badge" style="background:var(--blue-50);color:var(--blue-500);">Perpanjangan Pertama</span>`;
+                const reason = book.can_extend ? '' :
+                    `<div class="pm-alert pm-alert-warn" style="margin-top:8px;padding:8px 12px;"><i class="fa fa-exclamation-triangle"></i><span>Tidak dapat diperpanjang: ${esc(book.reason)}</span></div>`;
+                const newDue = book.can_extend ? `
+                    <span class="due-arrow"><i class="fa fa-long-arrow-right"></i></span>
+                    <span class="due-new">
+                        <i class="fa fa-calendar-check-o"></i> ${this.formatDate(book.new_due_date)}
+                    </span>
+                    <span style="font-size:11px;color:var(--teal-600);font-weight:700;">
+                        +${esc(book.extend_days)} hari kerja
+                    </span>` : '';
 
                 return `
-            <div class="book-extend-item selected fade-in" id="bei_${i}">
+            <div class="book-extend-item ${book.can_extend ? 'selected' : ''} fade-in" id="bei_${i}">
                 <div class="bei-top">
                     <div class="bei-checkbox-wrap">
-                        <input type="checkbox" class="bei-checkbox" id="cb_${i}"
-                               checked onchange="extendApp.onCheckChange(${i})">
+                        <input type="checkbox" class="bei-checkbox" id="cb_${i}" aria-label="Pilih ${esc(book.title || book.barcode)}"
+                               ${book.can_extend ? 'checked' : 'disabled'} onchange="extendApp.onCheckChange(${i})">
                     </div>
                     <div style="flex:1;">
-                        <div class="bei-title">${book.title || '-'}</div>
-                        <div class="bei-author">${book.author || '-'}</div>
+                        <div class="bei-title">${esc(book.title || '-')}</div>
+                        <div class="bei-author">${esc(book.author || '-')}</div>
                         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:4px;">
-                            <span class="bei-barcode"><i class="fa fa-barcode"></i> ${book.barcode}</span>
+                            <span class="bei-barcode"><i class="fa fa-barcode"></i> ${esc(book.barcode)}</span>
                             ${overdueBadge}
                             ${extendBadge}
                         </div>
+                        ${reason}
                     </div>
                 </div>
                 <div class="due-row">
                     <span class="due-label"><i class="fa fa-calendar"></i> Jatuh Tempo</span>
                     <span class="due-val">${this.formatDate(book.due_date)}</span>
-                    <span class="due-arrow"><i class="fa fa-long-arrow-right"></i></span>
-                    <span class="due-new ${isNewOverdue ? 'warn' : ''}">
-                        <i class="fa fa-calendar-check-o"></i> ${this.formatDate(newDue)}
-                    </span>
-                    <span style="font-size:11px;color:var(--teal-600);font-weight:700;">
-                        +${this.selectedDays} hari
-                    </span>
+                    ${newDue}
                 </div>
             </div>`;
             }).join('');
@@ -1087,7 +1064,7 @@
                     document.getElementById('memberInfoTitle').innerHTML = `
                     <div style="display:flex;flex-direction:column;gap:4px;">
                         <span style="font-size:16px;color:var(--blue-900);">
-                            <i class="fa fa-user-circle"></i> ${this.currentMemberName || '-'}
+                            <i class="fa fa-user-circle"></i> ${this.escapeHtml(this.currentMemberName || '-')}
                         </span>
                         <small style="color:var(--gray-500);font-size:13px;font-weight:normal;">
                             <i class="fa fa-book"></i> ${this.booksData.length} buku aktif dalam transaksi ini
@@ -1137,7 +1114,7 @@
             const result = await Swal.fire({
                 icon: 'question',
                 title: 'Konfirmasi Perpanjangan',
-                html: `<b>${selectedIds.length} buku</b> akan diperpanjang selama <b>${this.selectedDays} hari</b>.<br>Lanjutkan?`,
+                html: `<b>${selectedIds.length} buku</b> akan diperpanjang sesuai aturan sirkulasi.<br>Lanjutkan?`,
                 showCancelButton: true,
                 confirmButtonColor: '#2d659e',
                 cancelButtonColor: '#6b7489',
@@ -1154,44 +1131,25 @@
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
-                    body: `item_ids=${encodeURIComponent(JSON.stringify(selectedIds))}&extend_days=${this.selectedDays}`
+                    body: `item_ids=${encodeURIComponent(JSON.stringify(selectedIds))}`
                 });
                 const data = await res.json();
 
                 this.hideLoading();
 
                 if (data.status === 'success') {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        html: data.message,
-                        showCancelButton: true,
-                        confirmButtonColor: '#2d659e',
-                        confirmButtonText: '<i class="fa fa-file-text"></i> Lihat Struk',
-                        cancelButtonColor: '#6b7489',
-                        cancelButtonText: 'Tutup',
-                        timer: 6000,
-                        timerProgressBar: true
-                    }).then(result => {
-                        if (result.isConfirmed && data.struk_url) {
-                            window.location.href = data.struk_url;
-                        }
-                    });
-
-                    this.booksData = [];
-                    this.currentMemberId = null;
-                    this.currentMemberName = null;
-                    this.hideBookInfo();
-                    this.loadHistory();
-                    this.focusInput();
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal',
-                        text: data.message,
-                        confirmButtonColor: '#e8394d'
-                    });
+                    // Sama seperti peminjaman: langsung ke halaman berhasil
+                    window.location.href = data.struk_url;
+                    return;
                 }
+
+                // Pesan server sudah di-escape dan memakai <br> untuk daftar buku yang ditolak
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    html: data.message,
+                    confirmButtonColor: '#e8394d'
+                });
             } catch (e) {
                 this.hideLoading();
                 Swal.fire({

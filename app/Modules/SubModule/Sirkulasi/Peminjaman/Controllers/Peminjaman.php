@@ -628,6 +628,24 @@ private function getDayName($day_index)
                 throw new \Exception('Tidak dapat mengunci generator nomor transaksi. Silakan coba lagi.');
             }
 
+            // Ketersediaan dicek ulang di dalam transaksi: buku bisa saja sudah dipinjam
+            // lewat terminal lain sejak ditambahkan ke daftar. FOR UPDATE menahan baris
+            // koleksi sampai transaksi ini selesai.
+            foreach ($selectedBooks as $book) {
+                $collection = $this->db->query(
+                    'SELECT ID, Status_id, Rule_id FROM collections WHERE ID = ? FOR UPDATE',
+                    [$book['id']]
+                )->getRow();
+                $activeLoans = $this->db->table('collectionloanitems')
+                    ->where('Collection_id', $book['id'])
+                    ->where('LoanStatus', 'Loan')
+                    ->countAllResults();
+
+                if (!$collection || (int) $collection->Status_id !== 1 || (int) $collection->Rule_id !== 1 || $activeLoans > 0) {
+                    throw new \Exception('Buku "' . $book['title'] . '" (' . $book['barcode'] . ') sudah dipinjam atau tidak tersedia lagi. Hapus buku itu dari daftar, lalu simpan ulang.');
+                }
+            }
+
             $todayPrefix = date('ymd');
             $collection_loan = $this->db->query(
                 'SELECT MAX(ID) AS max_id FROM collectionloans WHERE ID LIKE ? FOR UPDATE',
