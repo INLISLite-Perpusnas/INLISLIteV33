@@ -1,0 +1,139 @@
+/*
+ * Pagination INA Digital, varian Tabel (design.inadigital.go.id/components/pagination).
+ * Markup: app/Views/Pager/ina_pager.php (template pager "ina_pagination").
+ * Footer tabel: .ina-table-pagination berisi "Baris per halaman" di kiri dan pagination di kanan.
+ */
+.ina-table-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    padding: 12px 24px;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--ina-text-muted, #6b7280);
+    background: var(--ina-surface, #fff);
+    border-top: 1px solid var(--ina-border, #e5e7eb);
+}
+
+.ina-table-pagination__rows {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ina-table-pagination__rows label {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 400;
+    color: inherit;
+}
+
+.ina-table-pagination__rows select {
+    width: auto;
+    height: 36px;
+    padding: 0 28px 0 10px;
+    font-size: 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+}
+
+.ina-table-pagination__end {
+    margin-left: auto;
+}
+
+.ina-pagination {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--ina-text-muted, #6b7280);
+}
+
+.ina-pagination__info {
+    white-space: nowrap;
+}
+
+.ina-pagination__list {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ina-pagination__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    font-size: 14px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--ina-text-subtle, #374151);
+    text-decoration: none;
+    background: var(--ina-surface, #fff);
+    border: 1px solid var(--ina-border, #e5e7eb);
+    border-radius: 8px;
+    transition: background-color .15s ease, border-color .15s ease;
+}
+
+a.ina-pagination__btn:hover {
+    color: var(--ina-primary, #1d5fd1);
+    text-decoration: none;
+    background: var(--ina-primary-subtle, #eef4ff);
+}
+
+a.ina-pagination__btn:focus-visible {
+    outline: 2px solid var(--ina-primary, #1d5fd1);
+    outline-offset: 2px;
+}
+
+.ina-pagination__btn.is-active {
+    color: #fff;
+    font-weight: 600;
+    background: var(--ina-primary, #1d5fd1);
+    border-color: var(--ina-primary, #1d5fd1);
+}
+
+.ina-pagination__btn.is-disabled {
+    color: #c4c8cf;
+    background: #f9fafb;
+    cursor: not-allowed;
+}
+
+.ina-pagination__ellipsis {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 36px;
+    color: var(--ina-text-muted, #6b7280);
+}
+
+@media (max-width: 767px) {
+    .ina-table-pagination {
+        padding: 12px 16px;
+    }
+
+    .ina-table-pagination__end {
+        margin-left: 0;
+    }
+
+    .ina-pagination__btn {
+        min-width: 32px;
+        height: 32px;
+    }
+}
+
+@media print {
+    .ina-table-pagination {
+        display: none !important;
+    }
+}

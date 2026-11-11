@@ -388,7 +388,7 @@ class Stockopname extends \Base\Controllers\BaseController
     $offsetDetails = ($pageDetails - 1) * $perPageDetails;
     $details = $this->stockopnamedetailModel->getStockopnameDetails($id, $perPageDetails, $offsetDetails, $locationLibraryId, $locationId);
 
-    $detailsPager = $pager->makeLinks($pageDetails, $perPageDetails, $totalDetails, 'default_full', 0, 'details');
+    $detailsPager = $pager->makeLinks($pageDetails, $perPageDetails, $totalDetails, 'ina_pagination', 0, 'details');
 
     // -- Pagination for Collections Not In Stockopname --
     $pageNotIn = $this->request->getVar('page_notIn') ? (int)$this->request->getVar('page_notIn') : 1;
@@ -396,7 +396,7 @@ class Stockopname extends \Base\Controllers\BaseController
     $totalNotIn = $this->stockopnamedetailModel->getCollectionsNotInStockopnameCount($id, null, $locationLibraryId, $locationId);
     $offsetNotIn = ($pageNotIn - 1) * $perPageNotIn;
     $collectionsNotInStockopname = $this->stockopnamedetailModel->getCollectionsNotInStockopname($id, $perPageNotIn, $offsetNotIn, null, $locationLibraryId, $locationId);
-    $notInPager = $pager->makeLinks($pageNotIn, $perPageNotIn, $totalNotIn, 'default_full', 0, 'notIn');
+    $notInPager = $pager->makeLinks($pageNotIn, $perPageNotIn, $totalNotIn, 'ina_pagination', 0, 'notIn');
 
 
     // Get reference data for dropdowns
@@ -610,9 +610,12 @@ class Stockopname extends \Base\Controllers\BaseController
                 // Update corresponding collections table records
                 $this->updateCollectionFromStockopname($detail->CollectionID, $updateData);
 
+                // Ringkasan terbaru dikirim balik supaya halaman detail tidak perlu dimuat ulang
                 return $this->response->setJSON([
                     'status' => 'success',
-                    'message' => 'Detail stockopname berhasil diperbarui.'
+                    'message' => 'Detail stockopname berhasil diperbarui.',
+                    'summary' => $this->stockopnamedetailModel->getStockopnameSummary($detail->StockOpnameID),
+                    'location_summary' => $this->stockopnamedetailModel->countStockopnameDetailsByLocationAndStatus($detail->StockOpnameID),
                 ]);
             } else {
                 return $this->response->setJSON([

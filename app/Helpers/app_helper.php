@@ -1313,3 +1313,36 @@ if (!function_exists('status_jatuh_tempo')) {
         return ['text' => '+' . $late, 'class' => $late > 0 ? 'danger' : 'info', 'late' => $late];
     }
 }
+
+if (!function_exists('sirkulasi_suspend_sampai')) {
+    /**
+     * Masa suspend (skorsing) anggota akibat pelanggaran, sama dengan aplikasi lama
+     * (SirkulasiHelpers::validatePelanggaran): tanggal boleh pinjam = tanggal pelanggaran
+     * dicatat + JumlahSuspend hari kalender, diambil yang paling akhir.
+     * Pelanggaran dicocokkan lewat Member_id, atau lewat item pinjamannya bila Member_id kosong.
+     *
+     * @return string|null Tanggal (Y-m-d) anggota baru boleh meminjam lagi,
+     *                     atau null bila tidak sedang dalam masa suspend.
+     */
+    function sirkulasi_suspend_sampai($db, int $memberId): ?string
+    {
+        if ($memberId <= 0) {
+            return null;
+        }
+
+        $row = $db->query(
+            'SELECT MAX(DATE_ADD(DATE(p.CreateDate), INTERVAL p.JumlahSuspend DAY)) AS BolehPinjam
+               FROM pelanggaran p
+          LEFT JOIN collectionloanitems cli ON cli.ID = p.CollectionLoanItem_id
+              WHERE p.JumlahSuspend > 0
+                AND p.CreateDate IS NOT NULL
+                AND COALESCE(p.active, 1) = 1
+                AND (p.Member_id = ? OR (p.Member_id IS NULL AND cli.member_id = ?))',
+            [$memberId, $memberId]
+        )->getRow();
+
+        $bolehPinjam = $row->BolehPinjam ?? null;
+
+        return ($bolehPinjam && $bolehPinjam > date('Y-m-d')) ? $bolehPinjam : null;
+    }
+}

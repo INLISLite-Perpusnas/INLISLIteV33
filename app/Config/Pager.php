@@ -27,6 +27,7 @@ class Pager extends BaseConfig
         'opac_pagination' => 'App\Views\layout\opac\pager',
         'custom_pagination' => 'Layout\Views\frontend\template\arduix5\partial\pager',
         'pusling' => 'App\Views\Pager\pusling_pager',
+        'ina_pagination' => 'App\Views\Pager\ina_pager',
     ];
 
     /**

@@ -1,0 +1,364 @@
+/*
+ * Modal "Catat Pelanggaran" di Entri Pengembalian.
+ * INA Digital Modal varian Task: judul + deskripsi, tombol tutup, isi berupa form, footer dua aksi.
+ */
+#modalPelanggaran .vp-dialog {
+    max-width: 560px;
+    background: transparent;
+    box-shadow: none;
+}
+
+#modalPelanggaran .modal-content {
+    border: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    font-family: var(--ina-font, inherit);
+    color: var(--ina-text, #1f2937);
+}
+
+#modalPelanggaran .modal-header {
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px 24px;
+    background: #fff;
+    border-bottom: 1px solid var(--ina-border, #e5e7eb);
+}
+
+#modalPelanggaran .modal-title {
+    margin: 0;
+    font-size: 18px;
+    line-height: 26px;
+    font-weight: 600;
+    color: var(--ina-text, #1f2937);
+}
+
+#modalPelanggaran .vp-desc {
+    margin: 4px 0 0;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--ina-text-muted, #6b7280);
+}
+
+#modalPelanggaran .vp-close {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin: -8px -8px 0 auto;
+    padding: 0;
+    font-size: 18px;
+    color: var(--ina-text-muted, #6b7280);
+    background: transparent;
+    border: 0;
+    border-radius: 8px;
+}
+
+#modalPelanggaran .vp-close:hover {
+    color: var(--ina-text, #1f2937);
+    background: #f3f4f6;
+}
+
+#modalPelanggaran .vp-close:focus-visible,
+#modalPelanggaran .vp-book input:focus-visible,
+#modalPelanggaran .vp-check input:focus-visible {
+    outline: 2px solid var(--ina-primary, #1d5fd1);
+    outline-offset: 2px;
+}
+
+#modalPelanggaran .modal-body {
+    padding: 24px;
+    overflow-x: hidden;
+}
+
+#modalPelanggaran .modal-footer {
+    gap: 12px;
+    padding: 16px 24px;
+    background: #fff;
+    border-top: 1px solid var(--ina-border, #e5e7eb);
+}
+
+#modalPelanggaran .modal-footer > * {
+    margin: 0;
+}
+
+#modalPelanggaran .modal-footer .btn {
+    min-height: 44px;
+    padding: 0 20px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+}
+
+/* Kelompok isian */
+#modalPelanggaran .vp-field {
+    margin-bottom: 20px;
+}
+
+#modalPelanggaran .vp-field:last-child {
+    margin-bottom: 0;
+}
+
+#modalPelanggaran fieldset.vp-field {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+#modalPelanggaran fieldset.vp-field legend {
+    float: none;
+    width: auto;
+    padding: 0;
+}
+
+#modalPelanggaran .vp-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    color: var(--ina-text, #1f2937);
+}
+
+#modalPelanggaran .vp-required {
+    color: var(--ina-danger, #c62828);
+}
+
+#modalPelanggaran .vp-optional {
+    font-weight: 400;
+    color: var(--ina-text-muted, #6b7280);
+}
+
+#modalPelanggaran .vp-control {
+    display: block;
+    width: 100%;
+    height: 44px;
+    padding: 0 14px;
+    font-family: inherit;
+    font-size: 16px;
+    color: var(--ina-text, #1f2937);
+    background-color: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+#modalPelanggaran select.vp-control {
+    padding-right: 36px;
+}
+
+#modalPelanggaran .vp-control:focus {
+    outline: none;
+    border-color: var(--ina-primary, #1d5fd1);
+    box-shadow: 0 0 0 3px rgba(29, 95, 209, .15);
+}
+
+#modalPelanggaran .vp-control[aria-invalid="true"] {
+    border-color: var(--ina-danger, #c62828);
+}
+
+#modalPelanggaran .vp-affix {
+    display: flex;
+    align-items: stretch;
+}
+
+#modalPelanggaran .vp-affix__text {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 14px;
+    font-size: 16px;
+    color: var(--ina-text-muted, #6b7280);
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
+}
+
+#modalPelanggaran .vp-affix__text:first-child {
+    border-right: 0;
+    border-radius: 8px 0 0 8px;
+}
+
+#modalPelanggaran .vp-affix__text:last-child {
+    border-left: 0;
+    border-radius: 0 8px 8px 0;
+}
+
+#modalPelanggaran .vp-affix .vp-control {
+    flex: 1;
+    min-width: 0;
+}
+
+#modalPelanggaran .vp-affix .vp-affix__text:first-child + .vp-control {
+    border-radius: 0 8px 8px 0;
+}
+
+#modalPelanggaran .vp-affix .vp-control:first-child {
+    border-radius: 8px 0 0 8px;
+}
+
+#modalPelanggaran .vp-hint,
+#modalPelanggaran .vp-error {
+    display: block;
+    margin-top: 8px;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+#modalPelanggaran .vp-hint {
+    color: var(--ina-text-muted, #6b7280);
+}
+
+#modalPelanggaran .vp-hint strong {
+    color: var(--ina-text, #1f2937);
+}
+
+#modalPelanggaran .vp-error {
+    color: var(--ina-danger, #c62828);
+}
+
+#modalPelanggaran .vp-error[hidden],
+#modalPelanggaran .vp-hint[hidden] {
+    display: none;
+}
+
+#modalPelanggaran .vp-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+#modalPelanggaran .vp-check input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--ina-primary, #1d5fd1);
+}
+
+#modalPelanggaran .vp-check label {
+    margin: 0;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+#modalPelanggaran .vp-check input:disabled + label {
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+/* Daftar buku yang bisa dipilih */
+#modalPelanggaran .vp-books {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+#modalPelanggaran .vp-book {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #fff;
+    border: 1px solid var(--ina-border, #e5e7eb);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+#modalPelanggaran .vp-book:hover {
+    background: #f9fafb;
+}
+
+#modalPelanggaran .vp-book.is-selected {
+    background: var(--ina-primary-subtle, #eef4ff);
+    border-color: #c7d4ea;
+}
+
+#modalPelanggaran .vp-book input {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin: 2px 0 0;
+    accent-color: var(--ina-primary, #1d5fd1);
+}
+
+#modalPelanggaran .vp-book__body {
+    min-width: 0;
+}
+
+#modalPelanggaran .vp-book__title {
+    display: block;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    color: var(--ina-text, #1f2937);
+    overflow-wrap: anywhere;
+}
+
+#modalPelanggaran .vp-book__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    margin-top: 4px;
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--ina-text-muted, #6b7280);
+}
+
+#modalPelanggaran .vp-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 8px;
+    font-size: 12px;
+    line-height: 20px;
+    font-weight: 600;
+    border-radius: 999px;
+}
+
+#modalPelanggaran .vp-badge--danger {
+    color: #b42318;
+    background: #fdecec;
+}
+
+#modalPelanggaran .vp-badge--neutral {
+    color: #4b5563;
+    background: #f3f4f6;
+}
+
+#modalPelanggaran .vp-summary {
+    margin-top: 20px;
+    padding: 12px 14px;
+    font-size: 14px;
+    line-height: 20px;
+    background: #f9fafb;
+    border: 1px solid var(--ina-border, #e5e7eb);
+    border-radius: 8px;
+}
+
+#modalPelanggaran .vp-summary[hidden] {
+    display: none;
+}
+
+#modalPelanggaran .vp-divider {
+    height: 1px;
+    margin: 24px 0;
+    background: var(--ina-border, #e5e7eb);
+    border: 0;
+}
+
+@media (max-width: 575px) {
+    #modalPelanggaran .modal-footer {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    #modalPelanggaran .modal-footer .btn {
+        width: 100%;
+    }
+}

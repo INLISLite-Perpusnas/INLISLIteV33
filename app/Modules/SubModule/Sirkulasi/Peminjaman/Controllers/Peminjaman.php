@@ -155,6 +155,13 @@ public function create()
         if ($member->EndDate && strtotime($member->EndDate) < time()) {
             return ['success' => false, 'message' => 'Keanggotaan sudah berakhir'];
         }
+
+        // Anggota yang sedang menjalani suspend (skorsing) karena pelanggaran belum boleh meminjam
+        helper('app');
+        $bolehPinjam = sirkulasi_suspend_sampai($this->db, (int) $member->ID);
+        if ($bolehPinjam !== null) {
+            return ['success' => false, 'message' => 'Anggota masih terkena suspend karena pelanggaran. Baru boleh meminjam lagi pada tanggal ' . date('d/m/Y', strtotime($bolehPinjam)) . '.'];
+        }
         
         // Get current location from cookie
         $locationId = $this->request->getCookie('Location_id');

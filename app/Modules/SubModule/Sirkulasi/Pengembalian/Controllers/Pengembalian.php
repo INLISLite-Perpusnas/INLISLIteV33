@@ -171,12 +171,16 @@ class Pengembalian extends \Base\Controllers\BaseController
                 return $this->response->setJSON(['status' => 'error', 'message' => 'Tanggal pengembalian tidak boleh tanggal yang akan datang.']);
             }
 
-            $violationData = [];
-            if ($processVio === '1' && !empty($vioDataJson)) {
-                $violationData = json_decode($vioDataJson, true);
-            }
+            $itemIds = array_values(array_unique(array_map('intval', $itemIds)));
 
-            $this->db->transStart();
+            // Data pelanggaran divalidasi di server; isian dari browser tidak dipercaya begitu saja
+            $violation = null;
+            if ($processVio === '1') {
+                $violation = $this->validateViolationInput(json_decode((string) $vioDataJson, true), $itemIds);
+                if (is_string($violation)) {
+                    return $this->response->setJSON(['status' => 'error', 'message' => $violation]);
+                }
+            }
 
             $loanItems = $this->db->table('collectionloanitems')
                 ->whereIn('ID', $itemIds)
@@ -187,6 +191,8 @@ class Pengembalian extends \Base\Controllers\BaseController
             if (count($loanItems) === 0) {
                 return $this->response->setJSON(['status' => 'error', 'message' => 'Buku sudah dikembalikan atau tidak ditemukan']);
             }
+
+            $this->db->transBegin();
 
             $returnDate = $inputReturnDate ? date('Y-m-d', strtotime($inputReturnDate)) . ' ' . date('H:i:s') : date('Y-m-d H:i:s');
             $returnedCount = 0;
@@ -227,19 +233,19 @@ class Pengembalian extends \Base\Controllers\BaseController
                         'UpdateTerminal' => $this->request->getIPAddress()
                     ]);
 
-                // Catat pelanggaran jika buku terlambat dan user memilih proses pelanggaran
-                if ($processVio === '1' && !empty($violationData)) {
-                    $jumlahDenda = isset($violationData['per_hari']) && $violationData['per_hari']
-                        ? ($lateDays * (float) ($violationData['jumlah_denda'] ?? 0))
-                        : (float) ($violationData['jumlah_denda'] ?? 0);
+                // Catat pelanggaran hanya untuk buku yang dipilih petugas di modal
+                if ($violation !== null && in_array((int) $item->ID, $violation['item_ids'], true)) {
+                    $jumlahDenda = $violation['per_hari']
+                        ? $lateDays * $violation['jumlah_denda']
+                        : $violation['jumlah_denda'];
 
                     $this->db->table('pelanggaran')->insert([
                         'CollectionLoan_id' => $item->CollectionLoan_id,
                         'CollectionLoanItem_id' => $item->ID,
-                        'JenisPelanggaran_id' => $violationData['jenis_pelanggaran_id'] ?? null,
-                        'JenisDenda_id' => $violationData['jenis_denda_id'] ?? null,
+                        'JenisPelanggaran_id' => $violation['jenis_pelanggaran_id'],
+                        'JenisDenda_id' => $violation['jenis_denda_id'],
                         'JumlahDenda' => $jumlahDenda,
-                        'JumlahSuspend' => 0,
+                        'JumlahSuspend' => $violation['jumlah_suspend'],
                         'Paid' => 0,
                         'Member_id' => $item->member_id,
                         'Collection_id' => $item->Collection_id,
@@ -267,11 +273,11 @@ class Pengembalian extends \Base\Controllers\BaseController
                     ->update();
             }
 
-            $this->db->transComplete();
-
             if ($this->db->transStatus() === false) {
-                return $this->response->setJSON(['status' => 'error', 'message' => 'Terjadi kesalahan saat memproses database']);
+                $this->db->transRollback();
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Terjadi kesalahan saat memproses database. Tidak ada data yang disimpan.']);
             }
+            $this->db->transCommit();
 
             $memberEmail = '';
             if ($memberId) {
@@ -283,7 +289,7 @@ class Pengembalian extends \Base\Controllers\BaseController
 
             $msg = "<b>$returnedCount buku</b> berhasil dikembalikan!";
             if ($violationCount > 0) {
-                $msg .= "<br><small>&#9888; $violationCount pelanggaran keterlambatan telah dicatat.</small>";
+                $msg .= "<br><small>&#9888; $violationCount pelanggaran telah dicatat.</small>";
             }
 
             // Store minimal struk data in session for the success page
@@ -307,9 +313,65 @@ class Pengembalian extends \Base\Controllers\BaseController
                 ]
             ]);
 
-        } catch (\Exception $e) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'System Error: ' . $e->getMessage()]);
+        } catch (\Throwable $e) {
+            if ($this->db->transDepth > 0) {
+                $this->db->transRollback();
+            }
+            log_message('error', 'Proses pengembalian gagal: ' . $e->getMessage());
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Pengembalian gagal diproses. Tidak ada data yang disimpan, silakan coba lagi.']);
         }
+    }
+
+    /**
+     * Validasi isian modal pelanggaran.
+     *
+     * @return array|string Data bersih, atau pesan kesalahan untuk petugas.
+     */
+    private function validateViolationInput($data, array $returnItemIds)
+    {
+        if (!is_array($data)) {
+            return 'Data pelanggaran tidak terbaca. Silakan isi ulang form pelanggaran.';
+        }
+
+        $itemIds = array_values(array_unique(array_map('intval', (array) ($data['item_ids'] ?? []))));
+        $itemIds = array_values(array_intersect($itemIds, $returnItemIds));
+        if (!$itemIds) {
+            return 'Pilih minimal satu buku yang melanggar.';
+        }
+
+        $jenisPelanggaranId = (int) ($data['jenis_pelanggaran_id'] ?? 0);
+        $jenisDendaId = (int) ($data['jenis_denda_id'] ?? 0);
+        if (!$jenisPelanggaranId || !$this->db->table('jenis_pelanggaran')->where('ID', $jenisPelanggaranId)->where('active', 1)->countAllResults()) {
+            return 'Jenis pelanggaran tidak valid. Silakan pilih ulang.';
+        }
+        if (!$jenisDendaId || !$this->db->table('jenis_denda')->where('ID', $jenisDendaId)->where('active', 1)->countAllResults()) {
+            return 'Jenis denda tidak valid. Silakan pilih ulang.';
+        }
+
+        $jumlahDenda = $data['jumlah_denda'] ?? 0;
+        if ($jumlahDenda === '' || $jumlahDenda === null) {
+            $jumlahDenda = 0;
+        }
+        if (!is_numeric($jumlahDenda) || (float) $jumlahDenda < 0 || (float) $jumlahDenda > 100000000 || floor((float) $jumlahDenda) != (float) $jumlahDenda) {
+            return 'Jumlah denda harus angka bulat antara 0 dan 100.000.000.';
+        }
+
+        $jumlahSuspend = $data['jumlah_suspend'] ?? 0;
+        if ($jumlahSuspend === '' || $jumlahSuspend === null) {
+            $jumlahSuspend = 0;
+        }
+        if (!is_numeric($jumlahSuspend) || floor((float) $jumlahSuspend) != (float) $jumlahSuspend || (float) $jumlahSuspend < 0 || (float) $jumlahSuspend > 365) {
+            return 'Lama suspend harus angka bulat antara 0 dan 365 hari.';
+        }
+
+        return [
+            'item_ids' => $itemIds,
+            'jenis_pelanggaran_id' => $jenisPelanggaranId,
+            'jenis_denda_id' => $jenisDendaId,
+            'jumlah_denda' => (int) $jumlahDenda,
+            'jumlah_suspend' => (int) $jumlahSuspend,
+            'per_hari' => !empty($data['per_hari']),
+        ];
     }
 
 

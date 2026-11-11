@@ -173,24 +173,6 @@
         padding-left: 14px;
     }
 
-    #modalPelanggaran .form-select {
-        display: block;
-        width: 100%;
-        height: 44px;
-        padding: 0 14px;
-        font-family: inherit;
-        font-size: 15px;
-        color: var(--ina-text);
-        background-color: var(--white);
-        border: 1px solid var(--gray-300);
-        border-radius: var(--radius-lg);
-        outline: none;
-    }
-
-    #modalPelanggaran .form-select:focus {
-        border-color: var(--ina-primary);
-        box-shadow: 0 0 0 3px rgba(29, 95, 209, .15);
-    }
 
     /* ── Buttons ── */
     .pm-btn {
@@ -486,48 +468,6 @@
         display: block;
     }
 
-    /* ── Modal pelanggaran ── */
-    #modalPelanggaran .modal-dialog {
-        box-shadow: none;
-    }
-
-    #modalPelanggaran .modal-content {
-        border: 1px solid var(--ina-border);
-        border-radius: var(--radius-xl);
-        overflow: hidden;
-    }
-
-    #modalPelanggaran .modal-header {
-        align-items: center;
-        padding: 16px 24px;
-        background: var(--white);
-        border-bottom: 1px solid var(--ina-border);
-    }
-
-    #modalPelanggaran .modal-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--ina-text);
-        margin: 0;
-    }
-
-    #modalPelanggaran .pm-modal-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        width: 36px;
-        height: 36px;
-        color: var(--ina-danger);
-        background: var(--ina-danger-subtle);
-        border-radius: 8px;
-    }
-
-    #modalPelanggaran .modal-footer {
-        padding: 16px 24px;
-        gap: 10px;
-        border-top: 1px solid var(--ina-border);
-    }
 
     /* ── fade-in ── */
     .fade-in {
@@ -553,6 +493,7 @@
     }
 </style>
 <link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-pelanggaran-modal.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-pelanggaran-modal.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
@@ -700,86 +641,91 @@
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
-<!-- Modal Pelanggaran -->
-<div class="modal fade" id="modalPelanggaran" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+<!-- Modal Pelanggaran (INA Modal varian Task) -->
+<div class="modal fade" id="modalPelanggaran" tabindex="-1" role="dialog" aria-labelledby="vpTitle" aria-describedby="vpDesc" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable vp-dialog" role="document">
         <div class="modal-content">
 
-            <!-- Header -->
             <div class="modal-header">
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <div class="pm-modal-icon"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i></div>
-                    <h5 class="modal-title">Proses Pelanggaran Keterlambatan</h5>
+                <div>
+                    <h5 class="modal-title" id="vpTitle">Catat Pelanggaran</h5>
+                    <p class="vp-desc" id="vpDesc">Pilih buku yang melanggar, lalu isi jenis pelanggaran dan dendanya.</p>
                 </div>
-                <button type="button" class="close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Tutup"><span aria-hidden="true">&times;</span></button>
+                <button type="button" class="vp-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Tutup">
+                    <i class="fa fa-times" aria-hidden="true"></i>
+                </button>
             </div>
 
-            <div class="modal-body" style="padding: 24px;">
+            <div class="modal-body">
+                <form id="vpForm" novalidate>
+                    <fieldset class="vp-field">
+                        <legend class="vp-label">Buku yang melanggar <span class="vp-required" aria-hidden="true">*</span></legend>
+                        <ul class="vp-books" id="vpBookList"></ul>
+                        <small class="vp-error" id="vpBooksError" hidden>Pilih minimal satu buku.</small>
+                    </fieldset>
 
-                <!-- Info terlambat -->
-                <div class="pm-alert pm-alert-danger mb-3" id="overdueInfoBox">
-                    <i class="fa fa-clock"></i>
-                    <span id="overdueInfoText">Terdapat buku yang melewati tanggal jatuh tempo.</span>
-                </div>
+                    <hr class="vp-divider">
 
-                <!-- Daftar buku terlambat -->
-                <div id="overdueBookList" style="margin-bottom: 18px;"></div>
-
-                <hr class="pm-divider" style="margin: 16px 0;">
-
-                <!-- Form Pelanggaran -->
-                <div id="violationFormSection">
-                    <p style="font-size:14px;color:var(--gray-500);margin-bottom:14px;">
-                        Apakah ingin mencatat pelanggaran untuk buku yang terlambat?
-                    </p>
-
-                    <div class="mb-3">
-                        <label class="pm-field-label">
-                            <i class="fa fa-list-ul"></i> Jenis Pelanggaran
-                        </label>
-                        <select id="jenisPelanggaranSelect" class="form-select">
-                            <option value="">-- Pilih Jenis Pelanggaran --</option>
+                    <div class="vp-field">
+                        <label class="vp-label" for="jenisPelanggaranSelect">Jenis Pelanggaran <span class="vp-required" aria-hidden="true">*</span></label>
+                        <select id="jenisPelanggaranSelect" class="form-select vp-control" required aria-describedby="vpPelanggaranError">
+                            <option value="">Pilih jenis pelanggaran</option>
                         </select>
+                        <small class="vp-error" id="vpPelanggaranError" hidden>Pilih jenis pelanggaran.</small>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="pm-field-label">
-                            <i class="fa fa-tag"></i> Jenis Denda
-                        </label>
-                        <select id="jenisDendaSelect" class="form-select">
-                            <option value="">-- Pilih Jenis Denda --</option>
+                    <div class="vp-field">
+                        <label class="vp-label" for="jenisDendaSelect">Jenis Denda <span class="vp-required" aria-hidden="true">*</span></label>
+                        <select id="jenisDendaSelect" class="form-select vp-control" required aria-describedby="vpDendaError">
+                            <option value="">Pilih jenis denda</option>
                         </select>
+                        <small class="vp-error" id="vpDendaError" hidden>Pilih jenis denda.</small>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="pm-field-label">
-                            <i class="fa fa-money-bill"></i> Jumlah Denda
-                        </label>
-                        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-                            <input type="number" id="jumlahDendaInput" class="pm-input pm-input-plain" min="0" step="500" placeholder="Contoh: 1000"
-                                style="flex:1;min-width:160px;">
-                            <div style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--gray-500);">
-                                <input type="checkbox" id="perHariCheck" style="width:16px;height:16px;accent-color:var(--blue-500);" checked>
-                                <label for="perHariCheck" style="cursor:pointer;font-weight:600;">Per hari</label>
-                            </div>
+                    <div class="vp-field">
+                        <label class="vp-label" for="jumlahDendaInput">Jumlah Denda <span class="vp-optional">(opsional)</span></label>
+                        <div class="vp-affix">
+                            <span class="vp-affix__text" aria-hidden="true">Rp</span>
+                            <input type="number" id="jumlahDendaInput" class="vp-control" min="0" step="500" inputmode="numeric" placeholder="0" aria-describedby="vpDendaHint vpJumlahError">
                         </div>
-                        <small id="dendaPreview" style="color:var(--blue-800);font-size:12px;margin-top:6px;display:block;"></small>
+                        <div class="vp-check">
+                            <input type="checkbox" id="perHariCheck">
+                            <label for="perHariCheck">Kalikan dengan jumlah hari terlambat</label>
+                        </div>
+                        <small class="vp-hint" id="vpDendaHint">Isi 0 atau kosongkan bila tidak ada denda uang.</small>
+                        <small class="vp-error" id="vpJumlahError" hidden></small>
                     </div>
-                </div>
+
+                    <div class="vp-field">
+                        <label class="vp-label" for="jumlahSuspendInput">Lama Suspend <span class="vp-optional">(opsional)</span></label>
+                        <div class="vp-affix">
+                            <input type="number" id="jumlahSuspendInput" class="vp-control" min="0" max="365" step="1" inputmode="numeric" placeholder="0" aria-describedby="vpSuspendHint vpSuspendError">
+                            <span class="vp-affix__text" aria-hidden="true">hari</span>
+                        </div>
+                        <small class="vp-hint" id="vpSuspendHint">Selama masa suspend, anggota tidak bisa meminjam buku.</small>
+                        <small class="vp-error" id="vpSuspendError" hidden></small>
+                    </div>
+
+                    <div class="vp-summary" id="vpSummary" role="status" aria-live="polite" hidden></div>
+                </form>
             </div>
 
             <div class="modal-footer">
-                <button type="button" id="skipViolationBtn" class="pm-btn pm-btn-ghost" style="flex:1;">
-                    <i class="fa fa-forward"></i> Lewati Pelanggaran
-                </button>
-                <button type="button" id="confirmViolationBtn" class="pm-btn pm-btn-danger" style="flex:1;">
-                    <i class="fa fa-gavel"></i> Proses + Catat Pelanggaran
-                </button>
+                <button type="button" id="skipViolationBtn" class="btn btn-outline-secondary">Lewati Pelanggaran</button>
+                <button type="button" id="confirmViolationBtn" class="btn btn-primary">Simpan &amp; Kembalikan Buku</button>
             </div>
 
         </div>
     </div>
+</div>
     <script>
+        // Teks dari server/DB selalu di-escape sebelum masuk innerHTML
+        function escapeHtml(value) {
+            const div = document.createElement('div');
+            div.textContent = value == null ? '' : String(value);
+            return div.innerHTML;
+        }
+
         class SelfReturnApp {
             constructor() {
                 this.currentMemberId = null;
@@ -828,9 +774,21 @@
                     this.handleConfirmViolation();
                 });
 
-                // Live preview kalkulasi denda
-                document.getElementById('jumlahDendaInput').addEventListener('input', () => this.updateDendaPreview());
+                // Ringkasan denda & suspend diperbarui setiap isian berubah
+                ['jumlahDendaInput', 'jumlahSuspendInput'].forEach(id =>
+                    document.getElementById(id).addEventListener('input', () => this.updateDendaPreview()));
                 document.getElementById('perHariCheck').addEventListener('change', () => this.updateDendaPreview());
+                document.getElementById('vpBookList').addEventListener('change', (e) => {
+                    const li = e.target.closest('.vp-book');
+                    if (li) li.classList.toggle('is-selected', e.target.checked);
+                    this.updateDendaPreview();
+                });
+                ['jenisPelanggaranSelect', 'jenisDendaSelect'].forEach(id =>
+                    document.getElementById(id).addEventListener('change', (e) => this.setFieldError(e.target, null)));
+                document.getElementById('vpForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleConfirmViolation();
+                });
             }
 
             setupAutoScan() {
@@ -853,16 +811,12 @@
                     if (resP.status === 'success') {
                         this.jenisPelanggaran = resP.data;
                         const sel = document.getElementById('jenisPelanggaranSelect');
-                        resP.data.forEach(p => {
-                            sel.innerHTML += `<option value="${p.ID}">${p.JenisPelanggaran}</option>`;
-                        });
+                        resP.data.forEach(p => sel.add(new Option(p.JenisPelanggaran, p.ID)));
                     }
                     if (resD.status === 'success') {
                         this.jenisDenda = resD.data;
                         const sel = document.getElementById('jenisDendaSelect');
-                        resD.data.forEach(d => {
-                            sel.innerHTML += `<option value="${d.ID}">${d.Name}</option>`;
-                        });
+                        resD.data.forEach(d => sel.add(new Option(d.Name, d.ID)));
                     }
                 } catch (e) {
                     console.error('Gagal memuat master data:', e);
@@ -909,7 +863,7 @@
 
                 titleSec.innerHTML = `
             <div style="display:flex;flex-direction:column;gap:5px;">
-                <span style="color:var(--blue-900);font-size:16px;"><i class="fa fa-user-circle"></i> ${this.currentMemberName || '-'}</span>
+                <span style="color:var(--blue-900);font-size:16px;"><i class="fa fa-user-circle"></i> ${escapeHtml(this.currentMemberName || '-')}</span>
                 <small style="color:var(--gray-500);font-size:13px;font-weight:normal;">
                     <i class="fa fa-book"></i> ${this.booksToReturn.length} buku siap dikembalikan
                 </small>
@@ -925,16 +879,16 @@
                 <div class="${index > 0 ? 'pm-divider-top' : ''} position-relative fade-in" style="padding-right:45px;">
                     <button type="button" class="btn btn-sm btn-outline-danger position-absolute"
                             style="right:0;top:10px;border-radius:8px;width:35px;height:35px;"
-                            onclick="selfReturnApp.removeBookItem('${book.id}')">
+                            onclick="selfReturnApp.removeBookItem(${Number(book.id)})" aria-label="Hapus dari daftar">
                         <i class="fa fa-trash"></i>
                     </button>
                     <div class="book-detail">
                         <span class="bd-label">Judul</span>
-                        <span class="bd-val" style="text-align:right;max-width:75%;">${book.title || '-'}</span>
+                        <span class="bd-val" style="text-align:right;max-width:75%;">${escapeHtml(book.title || '-')}</span>
                     </div>
                     <div class="book-detail">
                         <span class="bd-label">Barcode</span>
-                        <span class="bd-val">${book.barcode}</span>
+                        <span class="bd-val">${escapeHtml(book.barcode)}</span>
                     </div>
                     <div class="book-detail">
                         <span class="bd-label">Jatuh Tempo</span>
@@ -1025,7 +979,7 @@
                 const overdueBooks = this.booksToReturn.filter(b => b.is_overdue);
 
                 if (overdueBooks.length > 0) {
-                    this.showViolationModal(overdueBooks);
+                    this.showViolationModal();
                 } else {
                     // Jika tidak ada keterlambatan, tanyakan konfirmasi kerusakan/hilang
                 Swal.fire({
@@ -1039,7 +993,7 @@
                         cancelButtonText: 'Tidak, Kondisi Baik'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            this.showViolationModal(this.booksToReturn);
+                            this.showViolationModal();
                         } else if (result.dismiss === Swal.DismissReason.cancel) {
                             // Tidak ada pelanggaran, langsung proses pengembalian
                             this.submitReturn(false, null);
@@ -1048,100 +1002,143 @@
                 }
             }
 
-            showViolationModal(overdueBooks) {
-                // Render daftar buku di modal
-                const listEl = document.getElementById('overdueBookList');
-                listEl.innerHTML = overdueBooks.map(b => `
-            <div style="background:var(--gray-100);border-radius:var(--radius-md);padding:10px 14px;margin-bottom:8px;border-left:4px solid var(--danger);">
-                <div style="font-size:14px;font-weight:700;color:var(--gray-800);">${b.title || '-'}</div>
-                <div style="font-size:12px;color:var(--gray-500);">
-                    <i class="fa fa-barcode"></i> ${b.barcode} ${b.is_overdue ? `&nbsp;|&nbsp; <span style="color:var(--danger);font-weight:700;"><i class="fa fa-exclamation-circle"></i> Terlambat ${b.days_overdue} hari</span>` : ''}
-                </div>
-            </div>`).join('');
+            showViolationModal() {
+                const books = this.booksToReturn;
+                const overdueCount = books.filter(b => b.is_overdue).length;
 
-                const hasOverdue = overdueBooks.some(b => b.is_overdue);
-                if (hasOverdue) {
-                    const overdueCount = overdueBooks.filter(b => b.is_overdue).length;
-                    document.getElementById('overdueInfoText').textContent =
-                        `${overdueCount} dari ${this.booksToReturn.length} buku melewati tanggal jatuh tempo.`;
+                // Semua buku transaksi ditampilkan; yang terlambat langsung dipilih,
+                // buku lain bisa dicentang bila rusak/hilang.
+                document.getElementById('vpBookList').innerHTML = books.map(b => `
+                    <li>
+                        <label class="vp-book${b.is_overdue ? ' is-selected' : ''}">
+                            <input type="checkbox" name="vp_book" value="${Number(b.id)}" ${b.is_overdue ? 'checked' : ''}>
+                            <span class="vp-book__body">
+                                <span class="vp-book__title">${escapeHtml(b.title || '-')}</span>
+                                <span class="vp-book__meta">
+                                    <span><i class="fa fa-barcode" aria-hidden="true"></i> ${escapeHtml(b.barcode)}</span>
+                                    ${b.is_overdue
+                                        ? `<span class="vp-badge vp-badge--danger">Terlambat ${Number(b.days_overdue)} hari</span>`
+                                        : '<span class="vp-badge vp-badge--neutral">Tepat waktu</span>'}
+                                </span>
+                            </span>
+                        </label>
+                    </li>`).join('');
+
+                document.getElementById('vpDesc').textContent = overdueCount > 0
+                    ? `${overdueCount} dari ${books.length} buku melewati tanggal jatuh tempo. Catat pelanggaran atau lewati.`
+                    : 'Pilih buku yang rusak atau hilang, lalu isi jenis pelanggaran dan dendanya.';
+
+                // Form kembali kosong setiap kali dibuka
+                document.getElementById('vpForm').reset();
+                const perHari = document.getElementById('perHariCheck');
+                perHari.disabled = overdueCount === 0;
+                perHari.checked = overdueCount > 0;
+                ['jenisPelanggaranSelect', 'jenisDendaSelect', 'jumlahDendaInput', 'jumlahSuspendInput']
+                    .forEach(id => this.setFieldError(document.getElementById(id), null));
+                document.getElementById('vpBooksError').hidden = true;
+                this.updateDendaPreview();
+
+                const modalEl = document.getElementById('modalPelanggaran');
+                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                modalEl.addEventListener('shown.bs.modal', () => document.getElementById('jenisPelanggaranSelect').focus(), { once: true });
+            }
+
+            selectedViolationBooks() {
+                const ids = Array.from(document.querySelectorAll('#vpBookList input[name="vp_book"]:checked')).map(i => String(i.value));
+                return this.booksToReturn.filter(b => ids.includes(String(b.id)));
+            }
+
+            setFieldError(field, message) {
+                const errorEl = document.getElementById(field.getAttribute('aria-describedby').split(' ').pop());
+                if (message) {
+                    field.setAttribute('aria-invalid', 'true');
+                    errorEl.textContent = message;
+                    errorEl.hidden = false;
                 } else {
-                    document.getElementById('overdueInfoText').textContent =
-                        `Proses pencatatan pelanggaran (kerusakan/kehilangan) untuk ${this.booksToReturn.length} buku.`;
+                    field.removeAttribute('aria-invalid');
+                    errorEl.hidden = true;
                 }
+            }
 
-                // Reset form
-                document.getElementById('jumlahDendaInput').value = '';
-                document.getElementById('perHariCheck').checked = hasOverdue;
-                document.getElementById('dendaPreview').textContent = '';
-
-                // Simpan referensi overdueBooks untuk kalkulasi preview
-                this._overdueBooks = overdueBooks;
-
-                new bootstrap.Modal(document.getElementById('modalPelanggaran')).show();
+            formatShortDate(date) {
+                return date.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
             }
 
             updateDendaPreview() {
-                const nominal = parseFloat(document.getElementById('jumlahDendaInput').value) || 0;
+                const books = this.selectedViolationBooks();
+                const nominal = Math.max(0, parseInt(document.getElementById('jumlahDendaInput').value, 10) || 0);
+                const suspend = Math.max(0, parseInt(document.getElementById('jumlahSuspendInput').value, 10) || 0);
                 const perHari = document.getElementById('perHariCheck').checked;
-                const overdue = this._overdueBooks || [];
-                const preview = document.getElementById('dendaPreview');
+                const summary = document.getElementById('vpSummary');
+                const lines = [];
 
-                if (!nominal || overdue.length === 0) {
-                    preview.textContent = '';
-                    return;
+                if (books.length && nominal > 0) {
+                    if (perHari) {
+                        const totalDays = books.reduce((s, b) => s + (Number(b.days_overdue) || 0), 0);
+                        lines.push(`Total denda: <strong>Rp ${(totalDays * nominal).toLocaleString('id-ID')}</strong> (${totalDays} hari terlambat × Rp ${nominal.toLocaleString('id-ID')})`);
+                    } else {
+                        lines.push(`Total denda: <strong>Rp ${(books.length * nominal).toLocaleString('id-ID')}</strong> (${books.length} buku × Rp ${nominal.toLocaleString('id-ID')})`);
+                    }
+                }
+                if (books.length && suspend > 0) {
+                    // Masa suspend dihitung dari tanggal pengembalian (sama dengan aturan di Entri Peminjaman)
+                    const base = document.getElementById('returnDateInput').value;
+                    const start = base ? new Date(base + 'T00:00:00') : new Date();
+                    start.setDate(start.getDate() + suspend);
+                    lines.push(`Anggota baru boleh meminjam lagi pada <strong>${this.formatShortDate(start)}</strong>.`);
                 }
 
-                if (perHari) {
-                    const totalDays = overdue.reduce((s, b) => s + (b.days_overdue || 0), 0);
-                    const total = totalDays * nominal;
-                    preview.innerHTML = `<i class="fa fa-info-circle"></i> Estimasi total denda: <b>Rp ${total.toLocaleString('id-ID')}</b> (${totalDays} hari × Rp ${nominal.toLocaleString('id-ID')})`;
-                } else {
-                    const total = overdue.length * nominal;
-                    preview.innerHTML = `<i class="fa fa-info-circle"></i> Estimasi total denda: <b>Rp ${total.toLocaleString('id-ID')}</b> (${overdue.length} buku × Rp ${nominal.toLocaleString('id-ID')})`;
-                }
+                summary.innerHTML = lines.join('<br>');
+                summary.hidden = lines.length === 0;
             }
 
             handleConfirmViolation() {
-                const jenisPelanggaranId = document.getElementById('jenisPelanggaranSelect').value;
-                const jenisDendaId = document.getElementById('jenisDendaSelect').value;
-                const jumlahDenda = document.getElementById('jumlahDendaInput').value;
-                const perHari = document.getElementById('perHariCheck').checked;
+                const pelanggaranEl = document.getElementById('jenisPelanggaranSelect');
+                const dendaEl = document.getElementById('jenisDendaSelect');
+                const jumlahEl = document.getElementById('jumlahDendaInput');
+                const suspendEl = document.getElementById('jumlahSuspendInput');
+                const books = this.selectedViolationBooks();
+                let firstInvalid = null;
+                const fail = (el, msg) => { this.setFieldError(el, msg); firstInvalid = firstInvalid || el; };
 
-                if (!jenisPelanggaranId) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Perhatian',
-                        text: 'Silakan pilih jenis pelanggaran',
-                        confirmButtonColor: '#1B3878'
-                    });
-                    return;
+                document.getElementById('vpBooksError').hidden = books.length > 0;
+                if (!books.length) firstInvalid = document.querySelector('#vpBookList input');
+
+                pelanggaranEl.value ? this.setFieldError(pelanggaranEl, null) : fail(pelanggaranEl, 'Pilih jenis pelanggaran.');
+                dendaEl.value ? this.setFieldError(dendaEl, null) : fail(dendaEl, 'Pilih jenis denda.');
+
+                const jumlahRaw = jumlahEl.value.trim();
+                const jumlah = jumlahRaw === '' ? 0 : Number(jumlahRaw);
+                if (!Number.isInteger(jumlah) || jumlah < 0) {
+                    fail(jumlahEl, 'Jumlah denda harus angka bulat 0 atau lebih.');
+                } else if (jumlah > 100000000) {
+                    fail(jumlahEl, 'Jumlah denda maksimal Rp 100.000.000.');
+                } else {
+                    this.setFieldError(jumlahEl, null);
                 }
-                if (!jenisDendaId) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Perhatian',
-                        text: 'Silakan pilih jenis denda',
-                        confirmButtonColor: '#1B3878'
-                    });
-                    return;
+
+                const suspendRaw = suspendEl.value.trim();
+                const suspend = suspendRaw === '' ? 0 : Number(suspendRaw);
+                if (!Number.isInteger(suspend) || suspend < 0 || suspend > 365) {
+                    fail(suspendEl, 'Lama suspend harus angka bulat 0 sampai 365 hari.');
+                } else {
+                    this.setFieldError(suspendEl, null);
                 }
-                if (!jumlahDenda || parseFloat(jumlahDenda) < 0) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Perhatian',
-                        text: 'Silakan masukkan jumlah denda yang valid',
-                        confirmButtonColor: '#1B3878'
-                    });
+
+                if (firstInvalid) {
+                    firstInvalid.focus();
                     return;
                 }
 
                 bootstrap.Modal.getInstance(document.getElementById('modalPelanggaran')).hide();
 
                 this.submitReturn(true, {
-                    jenis_pelanggaran_id: jenisPelanggaranId,
-                    jenis_denda_id: jenisDendaId,
-                    jumlah_denda: parseFloat(jumlahDenda),
-                    per_hari: perHari
+                    item_ids: books.map(b => Number(b.id)),
+                    jenis_pelanggaran_id: Number(pelanggaranEl.value),
+                    jenis_denda_id: Number(dendaEl.value),
+                    jumlah_denda: jumlah,
+                    jumlah_suspend: suspend,
+                    per_hari: document.getElementById('perHariCheck').checked && !document.getElementById('perHariCheck').disabled
                 });
             }
 
@@ -1212,9 +1209,9 @@
                 list.innerHTML = items.map(item => `
             <div class="history-item fade-in">
                 <div>
-                    <div class="hi-title">${item.Title || 'Judul tidak tersedia'}</div>
-                    <div class="hi-author">${item.Author || 'Pengarang tidak tersedia'}</div>
-                    <div class="hi-barcode"><i class="fa fa-barcode"></i> ${item.NomorBarcode}</div>
+                    <div class="hi-title">${escapeHtml(item.Title || 'Judul tidak tersedia')}</div>
+                    <div class="hi-author">${escapeHtml(item.Author || 'Pengarang tidak tersedia')}</div>
+                    <div class="hi-barcode"><i class="fa fa-barcode"></i> ${escapeHtml(item.NomorBarcode)}</div>
                 </div>
                 <div class="hi-date">
                     ${this.formatDate(item.ActualReturn)}

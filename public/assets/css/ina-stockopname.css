@@ -1,0 +1,412 @@
+/*
+ * INA Digital: halaman detail Stock Opname (/stockopname/detail/{id}).
+ * Dipakai bersama ina-skin.css; kelas so-* hanya berlaku di halaman ini.
+ */
+.so-page {
+    --ina-primary: #2d659e;
+    --ina-primary-hover: #24527f;
+    --ina-primary-subtle: #eaf1f8;
+    font-family: var(--ina-font);
+    color: var(--ina-text, #1f2937);
+}
+
+.so-page .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 16px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+.so-page .btn-sm {
+    min-height: 32px;
+    padding: 0 12px;
+    font-size: 13px;
+}
+
+.so-page .btn-primary {
+    color: #fff;
+    background: var(--ina-primary);
+    border: 1px solid var(--ina-primary);
+}
+
+.so-page .btn-primary:hover,
+.so-page .btn-primary:focus {
+    color: #fff;
+    background: var(--ina-primary-hover);
+    border-color: var(--ina-primary-hover);
+}
+
+.so-page .btn-outline-primary {
+    color: var(--ina-primary);
+    background: #fff;
+    border: 1px solid var(--ina-primary);
+}
+
+.so-page .btn-outline-primary:hover {
+    color: var(--ina-primary);
+    background: var(--ina-primary-subtle);
+}
+
+.so-page .btn-outline-secondary {
+    color: #374151;
+    background: #fff;
+    border: 1px solid #d1d5db;
+}
+
+.so-page .btn-outline-secondary:hover {
+    color: #1f2937;
+    background: #f3f4f6;
+}
+
+.so-page .btn:focus-visible {
+    outline: 2px solid var(--ina-primary);
+    outline-offset: 2px;
+}
+
+/* Judul kartu */
+.so-page .so-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+    color: var(--ina-text, #1f2937);
+}
+
+.so-page .so-card-title i {
+    color: var(--ina-primary);
+}
+
+.so-page .so-card-subtitle {
+    margin: 2px 0 0;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+    color: var(--ina-text-muted, #6b7280);
+}
+
+.so-page .so-header-end {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+/* Badge jumlah */
+.so-page .so-count {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    font-size: 12px;
+    line-height: 20px;
+    font-weight: 600;
+    color: var(--ina-primary);
+    background: var(--ina-primary-subtle);
+    border-radius: 999px;
+}
+
+.so-page .so-count--danger {
+    color: #b42318;
+    background: #fdecec;
+}
+
+/* Info proyek */
+.so-page .so-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0 0 24px;
+}
+
+.so-page .so-meta dt {
+    margin: 0 0 4px;
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--ina-text-muted, #6b7280);
+}
+
+.so-page .so-meta dd {
+    margin: 0;
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+    word-break: break-word;
+}
+
+.so-page .so-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.so-page .so-stat {
+    padding: 16px;
+    background: #f9fafb;
+    border: 1px solid var(--ina-border, #e5e7eb);
+    border-radius: 8px;
+}
+
+.so-page .so-stat__label {
+    display: block;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--ina-text-muted, #6b7280);
+}
+
+.so-page .so-stat__value {
+    display: block;
+    margin-top: 4px;
+    font-size: 28px;
+    line-height: 36px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--ina-text, #1f2937);
+}
+
+.so-page .so-stat--primary {
+    background: var(--ina-primary-subtle);
+    border-color: #c9dbee;
+}
+
+.so-page .so-stat--primary .so-stat__value {
+    color: var(--ina-primary);
+}
+
+/* Pemindai barcode */
+.so-page .so-scan {
+    display: flex;
+    gap: 12px;
+}
+
+.so-page .so-scan .barcode-input {
+    flex: 1;
+    height: 44px;
+    padding: 0 14px;
+    font-size: 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+.so-page .so-scan .barcode-input:focus {
+    outline: none;
+    border-color: var(--ina-primary);
+    box-shadow: 0 0 0 3px rgba(45, 101, 158, .2);
+}
+
+.so-page .so-scan .btn {
+    min-height: 44px;
+    white-space: nowrap;
+}
+
+.so-page .so-hint {
+    display: block;
+    margin-top: 8px;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--ina-text-muted, #6b7280);
+}
+
+/* Filter */
+.so-page .so-filter {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+    align-items: end;
+    gap: 16px;
+}
+
+.so-page .so-filter label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.so-page .so-filter .form-select,
+.so-page .so-filter .form-control {
+    height: 44px;
+    border-radius: 8px;
+}
+
+.so-page .so-filter__actions {
+    display: flex;
+    gap: 8px;
+}
+
+.so-page .so-filter__actions .btn {
+    min-height: 44px;
+}
+
+/* Toolbar tabel */
+.so-page .so-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px 24px;
+    font-size: 14px;
+    color: var(--ina-text-muted, #6b7280);
+    border-bottom: 1px solid var(--ina-border, #e5e7eb);
+}
+
+.so-page .so-toolbar label {
+    margin: 0;
+    font-weight: 400;
+    color: inherit;
+}
+
+.so-page .so-toolbar .form-select {
+    width: auto;
+    height: 36px;
+    border-radius: 8px;
+}
+
+/* Tabel */
+.so-page .card .card-body.p-0 {
+    padding: 0;
+}
+
+.so-page table.table {
+    margin: 0;
+}
+
+.so-page table.table thead th {
+    white-space: nowrap;
+}
+
+.so-page table.table td {
+    vertical-align: top;
+}
+
+/* Barcode tidak dipatah; kolom judul diberi ruang baca yang cukup */
+.so-page #detailTable td:nth-child(2) .so-cell-main,
+.so-page #notInTable td:nth-child(2) .so-cell-main {
+    white-space: nowrap;
+}
+
+.so-page #detailTable td:nth-child(3),
+.so-page #notInTable td:nth-child(3) {
+    min-width: 220px;
+}
+
+.so-page .so-cell-main {
+    display: block;
+    font-weight: 600;
+    color: var(--ina-text, #1f2937);
+}
+
+.so-page .so-cell-sub {
+    display: block;
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--ina-text-muted, #6b7280);
+}
+
+.so-page table.table .form-select-sm {
+    min-width: 140px;
+    height: 36px;
+    font-size: 13px;
+    border-radius: 8px;
+}
+
+.so-page .select-saving {
+    opacity: .5;
+    pointer-events: none;
+}
+
+.so-page .so-changed {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 16px;
+    color: #9a4b00;
+}
+
+.so-page .so-changed[hidden] {
+    display: none;
+}
+
+.so-page .so-empty {
+    padding: 40px 16px !important;
+    text-align: center;
+    color: var(--ina-text-muted, #6b7280);
+}
+
+.so-page .so-empty i {
+    display: block;
+    margin-bottom: 12px;
+    font-size: 32px;
+    color: #9ca3af;
+}
+
+.so-page .so-empty--success i {
+    color: #1f7a36;
+}
+
+.so-page .so-empty strong {
+    display: block;
+    color: var(--ina-text, #1f2937);
+}
+
+/* Paginasi: lihat ina-pagination.css */
+.so-page .card > .ina-table-pagination {
+    border-radius: 0 0 var(--ina-radius, 12px) var(--ina-radius, 12px);
+}
+
+.so-page .pagination {
+    margin-bottom: 0;
+    flex-wrap: wrap;
+}
+
+.so-page .pagination .page-link {
+    color: var(--ina-primary);
+}
+
+.so-page .pagination .page-item.active .page-link {
+    color: #fff;
+    background: var(--ina-primary);
+    border-color: var(--ina-primary);
+}
+
+@media (max-width: 991px) {
+    .so-page .so-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767px) {
+    .so-page .so-meta,
+    .so-page .so-filter {
+        grid-template-columns: 1fr;
+    }
+
+    .so-page .so-scan {
+        flex-direction: column;
+    }
+
+    .so-page .so-header-end {
+        margin-left: 0;
+    }
+}
+
+@media print {
+    .so-page .so-no-print,
+    .so-page .pagination,
+    .so-page .btn {
+        display: none !important;
+    }
+
+    .so-page table.table {
+        font-size: 12px;
+    }
+}

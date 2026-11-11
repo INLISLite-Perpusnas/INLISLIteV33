@@ -1,203 +1,20 @@
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
-<style>
-    /* Gaya INA: warna solid #2d659e, tanpa gradien & efek melayang */
-    .scanner-container {
-        background: #2d659e;
-        border-radius: 12px;
-        padding: 20px 24px;
-        margin-bottom: 20px;
-        color: #fff;
-    }
-
-    .barcode-input {
-        height: 48px;
-        font-size: 1.1rem;
-        padding: 0 14px;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        box-shadow: none;
-    }
-
-    .barcode-input:focus {
-        outline: none;
-        border-color: #2d659e;
-        box-shadow: 0 0 0 3px rgba(255, 255, 255, .45);
-    }
-
-    .scan-btn {
-        height: 48px;
-        background: #fff;
-        border: 1px solid #fff;
-        padding: 0 22px;
-        border-radius: 8px;
-        color: #2d659e;
-        font-weight: 600;
-        transition: background-color .15s ease;
-    }
-
-    .scan-btn:hover {
-        background: #eaf1f8;
-        color: #2d659e;
-    }
-
-    .scan-btn:focus-visible {
-        outline: 2px solid #fff;
-        outline-offset: 2px;
-    }
-
-    .collection-card {
-        border: 1px solid var(--ina-border, #e5e7eb);
-        border-radius: 12px;
-        box-shadow: var(--ina-shadow, 0 1px 3px rgba(16, 24, 40, .08));
-        margin-bottom: 15px;
-    }
-
-    .status-badge {
-        font-size: 12px;
-        font-weight: 600;
-        padding: 4px 10px;
-        border-radius: 999px;
-    }
-
-    .change-indicator {
-        background: #fff4e5;
-        color: #9a4b00;
-        font-size: 11px;
-        font-weight: 600;
-        padding: 2px 8px;
-        border-radius: 999px;
-        margin-left: 5px;
-    }
-
-    .summary-card {
-        background: #2d659e;
-        color: #fff;
-        border-radius: 12px;
-        padding: 20px 24px;
-        margin-bottom: 20px;
-    }
-
-    .table-container {
-        border: 1px solid var(--ina-border, #e5e7eb);
-        border-radius: 12px;
-        overflow: hidden;
-    }
-
-    #detailTable .form-select-sm {
-        min-width: 120px;
-        font-size: 13px;
-        border-radius: 8px;
-    }
-
-    #detailTable .select-saving {
-        opacity: 0.5;
-        pointer-events: none;
-    }
-
-    .not-scanned-list {
-        max-height: 400px;
-        overflow-y: auto;
-        background: #f9fafb;
-        border: 1px solid var(--ina-border, #e5e7eb);
-        border-radius: 8px;
-        padding: 12px;
-    }
-
-    .not-scanned-item {
-        background: #fff;
-        border: 1px solid var(--ina-border, #e5e7eb);
-        border-left: 4px solid var(--ina-danger, #c62828);
-        border-radius: 8px;
-        padding: 10px 12px;
-        margin-bottom: 8px;
-    }
-
-    .not-scanned-item:hover {
-        background: #fafafa;
-    }
-
-    .btn-update {
-        background: #2d659e;
-        border: 1px solid #2d659e;
-        border-radius: 8px;
-        padding: 8px 15px;
-        color: #fff;
-        font-weight: 600;
-        transition: background-color .15s ease;
-    }
-
-    .btn-update:hover {
-        background: #24527f;
-        border-color: #24527f;
-        color: #fff;
-    }
-
-    .btn-delete {
-        background: #fff;
-        border: 1px solid #f5c2c2;
-        border-radius: 8px;
-        padding: 8px 15px;
-        color: var(--ina-danger, #c62828);
-        font-weight: 600;
-        transition: background-color .15s ease;
-    }
-
-    .btn-delete:hover {
-        background: #fdecec;
-        color: var(--ina-danger, #c62828);
-    }
-
-    /* Paginasi CI4 */
-    .pagination {
-        margin-bottom: 0;
-        flex-wrap: wrap;
-    }
-
-    .pagination .page-link {
-        color: #2d659e;
-    }
-
-    .content-wrapper .pagination .page-item.active .page-link {
-        color: #fff;
-        background: #2d659e;
-        border-color: #2d659e;
-    }
-
-    @media (max-width: 768px) {
-        .collection-card {
-            margin-bottom: 10px;
-        }
-
-        .scanner-container {
-            padding: 15px;
-        }
-    }
-</style>
-<style media="print">
-    .scanner-container,
-    .not-scanned-list,
-    .btn,
-    .modal,
-    .pagination {
-        display: none !important;
-    }
-
-    .table {
-        font-size: 12px;
-    }
-
-    .summary-card {
-        background: white !important;
-        color: black !important;
-        border: 1px solid #ccc;
-    }
-</style>
 <link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-pagination.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-pagination.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-stockopname.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-stockopname.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
-<div class="app-main__inner">
+<?php
+$summary       = $stockopnamedetailModel->getStockopnameSummary($stockopname->ID);
+$totalRows     = (int) ($totalDetails ?? count($details));
+$offsetDetails = (int) ($offsetDetails ?? 0);
+$perPage       = (int) ($perPageDetails ?? 25);
+$fromRow       = $totalRows > 0 ? $offsetDetails + 1 : 0;
+$toRow         = min($offsetDetails + $perPage, $totalRows);
+?>
+<div class="app-main__inner so-page">
     <div class="app-page-title">
         <div class="page-title-wrapper">
             <div class="page-title-heading">
@@ -205,418 +22,395 @@
                     <i class="pe-7s-note icon-gradient bg-strong-bliss"></i>
                 </div>
                 <div>
-                    <h2><?= esc($stockopname->ProjectName) ?></h2>
-                    <div class="page-title-subheading">
-                        Detail data stock opname
-                    </div>
+                    <?= esc($stockopname->ProjectName) ?>
+                    <div class="page-title-subheading">Detail data stock opname</div>
                 </div>
             </div>
             <div class="page-title-actions">
                 <nav class="ms-3" aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item">
-                            <a href="<?= base_url('dashboard') ?>">
-                                <i class="fa fa-home"></i> Home
-                            </a>
+                            <a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a>
                         </li>
                         <li class="breadcrumb-item">
                             <a href="<?= base_url('stockopname') ?>">Stock Opname</a>
                         </li>
-                        <li class="breadcrumb-item" aria-current="page">
-                            <?= esc($stockopname->ProjectName) ?>
-                        </li>
+                        <li class="breadcrumb-item active" aria-current="page"><?= esc($stockopname->ProjectName) ?></li>
                     </ol>
                 </nav>
             </div>
         </div>
     </div>
 
-    <!-- Project Info -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="summary-card">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h4><i class="fas fa-project-diagram"></i> <?= $stockopname->ProjectName ?></h4>
-                        <p class="mb-1"><strong>Tahun:</strong> <?= $stockopname->Tahun ?></p>
-                        <p class="mb-1"><strong>Koordinator:</strong> <?= $stockopname->Koordinator ?></p>
-                        <p class="mb-0"><strong>Tanggal Mulai:</strong> <?= date('d/m/Y', strtotime($stockopname->TglMulai)) ?></p>
-                        <div class="mt-3">
-                            <a href="<?= base_url('stockopname/exportexcel/' . $stockopname->ID) ?>" class="btn btn-success btn-sm">
-                                <i class="fas fa-file-excel"></i> Export Excel
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <?php
-                        $summary = $stockopnamedetailModel->getStockopnameSummary($stockopname->ID);
-                        ?>
-                        <div class="row text-center">
-                            <div class="col-3">
-                                <h3 class="mb-0"><?= $summary['total_items'] ?></h3>
-                                <small>Total Item</small>
-                            </div>
-                            <div class="col-3">
-                                <h3 class="mb-0"><?= $summary['location_changes'] ?></h3>
-                                <small>Pindah Lokasi</small>
-                            </div>
-                            <div class="col-3">
-                                <h3 class="mb-0"><?= $summary['status_changes'] ?></h3>
-                                <small>Ganti Status</small>
-                            </div>
-                            <div class="col-3">
-                                <h3 class="mb-0"><?= $summary['rule_changes'] ?></h3>
-                                <small>Ganti Aturan</small>
-                            </div>
-                        </div>
-                    </div>
+    <!-- Info proyek -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <div>
+                <h2 class="so-card-title"><i class="fas fa-project-diagram" aria-hidden="true"></i> Informasi Proyek</h2>
+                <p class="so-card-subtitle">Ringkasan hasil stock opname sejauh ini</p>
+            </div>
+            <div class="so-header-end">
+                <a href="<?= base_url('stockopname/exportexcel/' . (int) $stockopname->ID) ?>" class="btn btn-outline-primary">
+                    <i class="fas fa-file-excel" aria-hidden="true"></i> Export Excel
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <dl class="so-meta">
+                <div>
+                    <dt>Tahun</dt>
+                    <dd><?= esc($stockopname->Tahun ?: '-') ?></dd>
+                </div>
+                <div>
+                    <dt>Koordinator</dt>
+                    <dd><?= esc($stockopname->Koordinator ?: '-') ?></dd>
+                </div>
+                <div>
+                    <dt>Tanggal Mulai</dt>
+                    <dd><?= $stockopname->TglMulai ? date('d/m/Y', strtotime($stockopname->TglMulai)) : '-' ?></dd>
+                </div>
+            </dl>
+            <div class="so-stats">
+                <div class="so-stat so-stat--primary">
+                    <span class="so-stat__label">Total Item</span>
+                    <span class="so-stat__value" data-stat="total_items"><?= number_format((int) $summary['total_items']) ?></span>
+                </div>
+                <div class="so-stat">
+                    <span class="so-stat__label">Pindah Lokasi</span>
+                    <span class="so-stat__value" data-stat="location_changes"><?= number_format((int) $summary['location_changes']) ?></span>
+                </div>
+                <div class="so-stat">
+                    <span class="so-stat__label">Ganti Status</span>
+                    <span class="so-stat__value" data-stat="status_changes"><?= number_format((int) $summary['status_changes']) ?></span>
+                </div>
+                <div class="so-stat">
+                    <span class="so-stat__label">Ganti Aturan</span>
+                    <span class="so-stat__value" data-stat="rule_changes"><?= number_format((int) $summary['rule_changes']) ?></span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Barcode Scanner -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="scanner-container">
-                <h5><i class="fas fa-barcode"></i> Scan Barcode Koleksi</h5>
-                <form id="scanForm" class="row g-3 align-items-end">
-                    <div class="col-md-8">
-                        <input type="text"
-                            id="barcodeInput"
-                            class="form-control barcode-input"
-                            placeholder="Scan atau ketik nomor barcode..."
-                            autocomplete="off"
-                            autofocus>
-                    </div>
-                    <div class="col-md-4">
-                        <button type="submit" class="btn scan-btn w-100">
-                            <i class="fas fa-plus-circle"></i> Tambah ke Stockopname
-                        </button>
-                    </div>
-                </form>
-            </div>
+    <!-- Pemindai barcode -->
+    <div class="card mb-4 so-no-print">
+        <div class="card-header">
+            <h2 class="so-card-title"><i class="fas fa-barcode" aria-hidden="true"></i> Scan Barcode Koleksi</h2>
+        </div>
+        <div class="card-body">
+            <form id="scanForm">
+                <label for="barcodeInput">Nomor Barcode</label>
+                <div class="so-scan">
+                    <input type="text"
+                        id="barcodeInput"
+                        class="form-control barcode-input"
+                        placeholder="Scan atau ketik nomor barcode"
+                        autocomplete="off"
+                        autofocus>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus-circle" aria-hidden="true"></i> Tambah ke Stock Opname
+                    </button>
+                </div>
+                <small class="so-hint">Tekan Enter setelah memindai. Tekan Esc untuk kembali ke kolom ini.</small>
+            </form>
         </div>
     </div>
 
-    <div class="card mb-4">
+    <!-- Filter -->
+    <div class="card mb-4 so-no-print">
         <div class="card-body">
-            <form method="get" action="<?= current_url() ?>" class="row g-3 align-items-end">
-                <div class="col-md-4">
-                    <label for="location_library_id" class="form-label">Lokasi</label>
+            <form method="get" action="<?= current_url() ?>" class="so-filter">
+                <div>
+                    <label for="location_library_id">Lokasi</label>
                     <select id="location_library_id" name="location_library_id" class="form-select">
                         <option value="">Semua Lokasi</option>
                         <?php foreach ($locationLibraries as $library): ?>
-                            <option value="<?= $library->ID ?>" <?= $library->ID == (isset($selectedLocationLibraryId) ? $selectedLocationLibraryId : 0) ? 'selected' : '' ?>>
+                            <option value="<?= (int) $library->ID ?>" <?= $library->ID == ($selectedLocationLibraryId ?? 0) ? 'selected' : '' ?>>
                                 <?= esc($library->Name) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-md-4">
-                    <label for="location_id" class="form-label">Lokasi Ruang</label>
+                <div>
+                    <label for="location_id">Lokasi Ruang</label>
                     <select id="location_id" name="location_id" class="form-select">
                         <option value="">Semua Lokasi Ruang</option>
                         <?php foreach ($locations as $loc): ?>
-                            <option value="<?= $loc->ID ?>" data-location-library-id="<?= $loc->LocationLibrary_id ?>"
-                                <?= $loc->ID == (isset($selectedLocationId) ? $selectedLocationId : 0) ? 'selected' : '' ?>>
+                            <option value="<?= (int) $loc->ID ?>" data-location-library-id="<?= (int) $loc->LocationLibrary_id ?>"
+                                <?= $loc->ID == ($selectedLocationId ?? 0) ? 'selected' : '' ?>>
                                 <?= esc($loc->Name) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-md-4 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Filter</button>
-                    <a href="<?= current_url() ?>" class="btn btn-light">Reset</a>
+                <div class="so-filter__actions">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-filter" aria-hidden="true"></i> Filter</button>
+                    <a href="<?= current_url() ?>" class="btn btn-outline-secondary">Reset</a>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Stockopname Details Table -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <h5 class="mb-0"><i class="fas fa-list"></i> Detail Stockopname</h5>
-                    <span class="badge bg-light text-dark"><?= number_format($totalDetails ?? count($details)) ?> total data</span>
-                </div>
-                <div class="card-body p-0">
-                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 px-3 pt-3">
-                        <div class="d-flex align-items-center gap-2">
-                            <label for="perPageSelect" class="mb-0 small text-muted">Tampilkan</label>
-                            <select id="perPageSelect" class="form-select form-select-sm" style="width: auto;">
-                                <option value="25" <?= ($perPageDetails ?? 25) == 25 ? 'selected' : '' ?>>25</option>
-                                <option value="50" <?= ($perPageDetails ?? 25) == 50 ? 'selected' : '' ?>>50</option>
-                                <option value="100" <?= ($perPageDetails ?? 25) == 100 ? 'selected' : '' ?>>100</option>
-                            </select>
-                            <span class="small text-muted">data per halaman</span>
-                        </div>
-                        <div class="small text-muted">
-                            Menampilkan <?= ($offsetDetails ?? 0) + 1 ?>–<?= min(($offsetDetails ?? 0) + ($perPageDetails ?? 25), $totalDetails ?? count($details)) ?>
-                            dari <?= number_format($totalDetails ?? count($details)) ?> data
-                        </div>
-                    </div>
-                    <div class="table-container">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0" id="detailTable">
-                                <thead>
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Barcode</th>
-                                        <th>Judul</th>
-                                        <th>Pengarang</th>
-                                        <th>Lokasi</th>
-                                        <th>Status</th>
-                                        <th>Aturan</th>
-                                        <th>Tanggal Scan</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (!empty($details)): ?>
-                                        <?php
-                                        // Nomor urut menyesuaikan halaman aktif, bukan selalu mulai dari 1
-                                        $no = $offsetDetails + 1;
-                                        foreach ($details as $detail): ?>
-                                            <tr id="row-<?= $detail['ID'] ?>">
-                                                <td><?= $no++ ?></td>
-                                                <td>
-                                                    <strong><?= $detail['NomorBarcode'] ?></strong>
-                                                    <br>
-                                                    <small class="text-muted"><?= $detail['CallNumber'] ?></small>
-                                                </td>
-                                                <td>
-                                                    <strong><?= $detail['Title'] ?></strong>
-                                                    <br>
-                                                    <small class="text-muted"><?= $detail['Publisher'] ?></small>
-                                                </td>
-                                                <td><?= $detail['Author'] ?></td>
-                                                <td>
-                                                    <select class="form-select form-select-sm select-lokasi"
-                                                            data-detail-id="<?= $detail['ID'] ?>"
-                                                            data-field="current_location_id">
-                                                        <?php foreach ($locations as $loc): ?>
-                                                            <option value="<?= $loc->ID ?>"
-                                                                <?= $loc->ID == $detail['CurrentLocationID'] ? 'selected' : '' ?>>
-                                                                <?= esc($loc->Name) ?>
-                                                            </option>
-                                                        <?php endforeach; ?>
-                                                    </select>
-                                                    <?php if ($detail['PrevLocationID'] != $detail['CurrentLocationID']): ?>
-                                                        <small class="text-muted d-block mt-1">Dari: <?= $detail['PrevLocationName'] ?></small>
-                                                    <?php endif; ?>
-                                                </td>
-                                                <td>
-                                                    <select class="form-select form-select-sm select-status"
-                                                            data-detail-id="<?= $detail['ID'] ?>"
-                                                            data-field="current_status_id">
-                                                        <?php foreach ($statuses as $st): ?>
-                                                            <option value="<?= $st->ID ?>"
-                                                                <?= $st->ID == $detail['CurrentStatusID'] ? 'selected' : '' ?>>
-                                                                <?= esc($st->Name) ?>
-                                                            </option>
-                                                        <?php endforeach; ?>
-                                                    </select>
-                                                    <?php if ($detail['PrevStatusID'] != $detail['CurrentStatusID']): ?>
-                                                        <small class="text-muted d-block mt-1">Dari: <?= $detail['PrevStatusName'] ?></small>
-                                                    <?php endif; ?>
-                                                </td>
-                                                <td>
-                                                    <select class="form-select form-select-sm select-rule"
-                                                            data-detail-id="<?= $detail['ID'] ?>"
-                                                            data-field="current_collection_rule_id">
-                                                        <?php foreach ($rules as $rule): ?>
-                                                            <option value="<?= $rule->ID ?>"
-                                                                <?= $rule->ID == $detail['CurrentCollectionRuleID'] ? 'selected' : '' ?>>
-                                                                <?= esc($rule->Name) ?>
-                                                            </option>
-                                                        <?php endforeach; ?>
-                                                    </select>
-                                                    <?php if ($detail['PrevCollectionRuleID'] != $detail['CurrentCollectionRuleID']): ?>
-                                                        <small class="text-muted d-block mt-1">Dari: <?= $detail['PrevRuleName'] ?></small>
-                                                    <?php endif; ?>
-                                                </td>
-                                                <td>
-                                                    <?= date('d/m/Y H:i', strtotime($detail['CreateDate'])) ?>
-                                                    <br>
-                                                    <small class="text-muted">oleh User <?= $detail['CreateBy'] ?></small>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <tr>
-                                            <td colspan="8" class="text-center py-4">
-                                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                                                <br>
-                                                Belum ada koleksi yang di-scan
-                                            </td>
-                                        </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <?php if (!empty($details)): ?>
-                    <div class="card-footer d-flex justify-content-center">
-                        <?= $detailsPager ?? '' ?>
-                    </div>
-                <?php endif; ?>
+    <!-- Detail stock opname -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="so-card-title"><i class="fas fa-list" aria-hidden="true"></i> Detail Stock Opname</h2>
+            <div class="so-header-end">
+                <span class="so-count"><?= number_format($totalRows) ?> data</span>
             </div>
         </div>
-    </div>
-
-    <!-- Location & Status Summary Table -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0"><i class="fas fa-map-marker-alt"></i> Ringkasan Berdasarkan Lokasi & Status</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <?php
-                                    if (!empty($locationSummary)) {
-                                        $statusHeaders = array_keys($locationSummary[0]);
-                                        foreach ($statusHeaders as $header) {
-                                            echo "<th>{$header}</th>";
-                                        }
-                                    }
-                                    ?>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (!empty($locationSummary)): ?>
-                                    <?php foreach ($locationSummary as $row): ?>
-                                        <tr>
-                                            <?php foreach ($row as $value): ?>
-                                                <td><?= $value ?></td>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="detailTable">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Barcode</th>
+                            <th>Judul</th>
+                            <th>Pengarang</th>
+                            <th>Lokasi</th>
+                            <th>Status</th>
+                            <th>Aturan</th>
+                            <th>Tanggal Scan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($details)): ?>
+                            <?php
+                            // Nomor urut menyesuaikan halaman aktif, bukan selalu mulai dari 1
+                            $no = $offsetDetails + 1;
+                            foreach ($details as $detail): ?>
+                                <tr id="row-<?= (int) $detail['ID'] ?>">
+                                    <td><?= $no++ ?></td>
+                                    <td>
+                                        <span class="so-cell-main"><?= esc($detail['NomorBarcode']) ?></span>
+                                        <span class="so-cell-sub"><?= esc($detail['CallNumber']) ?></span>
+                                    </td>
+                                    <td>
+                                        <span class="so-cell-main"><?= esc($detail['Title']) ?></span>
+                                        <span class="so-cell-sub"><?= esc($detail['Publisher']) ?></span>
+                                    </td>
+                                    <td><?= esc($detail['Author']) ?></td>
+                                    <td>
+                                        <select class="form-select form-select-sm select-lokasi"
+                                                data-prev-id="<?= (int) $detail['PrevLocationID'] ?>"
+                                                data-prev-name="<?= esc($detail['PrevLocationName'] ?? '', 'attr') ?>"
+                                                aria-label="Lokasi"
+                                                data-detail-id="<?= (int) $detail['ID'] ?>"
+                                                data-field="current_location_id">
+                                            <?php foreach ($locations as $loc): ?>
+                                                <option value="<?= (int) $loc->ID ?>" <?= $loc->ID == $detail['CurrentLocationID'] ? 'selected' : '' ?>>
+                                                    <?= esc($loc->Name) ?>
+                                                </option>
                                             <?php endforeach; ?>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <tr>
-                                        <td colspan="100%" class="text-center py-4">Data ringkasan tidak tersedia.</td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
+                                        </select>
+                                        <span class="so-changed"<?= $detail['PrevLocationID'] != $detail['CurrentLocationID'] ? '' : ' hidden' ?>>Dari: <?= esc($detail['PrevLocationName']) ?></span>
+                                    </td>
+                                    <td>
+                                        <select class="form-select form-select-sm select-status"
+                                                data-prev-id="<?= (int) $detail['PrevStatusID'] ?>"
+                                                data-prev-name="<?= esc($detail['PrevStatusName'] ?? '', 'attr') ?>"
+                                                aria-label="Status"
+                                                data-detail-id="<?= (int) $detail['ID'] ?>"
+                                                data-field="current_status_id">
+                                            <?php foreach ($statuses as $st): ?>
+                                                <option value="<?= (int) $st->ID ?>" <?= $st->ID == $detail['CurrentStatusID'] ? 'selected' : '' ?>>
+                                                    <?= esc($st->Name) ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <span class="so-changed"<?= $detail['PrevStatusID'] != $detail['CurrentStatusID'] ? '' : ' hidden' ?>>Dari: <?= esc($detail['PrevStatusName']) ?></span>
+                                    </td>
+                                    <td>
+                                        <select class="form-select form-select-sm select-rule"
+                                                data-prev-id="<?= (int) $detail['PrevCollectionRuleID'] ?>"
+                                                data-prev-name="<?= esc($detail['PrevRuleName'] ?? '', 'attr') ?>"
+                                                aria-label="Aturan"
+                                                data-detail-id="<?= (int) $detail['ID'] ?>"
+                                                data-field="current_collection_rule_id">
+                                            <?php foreach ($rules as $rule): ?>
+                                                <option value="<?= (int) $rule->ID ?>" <?= $rule->ID == $detail['CurrentCollectionRuleID'] ? 'selected' : '' ?>>
+                                                    <?= esc($rule->Name) ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <span class="so-changed"<?= $detail['PrevCollectionRuleID'] != $detail['CurrentCollectionRuleID'] ? '' : ' hidden' ?>>Dari: <?= esc($detail['PrevRuleName']) ?></span>
+                                    </td>
+                                    <td>
+                                        <span class="so-cell-main"><?= date('d/m/Y H:i', strtotime($detail['CreateDate'])) ?></span>
+                                        <span class="so-cell-sub">oleh User <?= esc($detail['CreateBy']) ?></span>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="8" class="so-empty">
+                                    <i class="fas fa-inbox" aria-hidden="true"></i>
+                                    <strong>Belum ada koleksi yang di-scan</strong>
+                                    Scan barcode koleksi untuk memulai.
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <?php if (!empty($details)): ?>
+            <div class="ina-table-pagination">
+                <div class="ina-table-pagination__rows">
+                    <label for="perPageSelect">Baris per halaman</label>
+                    <select id="perPageSelect" class="form-select">
+                        <?php foreach ([25, 50, 100] as $opt): ?>
+                            <option value="<?= $opt ?>" <?= $perPage === $opt ? 'selected' : '' ?>><?= $opt ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <span>Menampilkan <?= number_format($fromRow) ?>–<?= number_format($toRow) ?> dari <?= number_format($totalRows) ?></span>
                 </div>
+                <div class="ina-table-pagination__end"><?= $detailsPager ?? '' ?></div>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- Ringkasan per lokasi & status -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="so-card-title"><i class="fas fa-map-marker-alt" aria-hidden="true"></i> Ringkasan Berdasarkan Lokasi &amp; Status</h2>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="locationSummaryTable">
+                    <thead>
+                        <tr>
+                            <?php if (!empty($locationSummary)): ?>
+                                <?php foreach (array_keys($locationSummary[0]) as $header): ?>
+                                    <th><?= esc($header) ?></th>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($locationSummary)): ?>
+                            <?php foreach ($locationSummary as $row): ?>
+                                <tr>
+                                    <?php foreach ($row as $value): ?>
+                                        <td><?= esc($value) ?></td>
+                                    <?php endforeach; ?>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="100%" class="so-empty">Data ringkasan tidak tersedia.</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- Collections Not in Stockopname -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        Koleksi Belum Di-Stockopname
-                        <span class="badge bg-danger"><?= $totalNotInStockopname ?></span>
-                    </h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-container">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0" id="notInTable">
-                                <thead>
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Barcode</th>
-                                        <th>Judul</th>
-                                        <th>Pengarang</th>
-                                        <th>Lokasi</th>
-                                        <th>Status</th>
-                                        <th>Aturan</th>
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (!empty($collectionsNotInStockopname)): ?>
-                                        <?php
-                                        $no = ($offsetNotIn ?? 0) + 1;
-                                        foreach ($collectionsNotInStockopname as $collection): ?>
-                                            <tr>
-                                                <td><?= $no++ ?></td>
-                                                <td>
-                                                    <strong><?= $collection['NomorBarcode'] ?></strong>
-                                                    <br>
-                                                    <small class="text-muted"><?= $collection['CallNumber'] ?></small>
-                                                </td>
-                                                <td>
-                                                    <strong><?= $collection['Title'] ?></strong>
-                                                    <br>
-                                                    <small class="text-muted"><?= $collection['Publisher'] ?></small>
-                                                </td>
-                                                <td><?= $collection['Author'] ?></td>
-                                                <td>
-                                                    <select class="form-select form-select-sm select-lokasi-not-in"
-                                                            data-collection-id="<?= $collection['id'] ?>"
-                                                            data-field="current_location_id">
-                                                        <?php foreach ($locations as $loc): ?>
-                                                            <option value="<?= $loc->ID ?>"
-                                                                <?= $loc->ID == $collection['CurrentLocationID'] ? 'selected' : '' ?>>
-                                                                <?= esc($loc->Name) ?>
-                                                            </option>
-                                                        <?php endforeach; ?>
-                                                    </select>
-                                                </td>
-                                                <td>
-                                                    <select class="form-select form-select-sm select-status-not-in"
-                                                            data-collection-id="<?= $collection['id'] ?>"
-                                                            data-field="current_status_id">
-                                                        <?php foreach ($statuses as $st): ?>
-                                                            <option value="<?= $st->ID ?>"
-                                                                <?= $st->ID == $collection['CurrentStatusID'] ? 'selected' : '' ?>>
-                                                                <?= esc($st->Name) ?>
-                                                            </option>
-                                                        <?php endforeach; ?>
-                                                    </select>
-                                                </td>
-                                                <td>
-                                                    <select class="form-select form-select-sm select-rule-not-in"
-                                                            data-collection-id="<?= $collection['id'] ?>"
-                                                            data-field="current_collection_rule_id">
-                                                        <?php foreach ($rules as $rule): ?>
-                                                            <option value="<?= $rule->ID ?>"
-                                                                <?= $rule->ID == $collection['CurrentCollectionRuleID'] ? 'selected' : '' ?>>
-                                                                <?= esc($rule->Name) ?>
-                                                            </option>
-                                                        <?php endforeach; ?>
-                                                    </select>
-                                                </td>
-                                                <td>
-                                                    <button type="button" class="btn btn-sm btn-success" onclick="quickAdd('<?= $collection['NomorBarcode'] ?>')">
-                                                        <i class="fas fa-plus"></i> Scan
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <tr>
-                                            <td colspan="8" class="text-center py-4">
-                                                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
-                                                <br>
-                                                <strong>Semua koleksi sudah di-stockopname!</strong>
-                                            </td>
-                                        </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer d-flex justify-content-center">
-                    <?= $notInPager ?? '' ?>
-                </div>
+    <!-- Koleksi belum di-stock opname -->
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h2 class="so-card-title"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Koleksi Belum Di-Stock Opname</h2>
+                <p class="so-card-subtitle">Klik Scan untuk memasukkan koleksi tanpa memindai barcode</p>
+            </div>
+            <div class="so-header-end">
+                <span class="so-count so-count--danger"><?= number_format((int) $totalNotInStockopname) ?> koleksi</span>
             </div>
         </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="notInTable">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Barcode</th>
+                            <th>Judul</th>
+                            <th>Pengarang</th>
+                            <th>Lokasi</th>
+                            <th>Status</th>
+                            <th>Aturan</th>
+                            <th class="so-no-print">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($collectionsNotInStockopname)): ?>
+                            <?php
+                            $no = ($offsetNotIn ?? 0) + 1;
+                            foreach ($collectionsNotInStockopname as $collection): ?>
+                                <tr>
+                                    <td><?= $no++ ?></td>
+                                    <td>
+                                        <span class="so-cell-main"><?= esc($collection['NomorBarcode']) ?></span>
+                                        <span class="so-cell-sub"><?= esc($collection['CallNumber']) ?></span>
+                                    </td>
+                                    <td>
+                                        <span class="so-cell-main"><?= esc($collection['Title']) ?></span>
+                                        <span class="so-cell-sub"><?= esc($collection['Publisher']) ?></span>
+                                    </td>
+                                    <td><?= esc($collection['Author']) ?></td>
+                                    <td>
+                                        <select class="form-select form-select-sm select-lokasi-not-in"
+                                                aria-label="Lokasi"
+                                                data-collection-id="<?= (int) $collection['id'] ?>"
+                                                data-field="current_location_id">
+                                            <?php foreach ($locations as $loc): ?>
+                                                <option value="<?= (int) $loc->ID ?>" <?= $loc->ID == $collection['CurrentLocationID'] ? 'selected' : '' ?>>
+                                                    <?= esc($loc->Name) ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select class="form-select form-select-sm select-status-not-in"
+                                                aria-label="Status"
+                                                data-collection-id="<?= (int) $collection['id'] ?>"
+                                                data-field="current_status_id">
+                                            <?php foreach ($statuses as $st): ?>
+                                                <option value="<?= (int) $st->ID ?>" <?= $st->ID == $collection['CurrentStatusID'] ? 'selected' : '' ?>>
+                                                    <?= esc($st->Name) ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select class="form-select form-select-sm select-rule-not-in"
+                                                aria-label="Aturan"
+                                                data-collection-id="<?= (int) $collection['id'] ?>"
+                                                data-field="current_collection_rule_id">
+                                            <?php foreach ($rules as $rule): ?>
+                                                <option value="<?= (int) $rule->ID ?>" <?= $rule->ID == $collection['CurrentCollectionRuleID'] ? 'selected' : '' ?>>
+                                                    <?= esc($rule->Name) ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </td>
+                                    <td class="so-no-print">
+                                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                                onclick="quickAdd(<?= esc(json_encode((string) $collection['NomorBarcode']), 'attr') ?>)">
+                                            <i class="fas fa-plus" aria-hidden="true"></i> Scan
+                                        </button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="8" class="so-empty so-empty--success">
+                                    <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                    <strong>Semua koleksi sudah di-stock opname</strong>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <?php if (!empty($collectionsNotInStockopname)): ?>
+            <div class="ina-table-pagination">
+                <div class="ina-table-pagination__rows">10 baris per halaman</div>
+                <div class="ina-table-pagination__end"><?= $notInPager ?? '' ?></div>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -700,6 +494,10 @@
                 success: function(res) {
                     if (res.status === 'success') {
                         Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Berhasil diperbarui', timer: 1500, showConfirmButton: false });
+                        $sel.data('prev-val', value);
+                        updateChangeNote($sel);
+                        renderSummary(res.summary);
+                        renderLocationSummary(res.location_summary);
                     } else {
                         Swal.fire({ icon: 'error', title: 'Gagal', text: res.message || 'Gagal memperbarui' });
                         $sel.val($sel.data('prev-val'));
@@ -838,6 +636,45 @@
                 $('#barcodeInput').focus();
             }
         });
+    }
+
+    // Keterangan "Dari: ..." mengikuti nilai baru tanpa memuat ulang halaman
+    function updateChangeNote($sel) {
+        const $note = $sel.siblings('.so-changed');
+        const changed = String($sel.val()) !== String($sel.data('prev-id'));
+        $note.text('Dari: ' + ($sel.data('prev-name') || '-')).prop('hidden', !changed);
+    }
+
+    // Kotak angka ringkasan proyek
+    function renderSummary(summary) {
+        if (!summary) return;
+        $('[data-stat]').each(function() {
+            const key = $(this).data('stat');
+            if (summary[key] !== undefined) {
+                $(this).text(Number(summary[key]).toLocaleString('en-US'));
+            }
+        });
+    }
+
+    // Tabel "Ringkasan Berdasarkan Lokasi & Status" digambar ulang dari data server
+    function renderLocationSummary(rows) {
+        if (!Array.isArray(rows)) return;
+        const $table = $('#locationSummaryTable');
+        const $headRow = $('<tr>');
+        const $body = $('<tbody>');
+        if (rows.length) {
+            const headers = Object.keys(rows[0]);
+            headers.forEach(function(h) { $headRow.append($('<th>').text(h)); });
+            rows.forEach(function(row) {
+                const $tr = $('<tr>');
+                headers.forEach(function(h) { $tr.append($('<td>').text(row[h] ?? '')); });
+                $body.append($tr);
+            });
+        } else {
+            $body.append($('<tr>').append($('<td colspan="100%" class="so-empty">').text('Data ringkasan tidak tersedia.')));
+        }
+        $table.find('thead').empty().append($headRow);
+        $table.find('tbody').replaceWith($body);
     }
 
     // Quick add function for collections not in stockopname

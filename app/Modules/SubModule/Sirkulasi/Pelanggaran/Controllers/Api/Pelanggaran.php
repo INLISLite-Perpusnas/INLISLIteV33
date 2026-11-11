@@ -37,7 +37,7 @@ class Pelanggaran extends \Base\Controllers\BaseResourceController
 		$builder = $db->table('pelanggaran p')
 			->select('cli.ID, p.ID as action')
 			->select('cli.CollectionLoan_id, cli.LoanDate, cli.DueDate, cli.ActualReturn, cli.LateDays')
-			->select('p.UpdateDate, p.JumlahDenda, p.JumlahSuspend, p.Paid')
+			->select('p.CreateDate, p.JumlahDenda, p.JumlahSuspend, p.Paid')
 			->select('jp.JenisPelanggaran')
 			->select('jd.Name as JenisDenda')
 			->select('col.NomorBarcode')
@@ -47,7 +47,9 @@ class Pelanggaran extends \Base\Controllers\BaseResourceController
 			->join('jenis_pelanggaran jp', 'jp.ID = p.JenisPelanggaran_id')
 			->join('jenis_denda jd', 'jd.ID = p.JenisDenda_id')
 			->join('collectionloans cl', 'cl.ID = p.CollectionLoan_id')
-			->join('collectionloanitems cli', 'cli.CollectionLoan_id = cl.ID')
+			// Satu baris per pelanggaran: item pinjaman diambil dari CollectionLoanItem_id,
+			// bukan semua item dalam transaksi yang sama
+			->join('collectionloanitems cli', 'cli.ID = p.CollectionLoanItem_id')
 			->join('collections col', 'col.ID = cli.Collection_id', 'left')
 			->join('catalogs a', 'a.ID = col.Catalog_id','left')
 			->join('branchs b', 'b.ID = a.Branch_id', 'left')
@@ -118,8 +120,8 @@ class Pelanggaran extends \Base\Controllers\BaseResourceController
 				$html  =  formatRupiah($row->JumlahSuspend, '') . ' hari';
 				return $html;
 			})
-			->edit('UpdateDate', function ($row) {
-				$html  =  '<badge class="badge badge-info badge-pill">' . $row->UpdateDate . '</badge>';
+			->edit('CreateDate', function ($row) {
+				$html  =  '<badge class="badge badge-info badge-pill">' . ($row->CreateDate ? date('d/m/Y H:i', strtotime($row->CreateDate)) : '-') . '</badge>';
 				return $html;
 			})
 			->edit('action', function ($row) {
