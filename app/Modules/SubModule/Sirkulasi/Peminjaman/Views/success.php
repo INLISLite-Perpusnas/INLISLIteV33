@@ -301,7 +301,7 @@ padding-top: 110px; }
             <!-- Main Card -->
             <div class="sp-inner-card">
                 <div class="sp-inner-header">
-                    <div class="h-icon"><i class="fa fa-file-text"></i></div>
+                    <div class="h-icon"><i class="fa fa-file-alt"></i></div>
                     <h5>Struk Peminjaman</h5>
                 </div>
                 <div class="sp-inner-body">

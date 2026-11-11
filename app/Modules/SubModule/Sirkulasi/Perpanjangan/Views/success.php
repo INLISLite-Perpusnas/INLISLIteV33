@@ -296,7 +296,7 @@ $loanIdText = implode(', ', $loan_ids);
 
             <!-- Hero -->
             <div class="sp-hero no-print">
-                <div class="sp-hero-icon"><i class="fa fa-refresh"></i></div>
+                <div class="sp-hero-icon"><i class="fa fa-sync-alt"></i></div>
                 <h2>Perpanjangan Berhasil!</h2>
                 <p>Masa pinjam buku telah diperpanjang <?= esc($extend_days) ?> hari kerja</p>
             </div>
@@ -304,7 +304,7 @@ $loanIdText = implode(', ', $loan_ids);
             <!-- Main Card -->
             <div class="sp-inner-card">
                 <div class="sp-inner-header">
-                    <div class="h-icon"><i class="fa fa-file-text"></i></div>
+                    <div class="h-icon"><i class="fa fa-file-alt"></i></div>
                     <h5>Struk Perpanjangan</h5>
                 </div>
                 <div class="sp-inner-body">
@@ -321,7 +321,7 @@ $loanIdText = implode(', ', $loan_ids);
                             </div>
                         </div>
                         <div class="info-box">
-                            <h6><i class="fa fa-refresh"></i> Data Perpanjangan</h6>
+                            <h6><i class="fa fa-sync-alt"></i> Data Perpanjangan</h6>
                             <div class="info-row">
                                 <p><strong>ID Peminjaman</strong> <?= esc($loanIdText) ?></p>
                                 <p><strong>Tanggal Perpanjang</strong> <?= date('d/m/Y H:i', strtotime($extend_date)) ?></p>
@@ -406,7 +406,7 @@ $loanIdText = implode(', ', $loan_ids);
                             <i class="fa fa-envelope"></i> Kirim ke Email
                         </button>
                         <a href="<?= base_url('sirkulasi-perpanjangan/create') ?>" class="sp-btn sp-btn-primary">
-                            <i class="fa fa-refresh"></i> Perpanjangan Baru
+                            <i class="fa fa-sync-alt"></i> Perpanjangan Baru
                         </a>
                     </div>
 
