@@ -73,8 +73,28 @@ class JenisBahan extends \Base\Controllers\BaseResourceController
 
 	public function create()
 	{
+		$name = trim((string) $this->request->getPost('Name'));
+		if (db_connect()->table('worksheets')->where('Name', $name)->countAllResults() > 0) {
+			return $this->simpleResponse([
+				'error' => true,
+				'code' => 'duplicate_name',
+				'message' => 'Jenis Bahan dengan nama ini sudah ada. Ubah data yang ada atau gunakan nama lain.',
+			]);
+		}
+
+		$formatId = $this->request->getPost('Format_id');
+		if (!is_scalar($formatId) || !ctype_digit((string) $formatId) || (int) $formatId <= 0
+			|| db_connect()->table('formats')->where('ID', $formatId)->countAllResults() === 0) {
+			return $this->simpleResponse([
+				'error' => true,
+				'code' => 'invalid_format',
+				'message' => 'Pilih format yang tersedia sebelum menyimpan Jenis Bahan.',
+			]);
+		}
+
 		$save_data = array(
-			'Name' => $this->request->getPost('Name'),
+			'Name' => $name,
+			'Format_id' => (int) $formatId,
 			'MaxPinjamKoleksi' => $this->request->getPost('MaxPinjamKoleksi'),
 			'MaxLoanDays' => $this->request->getPost('MaxLoanDays'),
 			'DayPerpanjang' => $this->request->getPost('DayPerpanjang'),
@@ -106,8 +126,19 @@ class JenisBahan extends \Base\Controllers\BaseResourceController
 
 	public function edit($ID = null)
 	{
+		$formatId = $this->request->getPost('Format_id');
+		if (!is_scalar($formatId) || !ctype_digit((string) $formatId) || (int) $formatId <= 0
+			|| db_connect()->table('formats')->where('ID', $formatId)->countAllResults() === 0) {
+			return $this->simpleResponse([
+				'error' => true,
+				'code' => 'invalid_format',
+				'message' => 'Pilih format yang tersedia sebelum menyimpan Jenis Bahan.',
+			]);
+		}
+
 		$update_data = array(
 			'Name' => $this->request->getPost('Name'),
+			'Format_id' => (int) $formatId,
 			'MaxPinjamKoleksi' => $this->request->getPost('MaxPinjamKoleksi'),
 			'MaxLoanDays' => $this->request->getPost('MaxLoanDays'),
 			'DayPerpanjang' => $this->request->getPost('DayPerpanjang'),

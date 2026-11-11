@@ -21,6 +21,17 @@
 							</div>
 						</div>
 
+						<div class="col-lg-12 col-md-12">
+							<div class="form-group">
+								<label for="frm_add_Format_id">Format</label>
+								<select required class="form-control" id="frm_add_Format_id" name="Format_id">
+									<option value="">-- Pilih Format --</option>
+									<?php foreach (get_table('formats', 'ID, Name', 'Name IS NOT NULL') as $format) : ?>
+										<option value="<?= esc($format->ID) ?>"><?= esc($format->Name) ?></option>
+									<?php endforeach; ?>
+								</select>
+							</div>
+						</div>
 						<div class="col-lg-6 col-md-6">
 							<div class="form-group">
 								<label for="frm_add_MaxPinjamKoleksi">Maks Koleksi Dapat Dipinjam</label>
@@ -125,14 +136,16 @@
 						window.location.href = `<?= base_url('master-jenis-bahan') ?>`;
 					});
 				} else {
+					const duplicate = res.code === 'duplicate_name';
+					$("#btnAdd").attr('disabled', false).html('Simpan');
 					Swal.fire({
-						title: 'Oups',
+						title: duplicate ? 'Jenis Bahan Sudah Ada' : 'Gagal Menyimpan',
 						text: res.message,
-						icon: 'error',
-						showConfirmButton: false,
-						timer: 5000
+						icon: duplicate ? 'warning' : 'error',
+						confirmButtonText: 'Mengerti'
 					}).then(() => {
-						$("#btnAdd").attr('disabled', false).html('Simpan');
+						if (duplicate) $('#frm_add_Name').trigger('focus');
+						if (res.code === 'invalid_format') $('#frm_add_Format_id').trigger('focus');
 					});
 				}
 			})

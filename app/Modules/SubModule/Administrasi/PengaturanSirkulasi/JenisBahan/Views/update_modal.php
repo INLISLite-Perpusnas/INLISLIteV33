@@ -21,6 +21,17 @@
 								</div>
 							</div>
 						</div>
+						<div class="col-lg-12 col-md-12">
+							<div class="form-group">
+								<label for="frm_update_Format_id">Format</label>
+								<select required class="form-control" id="frm_update_Format_id" name="Format_id">
+									<option value="">-- Pilih Format --</option>
+									<?php foreach (get_table('formats', 'ID, Name', 'Name IS NOT NULL') as $format) : ?>
+										<option value="<?= esc($format->ID) ?>"><?= esc($format->Name) ?></option>
+									<?php endforeach; ?>
+								</select>
+							</div>
+						</div>
 						<div class="col-lg-6 col-md-6">
 							<div class="form-group">
 								<label for="code">Maks Koleksi Dapat Dipinjam</label>
@@ -123,6 +134,7 @@
 			success: function(response) {
 				$('#frm_update').attr("data-ID", response.ID);
 				$('#frm_update_Name').val(response.Name);
+				$('#frm_update_Format_id').val(response.Format_id);
 				$('#frm_update_MaxPinjamKoleksi').val(response.MaxPinjamKoleksi);
 				$('#frm_update_MaxLoanDays').val(response.MaxLoanDays);
 				$('#frm_update_DayPerpanjang').val(response.DayPerpanjang);
