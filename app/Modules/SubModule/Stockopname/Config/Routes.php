@@ -9,7 +9,8 @@ $routes->group('stockopname', ['namespace' => 'Stockopname\Controllers'], functi
 	$subroutes->add('store', 'Stockopname::store');
 	$subroutes->add('edit/(:any)', 'Stockopname::edit/$1');
 	$subroutes->post('update/(:any)', 'Stockopname::update/$1');
-	$subroutes->add('delete/(:any)', 'Stockopname::delete/$1');
+	// Hapus hanya lewat POST agar tidak bisa terpicu dari tautan biasa
+	$subroutes->post('delete/(:num)', 'Stockopname::delete/$1');
 	$subroutes->add('apply_status/(:any)', 'Stockopname::apply_status/$1');
 	  // Barcode scanning and detail management
     $subroutes->add('scanBarcode', 'Stockopname::scanBarcode');

@@ -410,3 +410,163 @@
         font-size: 12px;
     }
 }
+
+/* ===== Daftar stock opname (/stockopname) ===== */
+.so-page .so-filter--list {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto;
+}
+
+.so-page .so-link {
+    color: var(--ina-primary);
+    text-decoration: none;
+}
+
+.so-page .so-link:hover {
+    text-decoration: underline;
+}
+
+.so-page button.ina-action {
+    padding: 0;
+    background: #fff;
+}
+
+.so-page .so-alert-slot:empty {
+    display: none;
+}
+
+.so-page .so-alert-slot {
+    padding: 16px 24px 0;
+}
+
+.so-page .so-alert {
+    padding: 12px 16px;
+    font-size: 14px;
+    line-height: 20px;
+    border-radius: 8px;
+    border: 1px solid;
+}
+
+.so-page .so-alert--success {
+    color: #1f7a36;
+    background: #e8f5ec;
+    border-color: #b7e0c3;
+}
+
+.so-page .so-alert--danger {
+    color: #b42318;
+    background: #fdecec;
+    border-color: #f5c2c2;
+}
+
+.so-page .so-empty p {
+    color: var(--ina-text-muted, #6b7280);
+}
+
+/* Modal konfirmasi hapus (INA Modal varian Confirm) */
+.so-confirm .so-confirm__dialog {
+    max-width: 440px;
+    background: transparent;
+    box-shadow: none;
+}
+
+.so-confirm .modal-content {
+    border: 0;
+    border-radius: 12px;
+    font-family: var(--ina-font, inherit);
+}
+
+.so-confirm .modal-body {
+    padding: 24px 24px 8px;
+}
+
+.so-confirm .so-confirm__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+    font-size: 20px;
+    color: #c62828;
+    background: #fdecec;
+    border-radius: 999px;
+}
+
+.so-confirm .so-confirm__title {
+    margin: 0 0 8px;
+    font-size: 18px;
+    line-height: 26px;
+    font-weight: 600;
+    color: var(--ina-text, #1f2937);
+}
+
+.so-confirm .so-confirm__desc {
+    margin: 0;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--ina-text-muted, #6b7280);
+}
+
+.so-confirm .so-confirm__error {
+    margin: 12px 0 0;
+    font-size: 14px;
+    line-height: 20px;
+    color: #b42318;
+}
+
+.so-confirm .so-confirm__error[hidden] {
+    display: none;
+}
+
+.so-confirm .modal-footer {
+    gap: 12px;
+    padding: 16px 24px 24px;
+    border-top: 0;
+}
+
+.so-confirm .modal-footer > * {
+    margin: 0;
+}
+
+.so-confirm .modal-footer .btn {
+    min-height: 44px;
+    padding: 0 20px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+}
+
+.so-confirm .btn-outline-secondary {
+    color: #374151;
+    background: #fff;
+    border: 1px solid #d1d5db;
+}
+
+.so-confirm .so-btn-danger {
+    color: #fff;
+    background: #c62828;
+    border: 1px solid #c62828;
+}
+
+.so-confirm .so-btn-danger:hover,
+.so-confirm .so-btn-danger:focus {
+    color: #fff;
+    background: #a51f1f;
+    border-color: #a51f1f;
+}
+
+.so-confirm .btn:focus-visible {
+    outline: 2px solid #2d659e;
+    outline-offset: 2px;
+}
+
+@media (max-width: 767px) {
+    .so-page .so-filter--list {
+        grid-template-columns: 1fr;
+    }
+
+    .so-confirm .modal-footer {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+}

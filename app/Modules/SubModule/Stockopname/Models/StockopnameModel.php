@@ -62,10 +62,7 @@ class StockopnameModel extends \Base\Models\DataModel
             $builder->where('tahun', $tahun);
         }
         
-        if (!empty($status)) {
-            $builder->where('status', $status);
-        }
-        
+        // Tabel stockopname tidak punya kolom status; parameter $status diabaikan
         return $builder->countAllResults();
     }
 }

@@ -55,7 +55,7 @@ class JenisPendidikan extends \Base\Controllers\BaseResourceController
 				$edit = '<a href="javascript:void(0);" data-href="' . base_url('api/jenis-pendidikan/detail/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Ubah" aria-label="Ubah" class="ina-action show-data"><i class="fas fa-pen" aria-hidden="true"></i></a>';
 				$active = '<a href="' . base_url('master-jenis-pendidikan/apply_status/' . $row->id . '?field=active&value=1') . '"  data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Aktifkan" aria-label="Aktifkan" class="ina-action active-data"><i class="fas fa-eye" aria-hidden="true"></i></a>';
 				$inactive = '<a href="' . base_url('master-jenis-pendidikan/apply_status/' . $row->id . '?field=active&value=0') . '" data-id="' . $row->id . '" data-toggle="tooltip" data-placement="top" title="Nonaktifkan" aria-label="Nonaktifkan" class="ina-action draft-data"><i class="fas fa-eye-slash" aria-hidden="true"></i></a>';
-				$delete = '<a href="javascript:void(0);" data-href="' . base_url('jenis-pendidikan/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus" aria-label="Hapus" class="ina-action ina-action-danger remove-data"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
+				$delete = '<a href="javascript:void(0);" data-href="' . base_url('master-jenis-pendidikan/delete/' . $row->id) . '" data-toggle="tooltip" data-placement="top" title="Hapus" aria-label="Hapus" class="ina-action ina-action-danger remove-data"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
 				return $edit . ' ' . $active . ' ' . $inactive . ' ' . $delete;
 		})
 			->toJson();

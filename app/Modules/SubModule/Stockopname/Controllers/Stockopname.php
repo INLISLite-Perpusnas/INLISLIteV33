@@ -71,8 +71,22 @@ class Stockopname extends \Base\Controllers\BaseController
         // Manual pagination setup
         $pager->setPath(base_url('stockopname'));
         $pager->store('default', $page, $perPage, $total);
-        
+
+        // Jumlah hasil scan per proyek (untuk kolom tabel & peringatan saat menghapus)
+        $scanCounts = [];
+        $ids = array_column($stockopnames, 'ID');
+        if ($ids) {
+            foreach (db_connect('data')->table('stockopnamedetail')
+                ->select('StockOpnameID, COUNT(*) AS jumlah')
+                ->whereIn('StockOpnameID', $ids)
+                ->groupBy('StockOpnameID')
+                ->get()->getResult() as $row) {
+                $scanCounts[(int) $row->StockOpnameID] = (int) $row->jumlah;
+            }
+        }
+
         $this->data['stockopnames'] = $stockopnames;
+        $this->data['scanCounts'] = $scanCounts;
         $this->data['pager'] = $pager;
         $this->data['total'] = $total;
         
@@ -328,24 +342,35 @@ class Stockopname extends \Base\Controllers\BaseController
             ]);
         }
 
+        // Hasil scan (stockopnamedetail) terkunci FK RESTRICT ke proyek, jadi dihapus
+        // lebih dulu dalam satu transaksi. Data koleksi tidak diubah.
+        $db = db_connect('data');
         try {
-            $result = $this->stockopnameModel->delete($id);
-            
-            if ($result) {
-                return $this->response->setJSON([
-                    'status' => 'success',
-                    'message' => 'Data stockopname berhasil dihapus.'
-                ]);
-            } else {
+            $db->transBegin();
+            $db->table('stockopnamedetail')->where('StockOpnameID', (int) $id)->delete();
+            $db->table('stockopname')->where('ID', (int) $id)->delete();
+
+            if ($db->transStatus() === false) {
+                $db->transRollback();
                 return $this->response->setJSON([
                     'status' => 'error',
-                    'message' => 'Gagal menghapus data stockopname.'
+                    'message' => 'Gagal menghapus data stock opname. Tidak ada data yang dihapus.'
                 ]);
             }
-        } catch (\Exception $e) {
+            $db->transCommit();
+
+            return $this->response->setJSON([
+                'status' => 'success',
+                'message' => 'Stock opname "' . $stockopname->ProjectName . '" berhasil dihapus.'
+            ]);
+        } catch (\Throwable $e) {
+            if ($db->transDepth > 0) {
+                $db->transRollback();
+            }
+            log_message('error', 'Hapus stock opname ' . $id . ' gagal: ' . $e->getMessage());
             return $this->response->setJSON([
                 'status' => 'error',
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Gagal menghapus data stock opname. Tidak ada data yang dihapus, silakan coba lagi.'
             ]);
         }
     }

@@ -45,13 +45,13 @@ class JenisPendidikan extends \Base\Controllers\BaseController
             set_message('swal_icon', 'success');
             set_message('swal_title', 'Berhasil');
             set_message('swal_text', 'Jenis Pendidikan berhasil dihapus');
-            return redirect()->to('jenis-pendidikan');
+            return redirect()->to('master-jenis-pendidikan');
         } else {
             set_message('swal_icon', 'error');
             set_message('swal_title', 'Gagal');
             set_message('swal_text', 'Jenis Pendidikan gagal dihapus');
             set_message('message', 'Jenis Pendidikan gagal dihapus');
-            return redirect()->to('jenis-pendidikan');
+            return redirect()->to('master-jenis-pendidikan');
         }
     }
 

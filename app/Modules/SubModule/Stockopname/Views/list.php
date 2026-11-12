@@ -1,72 +1,21 @@
 <?= $this->extend('App\Views\layout\main'); ?>
 <?= $this->section('style'); ?>
-<style>
- 
-    
-    .card {
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-        border: 1px solid rgba(0, 0, 0, 0.125);
-    }
-    
-    .table th {
-        border-top: none;
-        font-weight: 600;
-        background-color: #f8f9fa;
-    }
-    
-    .btn-group .btn {
-        margin-right: 0.25rem;
-    }
-    
-    .btn-group .btn:last-child {
-        margin-right: 0;
-    }
-    
-    .page-title-wrapper {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-    }
-    
-    .breadcrumb {
-        background: transparent;
-        margin-bottom: 0;
-        padding: 0;
-    }
-    
-    .breadcrumb-item + .breadcrumb-item::before {
-        content: "/";
-        color: #6c757d;
-    }
-    
-    .table-responsive {
-        border-radius: 0.375rem;
-    }
-    
-    .empty-state {
-        text-align: center;
-        padding: 3rem 1rem;
-        color: #6c757d;
-    }
-    
-    .empty-state i {
-        font-size: 4rem;
-        margin-bottom: 1rem;
-        color: #dee2e6;
-    }
-    
-    .search-filter-card {
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
-    }
-</style>
 <link rel="stylesheet" href="<?= base_url('assets/css/ina-skin.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-skin.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-table.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-table.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-pagination.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-pagination.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/ina-stockopname.css') . '?v=' . filemtime(FCPATH . 'assets/css/ina-stockopname.css') ?>">
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
-
-<div class="app-main__inner">
+<?php
+$request    = service('request');
+$search     = (string) ($request->getGet('search') ?? '');
+$tahunAktif = (string) ($request->getGet('tahun') ?? '');
+$scanCounts = $scanCounts ?? [];
+$total      = (int) ($total ?? 0);
+$firstRow   = isset($pager) ? ($pager->getCurrentPage() - 1) * $pager->getPerPage() : 0;
+?>
+<div class="app-main__inner so-page">
     <div class="app-page-title">
         <div class="page-title-wrapper">
             <div class="page-title-heading">
@@ -74,157 +23,109 @@
                     <i class="pe-7s-note icon-gradient bg-strong-bliss"></i>
                 </div>
                 <div>
-                    <h2>Stock Opname</h2>
-                    <div class="page-title-subheading">
-                        Kelola data stock opname perusahaan
-                    </div>
+                    Stock Opname
+                    <div class="page-title-subheading">Kelola proyek stock opname koleksi</div>
                 </div>
             </div>
             <div class="page-title-actions">
-                <nav class="" aria-label="breadcrumb">
+                <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item">
-                            <a href="<?= base_url('dashboard') ?>">
-                                <i class="fa fa-home"></i> Home
-                            </a>
+                            <a href="<?= base_url('dashboard') ?>"><i class="fa fa-home"></i> Home</a>
                         </li>
-                        <li class="breadcrumb-item" aria-current="page">
-                            Stock Opname
-                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Stock Opname</li>
                     </ol>
                 </nav>
             </div>
         </div>
     </div>
 
-    <!-- Filter and Search Card -->
-    <div class="card search-filter-card mb-3">
+    <!-- Filter -->
+    <div class="card mb-4">
         <div class="card-body">
-            <form method="get" action="<?= base_url('stockopname') ?>">
-                <div class="row align-items-end">
-                    <div class="col-lg-3 col-md-6 col-sm-12">
-                        <div class="form-group mb-2">
-                            <label for="search" class="form-label">Cari</label>
-                            <input type="text" 
-                                   class="form-control" 
-                                   id="search" 
-                                   name="search" 
-                                   value="<?= service('request')->getGet('search') ?? '' ?>" 
-                                   placeholder="Nama projek, koordinator...">
-                        </div>
-                    </div>
-                    <div class="col-lg-2 col-md-6 col-sm-12">
-                        <div class="form-group mb-2">
-                            <label for="tahun" class="form-label">Tahun</label>
-                            <select class="form-control" id="tahun" name="tahun">
-                                <option value="">-- Semua Tahun --</option>
-                                <?php for ($year = date('Y'); $year >= 2020; $year--): ?>
-                                    <option value="<?= $year ?>" <?= (service('request')->getGet('tahun') == $year) ? 'selected' : '' ?>>
-                                        <?= $year ?>
-                                    </option>
-                                <?php endfor; ?>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6 col-sm-12">
-                        <div class="form-group mb-2">
-                            <button type="submit" class="btn btn-primary me-2">
-                                <i class="fa fa-search"></i> Cari
-                            </button>
-                            <a href="<?= base_url('stockopname') ?>" class="btn btn-light">
-                                <i class="fa fa-refresh"></i> Reset
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-lg-2 col-md-12 col-sm-12">
-                        <div class="form-group mb-2 text-end">
-                            <a href="<?= base_url('stockopname/create') ?>" class="btn btn-catalog-add">
-                                <i class="fa fa-plus"></i> Tambah Baru
-                            </a>
-                        </div>
-                    </div>
+            <form method="get" action="<?= base_url('stockopname') ?>" class="so-filter so-filter--list">
+                <div>
+                    <label for="search">Cari</label>
+                    <input type="search" class="form-control" id="search" name="search" value="<?= esc($search, 'attr') ?>" placeholder="Nama proyek, koordinator, atau keterangan">
+                </div>
+                <div>
+                    <label for="tahun">Tahun</label>
+                    <select class="form-select" id="tahun" name="tahun">
+                        <option value="">Semua tahun</option>
+                        <?php for ($year = (int) date('Y'); $year >= 2020; $year--): ?>
+                            <option value="<?= $year ?>" <?= $tahunAktif === (string) $year ? 'selected' : '' ?>><?= $year ?></option>
+                        <?php endfor; ?>
+                    </select>
+                </div>
+                <div class="so-filter__actions">
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-search" aria-hidden="true"></i> Cari</button>
+                    <a href="<?= base_url('stockopname') ?>" class="btn btn-outline-secondary">Reset</a>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="main-card mb-3 card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">
-                <i class="fa fa-list me-2"></i>
-                Daftar Stock Opname
-            </h5>
-            <div class="card-header-actions">
-                <span class="badge badge-info">
-                    Total: <?= isset($stockopnames) ? count($stockopnames) : 0 ?> data
-                </span>
+    <!-- Daftar -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="so-card-title"><i class="fa fa-list" aria-hidden="true"></i> Daftar Stock Opname</h2>
+            <span class="so-count"><?= number_format($total) ?> proyek</span>
+            <div class="so-header-end">
+                <a href="<?= base_url('stockopname/create') ?>" class="btn btn-primary">
+                    <i class="fa fa-plus" aria-hidden="true"></i> Tambah Stock Opname
+                </a>
             </div>
         </div>
-        <div class="card-body">
-            <!-- Display Messages -->
-            <?php if (session()->getFlashdata('message')): ?>
-                <?php $message = session()->getFlashdata('message'); ?>
-                <div class="alert alert-<?= $message['type'] === 'success' ? 'success' : 'danger' ?> alert-dismissible fade show" role="alert">
-                    <?= $message['text'] ?>
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            <?php endif; ?>
+        <div class="card-body p-0">
+            <div class="so-alert-slot" id="soAlert" role="status" aria-live="polite">
+                <?php if ($message = session()->getFlashdata('message')): ?>
+                    <div class="so-alert so-alert--<?= ($message['type'] ?? '') === 'success' ? 'success' : 'danger' ?>"><?= esc($message['text'] ?? '') ?></div>
+                <?php endif; ?>
+            </div>
 
-            <?php if (isset($stockopnames) && count($stockopnames) > 0): ?>
+            <?php if (!empty($stockopnames)): ?>
                 <div class="table-responsive">
-                    <table class="table table-hover table-striped">
+                    <table class="table table-hover mb-0" id="soListTable">
                         <thead>
                             <tr>
-                                <th width="5%">No</th>
-                                <th width="25%">Nama Projek</th>
-                                <th width="10%">Tahun</th>
-                                <th width="20%">Koordinator</th>
-                                <th width="15%">Tanggal Mulai</th>
-                                <th width="10%">Status</th>
-                                <th width="15%">Aksi</th>
+                                <th style="width:56px">No</th>
+                                <th>Nama Proyek</th>
+                                <th>Tahun</th>
+                                <th>Koordinator</th>
+                                <th>Tanggal Mulai</th>
+                                <th class="text-end">Hasil Scan</th>
+                                <th style="width:140px">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php 
-                            $no = 1; 
-                            if (isset($pager)) {
-                                $no = ($pager->getCurrentPage() - 1) * $pager->getPerPage() + 1;
-                            }
-                            ?>
-                            <?php foreach ($stockopnames as $stockopname): ?>
-                                <tr>
-                                    <td><?= $no++ ?></td>
+                            <?php foreach ($stockopnames as $i => $so): ?>
+                                <?php $scan = $scanCounts[(int) $so['ID']] ?? 0; ?>
+                                <tr id="so-row-<?= (int) $so['ID'] ?>">
+                                    <td><?= $firstRow + $i + 1 ?></td>
                                     <td>
-                                        <strong><?= esc($stockopname['ProjectName']) ?></strong>
-                                        <?php if (!empty($stockopname['Keterangan'])): ?>
-                                            <br><small class="text-muted"><?= esc(substr($stockopname['Keterangan'], 0, 50)) ?><?= strlen($stockopname['Keterangan']) > 50 ? '...' : '' ?></small>
+                                        <a class="so-cell-main so-link" href="<?= base_url('stockopname/detail/' . (int) $so['ID']) ?>"><?= esc($so['ProjectName']) ?></a>
+                                        <?php if (!empty($so['Keterangan'])): ?>
+                                            <span class="so-cell-sub"><?= esc(mb_strimwidth($so['Keterangan'], 0, 80, '…')) ?></span>
                                         <?php endif; ?>
                                     </td>
-                                    <td><?= esc($stockopname['Tahun']) ?></td>
-                                    <td><?= esc($stockopname['Koordinator']) ?></td>
-                                    <td><?= date('d M Y', strtotime($stockopname['TglMulai'])) ?></td>
+                                    <td><?= esc($so['Tahun']) ?></td>
+                                    <td><?= esc($so['Koordinator']) ?></td>
+                                    <td><?= $so['TglMulai'] ? date('d/m/Y', strtotime($so['TglMulai'])) : '-' ?></td>
+                                    <td class="text-end"><?= number_format($scan) ?> koleksi</td>
                                     <td>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="<?= base_url('stockopname/detail/' . $stockopname['ID']) ?>" 
-                                               class="btn btn-info btn-sm" 
-                                               title="Detail">
-                                                <i class="fa fa-eye"></i>
+                                        <div class="ina-actions">
+                                            <a href="<?= base_url('stockopname/detail/' . (int) $so['ID']) ?>" class="ina-action" title="Lihat detail" aria-label="Lihat detail <?= esc($so['ProjectName'], 'attr') ?>">
+                                                <i class="fas fa-eye" aria-hidden="true"></i>
                                             </a>
-                                            <a href="<?= base_url('stockopname/edit/' . $stockopname['ID']) ?>" 
-                                               class="btn btn-warning btn-sm" 
-                                               title="Edit">
-                                                <i class="fa fa-edit"></i>
+                                            <a href="<?= base_url('stockopname/edit/' . (int) $so['ID']) ?>" class="ina-action" title="Ubah" aria-label="Ubah <?= esc($so['ProjectName'], 'attr') ?>">
+                                                <i class="fas fa-pen" aria-hidden="true"></i>
                                             </a>
-                                            <button type="button" 
-                                                    class="btn btn-danger btn-sm btn-delete" 
-                                                    data-id="<?= $stockopname['ID'] ?>"
-                                                    data-name="<?= esc($stockopname['ProjectName']) ?>"
-                                                    title="Hapus">
-                                                <i class="fa fa-trash"></i>
+                                            <button type="button" class="ina-action ina-action-danger so-delete" title="Hapus"
+                                                    aria-label="Hapus <?= esc($so['ProjectName'], 'attr') ?>"
+                                                    data-id="<?= (int) $so['ID'] ?>"
+                                                    data-name="<?= esc($so['ProjectName'], 'attr') ?>"
+                                                    data-scan="<?= (int) $scan ?>">
+                                                <i class="fas fa-trash-alt" aria-hidden="true"></i>
                                             </button>
                                         </div>
                                     </td>
@@ -234,128 +135,122 @@
                     </table>
                 </div>
 
-                <!-- Pagination -->
-                <?php if (isset($pager) && $pager->getPageCount() > 1): ?>
-                    <div class="d-flex justify-content-center mt-3">
-                        <?= $pager->links() ?>
+                <?php if (isset($pager)): ?>
+                    <div class="ina-table-pagination">
+                        <div class="ina-table-pagination__rows">
+                            Menampilkan <?= number_format($firstRow + 1) ?>–<?= number_format($firstRow + count($stockopnames)) ?> dari <?= number_format($total) ?>
+                        </div>
+                        <div class="ina-table-pagination__end"><?= $pager->links('default', 'ina_pagination') ?></div>
                     </div>
                 <?php endif; ?>
-
             <?php else: ?>
-                <div class="empty-state">
-                    <i class="fa fa-clipboard-list"></i>
-                    <h4>Belum Ada Data</h4>
-                    <p>Belum ada data stock opname yang tersedia.</p>
-                    <a href="<?= base_url('stockopname/create') ?>" class="btn btn-primary">
-                        <i class="fa fa-plus"></i> Tambah Stock Opname Pertama
-                    </a>
+                <div class="so-empty">
+                    <i class="fa fa-clipboard-list" aria-hidden="true"></i>
+                    <strong><?= ($search !== '' || $tahunAktif !== '') ? 'Tidak ada stock opname yang cocok' : 'Belum ada stock opname' ?></strong>
+                    <p class="mb-3"><?= ($search !== '' || $tahunAktif !== '') ? 'Ubah kata kunci atau tahun, lalu cari lagi.' : 'Buat proyek stock opname untuk mulai memindai koleksi.' ?></p>
+                    <a href="<?= base_url('stockopname/create') ?>" class="btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> Tambah Stock Opname</a>
                 </div>
             <?php endif; ?>
         </div>
     </div>
 </div>
 
-<!-- Delete Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
+<!-- Konfirmasi hapus (INA Modal varian Confirm) -->
+<div class="modal fade so-confirm" id="soDeleteModal" tabindex="-1" role="dialog" aria-labelledby="soDeleteTitle" aria-describedby="soDeleteDesc" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered so-confirm__dialog" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Konfirmasi Hapus</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
-            </div>
             <div class="modal-body">
-                <p>Apakah Anda yakin ingin menghapus stock opname:</p>
-                <p><strong id="delete-name"></strong></p>
-                <p class="text-danger"><small>Data yang dihapus tidak dapat dikembalikan.</small></p>
+                <div class="so-confirm__icon" aria-hidden="true"><i class="fas fa-trash-alt"></i></div>
+                <h5 class="so-confirm__title" id="soDeleteTitle">Hapus stock opname?</h5>
+                <p class="so-confirm__desc" id="soDeleteDesc"></p>
+                <p class="so-confirm__error" id="soDeleteError" role="alert" hidden></p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                <button type="button" class="btn btn-danger" id="confirm-delete">Hapus</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn so-btn-danger" id="soDeleteConfirm">Hapus</button>
             </div>
         </div>
     </div>
 </div>
-
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
 <script>
-$(document).ready(function() {
-    // Delete functionality
-    let deleteId = null;
-    
-    $('.btn-delete').on('click', function() {
-        deleteId = $(this).data('id');
-        const name = $(this).data('name');
-        
-        $('#delete-name').text(name);
-        $('#deleteModal').modal('show');
+(function () {
+    const modalEl = document.getElementById('soDeleteModal');
+    // Modal dipindah ke <body> agar tidak tertutup backdrop (wrapper konten punya stacking context sendiri)
+    document.body.appendChild(modalEl);
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    const descEl = document.getElementById('soDeleteDesc');
+    const errorEl = document.getElementById('soDeleteError');
+    const confirmBtn = document.getElementById('soDeleteConfirm');
+    const alertSlot = document.getElementById('soAlert');
+    let target = null;
+
+    function showAlert(type, text) {
+        alertSlot.innerHTML = '';
+        const div = document.createElement('div');
+        div.className = 'so-alert so-alert--' + type;
+        div.textContent = text;
+        alertSlot.appendChild(div);
+    }
+
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.so-delete');
+        if (!btn) return;
+        target = btn;
+        const scan = parseInt(btn.dataset.scan, 10) || 0;
+        descEl.textContent = '"' + btn.dataset.name + '" akan dihapus permanen'
+            + (scan > 0 ? ' beserta ' + scan.toLocaleString('id-ID') + ' hasil scan koleksinya.' : '.')
+            + ' Data koleksi tidak berubah. Tindakan ini tidak bisa dibatalkan.';
+        errorEl.hidden = true;
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Hapus';
+        modal.show();
     });
-    
-    $('#confirm-delete').on('click', function() {
-        if (deleteId) {
-            // Show loading state
-            $(this).prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Menghapus...');
-            
-            $.ajax({
-                url: '<?= base_url('stockopname/delete') ?>/' + deleteId,
-                type: 'POST',
-                dataType: 'json',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(response) {
-                    $('#deleteModal').modal('hide');
-                    
-                    if (response.status === 'success') {
-                        if (typeof toastr !== 'undefined') {
-                            toastr.success(response.message, 'Berhasil');
-                        } else {
-                            alert(response.message);
-                        }
-                        
-                        // Reload page after delay
-                        setTimeout(function() {
-                            location.reload();
-                        }, 1500);
-                    } else {
-                        if (typeof toastr !== 'undefined') {
-                            toastr.error(response.message, 'Error');
-                        } else {
-                            alert('Error: ' + response.message);
-                        }
-                    }
-                },
-                error: function(xhr, status, error) {
-                    $('#deleteModal').modal('hide');
-                    
-                    if (typeof toastr !== 'undefined') {
-                        toastr.error('Terjadi kesalahan saat menghapus data.', 'Error');
-                    } else {
-                        alert('Terjadi kesalahan saat menghapus data.');
-                    }
-                },
-                complete: function() {
-                    $('#confirm-delete').prop('disabled', false).html('Hapus');
-                    deleteId = null;
-                }
-            });
-        }
+
+    modalEl.addEventListener('shown.bs.modal', function () {
+        modalEl.querySelector('[data-bs-dismiss="modal"]').focus();
     });
-    
-    // Reset modal when closed
-    $('#deleteModal').on('hidden.bs.modal', function() {
-        deleteId = null;
-        $('#confirm-delete').prop('disabled', false).html('Hapus');
+    modalEl.addEventListener('hidden.bs.modal', function () {
+        if (target) target.focus();
     });
-    
-    // Auto-hide alerts
-    setTimeout(function() {
-        $('.alert').fadeOut();
-    }, 5000);
-});
+
+    confirmBtn.addEventListener('click', function () {
+        if (!target) return;
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Menghapus…';
+        errorEl.hidden = true;
+
+        const body = new URLSearchParams();
+        body.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
+
+        fetch('<?= base_url('stockopname/delete') ?>/' + encodeURIComponent(target.dataset.id), {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: body
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            if (res.status === 'success') {
+                modal.hide();
+                showAlert('success', res.message);
+                // Muat ulang agar nomor urut, jumlah, dan halaman dihitung ulang server
+                setTimeout(function () { window.location.reload(); }, 1200);
+            } else {
+                errorEl.textContent = res.message || 'Gagal menghapus data stock opname.';
+                errorEl.hidden = false;
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = 'Hapus';
+            }
+        })
+        .catch(function () {
+            errorEl.textContent = 'Koneksi bermasalah. Data belum dihapus, silakan coba lagi.';
+            errorEl.hidden = false;
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Hapus';
+        });
+    });
+})();
 </script>
 <?= $this->endSection('script'); ?>
