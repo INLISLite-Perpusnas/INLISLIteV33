@@ -285,9 +285,9 @@ class Jadwal extends \Base\Controllers\BaseController
             $sheet->setCellValue('A' . $rowNum, $idx + 1);
             $sheet->setCellValueExplicit('B' . $rowNum, date('d-m-Y', strtotime($r['tanggal'])), \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
             $sheet->setCellValue('C' . $rowNum, date('H:i', strtotime($r['jam_mulai'])) . ' - ' . date('H:i', strtotime($r['jam_selesai'])));
-            $sheet->setCellValueExplicit('D' . $rowNum, ($r['nama_unit'] ?? '-') . ' (' . ($r['nomor_kendaraan'] ?? '-') . ')', DataType::TYPE_STRING);
-            $sheet->setCellValueExplicit('E' . $rowNum, $r['nama_lokasi'] ?? '-', DataType::TYPE_STRING);
-            $sheet->setCellValueExplicit('F' . $rowNum, $r['daftar_petugas'] ?? '-', DataType::TYPE_STRING);
+            $sheet->setCellValueExplicit('D' . $rowNum, ($r['nama_unit'] ?? '-') . ' (' . ($r['nomor_kendaraan'] ?? '-') . ')', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValueExplicit('E' . $rowNum, $r['nama_lokasi'] ?? '-', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValueExplicit('F' . $rowNum, $r['daftar_petugas'] ?? '-', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
             $sheet->setCellValue('G' . $rowNum, $statusLabel);
             $sheet->setCellValue('H' . $rowNum, $r['total_dokumentasi']);
             $rowNum++;
