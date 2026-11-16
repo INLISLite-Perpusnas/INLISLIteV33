@@ -227,7 +227,7 @@ class SurveyAdmin extends \Base\Controllers\BaseController
         return redirect()->to('surveipemustaka');
     }
 
-    /** Isi modal "Hasil Survey": grafik pie per pertanyaan pilihan ganda. */
+    /** Isi modal "Hasil Survey": grafik pie per pertanyaan pilihan ganda dan daftar jawaban isian. */
     public function hasil(int $id = 0)
     {
         if (!$this->allowed('hasil')) return $this->denied();
@@ -255,7 +255,23 @@ class SurveyAdmin extends \Base\Controllers\BaseController
             ];
         }
 
-        return view('SurveiPemustaka\Views\hasil', ['charts' => $charts]);
+        // Ambil data isian untuk pertanyaan jenis Isian
+        $isian = $db->table('survey_isian')->whereIn('Survey_Pertanyaan_id', array_column($pertanyaan, 'ID'))
+            ->orderBy('ID')->get()->getResultArray();
+        $byPertanyaanIsian = [];
+        foreach ($isian as $row) $byPertanyaanIsian[$row['Survey_Pertanyaan_id']][] = $row;
+
+        $isianData = [];
+        foreach ($pertanyaan as $row) {
+            if ($row['JenisPertanyaan'] !== 'Isian') continue;
+            $isianData[] = [
+                'id' => (int) $row['ID'],
+                'title' => $row['Pertanyaan'],
+                'answers' => $byPertanyaanIsian[$row['ID']] ?? [],
+            ];
+        }
+
+        return view('SurveiPemustaka\Views\hasil', ['charts' => $charts, 'isianData' => $isianData]);
     }
 
     // ----------------------------------------------------------------
@@ -275,18 +291,24 @@ class SurveyAdmin extends \Base\Controllers\BaseController
 
         $jumlahPilihan = $jumlahResponden = [];
         if ($ids) {
-            foreach ($db->table('survey_pilihan')->select('Survey_Pertanyaan_id, COUNT(*) AS total')
-                ->whereIn('Survey_Pertanyaan_id', $ids)->groupBy('Survey_Pertanyaan_id')->get()->getResultArray() as $row) {
+            foreach (
+                $db->table('survey_pilihan')->select('Survey_Pertanyaan_id, COUNT(*) AS total')
+                    ->whereIn('Survey_Pertanyaan_id', $ids)->groupBy('Survey_Pertanyaan_id')->get()->getResultArray() as $row
+            ) {
                 $jumlahPilihan[$row['Survey_Pertanyaan_id']] = (int) $row['total'];
             }
             // Pilihan: sesi unik di survey_pilihan_sesi; Isian: sesi unik di survey_isian
-            foreach ($db->table('survey_pilihan_sesi ps')->select('p.Survey_Pertanyaan_id, COUNT(DISTINCT ps.Sesi) AS total')
-                ->join('survey_pilihan p', 'p.ID = ps.Survey_Pilihan_id')
-                ->whereIn('p.Survey_Pertanyaan_id', $ids)->groupBy('p.Survey_Pertanyaan_id')->get()->getResultArray() as $row) {
+            foreach (
+                $db->table('survey_pilihan_sesi ps')->select('p.Survey_Pertanyaan_id, COUNT(DISTINCT ps.Sesi) AS total')
+                    ->join('survey_pilihan p', 'p.ID = ps.Survey_Pilihan_id')
+                    ->whereIn('p.Survey_Pertanyaan_id', $ids)->groupBy('p.Survey_Pertanyaan_id')->get()->getResultArray() as $row
+            ) {
                 $jumlahResponden['Pilihan'][$row['Survey_Pertanyaan_id']] = (int) $row['total'];
             }
-            foreach ($db->table('survey_isian')->select('Survey_Pertanyaan_id, COUNT(DISTINCT Sesi) AS total')
-                ->whereIn('Survey_Pertanyaan_id', $ids)->groupBy('Survey_Pertanyaan_id')->get()->getResultArray() as $row) {
+            foreach (
+                $db->table('survey_isian')->select('Survey_Pertanyaan_id, COUNT(DISTINCT Sesi) AS total')
+                    ->whereIn('Survey_Pertanyaan_id', $ids)->groupBy('Survey_Pertanyaan_id')->get()->getResultArray() as $row
+            ) {
                 $jumlahResponden['Isian'][$row['Survey_Pertanyaan_id']] = (int) $row['total'];
             }
         }

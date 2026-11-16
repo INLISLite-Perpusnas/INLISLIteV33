@@ -22,7 +22,7 @@
                 <table style="width: 100%;" class="table table-hover table-striped table-bordered table-sm survey-table">
                     <thead>
                         <tr>
-                            <th class="text-center" width="35">#</th>
+                            <th class="text-center" width="35">No</th>
                             <th>Nama Survey</th>
                             <th class="text-center" width="90">Tgl.Mulai</th>
                             <th class="text-center" width="90">Tanggal Selesai</th>

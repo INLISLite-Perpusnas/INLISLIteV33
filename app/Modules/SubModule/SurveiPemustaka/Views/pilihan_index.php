@@ -34,7 +34,7 @@ $chartData = [
                 <table style="width: 100%;" class="table table-hover table-striped table-bordered table-sm survey-table">
                     <thead>
                         <tr>
-                            <th class="text-center" width="35">#</th>
+                            <th class="text-center" width="35">No</th>
                             <th>Pilihan</th>
                             <th class="text-center" width="100">Jumlah Responden</th>
                             <th class="text-center" width="90"></th>
