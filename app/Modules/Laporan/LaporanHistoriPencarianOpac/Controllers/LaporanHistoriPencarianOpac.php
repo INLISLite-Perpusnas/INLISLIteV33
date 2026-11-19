@@ -44,6 +44,9 @@ class LaporanHistoriPencarianOpac extends \Base\Controllers\BaseController
         $startDate = $this->request->getPost('start_date') ?? '';
         $endDate = $this->request->getPost('end_date') ?? '';
         $keyword = $this->request->getPost('keyword') ?? '';
+        $filterType = $this->request->getPost('filter_type') ?? 'date';
+        $month = (string) ($this->request->getPost('month') ?? '');
+        $year = (string) ($this->request->getPost('year') ?? '');
 
         if (!is_array($selected) || $selected === [] || count($selected) > count(self::COLUMNS)
             || count(array_filter($selected, static fn ($column) => is_string($column) && array_key_exists($column, self::COLUMNS))) !== count($selected)
@@ -54,12 +57,66 @@ class LaporanHistoriPencarianOpac extends \Base\Controllers\BaseController
             || mb_strlen($keyword) > 200) {
             return ['error' => 'Filter laporan tidak valid.'];
         }
-        if (($startDate === '') !== ($endDate === '')
-            || ($startDate !== '' && (!$this->validDate($startDate) || !$this->validDate($endDate) || $startDate > $endDate))) {
-            return ['error' => 'Isi tanggal mulai dan akhir dengan periode yang valid.'];
+        if (!in_array($filterType, ['date', 'month', 'year'], true)) {
+            return ['error' => 'Jenis filter periode tidak valid.'];
+        }
+        if ($filterType === 'date') {
+            $month = $year = '';
+            if (($startDate === '') !== ($endDate === '')
+                || ($startDate !== '' && (!$this->validDate($startDate) || !$this->validDate($endDate) || $startDate > $endDate))) {
+                return ['error' => 'Isi tanggal mulai dan akhir dengan periode yang valid.'];
+            }
+        } else {
+            // Bulan/tahun diubah menjadi rentang tanggal supaya query tetap memakai start_date dan end_date.
+            if (!preg_match('/^[0-9]{4}$/D', $year) || (int) $year < 1000) {
+                return ['error' => 'Isi tahun dengan 4 digit yang valid.'];
+            }
+            if ($filterType === 'month') {
+                if (!preg_match('/^(0?[1-9]|1[0-2])$/D', $month)) {
+                    return ['error' => 'Pilih bulan yang valid.'];
+                }
+                $month = (string) (int) $month;
+                $first = new DateTimeImmutable(sprintf('%s-%02d-01', $year, $month));
+                $startDate = $first->format('Y-m-d');
+                $endDate = $first->format('Y-m-t');
+            } else {
+                $month = '';
+                $startDate = $year . '-01-01';
+                $endDate = $year . '-12-31';
+            }
         }
 
-        return ['columns' => $selected, 'start_date' => $startDate, 'end_date' => $endDate, 'keyword' => trim($keyword)];
+        return [
+            'columns' => $selected,
+            'filter_type' => $filterType,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'month' => $month,
+            'year' => $year,
+            'keyword' => trim($keyword),
+        ];
+    }
+
+    /**
+     * Teks periode laporan untuk ditampilkan di atas tabel export (berdasarkan waktu pencarian).
+     */
+    private function periodeLabel(array $options): string
+    {
+        $bulan = [1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        if ($options['filter_type'] === 'month') {
+            return 'Periode (waktu pencarian): Bulan ' . $bulan[(int) $options['month']] . ' ' . $options['year'];
+        }
+        if ($options['filter_type'] === 'year') {
+            return 'Periode (waktu pencarian): Tahun ' . $options['year'];
+        }
+        if ($options['start_date'] === '') {
+            return 'Periode (waktu pencarian): Semua periode';
+        }
+        $tanggal = static function (string $value) use ($bulan): string {
+            $date = new DateTimeImmutable($value);
+            return (int) $date->format('j') . ' ' . $bulan[(int) $date->format('n')] . ' ' . $date->format('Y');
+        };
+        return 'Periode (waktu pencarian): ' . $tanggal($options['start_date']) . ' s.d. ' . $tanggal($options['end_date']);
     }
 
     private function applyFilters(BaseBuilder $query, array $options): void
@@ -87,7 +144,7 @@ class LaporanHistoriPencarianOpac extends \Base\Controllers\BaseController
             return $this->response->setStatusCode(403)->setBody('Akses laporan histori pencarian ditolak.');
         }
 
-        $options = ['columns' => array_keys(self::COLUMNS), 'start_date' => '', 'end_date' => '', 'keyword' => ''];
+        $options = ['columns' => array_keys(self::COLUMNS), 'filter_type' => 'date', 'start_date' => '', 'end_date' => '', 'month' => '', 'year' => date('Y'), 'keyword' => ''];
         $error = null;
         $rows = [];
         $tableExists = db_connect()->tableExists('opaclogs');
@@ -95,6 +152,13 @@ class LaporanHistoriPencarianOpac extends \Base\Controllers\BaseController
             $input = $this->options();
             if (isset($input['error'])) {
                 $error = $input['error'];
+                // Pertahankan pilihan periode di form walau validasi gagal
+                foreach (['filter_type', 'start_date', 'end_date', 'month', 'year', 'keyword'] as $field) {
+                    $value = $this->request->getPost($field);
+                    if (is_string($value)) {
+                        $options[$field] = $value;
+                    }
+                }
             } else {
                 $options = $input;
                 if ($tableExists) {
@@ -157,16 +221,20 @@ class LaporanHistoriPencarianOpac extends \Base\Controllers\BaseController
         $sheet->mergeCells("A2:{$lastColumn}2");
         $sheet->setCellValue('A2', 'Dicetak: ' . date('d-m-Y H:i'));
         $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->mergeCells("A3:{$lastColumn}3");
+        $sheet->setCellValue('A3', $this->periodeLabel($options));
+        $sheet->getStyle('A3')->getFont()->setItalic(true);
+        $sheet->getStyle('A3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         foreach ($options['columns'] as $index => $key) {
             $column = Coordinate::stringFromColumnIndex($index + 1);
-            $sheet->setCellValue($column . '4', self::COLUMNS[$key]);
+            $sheet->setCellValue($column . '5', self::COLUMNS[$key]);
             $sheet->getColumnDimension($column)->setWidth(in_array($key, ['keyword', 'url'], true) ? 48 : 22);
         }
-        $sheet->getStyle("A4:{$lastColumn}4")->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
-        $sheet->getStyle("A4:{$lastColumn}4")->getFill()->setFillType('solid')->getStartColor()->setRGB('1D5FD1');
-        $sheet->freezePane('A5');
+        $sheet->getStyle("A5:{$lastColumn}5")->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
+        $sheet->getStyle("A5:{$lastColumn}5")->getFill()->setFillType('solid')->getStartColor()->setRGB('1D5FD1');
+        $sheet->freezePane('A6');
 
-        $rowNumber = 5;
+        $rowNumber = 6;
         $offset = 0;
         do {
             foreach ($members as $member) {
@@ -182,7 +250,7 @@ class LaporanHistoriPencarianOpac extends \Base\Controllers\BaseController
             $offset += count($members);
             $members = count($members) === 500 ? (clone $query)->limit(500, $offset)->get()->getResultArray() : [];
         } while ($members);
-        $sheet->setAutoFilter("A4:{$lastColumn}" . ($rowNumber - 1));
+        $sheet->setAutoFilter("A5:{$lastColumn}" . ($rowNumber - 1));
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment; filename="Laporan_Histori_Pencarian_OPAC_' . date('Y-m-d_His') . '.xlsx"');
@@ -215,7 +283,7 @@ class LaporanHistoriPencarianOpac extends \Base\Controllers\BaseController
             . 'h1{text-align:center;font-size:16px}p{text-align:center}'
             . 'table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #cbd5e1;padding:5px;word-wrap:break-word}'
             . 'th{background:#1d5fd1;color:#fff}</style></head><body><h1>Laporan Histori Pencarian OPAC</h1>'
-            . '<p>Dicetak: ' . date('d-m-Y H:i') . '</p><table><thead><tr>';
+            . '<p>Dicetak: ' . date('d-m-Y H:i') . '<br>' . esc($this->periodeLabel($options)) . '</p><table><thead><tr>';
         foreach ($options['columns'] as $column) {
             $html .= '<th>' . esc(self::COLUMNS[$column]) . '</th>';
         }

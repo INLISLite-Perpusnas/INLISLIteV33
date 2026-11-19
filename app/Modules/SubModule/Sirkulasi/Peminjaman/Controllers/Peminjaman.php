@@ -312,6 +312,12 @@ public function create()
             if ($collection->Status_id != 1) {
                 return ['success' => false, 'message' => 'Koleksi sedang tidak tersedia untuk dipinjam'];
             }
+
+            // Koleksi yang masih ditahan untuk pesanan OPAC anggota lain tidak boleh dipinjamkan
+            if ($this->isBookedByOtherMember($collection, $memberData['member_no'])) {
+                return ['success' => false, 'message' => 'Koleksi sedang dipesan anggota lain sampai '
+                    . date('d-m-Y H:i', strtotime($collection->BookingExpiredDate))];
+            }
           
             // Check if already loaned
             $existingLoan = $this->db->table('collectionloanitems')
@@ -425,6 +431,17 @@ private function getLoanConfiguration($member, $carts)
         'source' => 'Jenis Anggota (' . $jenis_anggota->jenisanggota . ')'
     ];
 }
+
+  /**
+   * Pesanan OPAC masih berlaku dan pemesannya bukan anggota yang sedang meminjam.
+   * Pesanan yang sudah lewat batas ambil tidak menahan koleksi.
+   */
+  private function isBookedByOtherMember(object $collection, $memberNo): bool
+  {
+      return !empty($collection->BookingMemberID)
+          && (string) $collection->BookingExpiredDate > date('Y-m-d H:i:s')
+          && (string) $collection->BookingMemberID !== (string) $memberNo;
+  }
 
   private function addBookToSession($bookData, $sessionKey)
     {
@@ -640,7 +657,7 @@ private function getDayName($day_index)
             // koleksi sampai transaksi ini selesai.
             foreach ($selectedBooks as $book) {
                 $collection = $this->db->query(
-                    'SELECT ID, Status_id, Rule_id FROM collections WHERE ID = ? FOR UPDATE',
+                    'SELECT ID, Status_id, Rule_id, BookingMemberID, BookingExpiredDate FROM collections WHERE ID = ? FOR UPDATE',
                     [$book['id']]
                 )->getRow();
                 $activeLoans = $this->db->table('collectionloanitems')
@@ -650,6 +667,10 @@ private function getDayName($day_index)
 
                 if (!$collection || (int) $collection->Status_id !== 1 || (int) $collection->Rule_id !== 1 || $activeLoans > 0) {
                     throw new \Exception('Buku "' . $book['title'] . '" (' . $book['barcode'] . ') sudah dipinjam atau tidak tersedia lagi. Hapus buku itu dari daftar, lalu simpan ulang.');
+                }
+                if ($this->isBookedByOtherMember($collection, $memberData['member_no'])) {
+                    throw new \Exception('Buku "' . $book['title'] . '" (' . $book['barcode'] . ') sedang dipesan anggota lain sampai '
+                        . date('d-m-Y H:i', strtotime($collection->BookingExpiredDate)) . '. Hapus buku itu dari daftar, lalu simpan ulang.');
                 }
             }
 
@@ -714,11 +735,14 @@ private function getDayName($day_index)
                     throw new \Exception('Gagal insert collectionloanitems (Buku ID: '.$book['id'].'): ' . $dbError['message']);
                 }
                 
-                // Update collection status to "Dipinjam"
+                // Update collection status to "Dipinjam" dan lepaskan pesanan OPAC,
+                // supaya pesanan di Koleksi Dipesan tercatat Selesai.
                 if (!$this->db->table('collections')
                     ->where('ID', $book['id'])
                     ->update([
                         'Status_id' => 5, // Dipinjam status
+                        'BookingMemberID' => null,
+                        'BookingExpiredDate' => null,
                         'UpdateBy' => user_id(),
                         'UpdateDate' => $loanDate,
                         'UpdateTerminal' => $this->request->getIPAddress()

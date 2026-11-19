@@ -230,7 +230,10 @@ class LaporanFrekuensiExport
         }
         return $html;
     }
-    public static function download(string $title, array $selected, array $rows, string $format, bool $withExemplars = false): void
+    /**
+     * @param string|null $periode Teks periode yang ditulis di atas tabel; null = tidak ditampilkan.
+     */
+    public static function download(string $title, array $selected, array $rows, string $format, bool $withExemplars = false, ?string $periode = null): void
     {
         $labels = array_column(array_values($selected), 0);
         $headers = array_merge(['No.'], $labels, [$withExemplars ? 'Jumlah Judul' : 'Jumlah Data']);
@@ -251,7 +254,10 @@ class LaporanFrekuensiExport
                 . 'body{font-family:DejaVu Sans,sans-serif;font-size:10px}h2{text-align:center}'
                 . 'table{border-collapse:collapse;width:100%}th,td{border:1px solid #bbb;padding:6px}'
                 . 'th{background:#eee}td.number{text-align:right}tfoot{font-weight:bold}'
-                . '</style></head><body><h2>' . htmlspecialchars($title, ENT_QUOTES, 'UTF-8') . ' - Frekuensi</h2><table><thead><tr>';
+                . 'h2{margin-bottom:4px}p.periode{text-align:center;margin:0 0 12px}'
+                . '</style></head><body><h2>' . htmlspecialchars($title, ENT_QUOTES, 'UTF-8') . ' - Frekuensi</h2>'
+                . ($periode !== null ? '<p class="periode">' . htmlspecialchars($periode, ENT_QUOTES, 'UTF-8') . '</p>' : '')
+                . '<table><thead><tr>';
             foreach ($headers as $header) {
                 $html .= '<th>' . htmlspecialchars($header, ENT_QUOTES, 'UTF-8') . '</th>';
             }
@@ -283,14 +289,26 @@ class LaporanFrekuensiExport
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Frekuensi');
+        // Dengan periode: judul di baris 1, periode di baris 2, tabel mulai baris 4
+        $offset = 0;
+        if ($periode !== null) {
+            $offset = 3;
+            $lastColumn = Coordinate::stringFromColumnIndex(count($headers));
+            $sheet->setCellValue('A1', $title . ' - Frekuensi');
+            $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(13);
+            $sheet->setCellValue('A2', $periode);
+            $sheet->getStyle('A2')->getFont()->setItalic(true);
+            $sheet->mergeCells('A1:' . $lastColumn . '1');
+            $sheet->mergeCells('A2:' . $lastColumn . '2');
+        }
         foreach ($headers as $index => $header) {
             $column = Coordinate::stringFromColumnIndex($index + 1);
-            $sheet->setCellValue($column . '1', $header);
-            $sheet->getStyle($column . '1')->getFont()->setBold(true);
+            $sheet->setCellValue($column . ($offset + 1), $header);
+            $sheet->getStyle($column . ($offset + 1))->getFont()->setBold(true);
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
         foreach ($rows as $index => $row) {
-            $line = $index + 2;
+            $line = $offset + $index + 2;
             $sheet->setCellValue('A' . $line, $index + 1);
             foreach ($labels as $groupIndex => $label) {
                 $column = Coordinate::stringFromColumnIndex($groupIndex + 2);
@@ -301,7 +319,7 @@ class LaporanFrekuensiExport
                 $sheet->setCellValue(Coordinate::stringFromColumnIndex(count($labels) + 3) . $line, (int) $row['jumlah_eksemplar']);
             }
         }
-        $line = count($rows) + 2;
+        $line = $offset + count($rows) + 2;
         $sheet->setCellValue('A' . $line, 'Total');
         $sheet->setCellValue(Coordinate::stringFromColumnIndex(count($labels) + 2) . $line, $totals['jumlah_data']);
         if ($withExemplars) {

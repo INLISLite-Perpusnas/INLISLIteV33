@@ -1,75 +1,55 @@
 <?php helper('app'); ?>
 <?= $this->extend('App\Views\layout\blank' ); ?>
 <?= $this->section('style'); ?>
+<?= view('Auth\Views\partials\auth_card_style') ?>
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
-<div class="app-container">
-      <div class="h-100">
-            <div class="h-100 no-gutters row">
-                  <div class="d-none d-lg-block col-lg-7">
-                        <div class="slider-light">
-                              <div class="slick-slider">
-                                    <?php foreach ($banners as $row) : ?>
-                                          <div>
-                                                <div class="position-relative h-100 d-flex justify-content-center align-items-center bg-primary" tabindex="-1">
-                                                      <div class="slide-img-bg" style="background-image: url('<?= base_url('uploads/banner/' . $row->file_image) ?>');"></div>
-                                                      <div class="slider-content">
-                                                            <h2>
-                                                                  <?= $row->name ?>
-                                                            </h2>
-                                                            <h5>
-                                                                  <?= $row->description ?>
-                                                            </h5>
-                                                      </div>
-                                                </div>
-                                          </div>
-                                    <?php endforeach; ?>
-                              </div>
-                        </div>
-                  </div>
-                  <div class="h-100 d-flex bg-white justify-content-center align-items-center col-md-12 col-lg-5">
-                        <div class="mx-auto app-login-box col-sm-12 col-md-10 col-lg-9">
-                              <div class="app-logo">
-                              </div>
-                              <center>
-                                    <?php if (get_parameter('show-logo-login') == 1) : ?>
-                                          <a href="<?= base_url() ?>"><img src="<?= base_url('balisa_favicon.png') ?>" width="200" class="mb-4" /></a>
-                                    <?php endif; ?>
-                                    <h4 class="mb-0"><?= strtoupper(get_parameter('site-description')) ?></h4>
-                              </center>
-                              <div class="divider row"></div>
-                              <div id="infoMessage"><?= $message ?? ''; ?></div>
-                              <div>
-                                    <form class="" action="<?= base_url('/auth/reset_password/' . $code); ?>" method="post">
-                                          <div class="form-row">
-                                                <div class="col-md-12">
-                                                      <div class="position-relative form-group"><label for="new" class="">New Password</label><input name="new" id="new" placeholder="" type="password" class="form-control"></div>
-                                                </div>
-                                          </div>
-                                          <div class="form-row">
-                                                <div class="col-md-12">
-                                                      <div class="position-relative form-group"><label for="new_confirm" class="">Confirm New Password</label><input name="new_confirm" id="new_confirm" placeholder="" type="password" class="form-control"></div>
-                                                </div>
-                                          </div>
-                                          <?php echo form_hidden('user_id', $user_id); ?>
-                                          <div class="mt-4 d-flex align-items-center">
-                                                <h6 class="mb-0"><a href="<?= base_url('auth/login') ?>" class="text-primary">Sign in existing account</a></h6>
-                                                <div class="ml-auto">
-                                                      <button class="btn btn-primary btn-lg">Update Password</button>
-                                                </div>
-                                          </div>
-                                    </form>
-                              </div>
-                        </div>
-                  </div>
-            </div>
-      </div>
-</div>
-<?= $this->endSection('page'); ?>
+<main class="login-container">
+    <div class="login-card">
+        <form action="<?= base_url('login/reset-password') ?>" method="post" id="resetForm">
+            <?= csrf_field() ?>
+            <input type="hidden" name="token" value="<?= esc($token ?? '', 'attr') ?>">
+            <img class="login-logo"
+                 src="<?= esc(!empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png'), 'attr') ?>"
+                 alt="Logo perpustakaan" width="108" height="88" decoding="async">
+            <h1 class="login-title">Atur ulang kata sandi</h1>
+            <p class="login-description">Buat kata sandi baru untuk akun Anda.</p>
 
-<?= $this->section('script'); ?>
-<!--Slick Carousel -->
-<script src="<?= base_url('themes/uigniter'); ?>/js/vendors/carousel-slider.js"></script>
-<script src="<?= base_url('themes/uigniter'); ?>/js/scripts-init/carousel-slider.js"></script>
-<?= $this->endSection('script'); ?>
+            <div id="infoMessage" role="status" aria-live="polite" aria-atomic="true">
+                <?= view('Myth\Auth\Views\_message_block') ?>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Kata sandi baru</label>
+                <input type="password" class="form-control" name="password" id="password" minlength="8" maxlength="72"
+                       placeholder="Minimal 8 karakter" required autocomplete="new-password">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="pass_confirm">Ulangi kata sandi baru</label>
+                <input type="password" class="form-control" name="pass_confirm" id="pass_confirm" minlength="8" maxlength="72"
+                       placeholder="Ketik ulang kata sandi baru" required autocomplete="new-password">
+            </div>
+
+            <button type="submit" class="login-button">Simpan kata sandi</button>
+            <a class="back-link" href="<?= base_url('login') ?>">&larr; Kembali ke halaman masuk</a>
+        </form>
+    </div>
+    <p class="login-copyright"><?= date('Y') ?> Copyright &copy; Perpustakaan Nasional RI</p>
+</main>
+
+<script>
+document.getElementById('resetForm').addEventListener('submit', function(event) {
+    const password = document.getElementById('password');
+    const confirm = document.getElementById('pass_confirm');
+    if (password.value !== confirm.value) {
+        event.preventDefault();
+        confirm.setCustomValidity('Kata sandi tidak sama.');
+        confirm.reportValidity();
+    }
+});
+document.getElementById('pass_confirm').addEventListener('input', function() {
+    this.setCustomValidity('');
+});
+</script>
+<?= $this->endSection('page'); ?>

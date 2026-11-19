@@ -13,7 +13,8 @@ class Pemesanan extends \Base\Controllers\BaseResourceController
 	 * Status pesanan:
 	 *  - Dibatalkan  : dibatalkan petugas (active = 0)
 	 *  - Menunggu    : belum lewat batas waktu dan koleksi masih ditahan untuk pemesan
-	 *  - Selesai     : koleksi sudah tidak ditahan lagi (mis. sudah dipinjam) sebelum batas waktu
+	 *  - Selesai     : koleksi sudah dipinjam pemesan dalam rentang pesanan, atau sudah
+	 *                  tidak ditahan lagi sebelum batas waktu
 	 *  - Kedaluwarsa : lewat batas waktu tanpa diambil
 	 */
 	public static function status(object $row, string $now): string
@@ -21,7 +22,13 @@ class Pemesanan extends \Base\Controllers\BaseResourceController
 		if ((string) $row->active === '0') {
 			return 'Dibatalkan';
 		}
-		$held = $row->BookingMemberID === $row->memberId && $row->BookingExpiredDate === $row->bookingExpired;
+		if ((int) ($row->Diambil ?? 0) === 1) {
+			return 'Selesai';
+		}
+		// Pesanan hanya dibuat saat koleksi tersedia (Status_id 1). Kalau koleksi sudah
+		// dipinjam, pesanan dianggap selesai walau tanda pesanan di collections belum dilepas.
+		$held = $row->BookingMemberID === $row->memberId && $row->BookingExpiredDate === $row->bookingExpired
+			&& (int) $row->CollectionStatus === 1;
 		if (!empty($row->bookingExpired) && $row->bookingExpired > $now) {
 			return $held ? 'Menunggu' : 'Selesai';
 		}
@@ -34,7 +41,7 @@ class Pemesanan extends \Base\Controllers\BaseResourceController
 		$db = db_connect();
 		$builder = $db->table('bookinglogs b')
 			->select('b.bookingDate, b.memberId, b.bookingExpired, b.collectionId, b.active, b.collectionId as action, b.collectionId as status')
-			->select('m.Fullname, col.NomorBarcode, col.BookingMemberID, col.BookingExpiredDate')
+			->select('m.Fullname, col.NomorBarcode, col.BookingMemberID, col.BookingExpiredDate, col.Status_id as CollectionStatus')
 			->select('a.Title, a.Publisher, loc.Name as LocationName')
 			->join('members m', 'm.MemberNo = b.memberId', 'left')
 			->join('collections col', 'col.ID = b.collectionId', 'left')
@@ -42,19 +49,32 @@ class Pemesanan extends \Base\Controllers\BaseResourceController
 			->join('locations loc', 'loc.ID = col.Location_id', 'left')
 			->orderBy('b.bookingDate', 'DESC');
 
-		$held = 'col.BookingMemberID = b.memberId AND col.BookingExpiredDate = b.bookingExpired';
+		// DataTable membaca daftar kolom dari SELECT ... FROM. Subquery di bawah ditambahkan
+		// setelahnya supaya kata FROM di dalam subquery tidak mengacaukan pembacaan itu.
+		$table = DataTable::of($builder);
+
+		// Pesanan dianggap diambil kalau pemesan meminjam koleksi itu antara waktu pesan dan batas ambil.
+		$taken = 'EXISTS (SELECT 1 FROM collectionloanitems li WHERE li.Collection_id = b.collectionId'
+			. ' AND li.member_id = m.ID AND li.LoanDate >= b.bookingDate'
+			. ' AND (b.bookingExpired IS NULL OR li.LoanDate <= b.bookingExpired))';
+		$builder->select("($taken) as Diambil", false);
+
+		$held = 'COALESCE(col.BookingMemberID = b.memberId AND col.BookingExpiredDate = b.bookingExpired AND col.Status_id = 1, 0)';
 		switch ((string) $this->request->getGet('status')) {
 			case 'Menunggu':
-				$builder->where('COALESCE(b.active, 1) <>', 0)->where('b.bookingExpired >', $now)->where($held, null, false);
+				$builder->where('COALESCE(b.active, 1) <>', 0)->where("NOT $taken", null, false)
+					->where('b.bookingExpired >', $now)->where($held, null, false);
 				break;
 			case 'Selesai':
 				$builder->where('COALESCE(b.active, 1) <>', 0)->groupStart()
-					->where('b.bookingExpired IS NULL', null, false)
-					->orGroupStart()->where('b.bookingExpired >', $now)->where("NOT ($held)", null, false)->groupEnd()
+					->where($taken, null, false)
+					->orWhere('b.bookingExpired IS NULL', null, false)
+					->orGroupStart()->where('b.bookingExpired >', $now)->where("NOT $held", null, false)->groupEnd()
 					->groupEnd();
 				break;
 			case 'Kedaluwarsa':
-				$builder->where('COALESCE(b.active, 1) <>', 0)->where('b.bookingExpired <=', $now);
+				$builder->where('COALESCE(b.active, 1) <>', 0)->where("NOT $taken", null, false)
+					->where('b.bookingExpired <=', $now);
 				break;
 			case 'Dibatalkan':
 				$builder->where('b.active', 0);
@@ -63,7 +83,7 @@ class Pemesanan extends \Base\Controllers\BaseResourceController
 
 		$canCancel = is_allowed('sirkulasi-pemesanan/delete', null, false);
 
-		return DataTable::of($builder)
+		return $table
 			->addNumbering('no')
 			->edit('bookingDate', function ($row) {
 				return date('d-m-Y H:i:s', strtotime($row->bookingDate));

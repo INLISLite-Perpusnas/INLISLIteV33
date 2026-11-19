@@ -164,7 +164,7 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
                 return redirect()->back()->with('error', 'Pilih minimal satu kategori frekuensi.');
             }
             $rows = $this->frequencyRows($selected);
-            \App\Libraries\LaporanFrekuensiExport::download('Laporan Buku Tamu', $selected, $rows, 'excel');
+            \App\Libraries\LaporanFrekuensiExport::download('Laporan Buku Tamu', $selected, $rows, 'excel', false, $this->periodeLabel());
         }
 
         $members = $query->get()->getResult();
@@ -226,8 +226,18 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
         $sheet->getStyle("A{$dateRow}")->getAlignment()
             ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
+        // Periode sesuai filter yang dipilih, tepat di bawah tanggal export
+        $periodRow = $dateRow + 1;
+        $sheet->mergeCells("A{$periodRow}:{$lastColumn}{$periodRow}");
+        $sheet->setCellValue("A{$periodRow}", $this->periodeLabel());
+        $sheet->getStyle("A{$periodRow}")->getFont()
+            ->setItalic(true)
+            ->setSize(11);
+        $sheet->getStyle("A{$periodRow}")->getAlignment()
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
         // === HEADER TABEL ===
-        $startRowHeader = $dateRow + 2;
+        $startRowHeader = $periodRow + 2;
         $columnHeaders = [
             'no_pengunjung' => 'Nomor Kunjungan',
             'lokasi'        => 'Lokasi Perpustakaan',
@@ -360,7 +370,7 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
 
 
             $rows = $this->frequencyRows($selected);
-            \App\Libraries\LaporanFrekuensiExport::download('Laporan Buku Tamu', $selected, $rows, 'pdf');
+            \App\Libraries\LaporanFrekuensiExport::download('Laporan Buku Tamu', $selected, $rows, 'pdf', false, $this->periodeLabel());
         }
 
         $totalRecords = (clone $query)->countAllResults(false);
@@ -413,7 +423,8 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
             .kop-text { flex: 1; }
             .kop-text h2 { margin: 0; font-size: 13px; }
             .kop-text p { margin: 2px 0; font-size: 8px; color: #555; }
-            h3.report-title { text-align: center; font-size: 11px; margin: 6px 0 10px 0; }
+            h3.report-title { text-align: center; font-size: 11px; margin: 6px 0 2px 0; }
+            p.report-period { text-align: center; font-size: 9px; margin: 0 0 10px 0; color: #333; }
             table { width: 100%; border-collapse: collapse; font-size: 7px; }
             th { background-color: #3e5c8b; color: #fff; padding: 4px 5px; text-align: left; border: 1px solid #ccc; }
             td { padding: 3px 5px; border: 1px solid #ddd; vertical-align: top; }
@@ -428,6 +439,7 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
         $html .= '<div class="kop-text"><h2>' . esc($namaPerpustakaan) . '</h2>'
                . '<p>Laporan Buku Tamu &mdash; Dicetak: ' . date('d-m-Y H:i') . '</p></div></div>';
         $html .= '<h3 class="report-title">LAPORAN BUKU TAMU</h3>';
+        $html .= '<p class="report-period">' . esc($this->periodeLabel()) . '</p>';
 
         $html .= '<table><thead><tr><th>#</th>';
         foreach ($selectedColumns as $col) {
@@ -465,6 +477,52 @@ class LaporanBukuTamu extends \Base\Controllers\BaseController
         $fileName = 'Laporan_Buku_Tamu_' . date('d-m-Y_His') . '.pdf';
         $dompdf->stream($fileName, ['Attachment' => true]);
         exit();
+    }
+
+    /**
+     * Teks periode laporan untuk ditampilkan di atas tabel export.
+     * Mengikuti filter periode yang sama dengan query laporan (berdasarkan tanggal kunjungan).
+     */
+    private function periodeLabel(): string
+    {
+        $bulan = [1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        $tanggal = static function (?string $value) use ($bulan): ?string {
+            $date = $value ? \DateTimeImmutable::createFromFormat('!Y-m-d', $value) : false;
+            if (!$date || $date->format('Y-m-d') !== $value) {
+                return null;
+            }
+            return (int) $date->format('j') . ' ' . $bulan[(int) $date->format('n')] . ' ' . $date->format('Y');
+        };
+
+        $label = 'Semua periode';
+        switch ($this->request->getPost('filter_type') ?? 'date') {
+            case 'date':
+                $start = $tanggal($this->request->getPost('start_date'));
+                $end = $tanggal($this->request->getPost('end_date'));
+                if ($start && $end) {
+                    $label = $start . ' s.d. ' . $end;
+                } elseif ($start) {
+                    $label = 'Sejak ' . $start;
+                } elseif ($end) {
+                    $label = 'Sampai ' . $end;
+                }
+                break;
+            case 'month':
+                $month = (int) $this->request->getPost('month');
+                $year = (int) $this->request->getPost('year');
+                if (isset($bulan[$month]) && $year > 0) {
+                    $label = 'Bulan ' . $bulan[$month] . ' ' . $year;
+                }
+                break;
+            case 'year':
+                $year = (int) $this->request->getPost('year');
+                if ($year > 0) {
+                    $label = 'Tahun ' . $year;
+                }
+                break;
+        }
+
+        return 'Periode (tanggal kunjungan): ' . $label;
     }
 
 	public function preview()

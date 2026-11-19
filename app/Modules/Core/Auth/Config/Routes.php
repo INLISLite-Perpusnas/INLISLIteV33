@@ -8,6 +8,13 @@ if(is_profiling()){
 	$routes->get('logout', 'Auth::logout', ['namespace' => 'Auth\Controllers', 'as' => 'logout']);
 }
 
+// Lupa kata sandi: link reset dikirim ke email akun. Berada di bawah login/ supaya
+// lolos filter session & permissions (pengecualian 'login*' di Config\Filters).
+$routes->get('login/forgot', 'Auth::forgotPassword', ['namespace' => 'Auth\Controllers', 'as' => 'auth-forgot']);
+$routes->post('login/forgot', 'Auth::attemptForgot', ['namespace' => 'Auth\Controllers']);
+$routes->get('login/reset-password', 'Auth::resetPassword', ['namespace' => 'Auth\Controllers', 'as' => 'auth-reset-password']);
+$routes->post('login/reset-password', 'Auth::attemptReset', ['namespace' => 'Auth\Controllers']);
+
 $routes->group('/auth', ['namespace' => 'Auth\Controllers\Api'], function ($subroutes) {
     $subroutes->get('', 'Auth::index');
     $subroutes->get('index', 'Auth::index');

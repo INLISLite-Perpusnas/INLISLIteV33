@@ -49,7 +49,7 @@
 								<div>
 								<?php if ($config->activeResetter) : ?>
 								<div class="text-center mt-3">
-									<a href="<?= route_to('forgot') ?>" class="text-white" style="font-weight-100 font-size:18px; text-decoration:none;">Lupa Kata Sandi</a>
+									<a href="<?= base_url('login/forgot') ?>" class="text-white" style="font-weight-100 font-size:18px; text-decoration:none;">Lupa Kata Sandi</a>
 								</div>
 								<?php endif;?>
 

@@ -52,21 +52,48 @@
                             <?php endforeach; ?>
                         </div>
                     </div>
+                    <?php
+                    $filterType = $options['filter_type'] ?? 'date';
+                    $namaBulan = [1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                    ?>
                     <div class="row">
                         <div class="col-md-4 form-group">
+                            <label for="filter_type">Filter Periode</label>
+                            <select class="form-control" id="filter_type" name="filter_type">
+                                <option value="date" <?= $filterType === 'date' ? 'selected' : '' ?>>Tanggal</option>
+                                <option value="month" <?= $filterType === 'month' ? 'selected' : '' ?>>Bulan</option>
+                                <option value="year" <?= $filterType === 'year' ? 'selected' : '' ?>>Tahun</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 form-group period-field" data-period="date">
                             <label for="start_date">Tanggal Mulai</label>
-                            <input class="form-control" type="date" id="start_date" name="start_date" value="<?= esc($options['start_date'], 'attr') ?>">
+                            <input class="form-control" type="date" id="start_date" name="start_date" value="<?= $filterType === 'date' ? esc($options['start_date'], 'attr') : '' ?>">
                         </div>
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-4 form-group period-field" data-period="date">
                             <label for="end_date">Tanggal Akhir</label>
-                            <input class="form-control" type="date" id="end_date" name="end_date" value="<?= esc($options['end_date'], 'attr') ?>">
+                            <input class="form-control" type="date" id="end_date" name="end_date" value="<?= $filterType === 'date' ? esc($options['end_date'], 'attr') : '' ?>">
                         </div>
+                        <div class="col-md-4 form-group period-field" data-period="month">
+                            <label for="month">Bulan</label>
+                            <select class="form-control" id="month" name="month" required>
+                                <option value="">-- Pilih Bulan --</option>
+                                <?php foreach ($namaBulan as $number => $name): ?>
+                                    <option value="<?= $number ?>" <?= (string) ($options['month'] ?? '') === (string) $number ? 'selected' : '' ?>><?= $name ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-4 form-group period-field" data-period="month year">
+                            <label for="year">Tahun</label>
+                            <input class="form-control" type="number" id="year" name="year" min="1000" max="9999" step="1" placeholder="Contoh: 2025" value="<?= esc($options['year'] ?? date('Y'), 'attr') ?>" required>
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-4 form-group">
                             <label for="keyword">Kata Kunci</label>
                             <input class="form-control" type="search" id="keyword" name="keyword" maxlength="200" value="<?= esc($options['keyword'], 'attr') ?>" placeholder="Semua kata kunci">
                         </div>
                     </div>
-                    <p class="text-muted">Periode berdasarkan waktu pencarian. Kosongkan kedua tanggal untuk seluruh histori. PDF maksimal 2.000 baris; gunakan Excel untuk data lebih banyak.</p>
+                    <p class="text-muted">Periode berdasarkan waktu pencarian. Pada filter tanggal, kosongkan kedua tanggal untuk seluruh histori. PDF maksimal 2.000 baris; gunakan Excel untuk data lebih banyak.</p>
                     <div class="d-flex flex-wrap" style="gap: 8px">
                         <button type="submit" class="btn btn-ina-outline">Tampilkan Pratinjau</button>
                         <button type="submit" class="btn btn-catalog-add" formaction="<?= base_url('laporan-opac-histori-pencarian/export') ?>"><i class="fas fa-file-excel" aria-hidden="true"></i> Export Excel</button>
@@ -102,6 +129,20 @@
 
 <?= $this->section('script'); ?>
 <script>
+    const filterType = document.getElementById('filter_type');
+    if (filterType) {
+        // Hanya field periode yang aktif yang ikut dikirim; sisanya disembunyikan dan dinonaktifkan
+        const updatePeriodFields = () => {
+            document.querySelectorAll('.period-field').forEach((field) => {
+                const active = field.dataset.period.split(' ').includes(filterType.value);
+                field.style.display = active ? '' : 'none';
+                field.querySelectorAll('input, select').forEach((input) => { input.disabled = !active; });
+            });
+        };
+        filterType.addEventListener('change', updatePeriodFields);
+        updatePeriodFields();
+    }
+
     const checkAll = document.getElementById('select_all_columns');
     if (checkAll) {
         const columns = document.querySelectorAll('.column-checkbox');

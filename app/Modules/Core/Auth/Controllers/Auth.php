@@ -204,6 +204,204 @@ public function login()
 		}
 	}
 
+	/** Lama link reset kata sandi berlaku (menit). */
+	private const RESET_TTL_MINUTES = 60;
+
+	/** Jeda minimal sebelum link reset untuk akun yang sama boleh dikirim ulang (detik). */
+	private const RESET_RESEND_SECONDS = 120;
+
+	/**
+	 * Halaman lupa kata sandi: pengguna mengisi username atau email akunnya.
+	 */
+	public function forgotPassword()
+	{
+		if (logged_in()) {
+			return redirect()->to('/dashboard');
+		}
+
+		return view('Auth\Views\forgot', ['logo' => $this->loginLogo()]);
+	}
+
+	/**
+	 * Membuat token reset lalu mengirim link reset kata sandi ke email akun.
+	 */
+	public function attemptForgot()
+	{
+		if (logged_in()) {
+			return redirect()->to('/dashboard');
+		}
+
+		// Batasi 5 permintaan per menit per IP untuk mencegah spam email
+		if (!service('throttler')->check('forgot-' . md5($this->request->getIPAddress()), 5, MINUTE)) {
+			return redirect()->back()->withInput()->with('error', 'Terlalu banyak permintaan. Silakan coba lagi dalam 1 menit.');
+		}
+
+		$identity = trim((string) $this->request->getPost('identity'));
+		if ($identity === '' || mb_strlen($identity) > 255) {
+			return redirect()->back()->withInput()->with('error', 'Isi username atau email akun Anda.');
+		}
+
+		// Pesan sama untuk akun ada/tidak ada supaya daftar akun tidak bisa ditebak
+		$genericMessage = 'Jika akun ditemukan dan memiliki email, link reset kata sandi sudah dikirim ke email tersebut. '
+			. 'Link berlaku ' . self::RESET_TTL_MINUTES . ' menit. Periksa juga folder spam.';
+
+		$db = db_connect();
+		$user = $db->table('users')
+			->groupStart()->where('username', $identity)->orWhere('email', $identity)->groupEnd()
+			->where('deleted_at', null)
+			->get(1)->getRowObject();
+
+		if (!$user || !filter_var((string) $user->email, FILTER_VALIDATE_EMAIL)) {
+			return redirect()->back()->with('message', $genericMessage);
+		}
+
+		// Link sebelumnya masih baru: jangan kirim ulang supaya inbox pengguna tidak dibanjiri
+		if (!empty($user->reset_at) && !empty($user->reset_hash)
+			&& strtotime($user->reset_at) > time() - self::RESET_RESEND_SECONDS) {
+			return redirect()->back()->with('message', $genericMessage);
+		}
+
+		// Yang disimpan hanya hash token; token aslinya hanya ada di link email
+		$token = bin2hex(random_bytes(32));
+		$db->table('users')->where('id', $user->id)->update([
+			'reset_hash' => hash('sha256', $token),
+			'reset_at' => date('Y-m-d H:i:s'),
+			'reset_expires' => date('Y-m-d H:i:s', time() + self::RESET_TTL_MINUTES * 60),
+		]);
+
+		if (!$this->sendResetEmail($user, $token)) {
+			// Token dibatalkan supaya pengguna bisa langsung meminta ulang
+			$db->table('users')->where('id', $user->id)->update(['reset_hash' => null, 'reset_at' => null, 'reset_expires' => null]);
+			return redirect()->back()->withInput()->with('error', 'Email reset kata sandi gagal dikirim. Silakan coba lagi atau hubungi administrator.');
+		}
+
+		return redirect()->back()->with('message', $genericMessage);
+	}
+
+	/**
+	 * Halaman isi kata sandi baru dari link email.
+	 */
+	public function resetPassword()
+	{
+		$token = (string) $this->request->getGet('token');
+		if (!$this->userByResetToken($token)) {
+			return redirect()->to(base_url('login/forgot'))
+				->with('error', 'Link reset kata sandi tidak valid atau sudah kedaluwarsa. Silakan minta link baru.');
+		}
+
+		return view('Auth\Views\reset', ['logo' => $this->loginLogo(), 'token' => $token]);
+	}
+
+	/**
+	 * Menyimpan kata sandi baru lalu menghapus token reset.
+	 */
+	public function attemptReset()
+	{
+		$token = (string) $this->request->getPost('token');
+		$user = $this->userByResetToken($token);
+		if (!$user) {
+			return redirect()->to(base_url('login/forgot'))
+				->with('error', 'Link reset kata sandi tidak valid atau sudah kedaluwarsa. Silakan minta link baru.');
+		}
+
+		$rules = [
+			'password' => [
+				'label' => 'Kata sandi baru',
+				'rules' => 'required|min_length[8]|max_length[72]',
+			],
+			'pass_confirm' => [
+				'label' => 'Konfirmasi kata sandi',
+				'rules' => 'required|matches[password]',
+			],
+		];
+		if (!$this->validate($rules)) {
+			return redirect()->to(base_url('login/reset-password?token=' . $token))
+				->with('errors', $this->validator->getErrors());
+		}
+
+		db_connect()->table('users')->where('id', $user->id)->update([
+			'password_hash' => \Myth\Auth\Password::hash((string) $this->request->getPost('password')),
+			'reset_hash' => null,
+			'reset_at' => date('Y-m-d H:i:s'),
+			'reset_expires' => null,
+			'force_pass_reset' => 0,
+		]);
+
+		return redirect()->to(base_url('login'))->with('message', 'Kata sandi berhasil diubah. Silakan masuk dengan kata sandi baru.');
+	}
+
+	/**
+	 * User pemilik token reset yang masih berlaku, atau null.
+	 */
+	private function userByResetToken(string $token): ?object
+	{
+		if (!preg_match('/^[0-9a-f]{64}$/D', $token)) {
+			return null;
+		}
+
+		return db_connect()->table('users')
+			->where('reset_hash', hash('sha256', $token))
+			->where('reset_expires >', date('Y-m-d H:i:s'))
+			->where('deleted_at', null)
+			->get(1)->getRowObject();
+	}
+
+	/**
+	 * Mengirim email berisi link reset kata sandi lewat SMTP di .env (email.*).
+	 */
+	private function sendResetEmail(object $user, string $token): bool
+	{
+		$email = \Config\Services::email();
+		$email->initialize([
+			'protocol' => 'smtp',
+			'SMTPHost' => getenv('email.SMTPHost') ?: 'smtp.gmail.com',
+			'SMTPUser' => getenv('email.SMTPUser') ?: '',
+			'SMTPPass' => getenv('email.SMTPPass') ?: '',
+			'SMTPPort' => (int) (getenv('email.SMTPPort') ?: 587),
+			'SMTPCrypto' => getenv('email.SMTPCrypto') ?: 'tls',
+			'mailType' => 'html',
+			'charset' => 'utf-8',
+			'newline' => "\r\n",
+		]);
+
+		helper('app');
+		$siteName = (string) get_parameter('site-name', 'INLISLite');
+		$logo = $this->loginLogo();
+		$body = view('Auth\Views\email\forgot', [
+			'action_url' => esc(base_url('login/reset-password?token=' . $token), 'attr'),
+			'login_url' => esc(base_url('login'), 'attr'),
+			'logo_url' => esc($logo ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png'), 'attr'),
+			'site_name' => esc($siteName),
+			'site_description' => esc((string) get_parameter('site-description', 'Sistem Manajemen Perpustakaan')),
+			'username' => esc((string) $user->username),
+			'expires_minutes' => self::RESET_TTL_MINUTES,
+		]);
+
+		$email->setFrom(getenv('email.fromEmail') ?: getenv('email.SMTPUser'), getenv('email.fromName') ?: $siteName);
+		$email->setTo($user->email);
+		$email->setSubject('Reset Kata Sandi - ' . $siteName);
+		$email->setMessage($body);
+
+		try {
+			if ($email->send(false)) {
+				return true;
+			}
+			log_message('error', 'Gagal kirim email reset kata sandi user #' . $user->id . ': ' . $email->printDebugger(['headers']));
+		} catch (\Throwable $e) {
+			log_message('error', 'Gagal kirim email reset kata sandi user #' . $user->id . ': ' . $e->getMessage());
+		}
+		return false;
+	}
+
+	/**
+	 * Nama file logo perpustakaan (settingparameters.Logo), sama dengan halaman login.
+	 */
+	private function loginLogo(): string
+	{
+		$row = db_connect()->table('settingparameters')->where('Name', 'Logo')->get()->getRow();
+		return (string) ($row->Value ?? '');
+	}
+
 	private function validateUserFromDatabase($username, $password)
 	{
 		// Menggunakan model untuk akses database

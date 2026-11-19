@@ -23,8 +23,11 @@
 												<tr>
 													<td style="font-family:sans-serif;font-size:14px;vertical-align:top" valign="top"><table width="100%" style="border-collapse:separate;width:100%" cellpadding="0" cellspacing="5px"><tbody><tr><td style="font-family:sans-serif;font-size:14px;vertical-align:top" valign="top">
 														<span style="font-weight:700">Menyetel Ulang Kata Sandi</span><br>
-														Anda memberi tahu kami bahwa Anda lupa kata sandi Anda. <br>
+														Anda memberi tahu kami bahwa Anda lupa kata sandi Anda<?= !empty($username) ? ' untuk akun <b>' . $username . '</b>' : '' ?>. <br>
 														Jika Anda benar-benar melakukannya, klik tombol di bawah ini.<br>
+														<?php if (!empty($expires_minutes)): ?>
+														Link ini hanya berlaku <?= (int) $expires_minutes ?> menit dan hanya bisa dipakai sekali.<br>
+														<?php endif; ?>
 													</td>
 												</tr>
 											</tbody>

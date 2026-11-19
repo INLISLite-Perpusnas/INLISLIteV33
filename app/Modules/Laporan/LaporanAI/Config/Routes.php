@@ -8,10 +8,6 @@ $routes->group('laporan-ai', ['namespace' => 'LaporanAI\Controllers'], function 
 });
 
 $routes->group('api/laporan-ai', ['namespace' => 'LaporanAI\Controllers'], function ($subroutes) {
-    // Database explorer endpoints
-    $subroutes->add('tables', 'LaporanAI::getTables');
-    $subroutes->add('table-structure/(:segment)', 'LaporanAI::getTableStructure/$1');
-    $subroutes->add('table-data/(:segment)', 'LaporanAI::getTableData/$1');
     
     // SQL execution
     $subroutes->add('execute-query', 'LaporanAI::executeQuery');

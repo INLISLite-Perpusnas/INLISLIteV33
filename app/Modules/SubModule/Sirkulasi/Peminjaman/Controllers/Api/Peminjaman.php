@@ -530,6 +530,14 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 				return $this->fail('Collection is not available for loan', 400);
 			}
 
+			// Koleksi yang masih ditahan untuk pesanan OPAC anggota lain tidak boleh dipinjamkan
+			if (!empty($collection->BookingMemberID)
+				&& (string) $collection->BookingExpiredDate > date('Y-m-d H:i:s')
+				&& (string) $collection->BookingMemberID !== (string) $member->MemberNo) {
+				$this->db->transRollback();
+				return $this->fail('Collection is booked by another member until ' . $collection->BookingExpiredDate, 400);
+			}
+
 			// Simpan ke tabel collectionloans
 			$loanData = [
 				'ID' => $collection_loan_id,
@@ -567,7 +575,7 @@ class Peminjaman extends \Base\Controllers\BaseResourceController
 
 			// Update status koleksi menjadi 5
 			$this->collectionModel->where('id', $collection_id)
-				->set(['Status_id' => 5])
+				->set(['Status_id' => 5, 'BookingMemberID' => null, 'BookingExpiredDate' => null])
 				->update();
 
 			// Kirim respons sukses

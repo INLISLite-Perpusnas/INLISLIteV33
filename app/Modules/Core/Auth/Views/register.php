@@ -60,7 +60,7 @@
                                                       <a href="<?= route_to('login') ?>" class="text-primary"><?=lang('Auth.signIn')?></a> 
 
                                                       <?php if ($config->activeResetter): ?>
-                                                      | <a href="<?= route_to('forgot') ?>" class="text-primary"><?=lang('Auth.forgotYourPassword')?></a>
+                                                      | <a href="<?= base_url('login/forgot') ?>" class="text-primary"><?=lang('Auth.forgotYourPassword')?></a>
                                                       <?php endif; ?>
                                                 </h6>
                                           </div>

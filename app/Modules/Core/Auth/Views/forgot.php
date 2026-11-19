@@ -1,74 +1,44 @@
 <?php helper('app'); ?>
 <?= $this->extend('App\Views\layout\blank' ); ?>
 <?= $this->section('style'); ?>
+<?= view('Auth\Views\partials\auth_card_style') ?>
 <?= $this->endSection('style'); ?>
 
 <?= $this->section('page'); ?>
-<div class="app-container">
-      <div class="h-100">
-            <div class="h-100 no-gutters row">
-                  <div class="d-none d-lg-block col-lg-6">
-                        <div class="slider-light">
-                              <div class="slick-slider">
-                                    <div>
-                                          <div class="position-relative h-100 d-flex justify-content-center align-items-center bg-sunny-morning" tabindex="-1">
-                                                <div class="slide-img-bg opacity-6" style="background-image: url('<?= base_url('themes/uigniter'); ?>/images/originals/citydark.jpg');"></div>
-                                                <div class="slider-content">
-                                                      <h3>Complex, but lightweight</h3>
-                                                      <p>We've included a lot of components that cover almost all use cases for any type of application.</p>
-                                                </div>
-                                          </div>
-                                    </div>
-                                    <div>
-                                          <div class="position-relative h-100 d-flex justify-content-center align-items-center bg-plum-plate" tabindex="-1">
-                                                <div class="slide-img-bg" style="background-image: url('<?= base_url('themes/uigniter'); ?>/images/originals/city.jpg');"></div>
-                                                <div class="slider-content">
-                                                      <h3>Perfect Balance</h3>
-                                                      <p>UIgniter is like a dream. Some think it's too good to be true! Extensive collection of unified React Boostrap Components and Elements.</p>
-                                                </div>
-                                          </div>
-                                    </div>
-                                    <div>
-                                          <div class="position-relative h-100 d-flex justify-content-center align-items-center bg-premium-dark" tabindex="-1">
-                                                <div class="slide-img-bg" style="background-image: url('<?= base_url('themes/uigniter'); ?>/images/originals/citynights.jpg');"></div>
-                                                <div class="slider-content">
-                                                      <h3>Scalable, Modular, Consistent</h3>
-                                                      <p>Easily exclude the components you don't require. Lightweight, consistent Bootstrap based styles across all elements and components</p>
-                                                </div>
-                                          </div>
-                                    </div>
-                              </div>
-                        </div>
-                  </div>
-                  <div class="h-100 d-flex bg-white justify-content-center align-items-center col-lg-6">
-                        <div class="mx-auto app-login-box col-sm-12 col-md-10 col-lg-9">
-                              <h4>
-                                    <div>Forgot Password</div>
-                                    <span>Use the form below to recover your password.</span>
-                              </h4>
-                              <div class="divider row"></div>
-                              <div id="infoMessage"><?= $message ?? ''; ?></div>
-                              <div>
-                                    <form class="" action="<?= base_url('auth/forgot_password'); ?>" method="post">
-                                          <div class="form-row">
-                                                <div class="col-md-12">
-                                                      <div class="position-relative form-group"><label for="identity" class=""><?= $identity_label; ?></label><input name="identity" id="identity" placeholder="" type="text" class="form-control"></div>
-                                                </div>
-                                          </div>
-                                          <div class="mt-4 d-flex align-items-center">
-                                                <h6 class="mb-0"><a href="<?= base_url('auth/login') ?>" class="text-primary">Sign in existing account</a></h6>
-                                                <div class="ml-auto">
-                                                      <button class="btn btn-primary btn-lg">Recover Password</button>
-                                                </div>
-                                          </div>
-                                    </form>
-                              </div>
-                        </div>
-                  </div>
-            </div>
-      </div>
-</div>
-<?= $this->endSection('page'); ?>
+<main class="login-container">
+    <div class="login-card">
+        <form action="<?= base_url('login/forgot') ?>" method="post" id="forgotForm">
+            <?= csrf_field() ?>
+            <img class="login-logo"
+                 src="<?= esc(!empty($logo) ? base_url('uploads/branch/' . $logo) : base_url('assets/img/default-perpus.png'), 'attr') ?>"
+                 alt="Logo perpustakaan" width="108" height="88" decoding="async">
+            <h1 class="login-title">Lupa kata sandi</h1>
+            <p class="login-description">Masukkan username atau email akun Anda. Kami akan mengirim link untuk mengatur ulang kata sandi ke email yang terdaftar.</p>
 
-<?= $this->section('script'); ?>
-<?= $this->endSection('script'); ?>
+            <div id="infoMessage" role="status" aria-live="polite" aria-atomic="true">
+                <?= view('Myth\Auth\Views\_message_block') ?>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="identity">Username atau email</label>
+                <input type="text" class="form-control" name="identity" id="identity" maxlength="255"
+                       value="<?= esc(old('identity') ?? '', 'attr') ?>"
+                       placeholder="Masukkan username atau email" required autocomplete="username">
+            </div>
+
+            <button type="submit" class="login-button" id="forgotBtn">Kirim link reset</button>
+            <a class="back-link" href="<?= base_url('login') ?>">&larr; Kembali ke halaman masuk</a>
+        </form>
+    </div>
+    <p class="login-copyright"><?= date('Y') ?> Copyright &copy; Perpustakaan Nasional RI</p>
+</main>
+
+<script>
+document.getElementById('forgotForm').addEventListener('submit', function() {
+    const button = document.getElementById('forgotBtn');
+    button.textContent = 'Mengirim...';
+    button.setAttribute('aria-busy', 'true');
+    button.disabled = true;
+});
+</script>
+<?= $this->endSection('page'); ?>

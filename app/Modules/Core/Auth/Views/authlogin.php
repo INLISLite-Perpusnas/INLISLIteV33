@@ -159,7 +159,7 @@
                         <i class="fas fa-eye" id="toggleIcon" aria-hidden="true"></i>
                     </button>
                 </div>
-                <a class="forgot-link" href="<?= route_to('forgot') ?>">Lupa kata sandi?</a>
+                <a class="forgot-link" href="<?= base_url('login/forgot') ?>">Lupa kata sandi?</a>
             </div>
 
             <div class="hcaptcha-container" aria-label="Verifikasi keamanan">

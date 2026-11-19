@@ -221,7 +221,7 @@ class LaporanAnggota extends \Base\Controllers\BaseController
             }
 
             $rows = \App\Libraries\LaporanFrekuensiExport::groupedRows($countQuery->builder(), $selected, 'COUNT(DISTINCT members.ID)');
-            \App\Libraries\LaporanFrekuensiExport::download('Laporan Anggota', $selected, $rows, 'excel');
+            \App\Libraries\LaporanFrekuensiExport::download('Laporan Anggota', $selected, $rows, 'excel', false, $this->periodeLabel());
         }
 
         $totalRecords = $countQuery->countAllResults();
@@ -255,20 +255,34 @@ class LaporanAnggota extends \Base\Controllers\BaseController
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Laporan Anggota');
 
+        // Judul dan periode di atas tabel (baris 1-2), baris 3 kosong, header tabel di baris 4
+        $headerRow = 4;
+        $sheet->setCellValue('A1', 'LAPORAN DATA ANGGOTA');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(13);
+        $sheet->setCellValue('A2', $this->periodeLabel());
+        $sheet->getStyle('A2')->getFont()->setItalic(true);
+
         // Add header row
         $col = 'A';
         foreach ($selectedColumns as $column) {
             $headerName = $this->getColumnLabel($column);
-            $sheet->setCellValue($col . '1', $headerName);
-            $sheet->getStyle($col . '1')->getFont()->setBold(true);
+            $sheet->setCellValue($col . $headerRow, $headerName);
+            $sheet->getStyle($col . $headerRow)->getFont()->setBold(true);
             $sheet->getColumnDimension($col)->setAutoSize(true);
             $col++;
         }
+        // Judul & periode digabung selebar tabel agar tidak ikut melebarkan kolom A saat autosize
+        $lastCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(max(1, count($selectedColumns)));
+        if ($lastCol !== 'A') {
+            $sheet->mergeCells('A1:' . $lastCol . '1');
+            $sheet->mergeCells('A2:' . $lastCol . '2');
+        }
+        $sheet->freezePane('A' . ($headerRow + 1));
 
         // Process data in chunks to manage memory
         $chunkSize = 1000; // Process 1000 records at a time
         $offset = 0;
-        $row = 2;
+        $row = $headerRow + 1;
 
         do {
             // Clear previous query and get chunk
@@ -342,7 +356,7 @@ class LaporanAnggota extends \Base\Controllers\BaseController
             }
 
             $rows = \App\Libraries\LaporanFrekuensiExport::groupedRows($countQuery->builder(), $selected, 'COUNT(DISTINCT members.ID)');
-            \App\Libraries\LaporanFrekuensiExport::download('Laporan Anggota', $selected, $rows, 'pdf');
+            \App\Libraries\LaporanFrekuensiExport::download('Laporan Anggota', $selected, $rows, 'pdf', false, $this->periodeLabel());
         }
 
         $totalRecords = $countQuery->countAllResults();
@@ -390,7 +404,8 @@ class LaporanAnggota extends \Base\Controllers\BaseController
             .kop-text { flex: 1; }
             .kop-text h2 { margin: 0; font-size: 13px; }
             .kop-text p { margin: 2px 0; font-size: 8px; color: #555; }
-            h3.report-title { text-align: center; font-size: 11px; margin: 6px 0 10px 0; }
+            h3.report-title { text-align: center; font-size: 11px; margin: 6px 0 2px 0; }
+            p.report-period { text-align: center; font-size: 9px; margin: 0 0 10px 0; color: #333; }
             table { width: 100%; border-collapse: collapse; font-size: 7px; }
             th { background-color: #3e5c8b; color: #fff; padding: 4px 5px; text-align: left; border: 1px solid #ccc; }
             td { padding: 3px 5px; border: 1px solid #ddd; vertical-align: top; }
@@ -405,6 +420,7 @@ class LaporanAnggota extends \Base\Controllers\BaseController
         $html .= '<div class="kop-text"><h2>' . esc($namaPerpustakaan) . '</h2>'
                . '<p>Laporan Anggota &mdash; Dicetak: ' . date('d-m-Y H:i') . '</p></div></div>';
         $html .= '<h3 class="report-title">LAPORAN DATA ANGGOTA</h3>';
+        $html .= '<p class="report-period">' . esc($this->periodeLabel()) . '</p>';
 
         $html .= '<table><thead><tr><th>#</th>';
         foreach ($selectedColumns as $col) {
@@ -457,6 +473,52 @@ class LaporanAnggota extends \Base\Controllers\BaseController
             'createby' => 'CreateBy',
             'updateby' => 'UpdateBy',
         ]);
+    }
+
+    /**
+     * Teks periode laporan untuk ditampilkan di atas tabel export.
+     * Mengikuti filter yang sama dengan applyFilters() (berdasarkan tanggal daftar anggota).
+     */
+    private function periodeLabel(): string
+    {
+        $bulan = [1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        $tanggal = static function (?string $value) use ($bulan): ?string {
+            $date = $value ? \DateTimeImmutable::createFromFormat('!Y-m-d', $value) : false;
+            if (!$date || $date->format('Y-m-d') !== $value) {
+                return null;
+            }
+            return (int) $date->format('j') . ' ' . $bulan[(int) $date->format('n')] . ' ' . $date->format('Y');
+        };
+
+        $label = 'Semua periode';
+        switch ($this->request->getPost('filter_type') ?? 'date') {
+            case 'date':
+                $start = $tanggal($this->request->getPost('start_date'));
+                $end = $tanggal($this->request->getPost('end_date'));
+                if ($start && $end) {
+                    $label = $start . ' s.d. ' . $end;
+                } elseif ($start) {
+                    $label = 'Sejak ' . $start;
+                } elseif ($end) {
+                    $label = 'Sampai ' . $end;
+                }
+                break;
+            case 'month':
+                $month = (int) $this->request->getPost('month');
+                $year = (int) $this->request->getPost('year');
+                if (isset($bulan[$month]) && $year > 0) {
+                    $label = 'Bulan ' . $bulan[$month] . ' ' . $year;
+                }
+                break;
+            case 'year':
+                $year = (int) $this->request->getPost('year');
+                if ($year > 0) {
+                    $label = 'Tahun ' . $year;
+                }
+                break;
+        }
+
+        return 'Periode (tanggal daftar): ' . $label;
     }
 
     // Helper function untuk apply multiple filters
