@@ -12,67 +12,7 @@
             <form id="frm_add" method="post" action="">
                 <div class="modal-body">
                     <div id="frm_add_message"></div>
-					<div class="form-row">
-					<div class="col-lg-6">
-							<div class="form-group">
-								<label for="jenisanggota">Jenis Anggota</label>
-								<div>
-									<input required type="text" class="form-control" id="frm_add_jenisanggota" name="jenisanggota" placeholder="Jenis Anggota" value="" />
-								</div>
-							</div>
-						</div>
-						<div class="col-lg-6">
-							<div class="form-group">
-								<label for="MasaBerlakuAnggota">Masa Berlaku</label>
-								<div>
-									<input required type="text" class="form-control" id="frm_add_MasaBerlakuAnggota" name="MasaBerlakuAnggota" placeholder="Masa Berlaku" value="" />
-								</div>
-							</div>
-						</div>
-						<div class="col-lg-6">
-							<div class="form-group">
-								<label for="BiayaPendaftaran">Biaya Pendaftaran</label>
-								<div>
-									<input required type="text" class="form-control" id="frm_add_BiayaPendaftaran" name="BiayaPendaftaran" placeholder="Biaya Pendaftaran" value="" />
-								</div>
-							</div>
-						</div>
-						<div class="col-lg-6">
-							<div class="form-group">
-								<label for="BiayaPerpanjangan">Biaya Perpanjangan</label>
-								<div>
-									<input required type="text" class="form-control" id="frm_add_BiayaPerpanjangan" name="BiayaPerpanjangan" placeholder="Biaya Perpanjangan" value="" />
-								</div>
-							</div>
-						</div>
-						<div class="col-lg-6">
-							<div class="form-group">
-								<label for="MaxPinjamKoleksi">Maksimal Pinjam Koleksi</label>
-								<div>
-									<input required type="text" class="form-control" id="frm_add_MaxPinjamKoleksi" name="MaxPinjamKoleksi" placeholder="Maksimal Pinjam Koleksi" value="" />
-								</div>
-							</div>
-						</div>
-						<div class="col-lg-6">
-							<div class="form-group">
-								<label for="MaxLoanDays">Maksimal Lama Pinjam Koleksi</label>
-								<div>
-									<input required type="text" class="form-control" id="frm_add_MaxLoanDays" name="MaxLoanDays" placeholder="Maksimal Lama Pinjam Koleksi" value="" />
-								</div>
-							</div>
-						</div>
-						<div class="col-lg-6">
-							<div class="form-group">
-								<label for="UploadDokumenKeanggotaanOnline">Upload Dokumen Peminjaman</label>
-								<div>
-									<select class="form-control" id="frm_add_UploadDokumenKeanggotaanOnline" name="UploadDokumenKeanggotaanOnline">
-										<option value="1">Ya</option>
-										<option value="0">Tdk</option>
-									</select>
-								</div>
-							</div>
-						</div>
-					</div>
+					<?= view('JenisAnggota\Views\_form_fields', ['prefix' => 'frm_add']) ?>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>

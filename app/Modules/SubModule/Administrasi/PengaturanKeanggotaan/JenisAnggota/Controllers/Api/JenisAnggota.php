@@ -34,7 +34,17 @@ class JenisAnggota extends \Base\Controllers\BaseResourceController
 		$builder = $db->table('jenis_anggota as a')
 			->select('a.id, a.id as action, a.jenisanggota')
 			->select('a.MasaBerlakuAnggota, a.BiayaPendaftaran, a.MaxLoanDays,a.MaxPinjamKoleksi, a.DayPerpanjang, a.BiayaPerpanjangan, a.UploadDokumenKeanggotaanOnline, a.UpdateDate')
+			->select('a.id as denda, a.id as suspend')
+			->select('a.DendaType, a.DendaPerTenor, a.DendaTenorJumlah, a.DendaTenorSatuan, a.DendaTenorMultiply')
+			->select('a.SuspendMember, a.SuspendType, a.DaySuspend, a.SuspendTenorJumlah, a.SuspendTenorSatuan, a.SuspendTenorMultiply')
 			->select('a.active');
+
+		// Ringkasan tenor, mis. "per 1 Hari" + keterangan jenis & pengali
+		$tenor = static function ($jumlah, $satuan, $type, $multiply): string {
+			$html = 'per ' . esc((string) (0 + (float) $jumlah)) . ' ' . esc((string) ($satuan ?: 'Hari'));
+			return $html . '<br><small class="text-muted">' . esc((string) ($type ?: 'Konstan'))
+				. ($type === 'Berkelipatan' ? ', &times;' . (int) $multiply : '') . '</small>';
+		};
 
 		$dataTable = DataTable::of($builder)
 			->addNumbering('no')
@@ -57,6 +67,15 @@ class JenisAnggota extends \Base\Controllers\BaseResourceController
 			->edit('BiayaPerpanjangan', function ($row) {
 				$html  =  formatRupiah($row->BiayaPerpanjangan);
 				return $html;
+			})
+			->edit('denda', function ($row) use ($tenor) {
+				return formatRupiah($row->DendaPerTenor) . ' ' . $tenor($row->DendaTenorJumlah, $row->DendaTenorSatuan, $row->DendaType, $row->DendaTenorMultiply);
+			})
+			->edit('suspend', function ($row) use ($tenor) {
+				if ((int) $row->SuspendMember !== 1) {
+					return '<span class="badge badge-secondary badge-pill">Tidak</span>';
+				}
+				return (int) $row->DaySuspend . ' hari ' . $tenor($row->SuspendTenorJumlah, $row->SuspendTenorSatuan, $row->SuspendType, $row->SuspendTenorMultiply);
 			})
 			->edit('UploadDokumenKeanggotaanOnline', function ($row) {
 				$checked = $row->UploadDokumenKeanggotaanOnline == 1 ? 'checked' : '';
@@ -108,16 +127,10 @@ class JenisAnggota extends \Base\Controllers\BaseResourceController
 
 	public function create()
 	{
-		$save_data = array(
-			'jenisanggota' => $this->request->getPost('jenisanggota'),
-			'MasaBerlakuAnggota' => $this->request->getPost('MasaBerlakuAnggota'),
-			'BiayaPendaftaran' => $this->request->getPost('BiayaPendaftaran'),
-			'DayPerpanjang' => $this->request->getPost('DayPerpanjang'),
-			'BiayaPerpanjangan' => $this->request->getPost('BiayaPerpanjangan'),
-			'MaxLoanDays' => $this->request->getPost('MaxLoanDays'),
-			'MaxPinjamKoleksi' => $this->request->getPost('MaxPinjamKoleksi'),
-			'UploadDokumenKeanggotaanOnline' => $this->request->getPost('UploadDokumenKeanggotaanOnline'),
-		);
+		$save_data = $this->formData();
+		if (is_string($save_data)) {
+			return $this->simpleResponse(['error' => true, 'message' => $save_data]);
+		}
 
 		$save_data_id = $this->jenisanggotaModel->insert($save_data);
 		if ($save_data_id) {
@@ -138,16 +151,10 @@ class JenisAnggota extends \Base\Controllers\BaseResourceController
 
 	public function edit($id = null)
 	{
-		$update_data = array(
-			'jenisanggota' => $this->request->getPost('jenisanggota'),
-			'MasaBerlakuAnggota' => $this->request->getPost('MasaBerlakuAnggota'),
-			'BiayaPendaftaran' => $this->request->getPost('BiayaPendaftaran'),
-			'DayPerpanjang' => $this->request->getPost('DayPerpanjang'),
-			'BiayaPerpanjangan' => $this->request->getPost('BiayaPerpanjangan'),
-			'MaxPinjamKoleksi' => $this->request->getPost('MaxPinjamKoleksi'),
-			'MaxLoanDays' => $this->request->getPost('MaxLoanDays'),
-			'UploadDokumenKeanggotaanOnline' => $this->request->getPost('UploadDokumenKeanggotaanOnline'),
-		);
+		$update_data = $this->formData();
+		if (is_string($update_data)) {
+			return $this->simpleResponse(['error' => true, 'message' => $update_data]);
+		}
 
 		$update_data_id = $this->jenisanggotaModel->update($id, $update_data);
 		if ($update_data_id) {
@@ -164,6 +171,68 @@ class JenisAnggota extends \Base\Controllers\BaseResourceController
 		}
 
 		return $this->simpleResponse($response);
+	}
+
+	/**
+	 * Data form Jenis Anggota yang boleh disimpan (semua kolom jenis_anggota kecuali
+	 * id, kolom audit, dan KIILastUploadDate). Mengembalikan pesan error jika input tidak valid.
+	 *
+	 * @return array|string
+	 */
+	private function formData()
+	{
+		$name = trim((string) $this->request->getPost('jenisanggota'));
+		if ($name === '' || mb_strlen($name) > 50) {
+			return 'Jenis Anggota wajib diisi (maksimal 50 karakter).';
+		}
+
+		$data = ['jenisanggota' => $name];
+
+		// Angka bulat >= 0; kosong memakai default kolom di database
+		$integers = [
+			'MasaBerlakuAnggota' => 365, 'BiayaPendaftaran' => 0, 'BiayaPerpanjangan' => 0,
+			'MaxPinjamKoleksi' => 1000, 'MaxLoanDays' => 0, 'DayPerpanjang' => 0, 'CountPerpanjang' => 0,
+			'WarningLoanDueDay' => 0, 'DendaPerTenor' => 0, 'DendaTenorMultiply' => 1,
+			'DaySuspend' => 0, 'SuspendTenorMultiply' => 1,
+		];
+		foreach ($integers as $field => $default) {
+			$value = trim((string) $this->request->getPost($field));
+			if ($value === '') {
+				$data[$field] = $default;
+			} elseif (ctype_digit($value)) {
+				$data[$field] = (int) $value;
+			} else {
+				return 'Isian ' . $field . ' harus berupa angka bulat 0 atau lebih.';
+			}
+		}
+
+		// Tenor boleh desimal (kolom double)
+		foreach (['DendaTenorJumlah', 'SuspendTenorJumlah'] as $field) {
+			$value = trim((string) $this->request->getPost($field));
+			if ($value !== '' && (!is_numeric($value) || $value < 0)) {
+				return 'Isian ' . $field . ' harus berupa angka 0 atau lebih.';
+			}
+			$data[$field] = $value === '' ? 0 : (float) $value;
+		}
+
+		// Pilihan tetap
+		$choices = [
+			'DendaType' => ['Konstan', 'Berkelipatan'],
+			'SuspendType' => ['Konstan', 'Berkelipatan'],
+			'DendaTenorSatuan' => ['Hari', 'Minggu', 'Bulan', 'Tahun'],
+			'SuspendTenorSatuan' => ['Hari', 'Minggu', 'Bulan', 'Tahun'],
+		];
+		foreach ($choices as $field => $allowed) {
+			$value = (string) $this->request->getPost($field);
+			$data[$field] = in_array($value, $allowed, true) ? $value : $allowed[0];
+		}
+
+		// Ya/Tidak dan Aktif/Non Aktif
+		foreach (['UploadDokumenKeanggotaanOnline', 'SuspendMember', 'active'] as $field) {
+			$data[$field] = (string) $this->request->getPost($field) === '1' ? 1 : 0;
+		}
+
+		return $data;
 	}
 
 	public function delete($id = null)

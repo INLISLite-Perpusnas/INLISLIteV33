@@ -53,6 +53,8 @@ $slug = $request->getGet('slug') ?? '';
 						<th class="text-center" width="90">Biaya Perpanjangan</th>
 						<th class="text-center" width="90">Maksimal Pinjam Koleksi</th>
 						<th class="text-center" width="90">Maksimal Lama Pinjam Koleksi</th>
+						<th class="text-center" width="150">Denda</th>
+						<th class="text-center" width="150">Skorsing</th>
 						<th class="text-center" width="90">Upload Dokumen Keanggotaan</th>
 						<th class="text-center" width="90">Default Lokasi</th>
 						<th class="text-center" width="90">Default Jenis Bahan</th>
@@ -133,6 +135,20 @@ $slug = $request->getGet('slug') ?? '';
 					width: "180px"
 				},
 				{
+					data: 'denda',
+					className: 'text-center',
+					orderable: false,
+					searchable: false,
+					width: "180px"
+				},
+				{
+					data: 'suspend',
+					className: 'text-center',
+					orderable: false,
+					searchable: false,
+					width: "180px"
+				},
+				{
 					data: 'UploadDokumenKeanggotaanOnline',
 					className: 'text-center',
 					width: "220px"
@@ -171,7 +187,7 @@ $slug = $request->getGet('slug') ?? '';
 				},
 			],
 			"order": [
-				[7, "desc"]
+				[9, "desc"]
 			],
 			"drawCallback": function(data, type, full, meta) {
 				var api = this.api();

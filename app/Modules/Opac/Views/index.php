@@ -784,8 +784,7 @@
                                 </button>
                                 <?php if (!empty($semantic_enabled)) : ?>
                                     <div class="form-check form-switch mb-0" title="Cari berdasarkan makna kata kunci, bukan hanya kata yang sama persis">
-                                        <input class="form-check-input" type="checkbox" role="switch" name="semantic" value="1" id="opac-semantic"
-                                            <?= request()->getVar('semantic') === '1' ? 'checked' : '' ?>>
+                                        <input class="form-check-input" type="checkbox" role="switch" id="opac-semantic" checked disabled>
                                         <label class="form-check-label small" style="color: var(--op-text-2);" for="opac-semantic">Pencarian semantik</label>
                                     </div>
                                 <?php endif; ?>

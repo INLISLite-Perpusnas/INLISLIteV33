@@ -1771,13 +1771,13 @@ public function browse()
     }
 
     /**
-     * Pencarian semantik (opsi semantic=1 di form OPAC): ID katalog termirip dari service `spark semantic:serve`,
-     * urutan kemiripan dipertahankan; filter tambahan tetap berlaku. Mengembalikan false bila tidak diminta, kriteria
-     * ISBN, atau service tidak tersedia, sehingga pemanggil memakai FULLTEXT.
+     * Pencarian semantik (selalu dipakai bila diaktifkan di pengaturan): ID katalog termirip dari service
+     * `spark semantic:serve`, urutan kemiripan dipertahankan; filter tambahan tetap berlaku. Mengembalikan false bila
+     * tidak aktif, kriteria ISBN, atau service tidak tersedia, sehingga pemanggil memakai FULLTEXT.
      */
     private function applySemanticSearch($builder, string $search, string $searchBy): bool
     {
-        if ($this->request->getVar('semantic') !== '1' || $searchBy === 'ISBN' || !SemanticSearch::enabled()) {
+        if ($searchBy === 'ISBN' || !SemanticSearch::enabled()) {
             return false;
         }
 

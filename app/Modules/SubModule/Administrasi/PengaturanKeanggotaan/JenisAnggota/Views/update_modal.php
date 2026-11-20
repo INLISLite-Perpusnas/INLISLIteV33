@@ -12,67 +12,7 @@
             <form id="frm_update" method="post" data-action="<?= base_url('api/master-jenis-anggota/edit') ?>" data-id="">
 				<div class="modal-body">
                     <div id="frm_update_message"></div>
-					<div class="form-row">
-						<div class="col-lg-6">
-							<div class="form-group">
-								<label for="jenisanggota">Jenis Anggota</label>
-								<div>
-									<input required type="text" class="form-control" id="frm_update_jenisanggota" name="jenisanggota" placeholder="Jenis Anggota" value="" />
-								</div>
-							</div>
-						</div>
-						<div class="col-lg-6">
-							<div class="form-group">
-								<label for="MasaBerlakuAnggota">Masa Berlaku</label>
-								<div>
-									<input required type="text" class="form-control" id="frm_update_MasaBerlakuAnggota" name="MasaBerlakuAnggota" placeholder="Masa Berlaku" value="" />
-								</div>
-							</div>
-						</div>
-						<div class="col-lg-6">
-							<div class="form-group">
-								<label for="BiayaPendaftaran">Biaya Pendaftaran</label>
-								<div>
-									<input required type="text" class="form-control" id="frm_update_BiayaPendaftaran" name="BiayaPendaftaran" placeholder="Biaya Pendaftaran" value="" />
-								</div>
-							</div>
-						</div>
-						<div class="col-lg-6">
-							<div class="form-group">
-								<label for="BiayaPerpanjangan">Biaya Perpanjangan</label>
-								<div>
-									<input required type="text" class="form-control" id="frm_update_BiayaPerpanjangan" name="BiayaPerpanjangan" placeholder="Biaya Perpanjangan" value="" />
-								</div>
-							</div>
-						</div>
-						<div class="col-lg-6">
-							<div class="form-group">
-								<label for="MaxLoanDays">Maksimal Pinjam Koleksi</label>
-								<div>
-									<input required type="text" class="form-control" id="frm_update_MaxPinjamKoleksi" name="MaxPinjamKoleksi" placeholder="Maksimal Pinjam Koleksi" value="" />
-								</div>
-							</div>
-						</div>
-						<div class="col-lg-6">
-							<div class="form-group">
-								<label for="MaxLoanDays">Maksimal Lama Pinjam Koleksi</label>
-								<div>
-									<input required type="text" class="form-control" id="frm_update_MaxLoanDays" name="MaxLoanDays" placeholder="Maksimal Pinjam Koleksi" value="" />
-								</div>
-							</div>
-						</div>
-						<div class="col-lg-6">
-							<div class="form-group">
-								<label for="UploadDokumenKeanggotaanOnline">Upload Dokumen Peminjaman</label>
-								<div>
-									<select class="form-control" id="frm_update_UploadDokumenKeanggotaanOnline" name="UploadDokumenKeanggotaanOnline">
-										<option value="1">Ya</option>
-										<option value="0">Tdk</option>
-									</select>
-								</div>
-							</div>
-						</div>
-					</div>
+					<?= view('JenisAnggota\Views\_form_fields', ['prefix' => 'frm_update']) ?>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
@@ -93,13 +33,19 @@
             dataType: 'json',
             success: function(response) {
                 $('#frm_update').attr("data-id", response.id);
-                $('#frm_update_jenisanggota').val(response.jenisanggota);
-                $('#frm_update_MasaBerlakuAnggota').val(response.MasaBerlakuAnggota);
-                $('#frm_update_BiayaPendaftaran').val(response.BiayaPendaftaran);
-                $('#frm_update_BiayaPerpanjangan').val(response.BiayaPerpanjangan);
-                $('#frm_update_MaxPinjamKoleksi').val(response.MaxPinjamKoleksi);
-                $('#frm_update_MaxLoanDays').val(response.MaxLoanDays);
-                $('#frm_update_UploadDokumenKeanggotaanOnline').val(response.UploadDokumenKeanggotaanOnline);
+                // Isi semua field form dari data; nama field = nama kolom di tabel jenis_anggota
+                $('#frm_update').find('input[name], select[name]').each(function() {
+                    var value = response[this.name];
+                    if (this.tagName === 'SELECT') {
+                        // Nilai kosong/NULL di database ditampilkan sebagai opsi "0" (Tidak / Non Aktif)
+                        // supaya sama dengan tampilan di tabel daftar
+                        value = (value === null || value === undefined || value === '') ? '0' : String(value);
+                        if (!$(this).find('option[value="' + value + '"]').length) {
+                            value = $(this).find('option:first').val();
+                        }
+                    }
+                    $(this).val(value === null || value === undefined ? '' : value);
+                });
                 $('#modal_update').modal('show');
             }
         });
