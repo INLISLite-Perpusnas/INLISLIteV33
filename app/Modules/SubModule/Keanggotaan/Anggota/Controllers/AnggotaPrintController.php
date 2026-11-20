@@ -37,12 +37,25 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
         // Orientasi kartu: 'landscape' (default) atau 'portrait'
         $orientation = strtolower((string) $this->request->getGet('orientation'));
         $this->data['orientation'] = $orientation === 'portrait' ? 'portrait' : 'landscape';
-
-        $this->data['perpus_name'] = $db->table('settingparameters')
-            ->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value ?? "Perpustakaan Nasional";
+        // Opsi tampilan (nilai awal dari URL, tetap bisa diubah di halaman preview)
+        $code_type = strtolower((string) $this->request->getGet('code_type'));
+        $template = (string) $this->request->getGet('template');
+        $this->data['template'] = $template === '2' ? '2' : '1';
+        $npp = $db->table('settingparameters')->where('Name', 'NPPPerpustakaan')->get()->getRow();
+        $this->data['npp'] = $npp->Value ?? '';
+        $this->data['show_npp'] = $this->request->getGet('show_npp') !== '0';
+        $this->data['code_type'] = $code_type === 'barcode' ? 'barcode' : 'qr';
+        $this->data['show_logo'] = $this->request->getGet('show_logo') !== '0';
+        $this->data['show_name'] = $this->request->getGet('show_name') !== '0';
+        $this->data['perpus_name'] = $db
+            ->table('settingparameters')
+            ->where('Name', 'NamaPerpustakaan')
+            ->get()
+            ->getRow()
+            ->Value ?? 'Perpustakaan Nasional';
 
         $logo_setting = $db->table('settingparameters')->where('Name', 'Logo')->get()->getRow();
-        $logo_base64  = '';
+        $logo_base64 = '';
         if ($logo_setting && $logo_setting->Value) {
             $logo_path = ROOTPATH . 'public/uploads/branch/' . $logo_setting->Value;
             if (file_exists($logo_path)) {
@@ -60,24 +73,28 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
         }
         $this->data['photo_base64'] = $photo_base64;
 
-        $options  = new QROptions(['scale' => 7, 'imageBase64' => true]);
-        $qrcode   = new QRCode($options);
+        $options = new QROptions(['scale' => 7, 'imageBase64' => true]);
+        $qrcode = new QRCode($options);
         $this->data['qr_image'] = $qrcode->render($anggota->MemberNo);
 
-        $this->data['end_date'] = date('d F Y', strtotime($anggota->EndDate));
+        $this->data['end_date'] = $this->formatTanggalIndo($anggota->EndDate);
 
         $jenis_anggota = $this->jenisanggotaModel->find($anggota->JenisAnggota_id);
         $this->data['jenis_anggota_nama'] = $jenis_anggota ? $jenis_anggota->jenisanggota : 'UMUM';
 
-        $background_image_filename = $db->table('settingparameters')
-            ->where('Name', 'FileKartuAnggota')->get()->getRow()->Value ?? null;
+        $background_image_filename = $db
+            ->table('settingparameters')
+            ->where('Name', 'FileKartuAnggota')
+            ->get()
+            ->getRow()
+            ->Value ?? null;
 
         $backgroundStyle = '';
         if (!empty($background_image_filename)) {
             $bgPath = ROOTPATH . 'public/uploads/master-template/' . $background_image_filename;
             if (file_exists($bgPath)) {
-                $ext   = strtolower(pathinfo($bgPath, PATHINFO_EXTENSION));
-                $mime  = $ext === 'jpg' ? 'image/jpeg' : 'image/' . $ext;
+                $ext = strtolower(pathinfo($bgPath, PATHINFO_EXTENSION));
+                $mime = $ext === 'jpg' ? 'image/jpeg' : 'image/' . $ext;
                 $bgB64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($bgPath));
                 $backgroundStyle = "background: url('{$bgB64}') no-repeat center center / cover;";
             }
@@ -85,6 +102,32 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
         $this->data['backgroundStyle'] = $backgroundStyle;
 
         echo view('Anggota\Views\pdf\pdf1', $this->data);
+    }
+
+    private function formatTanggalIndo($tanggal)
+    {
+        if (empty($tanggal) || strtotime($tanggal) === false) {
+            return '-';
+        }
+
+        $bulan = [
+            1 => 'Januari',
+            'Februari',
+            'Maret',
+            'April',
+            'Mei',
+            'Juni',
+            'Juli',
+            'Agustus',
+            'September',
+            'Oktober',
+            'November',
+            'Desember',
+        ];
+
+        $ts = strtotime($tanggal);
+
+        return date('d', $ts) . ' ' . $bulan[(int) date('n', $ts)] . ' ' . date('Y', $ts);
     }
 
     // ----------------------------------------------------------------
@@ -99,14 +142,22 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
         $orientation = strtolower((string) $this->request->getGet('orientation'));
         $this->data['orientation'] = $orientation === 'portrait' ? 'portrait' : 'landscape';
 
-        $this->data['perpus_name'] = $db->table('settingparameters')
-            ->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value ?? "Perpustakaan Nasional";
+        $this->data['perpus_name'] = $db
+            ->table('settingparameters')
+            ->where('Name', 'NamaPerpustakaan')
+            ->get()
+            ->getRow()
+            ->Value ?? 'Perpustakaan Nasional';
 
-        $this->data['lokasi_perpustakaan'] = $db->table('settingparameters')
-            ->where('Name', 'NamaLokasiPerpustakaan')->get()->getRow()->Value ?? "Perpustakaan Nasional";
+        $this->data['lokasi_perpustakaan'] = $db
+            ->table('settingparameters')
+            ->where('Name', 'NamaLokasiPerpustakaan')
+            ->get()
+            ->getRow()
+            ->Value ?? 'Perpustakaan Nasional';
 
         $logo_setting = $db->table('settingparameters')->where('Name', 'Logo')->get()->getRow();
-        $logo_base64  = '';
+        $logo_base64 = '';
         if ($logo_setting && $logo_setting->Value) {
             $logo_path = ROOTPATH . 'public/uploads/branch/' . $logo_setting->Value;
             if (file_exists($logo_path)) {
@@ -132,15 +183,28 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
 
         // Orientasi kartu: 'landscape' (default) atau 'portrait'
         $orientation = strtolower((string) $this->request->getPost('orientation'));
-        $this->data['orientation'] = $orientation === 'portrait' ? 'portrait' : 'landscape';
-
+        $this->data['orientation'] = $orientation === 'portrait' ? 'portrait' : 'landscap        e';
+        // Opsi tampilan (default bisa dikirim lewat POST, tapi tetap bisa diubah di halaman preview)
+        $code_type = strtolower((string) $this->request->getPost('code_type'));
+        $this->data['code_type'] = $code_type === 'barcode' ? 'barcode' : 'qr';
+        $this->data['show_logo'] = $this->request->getPost('show_logo') !== '0';
+        $this->data['show_name'] = $this->request->getPost('show_name') !== '0';
+        $template = (string) $this->request->getPost('template');
+        $this->data['template'] = $template === '2' ? '2' : '1';
+        $this->data['show_expiry'] = $this->request->getPost('show_expiry') !== '0';
         $db = db_connect();
 
-        $perpus_name = $db->table('settingparameters')
-            ->where('Name', 'NamaPerpustakaan')->get()->getRow()->Value ?? "Perpustakaan Nasional";
-
+        $perpus_name = $db
+            ->table('settingparameters')
+            ->where('Name', 'NamaPerpustakaan')
+            ->get()
+            ->getRow()
+            ->Value ?? 'Perpustakaan Nasional';
+        $npp = $db->table('settingparameters')->where('Name', 'NPPPerpustakaan')->get()->getRow();
+        $this->data['npp'] = $npp->Value ?? '';
+        $this->data['show_npp'] = $this->request->getPost('show_npp') !== '0';
         $logo_setting = $db->table('settingparameters')->where('Name', 'Logo')->get()->getRow();
-        $logo_base64  = '';
+        $logo_base64 = '';
         if ($logo_setting && $logo_setting->Value) {
             $logo_path = ROOTPATH . 'public/uploads/branch/' . $logo_setting->Value;
             if (file_exists($logo_path)) {
@@ -153,7 +217,8 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
 
         foreach ($member_ids as $member_id) {
             $anggota = $db->table('members m')->select('m.*')->where('m.id', $member_id)->get()->getRow();
-            if (!$anggota) continue;
+            if (!$anggota)
+                continue;
 
             $photo_base64 = '';
             if ($anggota->PhotoUrl) {
@@ -165,37 +230,41 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
             $photo_src = $photo_base64 ?: 'https://placehold.co/250x280/cccccc/666666?text=FOTO';
 
             $options = new QROptions(['scale' => 7, 'imageBase64' => true]);
-            $qrcode  = new QRCode($options);
+            $qrcode = new QRCode($options);
             $qr_image = $qrcode->render($anggota->MemberNo);
 
-            $jenis_anggota_data = $db->table('jenis_anggota')
-                ->select('jenisanggota')->where('id', $anggota->JenisAnggota_id)->get()->getRow();
+            $jenis_anggota_data = $db
+                ->table('jenis_anggota')
+                ->select('jenisanggota')
+                ->where('id', $anggota->JenisAnggota_id)
+                ->get()
+                ->getRow();
 
             $members_data[] = [
-                'anggota'          => $anggota,
-                'photo_base64'     => $photo_src,
-                'qr_image'         => $qr_image,
-                'end_date'         => date('d F Y', strtotime($anggota->EndDate)),
+                'anggota' => $anggota,
+                'photo_base64' => $photo_src,
+                'qr_image' => $qr_image,
+                'end_date' => $this->formatTanggalIndo($anggota->EndDate),
                 'jenis_anggota_nama' => $jenis_anggota_data ? $jenis_anggota_data->jenisanggota : 'UMUM',
             ];
         }
 
-        $bg_b64     = '';
+        $bg_b64 = '';
         $bg_setting = $db->table('settingparameters')->where('Name', 'FileKartuAnggota')->get()->getRow();
         if ($bg_setting && $bg_setting->Value) {
             $bgPath = ROOTPATH . 'public/uploads/master-template/' . $bg_setting->Value;
             if (file_exists($bgPath)) {
-                $ext    = strtolower(pathinfo($bgPath, PATHINFO_EXTENSION));
-                $mime   = $ext === 'jpg' ? 'image/jpeg' : 'image/' . $ext;
+                $ext = strtolower(pathinfo($bgPath, PATHINFO_EXTENSION));
+                $mime = $ext === 'jpg' ? 'image/jpeg' : 'image/' . $ext;
                 $bg_b64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($bgPath));
             }
         }
 
         $this->data['members_data'] = $members_data;
-        $this->data['perpus_name']  = $perpus_name;
-        $this->data['logo_base64']  = $logo_base64;
-        $this->data['bg_b64']       = $bg_b64;
-        $this->data['title']        = 'Cetak Kartu Anggota - Multiple';
+        $this->data['perpus_name'] = $perpus_name;
+        $this->data['logo_base64'] = $logo_base64;
+        $this->data['bg_b64'] = $bg_b64;
+        $this->data['title'] = 'Cetak Kartu Anggota - Multiple';
 
         return view('Anggota\Views\pdf\multiple-pdf1', $this->data);
     }
@@ -206,15 +275,15 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
 
     public function bebaspustaka(int $id = null)
     {
-        $db      = db_connect();
+        $db = db_connect();
         $anggota = $this->anggotaModel->find($id);
 
         $jenis_perpustakaan = $this->settingModel->where('Name', 'JenisPerpustakaan')->first()->Value ?? 'UMUM';
-        $nama_perpustakaan  = $this->settingModel->where('Name', 'NamaPerpustakaan')->first()->Value ?? 'Perpustakaan';
+        $nama_perpustakaan = $this->settingModel->where('Name', 'NamaPerpustakaan')->first()->Value ?? 'Perpustakaan';
 
-        $kelas_nama    = null;
+        $kelas_nama = null;
         $fakultas_nama = null;
-        $jurusan_nama  = null;
+        $jurusan_nama = null;
 
         if (strtoupper($jenis_perpustakaan) === 'SEKOLAH') {
             if (!empty($anggota->Kelas_id)) {
@@ -232,16 +301,16 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
             }
         }
 
-        $this->data['title']              = 'Bebas Pustaka';
-        $this->data['anggota']            = $anggota;
+        $this->data['title'] = 'Bebas Pustaka';
+        $this->data['anggota'] = $anggota;
         $this->data['jenis_perpustakaan'] = strtoupper($jenis_perpustakaan);
-        $this->data['nama_perpustakaan']  = $nama_perpustakaan;
-        $this->data['kelas_nama']         = $kelas_nama;
-        $this->data['fakultas_nama']      = $fakultas_nama;
-        $this->data['jurusan_nama']       = $jurusan_nama;
+        $this->data['nama_perpustakaan'] = $nama_perpustakaan;
+        $this->data['kelas_nama'] = $kelas_nama;
+        $this->data['fakultas_nama'] = $fakultas_nama;
+        $this->data['jurusan_nama'] = $jurusan_nama;
 
         $dompdf = new Dompdf();
-        $html   = view('Anggota\Views\bebas-pustaka', $this->data);
+        $html = view('Anggota\Views\bebas-pustaka', $this->data);
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
@@ -279,7 +348,7 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
             return $this->response->setJSON(['success' => false, 'message' => 'Gagal memproses file yang diunggah.']);
         }
 
-        $newName    = $img->getRandomName();
+        $newName = $img->getRandomName();
         $uploadPath = rtrim(FCPATH, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'master-template' . DIRECTORY_SEPARATOR;
 
         if (!is_dir($uploadPath)) {
@@ -289,7 +358,7 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
         try {
             $img->move($uploadPath, $newName);
 
-            $db      = db_connect();
+            $db = db_connect();
             $setting = $db->table('settingparameters')->where('Name', 'FileKartuAnggota')->get()->getRow();
 
             if ($setting) {
@@ -302,8 +371,8 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
             }
 
             return $this->response->setJSON([
-                'success'  => true,
-                'message'  => 'Background kartu berhasil diupdate.',
+                'success' => true,
+                'message' => 'Background kartu berhasil diupdate.',
                 'file_url' => base_url('uploads/master-template/' . $newName),
             ]);
         } catch (\Exception $e) {
