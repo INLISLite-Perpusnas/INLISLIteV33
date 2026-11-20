@@ -3,10 +3,12 @@ $orientation = ($orientation ?? 'landscape') === 'portrait' ? 'portrait' : 'land
 $code_type = ($code_type ?? 'qr') === 'barcode' ? 'barcode' : 'qr';
 $show_logo = $show_logo ?? true;
 $show_name = $show_name ?? true;
+$show_npp = $show_npp ?? true;
+$npp = trim((string) ($npp ?? ''));
 $template = ($template ?? '1') === '2' ? '2' : '1';
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 
 <head>
     <meta charset="UTF-8">
@@ -113,6 +115,10 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
             margin-bottom: 4px;
         }
 
+        body.orient-portrait .header-text {
+            width: 100%;
+        }
+
         body.orient-portrait #logoImage {
             width: 110px !important;
             height: 110px !important;
@@ -122,6 +128,11 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
         body.orient-portrait .library-name h1 {
             font-size: 20px;
             max-width: 100%;
+        }
+
+        body.orient-portrait .library-npp {
+            font-size: 16px;
+            margin-top: 2px;
         }
 
         /* Nama lengkap */
@@ -218,12 +229,16 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
             }
         }
 
-        /* --- Toggle Logo / Nama Perpustakaan --- */
+        /* --- Toggle Logo / Nama Perpustakaan / NPP --- */
         body.hide-logo #logoImage {
             display: none;
         }
 
         body.hide-libname .library-name {
+            display: none;
+        }
+
+        body.hide-npp .library-npp {
             display: none;
         }
 
@@ -252,121 +267,153 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
         }
 
         /* --- Layout: pengaturan di kiri, preview di kanan --- */
-@media screen {
-    .layout {
-        display: flex;
-        gap: 24px;
-        align-items: flex-start;
-        justify-content: center;
-        width: 100%;
-    }
+        @media screen {
+            .layout {
+                display: flex;
+                gap: 24px;
+                align-items: flex-start;
+                justify-content: center;
+                width: 100%;
+            }
 
-    .sidebar {
-        width: 360px;
-        flex-shrink: 0;
-        position: sticky;
-        top: 20px;
-        max-height: calc(100vh - 40px);
-        overflow-y: auto;
-    }
+            .sidebar {
+                width: 360px;
+                flex-shrink: 0;
+                position: sticky;
+                top: 20px;
+                max-height: calc(100vh - 40px);
+                overflow-y: auto;
+            }
 
-    .sidebar .upload-section {
-        max-width: none;
-        margin-bottom: 16px;
-    }
+            .sidebar .upload-section {
+                max-width: none;
+                margin-bottom: 16px;
+            }
 
-    .sidebar .upload-grid,
-    .sidebar .color-section {
-        grid-template-columns: 1fr;
-    }
+            .sidebar .upload-grid,
+            .sidebar .color-section {
+                grid-template-columns: 1fr;
+            }
 
-    .sidebar .controls button {
-        margin: 4px;
-    }
+            .sidebar .controls button {
+                margin: 4px;
+            }
 
-    .preview {
-        flex: 0 0 auto;
-    }
-}
+            .preview {
+                flex: 0 0 auto;
+            }
+        }
 
-/* Layar sempit: kembali ke susunan atas-bawah */
-@media screen and (max-width: 1450px) {
-    .layout {
-        flex-direction: column;
-        align-items: center;
-    }
-    .sidebar {
-        position: static;
-        width: 100%;
-        max-width: 800px;
-        max-height: none;
-        overflow: visible;
-    }
-}
+        /* Layar sempit: kembali ke susunan atas-bawah */
+        @media screen and (max-width: 1450px) {
+            .layout {
+                flex-direction: column;
+                align-items: center;
+            }
 
-/* Saat dicetak, hanya kartu yang tampil */
-@media print {
-    .layout { display: block !important; }
-    .sidebar { display: none !important; }
-}
+            .sidebar {
+                position: static;
+                width: 100%;
+                max-width: 800px;
+                max-height: none;
+                overflow: visible;
+            }
+        }
 
-/* =====================================================
-   TEMPLATE 2
-   Kiri : no anggota, kode, berlaku hingga
-   Kanan: jenis anggota, foto, nama
-   ===================================================== */
+        /* Saat dicetak, hanya kartu yang tampil */
+        @media print {
+            .layout {
+                display: block !important;
+            }
 
-/* Elemen yang dipindah ke panel kiri */
-body.tpl-2 .left-panel .member-no {
-    margin: 0 0 16px;
-    text-align: center;
-}
-body.tpl-2 .left-panel .expiry-date {
-    margin: 16px 0 0;
-    text-align: center;
-}
+            .sidebar {
+                display: none !important;
+            }
+        }
 
-/* Landscape: kedua panel mulai dari garis atas yang sama */
-body.tpl-2:not(.orient-portrait) .left-panel,
-body.tpl-2:not(.orient-portrait) .right-panel {
-    box-sizing: border-box;
-    justify-content: flex-start;
-    padding-top: 190px;
-}
-body.tpl-2.hide-header:not(.orient-portrait) .left-panel,
-body.tpl-2.hide-header:not(.orient-portrait) .right-panel {
-    padding-top: 50px;
-}
+        /* =====================================================
+           TEMPLATE 2
+           Kiri : no anggota, kode, berlaku hingga
+           Kanan: jenis anggota, foto, nama
+           ===================================================== */
 
-/* Panel kanan lebih padat, jadi foto dan nama dikecilkan */
-body.tpl-2:not(.orient-portrait) .right-panel .member-type {
-    margin-bottom: 14px;
-}
-body.tpl-2:not(.orient-portrait) .member-photo {
-    width: 200px;
-    height: 225px;
-}
-body.tpl-2:not(.orient-portrait) .right-panel .fullname {
-    font-size: 26px;
-    line-height: 1.2;
-    margin: 14px 0 0;
-    max-width: 340px;
-}
+        /* Elemen yang dipindah ke panel kiri */
+        body.tpl-2 .left-panel .member-no {
+            margin: 0 0 16px;
+            text-align: center;
+        }
 
-/* Portrait: urutan susunan vertikal untuk template 2 */
-body.orient-portrait.tpl-2 .member-photo   { order: 2; }
-body.orient-portrait.tpl-2 .fullname       { order: 3; margin: 0 0 14px; }
-body.orient-portrait.tpl-2 .member-type    { order: 4; }
-body.orient-portrait.tpl-2 .member-no      { order: 5; margin-bottom: 12px; }
-body.orient-portrait.tpl-2 .qrcode-placeholder { order: 6; }
-body.orient-portrait.tpl-2 .expiry-date    { order: 7; margin: 14px 0 0; }
+        body.tpl-2 .left-panel .expiry-date {
+            margin: 16px 0 0;
+            text-align: center;
+        }
 
-body.tpl-2.mode-barcode .qrcode-placeholder {
-    margin-bottom: 90px; /* 210 - 120 */
-}
-body.tpl-2.mode-barcode.orient-portrait .qrcode-placeholder {
-    margin-bottom: 75px; /* 189 - 114 */
-}
+        /* Landscape: kedua panel mulai dari garis atas yang sama */
+        body.tpl-2:not(.orient-portrait) .left-panel,
+        body.tpl-2:not(.orient-portrait) .right-panel {
+            box-sizing: border-box;
+            justify-content: flex-start;
+            padding-top: 190px;
+        }
+
+        body.tpl-2.hide-header:not(.orient-portrait) .left-panel,
+        body.tpl-2.hide-header:not(.orient-portrait) .right-panel {
+            padding-top: 50px;
+        }
+
+        /* Panel kanan lebih padat, jadi foto dan nama dikecilkan */
+        body.tpl-2:not(.orient-portrait) .right-panel .member-type {
+            margin-bottom: 14px;
+        }
+
+        body.tpl-2:not(.orient-portrait) .member-photo {
+            width: 200px;
+            height: 225px;
+        }
+
+        body.tpl-2:not(.orient-portrait) .right-panel .fullname {
+            font-size: 26px;
+            line-height: 1.2;
+            margin: 14px 0 0;
+            max-width: 340px;
+        }
+
+        /* Portrait: urutan susunan vertikal untuk template 2 */
+        body.orient-portrait.tpl-2 .member-photo {
+            order: 2;
+        }
+
+        body.orient-portrait.tpl-2 .fullname {
+            order: 3;
+            margin: 0 0 14px;
+        }
+
+        body.orient-portrait.tpl-2 .member-type {
+            order: 4;
+        }
+
+        body.orient-portrait.tpl-2 .member-no {
+            order: 5;
+            margin-bottom: 12px;
+        }
+
+        body.orient-portrait.tpl-2 .qrcode-placeholder {
+            order: 6;
+        }
+
+        body.orient-portrait.tpl-2 .expiry-date {
+            order: 7;
+            margin: 14px 0 0;
+        }
+
+        /* Template 2 + barcode: ruang tetap sebesar kotak QR supaya "Berlaku Hingga" tidak naik */
+        body.tpl-2.mode-barcode .qrcode-placeholder {
+            margin-bottom: 90px;
+        }
+
+        body.tpl-2.mode-barcode.orient-portrait .qrcode-placeholder {
+            margin-bottom: 75px;
+        }
 
         /* --- Base Styles --- */
         body {
@@ -548,7 +595,7 @@ body.tpl-2.mode-barcode.orient-portrait .qrcode-placeholder {
             transition: background 0.3s ease;
         }
 
-        /* --- Header Section (Logo & Library Name) --- */
+        /* --- Header Section (Logo, Nama Perpustakaan & NPP) --- */
         .header-section {
             position: absolute;
             top: 30px;
@@ -579,6 +626,15 @@ body.tpl-2.mode-barcode.orient-portrait .qrcode-placeholder {
             margin: 0;
             line-height: 1.2;
             max-width: 400px;
+        }
+
+        .library-npp {
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-top: 4px;
+            color: #4a442a;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
         }
 
         /* --- Main Layout Panels (Flexbox) --- */
@@ -691,185 +747,181 @@ body.tpl-2.mode-barcode.orient-portrait .qrcode-placeholder {
     </style>
 </head>
 
-<body class="orient-<?= $orientation ?> mode-<?= $code_type ?> tpl-<?= $template ?><?= $show_logo ? '' : ' hide-logo' ?><?= $show_name ? '' : ' hide-libname' ?><?= (!$show_logo && !$show_name) ? ' hide-header' : '' ?>">
+<body class="orient-<?= $orientation ?> mode-<?= $code_type ?> tpl-<?= $template ?><?= $show_logo ? '' : ' hide-logo' ?><?= $show_name ? '' : ' hide-libname' ?><?= $show_npp ? '' : ' hide-npp' ?><?= (!$show_logo && !$show_name && !$show_npp) ? ' hide-header' : '' ?>">
     <div class="layout">
 
         <aside class="sidebar">
-    <div class="upload-section">
-        <h3>🎨 Kustomisasi Background & Warna</h3>
+            <div class="upload-section">
+                <h3>🎨 Kustomisasi Background & Warna</h3>
 
-        <div class="upload-grid">
-            <div class="upload-item">
-                <label for="bgImage">📷 Upload Background Image:</label>
-                <input type="file" id="bgImage" accept="image/*" onchange="handleBackgroundUpload(event)">
-                <small style="color: #666; display: block; margin-top: 5px;">Format: JPG, PNG, GIF</small>
-            </div>
+                <div class="upload-grid">
+                    <div class="upload-item">
+                        <label for="bgImage">📷 Upload Background Image:</label>
+                        <input type="file" id="bgImage" accept="image/*" onchange="handleBackgroundUpload(event)">
+                        <small style="color: #666; display: block; margin-top: 5px;">Format: JPG, PNG, GIF</small>
+                    </div>
 
-            <div class="upload-item">
-                <label>🎨 Atau Pilih Warna Background:</label>
-                <input type="color" id="bgColorPicker" value="#ffe061" onchange="changeBackgroundColor(this.value)"
-                    style="width: 100%; height: 50px; border: none; border-radius: 8px; cursor: pointer;">
-            </div>
-            <div class="upload-item">
-    <label> Template Kartu:</label>
-    <label style="font-weight:500;">
-        <input type="radio" name="cardTemplate" value="1" <?= $template === '1' ? 'checked' : '' ?> onchange="applyTemplate(this.value)"> Template 1
-    </label>
-    <label style="font-weight:500;">
-        <input type="radio" name="cardTemplate" value="2" <?= $template === '2' ? 'checked' : '' ?> onchange="applyTemplate(this.value)"> Template 2
-    </label>
-</div>
-            <div class="upload-item">
-                <label> Tampilan Header:</label>
-                <label style="font-weight:500;">
-                    <input type="checkbox" id="toggleLogo" <?= $show_logo ? 'checked' : '' ?>
-                        onchange="applyCardOptions()"> Tampilkan Logo
-                </label>
-                <label style="font-weight:500;">
-                    <input type="checkbox" id="toggleName" <?= $show_name ? 'checked' : '' ?>
-                        onchange="applyCardOptions()"> Tampilkan Nama Perpustakaan
-                </label>
-            </div>
+                    <div class="upload-item">
+                        <label>🎨 Atau Pilih Warna Background:</label>
+                        <input type="color" id="bgColorPicker" value="#ffe061" onchange="changeBackgroundColor(this.value)"
+                            style="width: 100%; height: 50px; border: none; border-radius: 8px; cursor: pointer;">
+                    </div>
 
-            <div class="upload-item">
-                <label> Jenis Kode:</label>
-                <label style="font-weight:500;">
-                    <input type="radio" name="codeType" value="qr" <?= $code_type === 'qr' ? 'checked' : '' ?>
-                        onchange="applyCardOptions()"> QR Code
-                </label>
-                <label style="font-weight:500;">
-                    <input type="radio" name="codeType" value="barcode" <?= $code_type === 'barcode' ? 'checked' : '' ?>
-                        onchange="applyCardOptions()"> Barcode
-                </label>
-            </div>
+                    <div class="upload-item">
+                        <label>🧩 Template Kartu:</label>
+                        <label style="font-weight:500;">
+                            <input type="radio" name="cardTemplate" value="1" <?= $template === '1' ? 'checked' : '' ?> onchange="applyTemplate(this.value)"> Template 1
+                        </label>
+                        <label style="font-weight:500;">
+                            <input type="radio" name="cardTemplate" value="2" <?= $template === '2' ? 'checked' : '' ?> onchange="applyTemplate(this.value)"> Template 2
+                        </label>
+                    </div>
 
-            <div class="upload-item">
-                <label> Panel Kanan:</label>
+                    <div class="upload-item">
+                        <label>🏷️ Tampilan Header:</label>
+                        <label style="font-weight:500;">
+                            <input type="checkbox" id="toggleLogo" <?= $show_logo ? 'checked' : '' ?> onchange="applyCardOptions()"> Tampilkan Logo
+                        </label>
+                        <label style="font-weight:500;">
+                            <input type="checkbox" id="toggleName" <?= $show_name ? 'checked' : '' ?> onchange="applyCardOptions()"> Tampilkan Nama Perpustakaan
+                        </label>
+                        <label style="font-weight:500;">
+                            <input type="checkbox" id="toggleNpp" <?= $show_npp ? 'checked' : '' ?> onchange="applyCardOptions()"> Tampilkan NPP
+                        </label>
+                    </div>
 
-                <label style="font-weight:500;">
-                    <input type="checkbox" id="togglePanel" checked onchange="updatePanel()"> Tampilkan panel
-                </label>
+                    <div class="upload-item">
+                        <label>🔳 Jenis Kode:</label>
+                        <label style="font-weight:500;">
+                            <input type="radio" name="codeType" value="qr" <?= $code_type === 'qr' ? 'checked' : '' ?> onchange="applyCardOptions()"> QR Code
+                        </label>
+                        <label style="font-weight:500;">
+                            <input type="radio" name="codeType" value="barcode" <?= $code_type === 'barcode' ? 'checked' : '' ?> onchange="applyCardOptions()"> Barcode
+                        </label>
+                    </div>
 
-                <label style="font-weight:500; margin-top:8px;">Warna:</label>
-                <input type="color" id="panelColor" value="#ffffff" onchange="updatePanel()"
-                    style="width:100%; height:40px; border:none; border-radius:6px; cursor:pointer;">
+                    <div class="upload-item">
+                        <label>🪟 Panel Kanan:</label>
 
-                <label style="font-weight:500; margin-top:8px;">
-                    Opacity: <span id="panelOpacityVal">40%</span>
-                </label>
-                <input type="range" id="panelOpacity" min="0" max="100" value="40" oninput="updatePanel()"
-                    style="width:100%;">
+                        <label style="font-weight:500;">
+                            <input type="checkbox" id="togglePanel" checked onchange="updatePanel()"> Tampilkan panel
+                        </label>
 
-                <label style="font-weight:500; margin-top:8px;">
-                    Blur: <span id="panelBlurVal">10px</span>
-                </label>
-                <input type="range" id="panelBlur" min="0" max="20" value="10" oninput="updatePanel()"
-                    style="width:100%;">
-            </div>
-        </div>
+                        <label style="font-weight:500; margin-top:8px;">Warna:</label>
+                        <input type="color" id="panelColor" value="#ffffff" onchange="updatePanel()"
+                            style="width:100%; height:40px; border:none; border-radius:6px; cursor:pointer;">
 
-        <div class="color-section">
-            <div class="color-item">
-                <label>Warna Overlay:</label>
-                <input type="color" id="overlayColor" value="#ffe061" onchange="changeOverlayColor(this.value)">
-            </div>
-            <div class="color-item">
-                <label>Opacity Overlay:</label>
-                <input type="range" id="overlayOpacity" min="0" max="100" value="30"
-                    onchange="changeOverlayOpacity(this.value)" style="width: 100%;">
-                <span id="opacityValue">30%</span>
-            </div>
-        </div>
+                        <label style="font-weight:500; margin-top:8px;">
+                            Opacity: <span id="panelOpacityVal">40%</span>
+                        </label>
+                        <input type="range" id="panelOpacity" min="0" max="100" value="40" oninput="updatePanel()"
+                            style="width:100%;">
 
-        <div class="preset-colors">
-            <div class="preset-color" style="background: linear-gradient(135deg, #ffe061, #f4c430);"
-                onclick="applyPresetGradient('linear-gradient(135deg, #ffe061 0%, #f4c430 50%, #e0a818 100%)', '#ffe061')"
-                title="Kuning Emas"></div>
-            <div class="preset-color" style="background: linear-gradient(135deg, #4CAF50, #2E7D32);"
-                onclick="applyPresetGradient('linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)', '#4CAF50')"
-                title="Hijau"></div>
-            <div class="preset-color" style="background: linear-gradient(135deg, #2196F3, #1565C0);"
-                onclick="applyPresetGradient('linear-gradient(135deg, #2196F3 0%, #1565C0 100%)', '#2196F3')"
-                title="Biru"></div>
-            <div class="preset-color" style="background: linear-gradient(135deg, #FF5722, #D32F2F);"
-                onclick="applyPresetGradient('linear-gradient(135deg, #FF5722 0%, #D32F2F 100%)', '#FF5722')"
-                title="Merah"></div>
-            <div class="preset-color" style="background: linear-gradient(135deg, #9C27B0, #6A1B9A);"
-                onclick="applyPresetGradient('linear-gradient(135deg, #9C27B0 0%, #6A1B9A 100%)', '#9C27B0')"
-                title="Ungu"></div>
-            <div class="preset-color" style="background: linear-gradient(135deg, #607D8B, #37474F);"
-                onclick="applyPresetGradient('linear-gradient(135deg, #607D8B 0%, #37474F 100%)', '#607D8B')"
-                title="Abu-abu"></div>
-        </div>
-
-        <div style="margin-top: 15px;">
-            <button onclick="removeBackground()"
-                style="background: #FF5722; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">🗑️
-                Hapus Background</button>
-            <button onclick="resetToDefault()"
-                style="background: #FF9800; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">🔄
-                Reset Default</button>
-        </div>
-    </div>
-    </aside>
-
-    <main class="preview">
-    <!-- Card dengan data PHP (simulasi) -->
-    <div class="card-container" id="libraryCard" style="<?= $backgroundStyle ?>">
-        <!-- Header dengan Logo dan Nama Perpustakaan -->
-        <div class="header-section">
-
-            <img style="width: 150px; height: 150px; object-fit: contain; border-radius: 16px; margin-bottom: 20px;"
-                src=" <?php echo $logo_base64; ?> " alt="Logo Perpustakaan" id="logoImage">
-
-            <div class="library-name">
-                <!-- Simulasi PHP: <?php echo $perpus_name; ?> -->
-                <h1> <?php echo $perpus_name; ?></h1>
-            </div>
-        </div>
-
-        <!-- Panel Kiri -->
-        <div class="left-panel">
-            <div class="fullname">
-                <?php echo $anggota->Fullname; ?>
-
-            </div>
-            <div class="qrcode-placeholder">
-                <img class="code-qr" src="<?php echo $qr_image; ?>" alt="QR Code" id="qrImage">
-                <img class="code-barcode" data-value="<?= esc($anggota->MemberNo) ?>" alt="Barcode" id="barcodeImage">
-            </div>
-        </div>
-
-        <!-- Panel Kanan -->
-        <div class="right-panel">
-            <div class="member-type">
-                <?php echo $jenis_anggota_nama; ?>
-
-            </div>
-            <div class="member-no">
-                <?php echo $anggota->MemberNo; ?>
-
-            </div>
-            <div class="expiry-photo-section">
-                <div class="expiry-date">
-                    Berlaku Hingga<br>
-                    <?php echo $end_date; ?>
+                        <label style="font-weight:500; margin-top:8px;">
+                            Blur: <span id="panelBlurVal">10px</span>
+                        </label>
+                        <input type="range" id="panelBlur" min="0" max="20" value="10" oninput="updatePanel()"
+                            style="width:100%;">
+                    </div>
                 </div>
-                <img src="<?php echo $photo_base64; ?>" alt="Foto Anggota" class="member-photo" id="memberPhoto">
+
+                <div class="color-section">
+                    <div class="color-item">
+                        <label>Warna Overlay:</label>
+                        <input type="color" id="overlayColor" value="#ffe061" onchange="changeOverlayColor(this.value)">
+                    </div>
+                    <div class="color-item">
+                        <label>Opacity Overlay:</label>
+                        <input type="range" id="overlayOpacity" min="0" max="100" value="30"
+                            onchange="changeOverlayOpacity(this.value)" style="width: 100%;">
+                        <span id="opacityValue">30%</span>
+                    </div>
+                </div>
+
+                <div class="preset-colors">
+                    <div class="preset-color" style="background: linear-gradient(135deg, #ffe061, #f4c430);"
+                        onclick="applyPresetGradient('linear-gradient(135deg, #ffe061 0%, #f4c430 50%, #e0a818 100%)', '#ffe061')"
+                        title="Kuning Emas"></div>
+                    <div class="preset-color" style="background: linear-gradient(135deg, #4CAF50, #2E7D32);"
+                        onclick="applyPresetGradient('linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)', '#4CAF50')"
+                        title="Hijau"></div>
+                    <div class="preset-color" style="background: linear-gradient(135deg, #2196F3, #1565C0);"
+                        onclick="applyPresetGradient('linear-gradient(135deg, #2196F3 0%, #1565C0 100%)', '#2196F3')"
+                        title="Biru"></div>
+                    <div class="preset-color" style="background: linear-gradient(135deg, #FF5722, #D32F2F);"
+                        onclick="applyPresetGradient('linear-gradient(135deg, #FF5722 0%, #D32F2F 100%)', '#FF5722')"
+                        title="Merah"></div>
+                    <div class="preset-color" style="background: linear-gradient(135deg, #9C27B0, #6A1B9A);"
+                        onclick="applyPresetGradient('linear-gradient(135deg, #9C27B0 0%, #6A1B9A 100%)', '#9C27B0')"
+                        title="Ungu"></div>
+                    <div class="preset-color" style="background: linear-gradient(135deg, #607D8B, #37474F);"
+                        onclick="applyPresetGradient('linear-gradient(135deg, #607D8B 0%, #37474F 100%)', '#607D8B')"
+                        title="Abu-abu"></div>
+                </div>
+
+                <div style="margin-top: 15px;">
+                    <button onclick="removeBackground()"
+                        style="background: #FF5722; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">🗑️
+                        Hapus Background</button>
+                    <button onclick="resetToDefault()"
+                        style="background: #FF9800; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">🔄
+                        Reset Default</button>
+                </div>
             </div>
-        </div>
+        </aside>
+
+        <main class="preview">
+            <div class="card-container" id="libraryCard" style="<?= $backgroundStyle ?>">
+                <!-- Header: Logo, Nama Perpustakaan & NPP -->
+                <div class="header-section">
+                    <img style="width: 150px; height: 150px; object-fit: contain; border-radius: 16px; margin-bottom: 20px;"
+                        src="<?= $logo_base64 ?>" alt="Logo Perpustakaan" id="logoImage">
+
+                    <div class="header-text">
+                        <div class="library-name">
+                            <h1><?= esc($perpus_name) ?></h1>
+                        </div>
+                        <?php if ($npp !== ''): ?>
+                            <div class="library-npp">NPP: <?= esc($npp) ?></div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- Panel Kiri -->
+                <div class="left-panel">
+                    <div class="fullname"><?= esc($anggota->Fullname) ?></div>
+                    <div class="qrcode-placeholder">
+                        <img class="code-qr" src="<?= $qr_image ?>" alt="QR Code" id="qrImage">
+                        <img class="code-barcode" data-value="<?= esc($anggota->MemberNo) ?>" alt="Barcode" id="barcodeImage">
+                    </div>
+                </div>
+
+                <!-- Panel Kanan -->
+                <div class="right-panel">
+                    <div class="member-type"><?= esc($jenis_anggota_nama) ?></div>
+                    <div class="member-no"><?= esc($anggota->MemberNo) ?></div>
+                    <div class="expiry-photo-section">
+                        <div class="expiry-date">
+                            Berlaku Hingga<br>
+                            <?= esc($end_date) ?>
+                        </div>
+                        <img src="<?= $photo_base64 ?>" alt="Foto Anggota" class="member-photo" id="memberPhoto">
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div style="margin-bottom: 15px; margin-top: 24px;">
+                    <strong style="margin-right: 10px;">Orientasi:</strong>
+                    <button type="button" id="btnLandscape" onclick="setOrientation('landscape')">🖼️ Landscape</button>
+                    <button type="button" id="btnPortrait" onclick="setOrientation('portrait')">📄 Portrait</button>
+                </div>
+                <button onclick="printCard()">🖨️ Print sebagai PDF</button>
+                <button onclick="downloadAsHTML()" class="download-btn">💾 Download HTML</button>
+                <button onclick="generatePDFWithLibrary()" class="download-btn">📄 Generate PDF (Advanced)</button>
+            </div>
+        </main>
     </div>
-    <div class="controls">
-        <div style="margin-bottom: 15px; margin-top: 24px;">
-            <strong style="margin-right: 10px;">Orientasi:</strong>
-            <button type="button" id="btnLandscape" onclick="setOrientation('landscape')">🖼️ Landscape</button>
-            <button type="button" id="btnPortrait" onclick="setOrientation('portrait')">📄 Portrait</button>
-        </div>
-        <button onclick="printCard()">🖨️ Print sebagai PDF</button>
-        <button onclick="downloadAsHTML()" class="download-btn">💾 Download HTML</button>
-        <button onclick="generatePDFWithLibrary()" class="download-btn">📄 Generate PDF (Advanced)</button>
-    </div>
-    </main>
 
     <div id="status"></div>
 
@@ -882,45 +934,48 @@ body.tpl-2.mode-barcode.orient-portrait .qrcode-placeholder {
 
     <script>
         // Pindahkan elemen sesuai template (markup tetap satu)
-function applyTemplate(tpl) {
-    tpl = tpl === '2' ? '2' : '1';
+        function applyTemplate(tpl) {
+            tpl = tpl === '2' ? '2' : '1';
 
-    const left    = document.querySelector('#libraryCard .left-panel');
-    const right   = document.querySelector('#libraryCard .right-panel');
-    const section = document.querySelector('#libraryCard .expiry-photo-section');
-    const name    = document.querySelector('#libraryCard .fullname');
-    const code    = document.querySelector('#libraryCard .qrcode-placeholder');
-    const type    = document.querySelector('#libraryCard .member-type');
-    const no      = document.querySelector('#libraryCard .member-no');
-    const expiry  = document.querySelector('#libraryCard .expiry-date');
-    const photo   = document.getElementById('memberPhoto');
+            const left = document.querySelector('#libraryCard .left-panel');
+            const right = document.querySelector('#libraryCard .right-panel');
+            const section = document.querySelector('#libraryCard .expiry-photo-section');
+            const name = document.querySelector('#libraryCard .fullname');
+            const code = document.querySelector('#libraryCard .qrcode-placeholder');
+            const type = document.querySelector('#libraryCard .member-type');
+            const no = document.querySelector('#libraryCard .member-no');
+            const expiry = document.querySelector('#libraryCard .expiry-date');
+            const photo = document.getElementById('memberPhoto');
 
-    if (tpl === '2') {
-        left.append(no, code, expiry);
-        right.append(type, section);
-        section.append(photo, name);
-    } else {
-        left.append(name, code);
-        right.append(type, no, section);
-        section.append(expiry, photo);
-    }
+            if (tpl === '2') {
+                left.append(no, code, expiry);
+                right.append(type, section);
+                section.append(photo, name);
+            } else {
+                left.append(name, code);
+                right.append(type, no, section);
+                section.append(expiry, photo);
+            }
 
-    document.body.classList.toggle('tpl-1', tpl === '1');
-    document.body.classList.toggle('tpl-2', tpl === '2');
+            document.body.classList.toggle('tpl-1', tpl === '1');
+            document.body.classList.toggle('tpl-2', tpl === '2');
 
-    const radio = document.querySelector(`input[name="cardTemplate"][value="${tpl}"]`);
-    if (radio) radio.checked = true;
-}
-        // Terapkan toggle logo / nama / jenis kode
+            const radio = document.querySelector(`input[name="cardTemplate"][value="${tpl}"]`);
+            if (radio) radio.checked = true;
+        }
+
+        // Terapkan toggle logo / nama / NPP / jenis kode
         function applyCardOptions() {
             const showLogo = document.getElementById('toggleLogo').checked;
             const showName = document.getElementById('toggleName').checked;
+            const showNpp = document.getElementById('toggleNpp').checked;
             const codeType = document.querySelector('input[name="codeType"]:checked').value;
             const cl = document.body.classList;
 
             cl.toggle('hide-logo', !showLogo);
             cl.toggle('hide-libname', !showName);
-            cl.toggle('hide-header', !showLogo && !showName);
+            cl.toggle('hide-npp', !showNpp);
+            cl.toggle('hide-header', !showLogo && !showName && !showNpp);
             cl.toggle('mode-qr', codeType === 'qr');
             cl.toggle('mode-barcode', codeType === 'barcode');
         }
@@ -981,7 +1036,6 @@ function applyTemplate(tpl) {
         }
 
         // Background Image Handler
-        // Ganti fungsi lama dengan yang ini
         async function handleBackgroundUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1009,7 +1063,7 @@ function applyTemplate(tpl) {
 
                 // redirect: 'manual' supaya kita bisa deteksi eksplisit kalau request di-redirect
                 // (misalnya karena CSRF gagal) alih-alih otomatis diikuti browser secara diam-diam
-                const response = await fetch('<?= site_url("anggota/uploadBackground") ?>', {
+                const response = await fetch('<?= site_url('anggota/uploadBackground') ?>', {
                     method: 'POST',
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest'
@@ -1022,7 +1076,6 @@ function applyTemplate(tpl) {
                 console.log('[uploadBackground] status:', response.status, '| type:', response.type);
 
                 if (response.type === 'opaqueredirect' || response.status === 0) {
-                    // Request di-redirect sebelum sampai ke controller — hampir pasti CSRF ditolak
                     console.error('[uploadBackground] Request di-redirect. Kemungkinan besar CSRF token ditolak server.');
                     showStatus('Upload gagal: request di-redirect oleh server (kemungkinan CSRF). Cek console.', 'error');
                     return;
@@ -1042,8 +1095,7 @@ function applyTemplate(tpl) {
                 if (result.success) {
                     showStatus(result.message, 'success');
                     // CI4 me-regenerate token CSRF tiap request (jika regenerate=true di Config\Security),
-                    // jadi token lama pada halaman ini sudah tidak valid. Refresh agar token baru ter-load
-                    // sebelum melakukan upload berikutnya.
+                    // jadi refresh agar token baru ter-load sebelum upload berikutnya.
                     setTimeout(() => window.location.reload(), 1000);
                 } else {
                     const errorMessage = result.errors ? Object.values(result.errors).join(', ') : result.message;
@@ -1118,6 +1170,7 @@ function applyTemplate(tpl) {
             document.getElementById('bgImage').value = '';
             document.getElementById('toggleLogo').checked = true;
             document.getElementById('toggleName').checked = true;
+            document.getElementById('toggleNpp').checked = true;
             document.querySelector('input[name="codeType"][value="qr"]').checked = true;
             applyCardOptions();
             document.getElementById('togglePanel').checked = true;
@@ -1204,14 +1257,14 @@ function applyTemplate(tpl) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         ${document.querySelector('style').textContent}
-        
+
         body {
             background-color: white;
             justify-content: center;
             align-items: center;
             padding: 20px;
         }
-        
+
         .controls, .upload-section, .status { display: none; }
     </style>
 </head>
@@ -1329,11 +1382,12 @@ function applyTemplate(tpl) {
         // Initialize
         window.addEventListener('load', function () {
             console.log('Card with PHP data and background customization loaded successfully');
-            updateOverlay(); // Set initial overlay
-            renderBarcode();       // baru
-            applyCardOptions();    // baru
+            updateOverlay();
+            renderBarcode();
+            applyCardOptions();
+            updatePanel();
             applyTemplate(document.querySelector('input[name="cardTemplate"]:checked').value);
-            setOrientation(currentOrientation); // Set initial orientation + tombol aktif
+            setOrientation(currentOrientation);
         });
     </script>
 </body>

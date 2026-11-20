@@ -41,6 +41,9 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
         $code_type = strtolower((string) $this->request->getGet('code_type'));
         $template = (string) $this->request->getGet('template');
         $this->data['template'] = $template === '2' ? '2' : '1';
+        $npp = $db->table('settingparameters')->where('Name', 'NPPPerpustakaan')->get()->getRow();
+        $this->data['npp'] = $npp->Value ?? '';
+        $this->data['show_npp'] = $this->request->getGet('show_npp') !== '0';
         $this->data['code_type'] = $code_type === 'barcode' ? 'barcode' : 'qr';
         $this->data['show_logo'] = $this->request->getGet('show_logo') !== '0';
         $this->data['show_name'] = $this->request->getGet('show_name') !== '0';
@@ -197,7 +200,9 @@ class AnggotaPrintController extends \Base\Controllers\BaseController
             ->get()
             ->getRow()
             ->Value ?? 'Perpustakaan Nasional';
-
+        $npp = $db->table('settingparameters')->where('Name', 'NPPPerpustakaan')->get()->getRow();
+        $this->data['npp'] = $npp->Value ?? '';
+        $this->data['show_npp'] = $this->request->getPost('show_npp') !== '0';
         $logo_setting = $db->table('settingparameters')->where('Name', 'Logo')->get()->getRow();
         $logo_base64 = '';
         if ($logo_setting && $logo_setting->Value) {

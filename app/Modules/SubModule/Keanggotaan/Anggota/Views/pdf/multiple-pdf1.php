@@ -6,6 +6,8 @@ $code_type = ($code_type ?? 'qr') === 'barcode' ? 'barcode' : 'qr';
 $show_logo = $show_logo ?? true;
 $show_name = $show_name ?? true;
 $template = ($template ?? '1') === '2' ? '2' : '1';
+$show_npp = $show_npp ?? true;
+$npp = trim((string) ($npp ?? ''));
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -113,12 +115,24 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
             margin-bottom: calc(20 * var(--u));
         }
 
+        .front-header-text {
+            max-width: calc(400 * var(--u));
+        }
+
         .front-library-name {
             font-weight: 900;
             color: #4a442a;
             font-size: calc(24 * var(--u));
             line-height: 1.2;
-            max-width: calc(400 * var(--u));
+            text-shadow: var(--ts);
+        }
+
+        .front-library-npp {
+            font-weight: 700;
+            color: #4a442a;
+            font-size: calc(19 * var(--u));
+            line-height: 1.2;
+            margin-top: calc(4 * var(--u));
             text-shadow: var(--ts);
         }
 
@@ -380,6 +394,16 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
             margin-bottom: 0;
         }
 
+        body.orient-portrait .front-header-text {
+            max-width: 100%;
+            width: 100%;
+        }
+
+        body.orient-portrait .front-library-npp {
+            font-size: calc(16 * var(--u));
+            margin-top: calc(2 * var(--u));
+        }
+
         /* Nama perpustakaan dibatasi 2 baris supaya ukuran kartu tetap */
         body.orient-portrait .front-library-name {
             font-size: calc(20 * var(--u));
@@ -549,6 +573,10 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
         }
 
         body.hide-libname .front-library-name {
+            display: none !important;
+        }
+
+        body.hide-npp .front-library-npp {
             display: none !important;
         }
 
@@ -792,7 +820,7 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
     </style>
 </head>
 
-<body class="orient-<?= $orientation ?> mode-<?= $code_type ?> tpl-<?= $template ?><?= $show_logo ? '' : ' hide-logo' ?><?= $show_name ? '' : ' hide-libname' ?><?= (!$show_logo && !$show_name) ? ' hide-header' : '' ?>">
+<body class="orient-<?= $orientation ?> mode-<?= $code_type ?> tpl-<?= $template ?><?= $show_logo ? '' : ' hide-logo' ?><?= $show_name ? '' : ' hide-libname' ?><?= $show_npp ? '' : ' hide-npp' ?><?= (!$show_logo && !$show_name && !$show_npp) ? ' hide-header' : '' ?>">
     <div class="layout">
 
         <aside class="sidebar">
@@ -847,6 +875,9 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
                         </label>
                         <label style="font-weight:500;">
                             <input type="checkbox" id="toggleName" <?= $show_name ? 'checked' : '' ?> onchange="applyCardOptions()"> Tampilkan Nama Perpustakaan
+                        </label>
+                        <label style="font-weight:500;">
+                            <input type="checkbox" id="toggleNpp" <?= $show_npp ? 'checked' : '' ?> onchange="applyCardOptions()"> Tampilkan NPP
                         </label>
                     </div>
 
@@ -913,7 +944,12 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
                             <div class="card-front">
                                 <div class="front-header">
                                     <img src="<?= $logo_base64 ?>" alt="Logo" class="front-logo">
-                                    <div class="front-library-name"><?= esc(strtoupper($perpus_name)) ?></div>
+                                    <div class="front-header-text">
+                                        <div class="front-library-name"><?= esc(strtoupper($perpus_name)) ?></div>
+                                        <?php if ($npp !== ''): ?>
+                                            <div class="front-library-npp">NPP: <?= esc($npp) ?></div>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
 
                                 <div class="front-left">
@@ -1030,12 +1066,14 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
         function applyCardOptions() {
             const showLogo = document.getElementById('toggleLogo').checked;
             const showName = document.getElementById('toggleName').checked;
+            const showNpp = document.getElementById('toggleNpp').checked;
             const codeType = document.querySelector('input[name="codeType"]:checked').value;
             const cl = document.body.classList;
 
             cl.toggle('hide-logo', !showLogo);
             cl.toggle('hide-libname', !showName);
-            cl.toggle('hide-header', !showLogo && !showName);
+            cl.toggle('hide-npp', !showNpp);
+            cl.toggle('hide-header', !showLogo && !showName && !showNpp);
             cl.toggle('mode-qr', codeType === 'qr');
             cl.toggle('mode-barcode', codeType === 'barcode');
         }
@@ -1193,6 +1231,7 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
             // Opsi kartu
             document.getElementById('toggleLogo').checked = true;
             document.getElementById('toggleName').checked = true;
+            document.getElementById('toggleNpp').checked = true;
             document.querySelector('input[name="codeType"][value="qr"]').checked = true;
             applyCardOptions();
 
