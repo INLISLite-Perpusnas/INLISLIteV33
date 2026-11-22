@@ -101,6 +101,13 @@
             }
         }
 
+        /* html2canvas harus menangkap ukuran asli kartu, bukan versi preview yang diperkecil */
+        body.orient-portrait #libraryCardBack.pdf-capture {
+            transform: none !important;
+            transform-origin: top left !important;
+            margin-bottom: 0 !important;
+        }
+
         /* Saat dicetak */
         @media print {
             body.orient-portrait {
@@ -477,6 +484,9 @@
 <body class="orient-<?= $orientation ?>">
     <div class="upload-section">
         <h3>🎨 Kustomisasi Background Bagian Belakang</h3>
+        <?php if (!empty($can_edit_layout)): ?>
+            <p style="margin: 0 0 12px; font-size: 13px; color: #555;">Warna background, overlay, dan teks tersimpan otomatis dan dipakai lagi saat halaman dibuka. Gambar background yang diunggah juga tersimpan; memilih warna/preset atau Hapus Background akan menghapus gambar tersimpan.</p>
+        <?php endif; ?>
         
         <div class="upload-grid">
             <div class="upload-item">
@@ -571,9 +581,63 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" crossorigin="anonymous"></script>
+    <?= view('Anggota\Views\pdf\_card_capture_js') ?>
 
     <script>
         let animationsEnabled = true;
+
+        // ---- Warna kartu belakang tersimpan di settingparameters (KartuBelakangWarna) ----
+        const DEFAULT_BACK_BACKGROUND = 'linear-gradient(135deg, #f4c430 0%, #f8c43a 50%, #e0a818 100%)';
+        const SAVED_BACK_COLORS = <?= json_encode((object) ($back_colors ?? []), JSON_HEX_TAG | JSON_HEX_AMP) ?>;
+        const CAN_SAVE_BACK_COLORS = <?= !empty($can_edit_layout) ? 'true' : 'false' ?>;
+        let currentBackground = DEFAULT_BACK_BACKGROUND;
+        const SAVED_BACK_IMAGE = <?= json_encode($back_bg_b64 ?? '') ?>;
+        let hasSavedBackImage = SAVED_BACK_IMAGE !== '';
+        let saveColorsTimer = null;
+        let backColorsReady = false; // jangan simpan selama halaman masih memasang nilai awal
+
+        // Pasang warna tersimpan saat halaman dibuka (tanpa memicu simpan ulang)
+        function applySavedBackColors() {
+            const saved = SAVED_BACK_COLORS;
+            if (!saved || !saved.background) return;
+            const card = document.getElementById('libraryCardBack');
+            card.style.background = saved.background;
+            currentBackground = saved.background;
+            const firstHex = (/#[0-9a-f]{6}/i.exec(saved.background) || [saved.overlayColor])[0];
+            document.getElementById('bgColorPicker').value = firstHex;
+            document.getElementById('overlayColor').value = saved.overlayColor;
+            document.getElementById('overlayOpacity').value = saved.overlayOpacity;
+            document.getElementById('opacityValue').textContent = saved.overlayOpacity + '%';
+            document.getElementById('textColor').value = saved.textColor;
+            applyTextColor(saved.textColor);
+        }
+
+        // Simpan otomatis (ditunda sebentar supaya geser slider tidak mengirim banyak request)
+        function scheduleSaveColors() {
+            if (!CAN_SAVE_BACK_COLORS || !backColorsReady) return;
+            clearTimeout(saveColorsTimer);
+            saveColorsTimer = setTimeout(saveBackColors, 700);
+        }
+
+        async function saveBackColors() {
+            try {
+                const response = await fetch('<?= base_url('anggota/savecardbackcolors') ?>', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: JSON.stringify({
+                        background: currentBackground,
+                        overlayColor: document.getElementById('overlayColor').value,
+                        overlayOpacity: Number(document.getElementById('overlayOpacity').value),
+                        textColor: document.getElementById('textColor').value,
+                        orientation: currentOrientation
+                    })
+                });
+                const result = await response.json().catch(() => ({ success: false, message: 'Respons server tidak valid.' }));
+                showStatus(result.success ? '💾 Pengaturan kartu tersimpan' : ('Pengaturan gagal disimpan: ' + (result.message || '')), result.success ? 'success' : 'error');
+            } catch (error) {
+                showStatus('Warna gagal disimpan: ' + error.message, 'error');
+            }
+        }
 
         function showStatus(message, type = 'success') {
             const statusDiv = document.getElementById('status');
@@ -600,6 +664,40 @@
                     showStatus('✅ Background image berhasil diupload!');
                 };
                 reader.readAsDataURL(file);
+                saveBackImage(file);
+            }
+        }
+
+        // Simpan gambar background ke server (settingparameters.FileKartuAnggotaBelakang)
+        async function saveBackImage(file) {
+            if (!CAN_SAVE_BACK_COLORS) return;
+            const formData = new FormData();
+            formData.append('bgImage', file);
+            try {
+                const response = await fetch('<?= base_url('anggota/uploadbackbackground') ?>', {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    body: formData
+                });
+                const result = await response.json().catch(() => ({ success: false, message: 'Respons server tidak valid.' }));
+                if (result.success) hasSavedBackImage = true;
+                showStatus(result.success ? '💾 Gambar background tersimpan' : ('Gambar gagal disimpan: ' + (result.message || '')), result.success ? 'success' : 'error');
+            } catch (error) {
+                showStatus('Gambar gagal disimpan: ' + error.message, 'error');
+            }
+        }
+
+        // Hapus gambar tersimpan (dipanggil saat background diganti warna/preset atau dihapus)
+        async function removeSavedBackImage() {
+            if (!CAN_SAVE_BACK_COLORS || !hasSavedBackImage) return;
+            hasSavedBackImage = false;
+            try {
+                await fetch('<?= base_url('anggota/removebackbackground') ?>', {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+            } catch (error) {
+                showStatus('Gambar background lama gagal dihapus: ' + error.message, 'error');
             }
         }
 
@@ -607,25 +705,36 @@
         function changeBackgroundColor(color) {
             const cardContainer = document.getElementById('libraryCardBack');
             cardContainer.style.background = color;
+            currentBackground = color;
+            removeSavedBackImage();
             document.getElementById('overlayColor').value = color;
             updateOverlay();
             showStatus('✅ Warna background berhasil diubah!');
+            scheduleSaveColors();
         }
 
         // Overlay Color Handler
         function changeOverlayColor(color) {
             updateOverlay();
             showStatus('✅ Warna overlay berhasil diubah!');
+            scheduleSaveColors();
         }
 
         // Overlay Opacity Handler
         function changeOverlayOpacity(value) {
             document.getElementById('opacityValue').textContent = value + '%';
             updateOverlay();
+            scheduleSaveColors();
         }
 
         // Text Color Handler
         function changeTextColor(color) {
+            applyTextColor(color);
+            showStatus('✅ Warna teks berhasil diubah!');
+            scheduleSaveColors();
+        }
+
+        function applyTextColor(color) {
             const elements = document.querySelectorAll('.terms-title, .terms-list li, .office-name, .office-address, .separator');
             elements.forEach(element => {
                 if (element.classList.contains('separator')) {
@@ -634,7 +743,6 @@
                     element.style.color = color;
                 }
             });
-            showStatus('✅ Warna teks berhasil diubah!');
         }
 
         // Update Overlay
@@ -655,22 +763,28 @@
         function applyPresetGradient(gradient, overlayColor) {
             const cardContainer = document.getElementById('libraryCardBack');
             cardContainer.style.background = gradient;
+            currentBackground = gradient;
+            removeSavedBackImage();
             document.getElementById('overlayColor').value = overlayColor;
             document.getElementById('bgColorPicker').value = overlayColor;
             updateOverlay();
             showStatus('✅ Preset warna berhasil diterapkan!');
+            scheduleSaveColors();
         }
 
         // Remove Background
         function removeBackground() {
             const cardContainer = document.getElementById('libraryCardBack');
-            cardContainer.style.background = 'linear-gradient(135deg, #f4c430 0%, #f8c43a 50%, #e0a818 100%)';
+            cardContainer.style.background = DEFAULT_BACK_BACKGROUND;
+            currentBackground = DEFAULT_BACK_BACKGROUND;
+            removeSavedBackImage();
             cardContainer.style.setProperty('--overlay-color', 'rgba(244, 196, 48, 0.3)');
             document.getElementById('overlayColor').value = '#f4c430';
             document.getElementById('bgColorPicker').value = '#f4c430';
             document.getElementById('overlayOpacity').value = 30;
             document.getElementById('opacityValue').textContent = '30%';
             showStatus('✅ Background berhasil dihapus!');
+            scheduleSaveColors();
         }
 
         // Reset to Default
@@ -743,58 +857,44 @@
 
             applyOrientationStyle();
             showStatus('Orientasi kartu: ' + (currentOrientation === 'portrait' ? 'Portrait' : 'Landscape'));
+            scheduleSaveColors();
         }
 
-        // Print Function
-        function printCard() {
+        // Tangkap kartu belakang persis seperti preview (dipakai PDF dan print)
+        async function captureCardCanvas() {
+            const element = document.getElementById('libraryCardBack');
+            const isPortrait = currentOrientation === 'portrait';
+            element.classList.add('pdf-capture');
+            await new Promise(resolve => requestAnimationFrame(resolve));
             try {
-                const controls = document.querySelector('.controls');
-                const status = document.querySelector('#status');
-                const uploadSections = document.querySelectorAll('.upload-section');
+                const canvas = await CardCapture.capture(element, {
+                    scale: 3,
+                    width: element.offsetWidth,
+                    height: element.offsetHeight,
+                    scrollX: 0,
+                    scrollY: 0,
+                    windowWidth: 1400,
+                    windowHeight: isPortrait ? 1400 : 900
+                });
+                // Ukuran halaman sama dengan kartu depan (pdf1) dan mengikuti rasio kartu
+                const widthMm = isPortrait ? 162 : 254;
+                const heightMm = +(widthMm * canvas.height / canvas.width).toFixed(2);
+                return { canvas, isPortrait, widthMm, heightMm };
+            } finally {
+                element.classList.remove('pdf-capture');
+            }
+        }
 
-                controls.style.display = 'none';
-                status.style.display = 'none';
-                uploadSections.forEach(section => section.style.display = 'none');
-
-                applyOrientationStyle();
-
-                if (currentOrientation !== 'portrait') {
-                    const style = document.createElement('style');
-                    style.id = 'tempLandscapePrintStyle';
-                    style.textContent = `
-                        @media print {
-                            body {
-                                margin: 0 !important;
-                                padding: 0 !important;
-                                overflow: hidden !important;
-                            }
-                            .card-container {
-                                transform: scale(0.8) !important;
-                                transform-origin: center center !important;
-                                position: absolute !important;
-                                top: 50% !important;
-                                left: 50% !important;
-                                margin-left: -402px !important;
-                                margin-top: -247px !important;
-                            }
-                        }
-                    `;
-                    document.head.appendChild(style);
-                }
-
-                window.print();
-
-                setTimeout(() => {
-                    controls.style.display = 'block';
-                    status.style.display = 'block';
-                    uploadSections.forEach(section => section.style.display = 'block');
-                    const tmp = document.getElementById('tempLandscapePrintStyle');
-                    if (tmp) document.head.removeChild(tmp);
-                }, 1000);
-
-                showStatus('Dialog print telah dibuka. Pilih "Save as PDF" sebagai printer.');
+        // Print: cetak gambar hasil capture yang sama dengan PDF, supaya warna dan
+        // desain identik dengan preview (render print bawaan browser bisa berbeda).
+        async function printCard() {
+            try {
+                showStatus('Menyiapkan kartu untuk dicetak...');
+                const { canvas, widthMm, heightMm } = await captureCardCanvas();
+                await CardCapture.printImages([canvas.toDataURL('image/png')], widthMm, heightMm);
             } catch (error) {
-                showStatus('Error saat membuka dialog print: ' + error.message, 'error');
+                showStatus('Error saat menyiapkan print: ' + error.message, 'error');
+                console.error('Print error:', error);
             }
         }
 
@@ -848,71 +948,33 @@
         async function generatePDFWithLibrary() {
             try {
                 showStatus('Sedang menggenerate PDF bagian belakang...', 'success');
-                
-                const element = document.getElementById('libraryCardBack');
-                
-                const controls = document.querySelector('.controls');
-                const status = document.querySelector('#status');
-                const uploadSections = document.querySelectorAll('.upload-section');
-                
-                controls.style.display = 'none';
-                status.style.display = 'none';
-                uploadSections.forEach(section => section.style.display = 'none');
-                
-                await new Promise(resolve => setTimeout(resolve, 100));
-
-                const isPortrait = currentOrientation === 'portrait';
-
-                const canvas = await html2canvas(element, {
-                    scale: 2,
-                    useCORS: true,
-                    allowTaint: true,
-                    backgroundColor: null,
-                    width: isPortrait ? element.offsetWidth : 1004,
-                    height: isPortrait ? element.offsetHeight : 618,
-                    scrollX: 0,
-                    scrollY: 0,
-                    windowWidth: 1400,
-                    windowHeight: isPortrait ? 1400 : 900
-                });
-
-                controls.style.display = 'block';
-                status.style.display = 'block';
-                uploadSections.forEach(section => section.style.display = 'block');
-
-                const imgData = canvas.toDataURL('image/png', 1.0);
-
-                const { jsPDF } = window.jspdf;
-
-                const ratio = canvas.width / canvas.height;
-
-                const cardWidthMM = isPortrait ? 210 : 297;
-                const cardHeightMM = Math.round(cardWidthMM / ratio);
-
-                const pdf = new jsPDF({
+                const { canvas, isPortrait, widthMm, heightMm } = await captureCardCanvas();
+                const pdf = new window.jspdf.jsPDF({
                     orientation: isPortrait ? 'portrait' : 'landscape',
                     unit: 'mm',
-                    format: [cardWidthMM, cardHeightMM]
+                    format: [widthMm, heightMm]
                 });
-
-                pdf.addImage(imgData, 'PNG', 0, 0, cardWidthMM, cardHeightMM, '', 'FAST');
-                
+                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0,
+                    pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight(), '', 'FAST');
                 pdf.save('kartu-anggota-perpustakaan-belakang-custom.pdf');
-                
                 showStatus('PDF bagian belakang berhasil digenerate dan didownload!');
-                
             } catch (error) {
                 showStatus('Error saat menggenerate PDF: ' + error.message, 'error');
                 console.error('PDF generation error:', error);
             }
         }
 
-      
         // Initialize
         window.addEventListener('load', function() {
             console.log('Card back with customization loaded successfully');
+            applySavedBackColors();
+            if (SAVED_BACK_IMAGE) {
+                const card = document.getElementById('libraryCardBack');
+                card.style.background = `url('${SAVED_BACK_IMAGE}') no-repeat center center / cover`;
+            }
             updateOverlay();
             setOrientation(currentOrientation); // Set orientasi awal + tombol aktif
+            backColorsReady = true;
         });
     </script>
 </body>

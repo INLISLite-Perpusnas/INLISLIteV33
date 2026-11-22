@@ -566,6 +566,103 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
             background-color: #1976D2 !important;
         }
 
+        /* Mode atur posisi (drag & drop) */
+        .layout-edit-row {
+            margin: 0 0 15px;
+            padding: 10px 12px;
+            border: 1px dashed #90caf9;
+            border-radius: 8px;
+            background: #f5faff;
+        }
+
+        .layout-edit-actions {
+            display: none;
+        }
+
+        body.layout-edit .layout-edit-actions {
+            display: inline;
+        }
+
+        .layout-size-row {
+            display: none;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        body.layout-edit .layout-size-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        #layoutSizeControls:not([hidden]) {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        #layoutScale {
+            width: 160px;
+        }
+
+        .controls .layout-size-btn {
+            padding: 4px 10px;
+            margin: 0;
+            font-size: 14px;
+            background-color: #607D8B;
+        }
+
+        body.layout-edit [data-drag-item].selected {
+            outline: 3px solid #FF9800;
+        }
+
+        .layout-reset-btn {
+            background-color: #FF9800 !important;
+        }
+
+        .layout-edit-hint {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #555;
+        }
+
+        body.layout-edit [data-drag-item] {
+            outline: 2px dashed rgba(33, 150, 243, .9);
+            outline-offset: 3px;
+            cursor: move;
+            touch-action: none;
+            user-select: none;
+        }
+
+        body.layout-edit [data-drag-item].dragging {
+            outline-style: solid;
+        }
+
+        .send-email-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .send-email-row input {
+            width: 280px;
+            max-width: 100%;
+            padding: 9px 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .controls button:disabled {
+            opacity: .6;
+            cursor: progress;
+        }
+
         /* --- Card Container --- */
         .card-container {
             width: 1004px;
@@ -916,9 +1013,37 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
                     <button type="button" id="btnLandscape" onclick="setOrientation('landscape')">🖼️ Landscape</button>
                     <button type="button" id="btnPortrait" onclick="setOrientation('portrait')">📄 Portrait</button>
                 </div>
+                <?php if (!empty($can_edit_layout)): ?>
+                <div class="layout-edit-row">
+                    <label><input type="checkbox" id="toggleLayoutEdit" onchange="toggleLayoutEdit(this.checked)"> ✋ Atur posisi tulisan &amp; logo (drag &amp; drop)</label>
+                    <span class="layout-edit-actions">
+                        <button type="button" onclick="saveCardLayout()" class="download-btn">💾 Simpan Posisi</button>
+                        <button type="button" onclick="resetCardLayout()" class="layout-reset-btn">↺ Kembalikan Posisi Bawaan</button>
+                    </span>
+                    <div class="layout-size-row">
+                        <span id="layoutSelectedLabel">Klik elemen di kartu untuk mengatur ukurannya.</span>
+                        <span id="layoutSizeControls" hidden>
+                            <button type="button" class="layout-size-btn" onclick="cardLayoutEditor && cardLayoutEditor.stepScale(-0.05)" aria-label="Perkecil">−</button>
+                            <input type="range" id="layoutScale" min="30" max="300" step="1" value="100" aria-label="Ukuran elemen"
+                                   oninput="cardLayoutEditor && cardLayoutEditor.setScale(this.value / 100)">
+                            <button type="button" class="layout-size-btn" onclick="cardLayoutEditor && cardLayoutEditor.stepScale(0.05)" aria-label="Perbesar">+</button>
+                            <strong id="layoutScaleValue">100%</strong>
+                            <button type="button" class="layout-size-btn" onclick="cardLayoutEditor && cardLayoutEditor.setScale(1)">Ukuran asli</button>
+                        </span>
+                    </div>
+                    <div class="layout-edit-hint">Geser elemen untuk memindahkan; klik lalu pakai slider, tombol −/+, atau scroll mouse untuk mengubah ukuran. Posisi disimpan untuk orientasi &amp; template yang sedang dipilih dan dipakai di semua cetak kartu.</div>
+                </div>
+                <?php endif; ?>
                 <button onclick="printCard()">🖨️ Print sebagai PDF</button>
                 <button onclick="downloadAsHTML()" class="download-btn">💾 Download HTML</button>
                 <button onclick="generatePDFWithLibrary()" class="download-btn">📄 Generate PDF (Advanced)</button>
+                <?php if (!empty($can_send_email)): ?>
+                <div class="send-email-row">
+                    <label for="sendEmailTo"><strong>Kirim kartu (PDF) ke email:</strong></label>
+                    <input type="email" id="sendEmailTo" value="<?= esc($anggota->Email ?? '', 'attr') ?>" placeholder="email@contoh.com" maxlength="255">
+                    <button type="button" id="btnSendEmail" onclick="sendCardEmail()" class="download-btn">📧 Kirim ke Email</button>
+                </div>
+                <?php endif; ?>
             </div>
         </main>
     </div>
@@ -931,6 +1056,8 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
         integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H"
         crossorigin="anonymous"></script>
+    <?= view('Anggota\Views\pdf\_card_capture_js') ?>
+    <?= view('Anggota\Views\pdf\_card_layout_js') ?>
 
     <script>
         // Pindahkan elemen sesuai template (markup tetap satu)
@@ -962,6 +1089,7 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
 
             const radio = document.querySelector(`input[name="cardTemplate"][value="${tpl}"]`);
             if (radio) radio.checked = true;
+            scheduleSaveFrontColors();
         }
 
         // Terapkan toggle logo / nama / NPP / jenis kode
@@ -978,6 +1106,7 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
             cl.toggle('hide-header', !showLogo && !showName && !showNpp);
             cl.toggle('mode-qr', codeType === 'qr');
             cl.toggle('mode-barcode', codeType === 'barcode');
+            scheduleSaveFrontColors();
         }
 
         // Render barcode CODE128 dari MemberNo (hasilnya data URL PNG di <img>)
@@ -1021,6 +1150,72 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
             } else {
                 card.style.setProperty('--panel-bg', 'transparent');
                 card.style.setProperty('--panel-blur', '0px');
+            }
+            scheduleSaveFrontColors();
+        }
+
+        // ---- Warna kartu depan tersimpan di settingparameters (KartuDepanWarna) ----
+        const DEFAULT_FRONT_BACKGROUND = 'linear-gradient(135deg, #ffe061 0%, #f4c430 50%, #e0a818 100%)';
+        const SAVED_FRONT_COLORS = <?= json_encode((object) ($front_colors ?? []), JSON_HEX_TAG | JSON_HEX_AMP) ?>;
+        const CAN_SAVE_FRONT_COLORS = <?= !empty($can_edit_layout) ? 'true' : 'false' ?>;
+        const HAS_FRONT_IMAGE = <?= !empty($backgroundStyle) ? 'true' : 'false' ?>;
+        // 'image' = pakai gambar background (FileKartuAnggota), 'color' = pakai warna/preset
+        let frontSource = SAVED_FRONT_COLORS.source || (HAS_FRONT_IMAGE ? 'image' : 'color');
+        let frontBackground = SAVED_FRONT_COLORS.background || DEFAULT_FRONT_BACKGROUND;
+        let frontColorsReady = false; // jangan simpan selama halaman masih memasang nilai awal
+        let saveFrontTimer = null;
+
+        function applySavedFrontColors() {
+            const saved = SAVED_FRONT_COLORS;
+            if (saved.overlayColor) {
+                document.getElementById('overlayColor').value = saved.overlayColor;
+                document.getElementById('overlayOpacity').value = saved.overlayOpacity;
+                document.getElementById('opacityValue').textContent = saved.overlayOpacity + '%';
+                document.getElementById('togglePanel').checked = !!saved.panelOn;
+                document.getElementById('panelColor').value = saved.panelColor;
+                document.getElementById('panelOpacity').value = saved.panelOpacity;
+                document.getElementById('panelBlur').value = saved.panelBlur;
+            }
+            if (frontSource === 'color' || !HAS_FRONT_IMAGE) {
+                document.getElementById('libraryCard').style.background = frontBackground;
+                document.getElementById('bgColorPicker').value = (/#[0-9a-f]{6}/i.exec(frontBackground) || ['#ffe061'])[0];
+            }
+        }
+
+        function scheduleSaveFrontColors() {
+            if (!CAN_SAVE_FRONT_COLORS || !frontColorsReady) return;
+            clearTimeout(saveFrontTimer);
+            saveFrontTimer = setTimeout(saveFrontColors, 700);
+        }
+
+        async function saveFrontColors() {
+            clearTimeout(saveFrontTimer);
+            if (!CAN_SAVE_FRONT_COLORS) return;
+            try {
+                const response = await fetch('<?= base_url('anggota/savecardfrontcolors') ?>', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: JSON.stringify({
+                        source: frontSource,
+                        background: frontBackground,
+                        overlayColor: document.getElementById('overlayColor').value,
+                        overlayOpacity: Number(document.getElementById('overlayOpacity').value),
+                        panelOn: document.getElementById('togglePanel').checked,
+                        panelColor: document.getElementById('panelColor').value,
+                        panelOpacity: Number(document.getElementById('panelOpacity').value),
+                        panelBlur: Number(document.getElementById('panelBlur').value),
+                        template: (document.querySelector('input[name="cardTemplate"]:checked') || { value: '1' }).value,
+                        showLogo: document.getElementById('toggleLogo').checked,
+                        showName: document.getElementById('toggleName').checked,
+                        showNpp: document.getElementById('toggleNpp').checked,
+                        codeType: (document.querySelector('input[name="codeType"]:checked') || { value: 'qr' }).value,
+                        orientation: currentOrientation
+                    })
+                });
+                const result = await response.json().catch(() => ({ success: false, message: 'Respons server tidak valid.' }));
+                showStatus(result.success ? '💾 Pengaturan kartu tersimpan' : ('Pengaturan gagal disimpan: ' + (result.message || '')), result.success ? 'success' : 'error');
+            } catch (error) {
+                showStatus('Pengaturan gagal disimpan: ' + error.message, 'error');
             }
         }
 
@@ -1094,6 +1289,8 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
 
                 if (result.success) {
                     showStatus(result.message, 'success');
+                    frontSource = 'image';
+                    await saveFrontColors();
                     // CI4 me-regenerate token CSRF tiap request (jika regenerate=true di Config\Security),
                     // jadi refresh agar token baru ter-load sebelum upload berikutnya.
                     setTimeout(() => window.location.reload(), 1000);
@@ -1111,21 +1308,26 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
         function changeBackgroundColor(color) {
             const cardContainer = document.getElementById('libraryCard');
             cardContainer.style.background = color;
+            frontSource = 'color';
+            frontBackground = color;
             document.getElementById('overlayColor').value = color;
             updateOverlay();
             showStatus('✅ Warna background berhasil diubah!');
+            scheduleSaveFrontColors();
         }
 
         // Overlay Color Handler
         function changeOverlayColor(color) {
             updateOverlay();
             showStatus('✅ Warna overlay berhasil diubah!');
+            scheduleSaveFrontColors();
         }
 
         // Overlay Opacity Handler
         function changeOverlayOpacity(value) {
             document.getElementById('opacityValue').textContent = value + '%';
             updateOverlay();
+            scheduleSaveFrontColors();
         }
 
         // Update Overlay
@@ -1146,20 +1348,26 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
         function applyPresetGradient(gradient, overlayColor) {
             const cardContainer = document.getElementById('libraryCard');
             cardContainer.style.background = gradient;
+            frontSource = 'color';
+            frontBackground = gradient;
             document.getElementById('overlayColor').value = overlayColor;
             updateOverlay();
             showStatus('✅ Preset warna berhasil diterapkan!');
+            scheduleSaveFrontColors();
         }
 
         // Remove Background
         function removeBackground() {
             const cardContainer = document.getElementById('libraryCard');
-            cardContainer.style.background = 'linear-gradient(135deg, #ffe061 0%, #f4c430 50%, #e0a818 100%)';
+            cardContainer.style.background = DEFAULT_FRONT_BACKGROUND;
+            frontSource = 'color';
+            frontBackground = DEFAULT_FRONT_BACKGROUND;
             cardContainer.style.setProperty('--overlay-color', 'rgba(255, 224, 97, 0.3)');
             document.getElementById('overlayColor').value = '#ffe061';
             document.getElementById('overlayOpacity').value = 30;
             document.getElementById('opacityValue').textContent = '30%';
             showStatus('✅ Background berhasil dihapus!');
+            scheduleSaveFrontColors();
         }
 
         // Reset to Default
@@ -1214,32 +1422,19 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
 
             applyOrientationStyle();
             showStatus('Orientasi kartu: ' + (currentOrientation === 'portrait' ? 'Portrait' : 'Landscape'));
+            scheduleSaveFrontColors();
         }
 
-        // Print Function
-        function printCard() {
+        // Print: cetak gambar hasil capture yang sama dengan PDF, supaya warna, blur panel,
+        // dan foto identik dengan preview (render print bawaan browser bisa berbeda).
+        async function printCard() {
             try {
-                const controls = document.querySelector('.controls');
-                const status = document.querySelector('#status');
-                const uploadSections = document.querySelectorAll('.upload-section');
-
-                controls.style.display = 'none';
-                status.style.display = 'none';
-                uploadSections.forEach(section => section.style.display = 'none');
-
-                applyOrientationStyle();
-
-                window.print();
-
-                setTimeout(() => {
-                    controls.style.display = 'block';
-                    status.style.display = 'block';
-                    uploadSections.forEach(section => section.style.display = 'block');
-                }, 1000);
-
-                showStatus('Dialog print telah dibuka. Pilih "Save as PDF" sebagai printer.');
+                showStatus('Menyiapkan kartu untuk dicetak...');
+                const { canvas, widthMm, heightMm } = await captureCardCanvas();
+                await CardCapture.printImages([canvas.toDataURL('image/png')], widthMm, heightMm);
             } catch (error) {
-                showStatus('Error saat membuka dialog print: ' + error.message, 'error');
+                showStatus('Error saat menyiapkan print: ' + error.message, 'error');
+                console.error('Print error:', error);
             }
         }
 
@@ -1293,33 +1488,60 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
         async function generatePDFWithLibrary() {
             try {
                 showStatus('Sedang menggenerate PDF...', 'success');
+                const pdf = await buildCardPdf();
+                pdf.save('kartu-anggota-perpustakaan.pdf');
+                showStatus('PDF berhasil digenerate dan didownload!');
+            } catch (error) {
+                showStatus('Error saat menggenerate PDF: ' + error.message, 'error');
+                console.error('PDF generation error:', error);
+            }
+        }
 
-                const element = document.getElementById('libraryCard');
+        // Kirim kartu (PDF yang sama dengan hasil Generate PDF) ke email anggota
+        async function sendCardEmail() {
+            const input = document.getElementById('sendEmailTo');
+            const button = document.getElementById('btnSendEmail');
+            const email = input.value.trim();
+            if (!email || !input.checkValidity()) {
+                showStatus('Isi alamat email tujuan yang valid.', 'error');
+                input.focus();
+                return;
+            }
 
-                // Hide other elements
-                const controls = document.querySelector('.controls');
-                const status = document.querySelector('#status');
-                const uploadSections = document.querySelectorAll('.upload-section');
-                const isPortrait = currentOrientation === 'portrait';
+            button.disabled = true;
+            button.textContent = '⏳ Mengirim...';
+            try {
+                const pdf = await buildCardPdf();
+                const response = await fetch('<?= base_url('anggota/kirimkartu/' . (int) $anggota->ID) ?>', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: JSON.stringify({ email: email, pdf: pdf.output('datauristring') })
+                });
+                const result = await response.json().catch(() => ({ success: false, message: 'Respons server tidak valid.' }));
+                showStatus(result.message || (result.success ? 'Kartu terkirim.' : 'Kartu gagal dikirim.'), result.success ? 'success' : 'error');
+            } catch (error) {
+                showStatus('Gagal mengirim kartu: ' + error.message, 'error');
+                console.error('Send email error:', error);
+            } finally {
+                button.disabled = false;
+                button.textContent = '📧 Kirim ke Email';
+            }
+        }
 
-                controls.style.display = 'none';
-                status.style.display = 'none';
-                uploadSections.forEach(section => section.style.display = 'none');
-
-                // Preview portrait diperkecil di layar. Lepaskan transform tersebut
-                // sebelum diraster agar background mengisi seluruh halaman PDF.
-                if (isPortrait) {
-                    element.classList.add('pdf-capture');
-                    await new Promise(resolve => requestAnimationFrame(resolve));
-                }
-
-                await new Promise(resolve => setTimeout(resolve, 100));
-
-                const canvas = await html2canvas(element, {
-                    scale: 2,
-                    useCORS: true,
-                    allowTaint: true,
-                    backgroundColor: null,
+        // Buat PDF kartu dari tampilan saat ini (dipakai download & kirim email)
+        // Tangkap kartu persis seperti preview (dipakai PDF, email, dan print)
+        async function captureCardCanvas() {
+            const element = document.getElementById('libraryCard');
+            const isPortrait = currentOrientation === 'portrait';
+            // Preview portrait diperkecil di layar. Lepaskan transform tersebut
+            // sebelum diraster agar background mengisi seluruh halaman PDF.
+            if (isPortrait) {
+                element.classList.add('pdf-capture');
+                await new Promise(resolve => requestAnimationFrame(resolve));
+            }
+            try {
+                const canvas = await CardCapture.capture(element, {
+                    scale: 3,
                     width: isPortrait ? 620 : 1004,
                     height: isPortrait ? 1004 : 618,
                     scrollX: 0,
@@ -1327,68 +1549,105 @@ $template = ($template ?? '1') === '2' ? '2' : '1';
                     windowWidth: 1200,
                     windowHeight: isPortrait ? 1400 : 800
                 });
-
+                // Ukuran halaman mengikuti rasio kartu supaya gambar tidak tertarik
+                const widthMm = isPortrait ? 162 : 254;
+                const heightMm = +(widthMm * canvas.height / canvas.width).toFixed(2);
+                return { canvas, isPortrait, widthMm, heightMm };
+            } finally {
                 element.classList.remove('pdf-capture');
-
-                // Restore elements
-                controls.style.display = 'block';
-                status.style.display = 'block';
-                uploadSections.forEach(section => section.style.display = 'block');
-
-                const imgData = canvas.toDataURL('image/png', 1.0);
-
-                const { jsPDF } = window.jspdf;
-
-                const pdfW = isPortrait ? 162 : 254;
-                const pdfH = isPortrait ? (pdfW * canvas.height / canvas.width) : 157;
-
-                const pdf = new jsPDF({
-                    orientation: isPortrait ? 'portrait' : 'landscape',
-                    unit: 'mm',
-                    format: [pdfW, pdfH]
-                });
-
-                // Gunakan dimensi halaman aktual dari jsPDF agar gambar tidak
-                // menyisakan area kosong bila jsPDF menyesuaikan orientasi.
-                pdf.addImage(
-                    imgData,
-                    'PNG',
-                    0,
-                    0,
-                    pdf.internal.pageSize.getWidth(),
-                    pdf.internal.pageSize.getHeight(),
-                    '',
-                    'FAST'
-                );
-
-                pdf.save('kartu-anggota-perpustakaan.pdf');
-
-                showStatus('PDF berhasil digenerate dan didownload!');
-
-            } catch (error) {
-                const element = document.getElementById('libraryCard');
-                if (element) element.classList.remove('pdf-capture');
-                const controls = document.querySelector('.controls');
-                const status = document.querySelector('#status');
-                const uploadSections = document.querySelectorAll('.upload-section');
-                if (controls) controls.style.display = 'block';
-                if (status) status.style.display = 'block';
-                uploadSections.forEach(section => section.style.display = 'block');
-                showStatus('Error saat menggenerate PDF: ' + error.message, 'error');
-                console.error('PDF generation error:', error);
             }
+        }
+
+        async function buildCardPdf() {
+            const { canvas, isPortrait, widthMm, heightMm } = await captureCardCanvas();
+            const pdf = new window.jspdf.jsPDF({
+                orientation: isPortrait ? 'portrait' : 'landscape',
+                unit: 'mm',
+                format: [widthMm, heightMm]
+            });
+            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0,
+                pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight(), '', 'FAST');
+            return pdf;
         }
 
         // Initialize
         window.addEventListener('load', function () {
             console.log('Card with PHP data and background customization loaded successfully');
+            applySavedFrontColors();
             updateOverlay();
             renderBarcode();
             applyCardOptions();
             updatePanel();
             applyTemplate(document.querySelector('input[name="cardTemplate"]:checked').value);
             setOrientation(currentOrientation);
+            initCardLayout();
+            frontColorsReady = true;
         });
+
+        // ---- Tata letak tulisan & logo (drag & drop, tersimpan di settingparameters) ----
+        const CARD_LAYOUT_SELECTORS = {
+            logo: '#logoImage', libname: '.library-name', npp: '.library-npp', fullname: '.fullname',
+            code: '.qrcode-placeholder', type: '.member-type', memberno: '.member-no',
+            expiry: '.expiry-date', photo: '#memberPhoto'
+        };
+        let cardLayoutEditor = null;
+
+        function cardLayoutKey() {
+            const tpl = document.querySelector('input[name="cardTemplate"]:checked');
+            return currentOrientation + '-' + (tpl && tpl.value === '2' ? '2' : '1');
+        }
+
+        function initCardLayout() {
+            cardLayoutEditor = CardLayout.editor({
+                card: document.getElementById('libraryCard'),
+                selectors: CARD_LAYOUT_SELECTORS,
+                layout: <?= json_encode((object) ($card_layout ?? []), JSON_HEX_TAG | JSON_HEX_AMP) ?>,
+                getKey: cardLayoutKey,
+                saveUrl: '<?= base_url('anggota/savecardlayout') ?>',
+                onStatus: showStatus,
+                onSelect: updateLayoutSizeControls
+            });
+            // Posisi berbeda per orientasi & template: terapkan ulang setiap kali berganti
+            const originalApplyTemplate = applyTemplate;
+            applyTemplate = function (tpl) { originalApplyTemplate(tpl); cardLayoutEditor.refresh(); };
+            const originalSetOrientation = setOrientation;
+            setOrientation = function (orientation) { originalSetOrientation(orientation); cardLayoutEditor.refresh(); };
+        }
+
+        const CARD_LAYOUT_LABELS = {
+            logo: 'Logo', libname: 'Nama perpustakaan', npp: 'NPP', fullname: 'Nama anggota',
+            code: 'QR/Barcode', type: 'Jenis anggota', memberno: 'Nomor anggota',
+            expiry: 'Tanggal berlaku', photo: 'Foto'
+        };
+
+        function updateLayoutSizeControls(item, scale) {
+            const label = document.getElementById('layoutSelectedLabel');
+            const controls = document.getElementById('layoutSizeControls');
+            if (!label || !controls) return;
+            if (!item) {
+                label.textContent = 'Klik elemen di kartu untuk mengatur ukurannya.';
+                controls.hidden = true;
+                return;
+            }
+            label.textContent = 'Ukuran ' + (CARD_LAYOUT_LABELS[item] || item) + ':';
+            controls.hidden = false;
+            document.getElementById('layoutScale').value = Math.round(scale * 100);
+            document.getElementById('layoutScaleValue').textContent = Math.round(scale * 100) + '%';
+        }
+
+        function toggleLayoutEdit(on) {
+            if (cardLayoutEditor) cardLayoutEditor.setEditing(on);
+        }
+
+        function saveCardLayout() {
+            if (cardLayoutEditor) cardLayoutEditor.save();
+        }
+
+        function resetCardLayout() {
+            if (cardLayoutEditor && confirm('Kembalikan posisi tulisan & logo ke bawaan untuk orientasi & template ini?')) {
+                cardLayoutEditor.reset();
+            }
+        }
     </script>
 </body>
 

@@ -64,9 +64,15 @@ $routes->group('anggota', ['namespace' => 'Anggota\Controllers'], function ($sub
     // === AnggotaPrintController ===
     $subroutes->add('printanggota/(:any)',    'AnggotaPrintController::printanggota/$1');
     $subroutes->add('printkartubelakang/(:any)', 'AnggotaPrintController::printkartubelakang/$1');
+    $subroutes->post('kirimkartu/(:num)',     'AnggotaPrintController::kirimkartu/$1');
     $subroutes->add('multipleprint',          'AnggotaPrintController::multipleprint');
     $subroutes->add('bebaspustaka/(:any)',    'AnggotaPrintController::bebaspustaka/$1');
     $subroutes->post('uploadBackground',      'AnggotaPrintController::uploadBackground');
+    $subroutes->post('savecardlayout',        'AnggotaPrintController::saveCardLayout');
+    $subroutes->post('savecardbackcolors',    'AnggotaPrintController::saveCardBackColors');
+    $subroutes->post('savecardfrontcolors',   'AnggotaPrintController::saveCardFrontColors');
+    $subroutes->post('uploadbackbackground',  'AnggotaPrintController::uploadBackBackground');
+    $subroutes->post('removebackbackground',  'AnggotaPrintController::removeBackBackground');
 });
 
 // -----------------------------------------------------------------------

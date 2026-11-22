@@ -455,6 +455,53 @@ class EmailNotificationLibrary
     }
 
     /**
+     * Kirim kartu anggota (PDF lampiran) ke email.
+     *
+     * @param  object  $member      Data anggota (Fullname, MemberNo)
+     * @param  string  $to          Alamat email tujuan
+     * @param  string  $pdfBinary   Isi file PDF kartu
+     * @param  string  $perpusName  Nama perpustakaan untuk isi email
+     * @return array   ['success' => bool, 'message' => string]
+     */
+    public function sendMemberCardPdf(object $member, string $to, string $pdfBinary, string $perpusName): array
+    {
+        if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
+            return ['success' => false, 'message' => 'Format email tidak valid: ' . $to];
+        }
+
+        $name = esc((string) $member->Fullname);
+        $body = '<div style="font-family:Arial,sans-serif;font-size:14px;color:#222;line-height:1.6">'
+            . '<p>Yth. ' . $name . ',</p>'
+            . '<p>Terlampir kartu anggota perpustakaan Anda dengan nomor anggota <b>' . esc((string) $member->MemberNo) . '</b>.'
+            . ' Simpan file ini atau cetak untuk digunakan saat berkunjung ke perpustakaan.</p>'
+            . '<p>Salam,<br><b>' . esc($perpusName) . '</b></p></div>';
+        $filename = 'kartu-anggota-' . preg_replace('/[^A-Za-z0-9_-]/', '', (string) $member->MemberNo) . '.pdf';
+
+        $this->email->initialize($this->smtpConfig);
+        $this->email->clear(true);
+        $this->email->setFrom($this->fromEmail, $this->fromName);
+        $this->email->setTo($to);
+        $this->email->setSubject('Kartu Anggota - ' . $perpusName);
+        $this->email->setMessage($body);
+        $this->email->attach($pdfBinary, 'attachment', $filename, 'application/pdf');
+
+        try {
+            $sent = $this->email->send(false);
+            log_message('info', '[EmailNotif] Kartu anggota ' . $member->MemberNo . ' to: ' . $to . ' - ' . ($sent ? 'OK' : 'FAILED'));
+
+            if ($sent) {
+                return ['success' => true, 'message' => 'Kartu anggota berhasil dikirim ke ' . $to];
+            }
+
+            log_message('error', '[EmailNotif] Kartu anggota failed: ' . $this->email->printDebugger(['headers']));
+            return ['success' => false, 'message' => 'Gagal mengirim kartu ke ' . $to . '. Periksa pengaturan SMTP di .env atau log aplikasi.'];
+        } catch (\Exception $e) {
+            log_message('error', '[EmailNotif] Kartu anggota exception: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'Gagal mengirim kartu: ' . $e->getMessage()];
+        }
+    }
+
+    /**
      * Kirim struk perpanjangan ke email anggota.
      */
     public function sendStrukPerpanjanganEmail(object $member, array $items): array

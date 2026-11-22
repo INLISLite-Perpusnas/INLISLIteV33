@@ -667,6 +667,60 @@ $npp = trim((string) ($npp ?? ''));
             background-color: #45a049;
         }
 
+        /* Gambar hasil capture kartu, hanya tampil saat print (lihat printCards) */
+        .print-capture {
+            display: none;
+        }
+
+        @media print {
+            .print-capture {
+                display: block;
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 100;
+            }
+        }
+
+        .send-email-box {
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid #ddd;
+        }
+
+        .controls .send-email-box button {
+            background-color: #2196F3;
+            margin: 0;
+        }
+
+        .controls .send-email-box button:hover:not(:disabled) {
+            background-color: #1976D2;
+        }
+
+        .controls .send-email-box button:disabled {
+            opacity: .6;
+            cursor: progress;
+        }
+
+        .send-email-note {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .send-email-result {
+            margin-top: 10px;
+            font-size: 13px;
+            text-align: left;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .send-email-result .ok { color: #2e7d32; }
+        .send-email-result .fail { color: #c62828; }
+        .send-email-result .skip { color: #777; }
+
         .upload-section {
             background: white;
             padding: 20px;
@@ -825,8 +879,19 @@ $npp = trim((string) ($npp ?? ''));
 
         <aside class="sidebar">
             <div class="controls">
-                <button onclick="window.print()">🖨️ Print PDF</button>
+                <button type="button" id="btnPrint" onclick="printCards()">🖨️ Print PDF</button>
                 <button onclick="window.close()">❌ Tutup</button>
+                <?php if (!empty($can_send_email)): ?>
+                    <?php $with_email = count(array_filter($members_data, static fn ($m) => filter_var(trim((string) ($m['anggota']->Email ?? '')), FILTER_VALIDATE_EMAIL))); ?>
+                    <div class="send-email-box">
+                        <button type="button" id="btnSendAllEmail" onclick="sendAllCardsEmail()">📧 Kirim Kartu ke Email Anggota</button>
+                        <div class="send-email-note">
+                            <?= $with_email ?> dari <?= count($members_data) ?> anggota memiliki email.
+                            Tiap anggota menerima PDF kartu depan &amp; belakang sesuai tampilan saat ini.
+                        </div>
+                        <div id="sendEmailResult" class="send-email-result" role="status" aria-live="polite"></div>
+                    </div>
+                <?php endif; ?>
             </div>
 
             <div class="upload-section">
@@ -939,7 +1004,10 @@ $npp = trim((string) ($npp ?? ''));
                 ?>
                 <div class="a4-container">
                     <?php foreach ($page_data as $member): ?>
-                        <div class="card-row">
+                        <div class="card-row member-card-row"
+                             data-member-id="<?= (int) $member['anggota']->ID ?>"
+                             data-member-name="<?= esc($member['anggota']->Fullname, 'attr') ?>"
+                             data-email="<?= esc(trim((string) ($member['anggota']->Email ?? '')), 'attr') ?>">
                             <!-- Kartu depan -->
                             <div class="card-front">
                                 <div class="front-header">
@@ -1256,12 +1324,195 @@ $npp = trim((string) ($npp ?? ''));
             root.style.setProperty('--back-overlay', 'rgba(244, 196, 48, 0.3)');
             root.style.setProperty('--back-text-color', '#2c5530');
 
+            // Warna kartu depan yang disimpan dari halaman cetak kartu (background, overlay, panel)
+            const savedFront = <?= json_encode((object) ($front_colors ?? []), JSON_HEX_TAG | JSON_HEX_AMP) ?>;
+            if (savedFront.overlayColor) {
+                const rgbFront = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)).join(', ');
+                if (savedFront.source === 'color' || !savedBg) {
+                    root.style.setProperty('--front-bg', savedFront.background);
+                    document.getElementById('frontColorPicker').value = (/#[0-9a-f]{6}/i.exec(savedFront.background) || ['#ffe061'])[0];
+                }
+                root.style.setProperty('--front-overlay', `rgba(${rgbFront(savedFront.overlayColor)}, ${savedFront.overlayOpacity / 100})`);
+                document.getElementById('togglePanel').checked = !!savedFront.panelOn;
+                document.getElementById('panelColor').value = savedFront.panelColor;
+                document.getElementById('panelOpacity').value = savedFront.panelOpacity;
+                document.getElementById('panelBlur').value = savedFront.panelBlur;
+            }
+
+            // Warna kartu belakang yang disimpan dari halaman cetak kartu belakang
+            const savedBack =<?= json_encode((object) ($back_colors ?? []), JSON_HEX_TAG | JSON_HEX_AMP) ?>;
+            if (savedBack.background) {
+                const rgb = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)).join(', ');
+                root.style.setProperty('--back-bg', savedBack.background);
+                root.style.setProperty('--back-overlay', `rgba(${rgb(savedBack.overlayColor)}, ${savedBack.overlayOpacity / 100})`);
+                root.style.setProperty('--back-text-color', savedBack.textColor);
+                document.getElementById('backColorPicker').value = (/#[0-9a-f]{6}/i.exec(savedBack.background) || [savedBack.overlayColor])[0];
+                document.getElementById('backTextColor').value = savedBack.textColor;
+            }
+            // Gambar background kartu belakang tersimpan menimpa warna background
+            const savedBackImage = <?= json_encode($back_bg_b64 ?? '') ?>;
+            if (savedBackImage) {
+                root.style.setProperty('--back-bg', `url('${savedBackImage}')`);
+            }
+
             renderBarcodes();
             applyCardOptions();
             updatePanel();
             applyTemplate(document.querySelector('input[name="cardTemplate"]:checked').value);
         })();
     </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H"
+        crossorigin="anonymous"></script>
+    <?= view('Anggota\Views\pdf\_card_capture_js') ?>
+    <?= view('Anggota\Views\pdf\_card_layout_js') ?>
+    <script>
+        // Terapkan posisi tulisan & logo yang disimpan dari halaman cetak kartu (drag & drop)
+        const CARD_LAYOUT = <?= json_encode((object) ($card_layout ?? []), JSON_HEX_TAG | JSON_HEX_AMP) ?>;
+        const CARD_LAYOUT_SELECTORS = {
+            logo: '.front-logo', libname: '.front-library-name', npp: '.front-library-npp', fullname: '.front-name',
+            code: '.front-qr', type: '.front-member-type', memberno: '.front-member-no',
+            expiry: '.front-expiry', photo: '.front-photo'
+        };
+
+        function applySavedCardLayout() {
+            const tpl = document.querySelector('input[name="cardTemplate"]:checked');
+            const key = (document.body.classList.contains('orient-portrait') ? 'portrait' : 'landscape')
+                + '-' + (tpl && tpl.value === '2' ? '2' : '1');
+            document.querySelectorAll('.member-card-row .card-front').forEach(card => {
+                CardLayout.apply(card, CARD_LAYOUT[key] || {}, CARD_LAYOUT_SELECTORS);
+            });
+        }
+
+        const originalApplyTemplate = applyTemplate;
+        applyTemplate = function (tpl) { originalApplyTemplate(tpl); applySavedCardLayout(); };
+        applySavedCardLayout();
+
+        // Print: tiap kartu ditangkap jadi gambar (sama dengan PDF/email) lalu ditempel di atas
+        // kartunya selama print, supaya warna, blur panel, dan foto identik dengan preview.
+        async function printCards() {
+            const button = document.getElementById('btnPrint');
+            const cards = Array.from(document.querySelectorAll('.member-card-row .card-front, .member-card-row .card-back'));
+            const overlays = [];
+            const cleanup = () => overlays.splice(0).forEach(img => img.remove());
+
+            button.disabled = true;
+            try {
+                for (let i = 0; i < cards.length; i++) {
+                    button.textContent = `⏳ Menyiapkan ${i + 1}/${cards.length}...`;
+                    const canvas = await CardCapture.capture(cards[i], { scale: 4 });
+                    const img = document.createElement('img');
+                    img.className = 'print-capture';
+                    img.alt = '';
+                    img.src = canvas.toDataURL('image/png');
+                    await img.decode().catch(() => {});
+                    cards[i].appendChild(img);
+                    overlays.push(img);
+                }
+                window.addEventListener('afterprint', cleanup, { once: true });
+                window.print();
+                setTimeout(cleanup, 60000);
+            } catch (error) {
+                cleanup();
+                showStatus('Error saat menyiapkan print: ' + error.message, 'error');
+                console.error('Print error:', error);
+            } finally {
+                button.disabled = false;
+                button.textContent = '🖨️ Print PDF';
+            }
+        }
+    </script>
+
+    <?php if (!empty($can_send_email)): ?>
+    <script>
+        // Buat PDF 2 halaman (depan & belakang) untuk satu anggota dari tampilan saat ini
+        async function buildMemberCardPdf(row) {
+            const isPortrait = document.body.classList.contains('orient-portrait');
+            const pageSize = isPortrait ? [55, 84] : [85, 54]; // mm, sama dengan ukuran kartu di CSS (.card-front)
+            const pdf = new window.jspdf.jsPDF({
+                orientation: isPortrait ? 'portrait' : 'landscape',
+                unit: 'mm',
+                format: pageSize
+            });
+
+            const sides = [row.querySelector('.card-front'), row.querySelector('.card-back')];
+            for (let i = 0; i < sides.length; i++) {
+                const canvas = await CardCapture.capture(sides[i], { scale: 4 });
+                if (i > 0) pdf.addPage(pageSize, isPortrait ? 'portrait' : 'landscape');
+                pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', 0, 0,
+                    pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight(), '', 'FAST');
+            }
+            return pdf;
+        }
+
+        // Kirim kartu satu per satu ke email masing-masing anggota
+        async function sendAllCardsEmail() {
+            if (!window.jspdf) {
+                showStatus('Library PDF gagal dimuat. Periksa koneksi internet lalu muat ulang halaman.', 'error');
+                return;
+            }
+
+            const rows = Array.from(document.querySelectorAll('.member-card-row'));
+            const targets = rows.filter(row => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.dataset.email));
+            if (!targets.length) {
+                showStatus('Tidak ada anggota yang memiliki email.', 'error');
+                return;
+            }
+            if (!confirm(`Kirim kartu ke ${targets.length} anggota yang memiliki email?`)) {
+                return;
+            }
+
+            const button = document.getElementById('btnSendAllEmail');
+            const result = document.getElementById('sendEmailResult');
+            const escapeHtml = text => String(text).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            const lines = [];
+            let sent = 0, failed = 0;
+
+            button.disabled = true;
+            result.innerHTML = '';
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const name = escapeHtml(row.dataset.memberName);
+                if (!targets.includes(row)) {
+                    lines.push(`<div class="skip">— ${name}: tidak ada email, dilewati</div>`);
+                    continue;
+                }
+
+                button.textContent = `⏳ Mengirim ${sent + failed + 1}/${targets.length}...`;
+                try {
+                    const pdf = await buildMemberCardPdf(row);
+                    const response = await fetch('<?= base_url('anggota/kirimkartu') ?>/' + encodeURIComponent(row.dataset.memberId), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                        body: JSON.stringify({ email: row.dataset.email, pdf: pdf.output('datauristring') })
+                    });
+                    const res = await response.json().catch(() => ({ success: false, message: 'Respons server tidak valid.' }));
+                    if (res.success) {
+                        sent++;
+                        lines.push(`<div class="ok">✓ ${name} (${escapeHtml(row.dataset.email)})</div>`);
+                    } else {
+                        failed++;
+                        lines.push(`<div class="fail">✗ ${name}: ${escapeHtml(res.message || 'gagal dikirim')}</div>`);
+                    }
+                } catch (error) {
+                    failed++;
+                    lines.push(`<div class="fail">✗ ${name}: ${escapeHtml(error.message)}</div>`);
+                }
+                result.innerHTML = lines.join('');
+            }
+
+            result.innerHTML = `<div><strong>Terkirim: ${sent}, Gagal: ${failed}, Tanpa email: ${rows.length - targets.length}</strong></div>` + lines.join('');
+            button.disabled = false;
+            button.textContent = '📧 Kirim Kartu ke Email Anggota';
+            showStatus(failed ? `Selesai dengan ${failed} kegagalan.` : `Kartu terkirim ke ${sent} anggota.`, failed ? 'error' : 'success');
+        }
+    </script>
+    <?php endif; ?>
 </body>
 
 </html>

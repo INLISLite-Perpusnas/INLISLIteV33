@@ -3,13 +3,9 @@
   <div class="form-group mt-1">
     <?php if (!$is_anggota) : ?>
       <div class="mb-3">
-        <a target="_blank" href="<?= base_url('anggota/printanggota/' . $anggota->ID . '?slug=template-1&orientation=landscape'); ?>" data-toggle="tooltip" data-placement="top" title="Cetak Kartu (Landscape)" class="btn btn-lg btn-primary"><i class="fa fa-print"></i> Cetak Kartu Anggota
+        <a target="_blank" href="<?= base_url('anggota/printanggota/' . $anggota->ID . '?slug=template-1'); ?>" data-toggle="tooltip" data-placement="top" title="Cetak Kartu (orientasi sesuai pengaturan tersimpan)" class="btn btn-lg btn-primary"><i class="fa fa-print"></i> Cetak Kartu Anggota
         </a>
-        <a target="_blank" href="<?= base_url('anggota/printanggota/' . $anggota->ID . '?slug=template-1&orientation=portrait'); ?>" data-toggle="tooltip" data-placement="top" title="Cetak Kartu (Portrait)" class="btn btn-lg btn-primary"><i class="fa fa-print"></i> Cetak Kartu Anggota (Portrait)
-        </a>
-        <a href="javascript:void(0);" data-href="<?= base_url('anggota/printkartubelakang/' . $anggota->ID . '?slug=template-2&orientation=landscape'); ?>" data-toggle="tooltip" data-placement="top" title="Cetak Kartu Belakang (Landscape)" class="btn btn-lg btn-primary remove-data"><i class="fa fa-print"></i> Cetak Kartu Belakang
-        </a>
-        <a href="javascript:void(0);" data-href="<?= base_url('anggota/printkartubelakang/' . $anggota->ID . '?slug=template-2&orientation=portrait'); ?>" data-toggle="tooltip" data-placement="top" title="Cetak Kartu Belakang (Portrait)" class="btn btn-lg btn-primary remove-data"><i class="fa fa-print"></i> Cetak Kartu Belakang (Portrait)
+        <a href="javascript:void(0);" data-href="<?= base_url('anggota/printkartubelakang/' . $anggota->ID . '?slug=template-2'); ?>" data-toggle="tooltip" data-placement="top" title="Cetak Kartu Belakang (orientasi sesuai pengaturan tersimpan)" class="btn btn-lg btn-primary remove-data"><i class="fa fa-print"></i> Cetak Kartu Belakang
         </a>
       </div>
 

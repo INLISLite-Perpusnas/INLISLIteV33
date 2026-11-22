@@ -617,6 +617,40 @@
                                     </div>
                                 </div>
                             <?php endif; ?>
+
+                            <?php
+                            // Lokasi daring dari MARC 856; ambil isi subruas, abaikan yang kosong atau "-"
+                            $onlineLocations = [];
+                            foreach ($marc ?? [] as $field) {
+                                if ((string) $field->Tag !== '856') {
+                                    continue;
+                                }
+                                foreach (preg_split('/\$[a-z0-9]\s*/i', (string) $field->Value) as $part) {
+                                    $part = trim($part);
+                                    if ($part !== '' && $part !== '-') {
+                                        $onlineLocations[] = $part;
+                                    }
+                                }
+                            }
+                            $onlineLocations = array_unique($onlineLocations);
+                            ?>
+                            <?php if (!empty($onlineLocations)): ?>
+                                <div class="op-info-item">
+                                    <div class="op-info-icon"><i class="fas fa-globe"></i></div>
+                                    <div style="min-width:0;">
+                                        <div class="op-info-label">Lokasi Daring</div>
+                                        <?php foreach ($onlineLocations as $location): ?>
+                                            <div class="op-info-value text-break">
+                                                <?php if (preg_match('#^https?://#i', $location) && filter_var($location, FILTER_VALIDATE_URL)): ?>
+                                                    <a href="<?= esc($location, 'attr') ?>" target="_blank" rel="noopener noreferrer"><?= esc($location) ?></a>
+                                                <?php else: ?>
+                                                    <?= esc($location) ?>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
 
