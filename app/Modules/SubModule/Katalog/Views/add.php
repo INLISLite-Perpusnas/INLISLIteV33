@@ -60,22 +60,23 @@ $slug = $request->getGet('slug') ?? 'katalog_add';
 <script>
 	const nomorInput = document.getElementById('nomorInput');
 	const ddcInput = document.querySelector('input[name="DeweyNo"]');
-	const pengarangInput = document.querySelector('input[name="judul[c]"]');
+	const pengarangInput = document.querySelector('input[name^="pengarangUtama["]');
 	const judulInput = document.querySelector('input[name="judul[a]"]');
 
-	nomorInput.addEventListener('click', function() {
+	if (nomorInput && ddcInput && pengarangInput && judulInput) {
+		nomorInput.addEventListener('click', function() {
+			const ddcValue = (ddcInput.value || '').trim();
+			const pengarangValue = (pengarangInput.value || '').trim();
+			const judulValue = (judulInput.value || '').trim();
 
-    const ddcValue = (ddcInput.value || '').trim();
-    const pengarangValue = (pengarangInput.value || '').trim();
-    const judulValue = (judulInput.value || '').trim();
+			const concatenatedValue =
+				ddcValue + " " +
+				pengarangValue.substring(0, 3).toUpperCase() + " " +
+				judulValue.substring(0, 1).toLowerCase();
 
-    const concatenatedValue =
-        ddcValue + " " +
-        pengarangValue.substring(0, 3).toUpperCase() + " " +
-        judulValue.substring(0, 1).toLowerCase();
-
-    nomorInput.value = concatenatedValue;
-});
+			nomorInput.value = concatenatedValue;
+		});
+	}
 
 </script>
 <?= $this->endSection('script'); ?>

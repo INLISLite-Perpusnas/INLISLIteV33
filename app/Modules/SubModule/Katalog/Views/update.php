@@ -174,7 +174,7 @@ $actions = array(
 <script>
     const nomorInput = document.querySelector('input[name="CallNumber[]"]');
     const ddcInput = document.querySelector('input[name="DeweyNo"]');
-    const pengarangInput = document.querySelector('input[name="judul[c]"]');
+    const pengarangInput = document.querySelector('input[name^="pengarangUtama["]');
     const judulInput = document.querySelector('input[name="judul[a]"]');
 
     if (nomorInput && ddcInput && pengarangInput && judulInput) {
