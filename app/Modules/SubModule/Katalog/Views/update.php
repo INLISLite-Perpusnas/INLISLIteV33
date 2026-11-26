@@ -174,19 +174,18 @@ $actions = array(
 <script>
     const nomorInput = document.querySelector('input[name="CallNumber[]"]');
     const ddcInput = document.querySelector('input[name="DeweyNo"]');
-    const pengarangInput = document.querySelector('input[name^="pengarangUtama["]');
     const judulInput = document.querySelector('input[name="judul[a]"]');
 
-    if (nomorInput && ddcInput && pengarangInput && judulInput) {
+    if (nomorInput && ddcInput && judulInput) {
         nomorInput.addEventListener('click', function() {
+            const pengarangInput = document.querySelector('input[name^="pengarangUtama[100-"]');
             const ddcValue = (ddcInput.value || '').trim();
-            const pengarangValue = (pengarangInput.value || '').trim();
+            const pengarangValue = (pengarangInput ? pengarangInput.value : '').trim();
             const judulValue = (judulInput.value || '').trim();
 
-            const concatenatedValue =
-                ddcValue + " " +
-                pengarangValue.substring(0, 3).toUpperCase() + " " +
-                judulValue.substring(0, 1).toLowerCase();
+            const concatenatedValue = pengarangValue
+                ? ddcValue + " " + pengarangValue.substring(0, 3).toUpperCase() + " " + judulValue.substring(0, 1).toLowerCase()
+                : ddcValue + " " + judulValue.substring(0, 3).toUpperCase();
 
             nomorInput.value = concatenatedValue;
         });
