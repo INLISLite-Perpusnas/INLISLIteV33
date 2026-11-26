@@ -75,7 +75,9 @@ $member_no = $request->getGet('member_no');
 				},
 				{
 					data: 'Eksemplar',
-					className: 'text-right'
+					className: 'text-right',
+					searchable: false,
+					orderable: false
 				},
 				{
 					data: 'Publisher',
