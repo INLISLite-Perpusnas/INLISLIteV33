@@ -11,11 +11,18 @@ $flashClass = in_array($flashIcon, ['success', 'info'], true) ? 'alert-success' 
 $lockedWorksheet = $locked_worksheet ?? null;
 $isKeranjang = !empty($is_keranjang);
 $pageHeading = $isKeranjang ? 'Keranjang Katalog' : ($lockedWorksheet ? 'Daftar Artikel' : 'Katalog');
+$worksheetOptions = array_map(static function ($row) {
+    return ['id' => (int) $row->ID, 'name' => $row->Name];
+}, $worksheets ?? []);
+$userOptions = array_map(static function ($row) {
+    return ['id' => (int) $row->id, 'name' => $row->username ?: 'Petugas #' . $row->id];
+}, $filter_users ?? []);
 ?>
 
 <?= $this->extend('App\Views\layout\main'); ?>
 
 <?= $this->section('style'); ?>
+<link rel="stylesheet" href="<?= base_url('assets/vendors/select2/css/select2.min.css') ?>">
 <style>
     .catalog-list-page .page-title-heading h1 {
         margin: 0;
@@ -65,10 +72,11 @@ $pageHeading = $isKeranjang ? 'Keranjang Katalog' : ($lockedWorksheet ? 'Daftar 
         padding: 0;
         background: transparent;
     }
-    .catalog-list-page .catalog-filter-label {
-        margin: 0; color: #fff; background: #495057; border: 1px solid #495057;
-        padding: .5rem .75rem; border-radius: .25rem 0 0 .25rem; white-space: nowrap;
-    }
+    .catalog-list-page .catalog-filter-control { width: 220px; max-width: 100%; }
+    .catalog-list-page .catalog-filter-control .select2-container { width: 100% !important; }
+    .catalog-list-page .catalog-filter-control .select2-selection--single { height: 38px; border-color: #ced4da; }
+    .catalog-list-page .catalog-filter-control .select2-selection__rendered { line-height: 36px; }
+    .catalog-list-page .catalog-filter-control .select2-selection__arrow { height: 36px; }
     .catalog-list-page .catalog-switch {
         appearance: none; width: 2.75rem; height: 1.5rem; margin: 0;
         border: 2px solid #6c757d; border-radius: 999px; background: #fff;
@@ -109,7 +117,7 @@ $pageHeading = $isKeranjang ? 'Keranjang Katalog' : ($lockedWorksheet ? 'Daftar 
     .catalog-list-page .catalog-create-actions { gap: .6rem; }
     .catalog-list-page .catalog-bulk-actions { gap: .75rem; }
     .catalog-list-page .catalog-bulk-actions .btn { min-height: 44px; }
-    .catalog-list-page .catalog-controls #btnResetFilterWorksheet { min-height: 44px; flex-shrink: 0; }
+    .catalog-list-page .catalog-controls #catalog_reset_filter { min-height: 44px; flex-shrink: 0; }
     .catalog-list-page .catalog-search-wrapper {
         margin-left: auto;
     }
@@ -256,20 +264,25 @@ $pageHeading = $isKeranjang ? 'Keranjang Katalog' : ($lockedWorksheet ? 'Daftar 
             </div>
 
             <div class="catalog-controls d-flex align-items-end flex-wrap mb-3">
-                <?php if (!$lockedWorksheet) : ?>
-                <div class="input-group" style="width:280px; flex-shrink:0;">
-                    <div class="input-group-prepend">
-                        <label class="catalog-filter-label" for="filter_worksheet_id"><i class="fa fa-filter" aria-hidden="true"></i> Jenis Bahan</label>
-                    </div>
-                    <select class="form-control" id="filter_worksheet_id">
-                        <option value="">-- Semua Jenis Bahan --</option>
-                        <?php foreach ($worksheets as $row) : ?>
-                            <option value="<?= (int) $row->ID ?>"><?= esc($row->Name) ?></option>
-                        <?php endforeach; ?>
+                <div class="catalog-filter-control">
+                    <label class="d-block mb-1" for="catalog_filter_type"><i class="fa fa-filter" aria-hidden="true"></i> Filter berdasarkan</label>
+                    <select class="form-control" id="catalog_filter_type">
+                        <?php if (!$lockedWorksheet) : ?>
+                            <option value="worksheet_id">Jenis Bahan</option>
+                        <?php endif; ?>
+                        <option value="create_by">Petugas Tambah</option>
+                        <option value="update_by">Petugas Ubah</option>
+                        <option value="author">Pengarang</option>
+                        <option value="publisher">Penerbit</option>
+                        <option value="publish_year">Tahun Terbit</option>
+                        <option value="digital_content">Konten Digital</option>
                     </select>
                 </div>
-                <button class="btn btn-outline-secondary" id="btnResetFilterWorksheet" type="button"><i class="fa fa-undo" aria-hidden="true"></i> Reset filter</button>
-                <?php endif; ?>
+                <div class="catalog-filter-control">
+                    <label class="d-block mb-1" for="catalog_filter_value" id="catalog_filter_value_label">Nilai filter</label>
+                    <select class="form-control" id="catalog_filter_value"></select>
+                </div>
+                <button class="btn btn-outline-secondary" id="catalog_reset_filter" type="button"><i class="fa fa-undo" aria-hidden="true"></i> Reset filter</button>
                 <div>
                     <label for="catalog_page_length" class="d-block mb-1">Data per halaman</label>
                     <select id="catalog_page_length" class="form-control" style="width:90px;">
@@ -325,17 +338,51 @@ $pageHeading = $isKeranjang ? 'Keranjang Katalog' : ($lockedWorksheet ? 'Daftar 
 <?= $this->endSection('page'); ?>
 
 <?= $this->section('script'); ?>
+<script src="<?= base_url('assets/js/jquery-4.0.0.min.js') ?>"></script>
+<script>
+// Kompatibilitas Select2 4.0 dengan jQuery 4.
+jQuery.isArray = jQuery.isArray || Array.isArray;
+jQuery.trim = jQuery.trim || function(value) { return value == null ? '' : String(value).trim(); };
+jQuery.isFunction = jQuery.isFunction || function(value) { return typeof value === 'function'; };
+jQuery.camelCase = jQuery.camelCase || function(value) {
+    return value.replace(/^-ms-/, 'ms-').replace(/-([a-z])/g, function(match, letter) { return letter.toUpperCase(); });
+};
+</script>
+<script src="<?= base_url('assets/vendors/select2/js/select2.min.js') ?>"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     'use strict';
 
     const apiUrl = <?= json_encode(site_url('api/katalog/list-lite')) ?>;
+    const filterOptionsUrl = <?= json_encode(site_url('api/katalog/filter-options')) ?>;
     const quarantineUrl = <?= json_encode(base_url('katalog/proses_karantina')) ?>;
     const opacUrl = <?= json_encode(base_url('katalog/proses_opac')) ?>;
     const tbody = document.getElementById('catalog_rows');
     const table = document.getElementById('tbl_data');
     const searchInput = document.getElementById('catalog_search');
-    const worksheetInput = document.getElementById('filter_worksheet_id');
+    const filterTypeInput = document.getElementById('catalog_filter_type');
+    const filterValueInput = document.getElementById('catalog_filter_value');
+    const filterValueLabel = document.getElementById('catalog_filter_value_label');
+    const lockedWorksheetId = <?= json_encode($lockedWorksheet ? (string) (int) $lockedWorksheet->ID : '') ?>;
+    const userOptions = <?= json_encode($userOptions, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+    const filterOptions = {
+        worksheet_id: <?= json_encode($worksheetOptions, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
+        create_by: userOptions,
+        update_by: userOptions,
+        digital_content: [{ id: '1', name: 'Ada' }, { id: '0', name: 'Tidak Ada' }]
+    };
+    const remoteFilterFields = ['author', 'publisher', 'publish_year'];
+    const filterLabels = { worksheet_id: 'Jenis Bahan', create_by: 'Petugas Tambah', update_by: 'Petugas Ubah', author: 'Pengarang', publisher: 'Penerbit', publish_year: 'Tahun Terbit', digital_content: 'Konten Digital' };
+    const select2Options = {
+        width: '100%',
+        minimumResultsForSearch: 0,
+        language: {
+            noResults: function() { return 'Tidak ada hasil.'; },
+            searching: function() { return 'Mencari...'; },
+            loadingMore: function() { return 'Memuat pilihan berikutnya...'; },
+            errorLoading: function() { return 'Pilihan gagal dimuat.'; }
+        }
+    };
     const lengthInput = document.getElementById('catalog_page_length');
     const info = document.getElementById('catalog_info');
     const pageInfo = document.getElementById('catalog_page_info');
@@ -343,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const previousButton = document.getElementById('catalog_prev');
     const nextButton = document.getElementById('catalog_next');
     const selectAll = document.querySelector('.check_data');
-    const state = { page: 1, pages: 1, offset: 0, length: 10, search: '', worksheetId: <?= json_encode($lockedWorksheet ? (string) (int) $lockedWorksheet->ID : '') ?> };
+    const state = { page: 1, pages: 1, offset: 0, length: 10, search: '', filterType: filterTypeInput.value, filterValue: '' };
     let activeRequest = null;
     let searchTimer = null;
 
@@ -511,7 +558,13 @@ document.addEventListener('DOMContentLoaded', function() {
             page: String(state.page),
             length: String(state.length),
             search: state.search,
-            worksheet_id: state.worksheetId,
+            worksheet_id: state.filterType === 'worksheet_id' ? state.filterValue : lockedWorksheetId,
+            create_by: state.filterType === 'create_by' ? state.filterValue : '',
+            update_by: state.filterType === 'update_by' ? state.filterValue : '',
+            author: state.filterType === 'author' ? state.filterValue : '',
+            publisher: state.filterType === 'publisher' ? state.filterValue : '',
+            publish_year: state.filterType === 'publish_year' ? state.filterValue : '',
+            digital_content: state.filterType === 'digital_content' ? state.filterValue : '',
             keranjang: <?= json_encode($isKeranjang ? '1' : '0') ?>
         });
 
@@ -560,19 +613,58 @@ document.addEventListener('DOMContentLoaded', function() {
             loadRows();
         }, 400);
     });
-    if (worksheetInput) {
-        worksheetInput.addEventListener('change', function() {
-            state.worksheetId = worksheetInput.value;
-            state.page = 1;
-            loadRows();
+    function resetFilterOptions() {
+        const valueSelect = $(filterValueInput);
+        if (valueSelect.data('select2')) valueSelect.select2('destroy');
+        state.filterType = filterTypeInput.value;
+        state.filterValue = '';
+        filterValueLabel.textContent = filterLabels[state.filterType];
+        filterValueInput.replaceChildren(new Option('', ''));
+        const options = Object.assign({}, select2Options, {
+            placeholder: '-- Semua ' + filterLabels[state.filterType] + ' --',
+            allowClear: true
         });
-        document.getElementById('btnResetFilterWorksheet').addEventListener('click', function() {
-            worksheetInput.value = '';
-            state.worksheetId = '';
-            state.page = 1;
-            loadRows();
-        });
+        if (remoteFilterFields.includes(state.filterType)) {
+            const field = state.filterType;
+            options.ajax = {
+                url: filterOptionsUrl,
+                dataType: 'json',
+                delay: 250,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                data: function(params) {
+                    return {
+                        field: field,
+                        q: params.term || '',
+                        page: params.page || 1,
+                        worksheet_id: lockedWorksheetId,
+                        keranjang: <?= json_encode($isKeranjang ? '1' : '0') ?>
+                    };
+                }
+            };
+        } else {
+            filterOptions[state.filterType].forEach(function(item) {
+                filterValueInput.add(new Option(item.name, String(item.id)));
+            });
+        }
+        valueSelect.select2(options);
     }
+    $(filterTypeInput).on('change', function() {
+        resetFilterOptions();
+        state.page = 1;
+        loadRows();
+    });
+    $(filterValueInput).on('change', function() {
+        state.filterValue = filterValueInput.value;
+        state.page = 1;
+        loadRows();
+    });
+    document.getElementById('catalog_reset_filter').addEventListener('click', function() {
+        filterTypeInput.value = lockedWorksheetId ? 'create_by' : 'worksheet_id';
+        $(filterTypeInput).trigger('change.select2');
+        resetFilterOptions();
+        state.page = 1;
+        loadRows();
+    });
     lengthInput.addEventListener('change', function() {
         state.length = Number(lengthInput.value) || 10;
         state.page = 1;
@@ -692,6 +784,8 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.assign(<?= json_encode(base_url('katalog/export_data_tag')) ?> + '?' + query);
     });
 
+    resetFilterOptions();
+    $(filterTypeInput).select2(select2Options);
     requestAnimationFrame(function() { loadRows(); });
 });
 </script>

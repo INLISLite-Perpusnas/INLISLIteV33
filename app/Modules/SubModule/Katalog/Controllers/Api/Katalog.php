@@ -11,6 +11,11 @@ use App\Libraries\DataTable;
 class Katalog extends \Base\Controllers\BaseResourceController
 {
 	use ResponseTrait;
+	private const LIST_FILTER_COLUMNS = [
+		'author' => 'a.Author',
+		'publisher' => 'a.Publisher',
+		'publish_year' => 'a.PublishYear',
+	];
 	public $fileModel;
 	public $katalogModel;
 	public $serialArticleFilesModel;
@@ -49,6 +54,17 @@ class Katalog extends \Base\Controllers\BaseResourceController
 		$length = (int) ($this->request->getPost('length') ?? 10);
 		$length = in_array($length, [10, 25, 50, 100], true) ? $length : 10;
 		$worksheetId = max(0, (int) ($this->request->getPost('worksheet_id') ?? 0));
+		$createBy = max(0, (int) ($this->request->getPost('create_by') ?? 0));
+		$updateBy = max(0, (int) ($this->request->getPost('update_by') ?? 0));
+		$digitalContent = $this->request->getPost('digital_content');
+		$hasDigitalFilter = in_array($digitalContent, ['1', '0'], true);
+		$valueFilters = [];
+		foreach (self::LIST_FILTER_COLUMNS as $field => $column) {
+			$value = $this->request->getPost($field);
+			if (is_string($value) && trim($value) !== '') {
+				$valueFilters[$column] = $value;
+			}
+		}
 		$search = trim((string) ($this->request->getPost('search') ?? ''));
 		$isKeranjang = $this->request->getPost('keranjang') === '1' ? 1 : 0;
 
@@ -57,10 +73,23 @@ class Katalog extends \Base\Controllers\BaseResourceController
 			->where('IsKeranjang', $isKeranjang)
 			->countAllResults();
 
-		$applyFilters = static function ($builder) use ($worksheetId, $search, $isKeranjang) {
+		$applyFilters = static function ($builder) use ($worksheetId, $createBy, $updateBy, $digitalContent, $hasDigitalFilter, $valueFilters, $search, $isKeranjang) {
 			$builder->where('a.IsQUARANTINE', 0)->where('a.IsKeranjang', $isKeranjang);
 			if ($worksheetId > 0) {
 				$builder->where('a.Worksheet_id', $worksheetId);
+			}
+			if ($createBy > 0) {
+				$builder->where('a.CreateBy', $createBy);
+			}
+			if ($updateBy > 0) {
+				$builder->where('a.UpdateBy', $updateBy);
+			}
+			foreach ($valueFilters as $column => $value) {
+				$builder->where($column, $value);
+			}
+			if ($hasDigitalFilter) {
+				$exists = 'EXISTS (SELECT 1 FROM catalogfiles cf WHERE cf.Catalog_id = a.ID)';
+				$builder->where($digitalContent === '1' ? $exists : 'NOT ' . $exists, null, false);
 			}
 			if ($search !== '') {
 				$builder->groupStart()
@@ -73,7 +102,7 @@ class Katalog extends \Base\Controllers\BaseResourceController
 			return $builder;
 		};
 
-		if ($worksheetId > 0 || $search !== '') {
+		if ($worksheetId > 0 || $createBy > 0 || $updateBy > 0 || $hasDigitalFilter || $valueFilters || $search !== '') {
 			$filtered = $applyFilters($db->table('catalogs as a'))->countAllResults();
 		} else {
 			$filtered = $total;
@@ -115,6 +144,49 @@ class Katalog extends \Base\Controllers\BaseResourceController
 			'offset' => $offset,
 			'length' => $length,
 			'pages' => $pages,
+		]);
+	}
+
+	/** Pilihan Select2 dimuat per halaman agar daftar katalog tetap ringan. */
+	public function filterOptions()
+	{
+		$field = $this->request->getGet('field');
+		if (!is_string($field) || !isset(self::LIST_FILTER_COLUMNS[$field])) {
+			return $this->respond(['error' => 'Jenis filter tidak valid.'], 400);
+		}
+
+		$column = self::LIST_FILTER_COLUMNS[$field];
+		$search = $this->request->getGet('q');
+		$search = is_string($search) ? trim($search) : '';
+		$page = max(1, (int) ($this->request->getGet('page') ?? 1));
+		$worksheetId = max(0, (int) ($this->request->getGet('worksheet_id') ?? 0));
+		$isKeranjang = $this->request->getGet('keranjang') === '1' ? 1 : 0;
+		$db = db_connect('data');
+		$builder = $db->table('catalogs as a')
+			->distinct()
+			->select($column . ' AS id, ' . $column . ' AS text')
+			->where('a.IsQUARANTINE', 0)
+			->where('a.IsKeranjang', $isKeranjang)
+			->where($column . ' IS NOT NULL', null, false)
+			->where('TRIM(' . $column . ') !=', '');
+		if ($worksheetId > 0) {
+			$builder->where('a.Worksheet_id', $worksheetId);
+		}
+		if ($search !== '') {
+			$escape = $db->likeEscapeChar;
+			$literalSearch = str_replace(
+				[$escape, '%', '_'],
+				[$escape . $escape, $escape . '%', $escape . '_'],
+				$search
+			);
+			$builder->like($column, $literalSearch);
+		}
+		$rows = $builder->orderBy($column, $field === 'publish_year' ? 'DESC' : 'ASC')
+			->get(26, ($page - 1) * 25)->getResultArray();
+
+		return $this->respond([
+			'results' => array_slice($rows, 0, 25),
+			'pagination' => ['more' => count($rows) > 25],
 		]);
 	}
 

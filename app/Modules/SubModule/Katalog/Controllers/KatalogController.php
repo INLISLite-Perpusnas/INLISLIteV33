@@ -27,6 +27,7 @@ class KatalogController extends \Base\Controllers\BaseController
         $data['title']                = 'Daftar Katalog';
         $data['meta_description']     = 'Daftar dan pengelolaan katalog perpustakaan.';
         $data['is_catalog_list_page'] = true;
+        $data['filter_users']         = $this->catalogFilterUsers();
         $data['worksheets']           = $this->worksheetModel
             ->select('ID, Name')
             ->orderBy('NoUrut')
@@ -49,6 +50,7 @@ class KatalogController extends \Base\Controllers\BaseController
         $data['meta_description']     = 'Daftar katalog dengan jenis bahan Artikel.';
         $data['is_catalog_list_page'] = true;
         $data['locked_worksheet']     = $worksheet;
+        $data['filter_users']         = $this->catalogFilterUsers();
         echo view('Katalog\Views\list', $data);
     }
 
@@ -59,11 +61,24 @@ class KatalogController extends \Base\Controllers\BaseController
         $data['meta_description']     = 'Daftar katalog yang ada di keranjang.';
         $data['is_catalog_list_page'] = true;
         $data['is_keranjang']         = true;
+        $data['filter_users']         = $this->catalogFilterUsers();
         $data['worksheets']           = $this->worksheetModel
             ->select('ID, Name')
             ->orderBy('NoUrut')
             ->findAll();
         echo view('Katalog\Views\list', $data);
+    }
+
+    private function catalogFilterUsers(): array
+    {
+        return $this->db->table('users')
+            ->select('id, username')
+            ->groupStart()
+                ->whereIn('id', $this->db->table('catalogs')->select('CreateBy'))
+                ->orWhereIn('id', $this->db->table('catalogs')->select('UpdateBy'))
+            ->groupEnd()
+            ->orderBy('username')
+            ->get()->getResult();
     }
 
     public function masukkanKeranjang()

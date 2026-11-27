@@ -109,6 +109,7 @@ $routes->group('api/katalog', ['namespace' => 'Katalog\Controllers\Api'], functi
     $subroutes->add('datatable',                 'Katalog::datatable');
     $subroutes->add('datatable/(:any)',          'Katalog::datatable/$1');
     $subroutes->post('list-lite',                'Katalog::listLite');
+    $subroutes->get('filter-options',            'Katalog::filterOptions');
     $subroutes->add('switch/(:any)',             'Katalog::switch/$1');
     $subroutes->add('upload_cover',              'Katalog::upload_cover');
     $subroutes->add('upload_cover/(:any)/(:any)','Katalog::upload_cover/$1/$2');
